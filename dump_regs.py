@@ -21,15 +21,29 @@ def sdram_init(wb):
 
     # we cannot check for the string "DFII_CONTROL" as done when generating C code,
     # so this is hardcoded for now
-    control_cmds = [0, 1]
+    # update: Hacky but works
+    control_cmds = []
+    with open('sdram_init.py', 'r') as f:
+        n = 0
+        while True:
+            line = f.readline()
+            if not line: break
+            line = line.strip().replace(' ', '')
+            if len(line) and line[0] == '(':
+                if line.find('_control_') > 0:
+                    control_cmds.append(n)
+                n = n + 1
 
+
+    print('control_cmds: ' + str(control_cmds))
     for i, (comment, a, ba, cmd, delay) in enumerate(init_sequence):
-        print(comment)
         wb.regs.sdram_dfii_pi0_address.write(a)
         wb.regs.sdram_dfii_pi0_baddress.write(ba)
         if i in control_cmds:
+            print(comment + ' (ctrl)')
             wb.regs.sdram_dfii_control.write(cmd)
         else:
+            print(comment + ' (cmd)')
             wb.regs.sdram_dfii_pi0_command.write(cmd)
             wb.regs.sdram_dfii_pi0_command_issue.write(1)
         import time

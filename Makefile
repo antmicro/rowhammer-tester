@@ -43,6 +43,10 @@ dump_regs:
 	sleep 0.2 && python3 dump_regs.py &
 	make --no-print-directory -C . srv || true
 
+read_level:
+	sleep 0.2 && python3 read_level.py &
+	make --no-print-directory -C . srv || true
+
 analyzer:
 	python3 analyzer.py
 
