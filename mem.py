@@ -51,4 +51,11 @@ else:
     print('2. ' + str(["0x{:08x}".format(w) for w in wb.read(0x40000000 + 1024 - 2 * 4, 4)]))
     print("Mem ok!")
 
+# test rowhammer
+import time
+wb.regs.rowhammer_enabled.write(1)
+time.sleep(200 / 1e3) # 200 ms
+wb.regs.rowhammer_enabled.write(0)
+print('rowhammer: ' + str(["0x{:08x}".format(w) for w in wb.read(0x40000000, 4)]))
+
 wb.close()

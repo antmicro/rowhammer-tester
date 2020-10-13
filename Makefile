@@ -17,6 +17,7 @@ all::
 		--ddrphy \
 		--etherbone \
 		--leds \
+		--bulk \
 		\
 		$(ARGS)
 
