@@ -104,7 +104,8 @@ def memtest(wb, seed=42, base=0x40000000, length=0x80, inc=8, verbose=None):
 # Read leveling (software control) ---------------
 
 def get_byte(i, data):
-    return (data & (0xff << i)) >> i
+    #return (data & (0xff << i)) >> i
+    return (data & (0xff << (8*i))) >> (8*i)
 
 class Settings:
     def __init__(self, nmodules, bitslips, delays, nphases, wrphase, rdphase):
@@ -243,20 +244,20 @@ def read_level_module(wb, settings, module, delays_step=2, **kwargs):
     read_delay_set(wb, best_dly)
 
 # Perform whole read leveling procedure
-#def read_level(wb, settings, **kwargs):
-#    sdram_software_control(wb)
-#    for module in range(settings.nmodules):
-#        print("Module {}".format(module))
-#        delay_select_modules(wb, [module])
-#        read_level_module(wb, settings, module, **kwargs)
-
-# Perform whole read leveling procedure
 def read_level(wb, settings, **kwargs):
     sdram_software_control(wb)
     for module in range(settings.nmodules):
         print("Module {}".format(module))
-        delay_select_modules(wb, list(range(settings.nmodules)))
+        delay_select_modules(wb, [module])
         read_level_module(wb, settings, module, **kwargs)
+
+# Perform whole read leveling procedure
+#def read_level(wb, settings, **kwargs):
+#    sdram_software_control(wb)
+#    for module in range(settings.nmodules):
+#        print("Module {}".format(module))
+#        delay_select_modules(wb, list(range(settings.nmodules)))
+#        read_level_module(wb, settings, module, **kwargs)
 
 # -----------------------
 
