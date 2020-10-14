@@ -243,11 +243,19 @@ def read_level_module(wb, settings, module, delays_step=2, **kwargs):
     read_delay_set(wb, best_dly)
 
 # Perform whole read leveling procedure
+#def read_level(wb, settings, **kwargs):
+#    sdram_software_control(wb)
+#    for module in range(settings.nmodules):
+#        print("Module {}".format(module))
+#        delay_select_modules(wb, [module])
+#        read_level_module(wb, settings, module, **kwargs)
+
+# Perform whole read leveling procedure
 def read_level(wb, settings, **kwargs):
     sdram_software_control(wb)
     for module in range(settings.nmodules):
         print("Module {}".format(module))
-        delay_select_modules(wb, [module])
+        delay_select_modules(wb, list(range(settings.nmodules)))
         read_level_module(wb, settings, module, **kwargs)
 
 # -----------------------
@@ -259,7 +267,7 @@ if __name__ == "__main__":
     wb.open()
 
     settings = Settings(
-        nmodules = 2,
+        nmodules = 1,
         bitslips = 8,
         delays   = 32,
         nphases  = 4,
@@ -268,5 +276,6 @@ if __name__ == "__main__":
     )
 
     read_level(wb, settings)
+    sdram_hardware_control(wb)
 
     wb.close()
