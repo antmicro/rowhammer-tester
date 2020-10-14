@@ -57,7 +57,6 @@ def sdram_init(wb):
 #for name, reg in wb.regs.__dict__.items():
 #    print("0x{:08x} : 0x{:08x} {}".format(reg.addr, reg.read(), name))
 
-
 wb.write(0x40000000, 0xdeadbeef)
 # test rowhammer
 import time
