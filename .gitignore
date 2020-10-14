@@ -1,0 +1,6 @@
+*.swp
+image/
+__pycache__/
+build/
+csr.csv
+sdram_init.py

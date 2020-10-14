@@ -1,3 +1,6 @@
+# FIXME: Default path of Vivado toolchain
+VIVADO ?= /eda/xilinx/Vivado/2019.2/settings64.sh
+
 PYTHONPATH = $(PWD)/migen:$(PWD)/litex:$(PWD)/liteeth:$(PWD)/liteiclink:$(PWD)/litescope:$(PWD)/litedram
 export PYTHONPATH
 
@@ -23,8 +26,7 @@ all::
 FORCE:
 
 build: FORCE
-	( . /eda/xilinx/Vivado/2019.2/settings64.sh ; \
-			make --no-print-directory -C . ARGS="--build" all )
+	( .  $(VIVADO) ; make --no-print-directory -C . ARGS="--build" all )
 
 sim: FORCE
 	( PATH="$(PWD)/verilator/image/bin:$(PWD)/bin:$$PATH" \
@@ -60,3 +62,19 @@ mem:
 
 clean::
 	rm -rf build csr.csv analyzer.csv sdram_init.py
+
+# Deps
+deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)
+	git submodule update --init 
+	(make --no-print-directory -C . \
+		verilator/image/bin/verilator \
+		xc3sprog/xc3sprog)
+
+verilator/image/bin/verilator: verilator/configure.ac
+	(cd verilator && autoconf && \
+		./configure --prefix=$(PWD)/verilator/image && \
+		make -j`nproc` && make install) && touch $@
+
+xc3sprog/xc3sprog: xc3sprog/CMakeLists.txt
+	(cd xc3sprog && patch -Np1 < ../xc3sprog.patch && \
+		cmake . && make -j`nproc`)
