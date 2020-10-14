@@ -61,6 +61,10 @@ mem:
 	sleep 0.2 && python3 mem.py &
 	make --no-print-directory -C . srv || true
 
+bulk:
+	sleep 0.2 && python3 bulk.py &
+	make --no-print-directory -C . srv || true
+
 clean::
 	rm -rf build csr.csv analyzer.csv sdram_init.py
 
