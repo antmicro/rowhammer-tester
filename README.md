@@ -23,4 +23,85 @@ The application side consists of a set of Python scripts communicating with the 
 
 ## Usage
 
-TODO
+At this very moment scripts supports one fpga board: Arty-A7 (xc7a35t) and one simulation (based on Arty-A7).
+
+### Preparations
+
+Download submodules and build helper software:
+```
+make deps
+```
+
+### Build & upload gateware for Arty-A7
+
+Generate bitstream for FPGA:
+
+```
+make build
+```
+
+results will be located in directry: `build/arty/gateware/arty.bit`
+
+Upload gateware to Arty-A7:
+```
+make upload
+```
+
+TIP: By typing `make` (without `build`) LiteX will generate build files without invoking Vivado.
+
+### Build & run simulation based on Arty-A7
+
+Generate intermediate files & run simulation:
+
+```
+make sim
+```
+
+This command will generate intermediate files & simulate them with Verilator.
+
+WARN: Repositry has included wrapper script around `sudo` which disallows LiteX to mess with
+host network configuration. This forces user to manually configure TUN interface for valid
+communication with simulated device:
+
+1. Create TUN interface:
+```
+tunctl -u $USER -t arty
+```
+
+2. Configure IP address of a interface:
+```
+ifconfig arty 192.168.100.1/24 up
+```
+
+3. (Optionally) allow network traffic on this interface:
+```
+iptables -A INPUT -i arty -j ACCEPT
+iptables -A OUTPUT -o arty -j ACCEPT
+```
+
+TIP: By typing `make ARGS="--sim"` LiteX will generate only intermediate files and stop right after.
+
+### Using scripts
+
+Some example scripts included in a repository:
+
+#### Leds
+
+Turn on and off and on leds on Arty-A7 board:
+```
+make leds
+```
+
+### Register dump
+
+Dumps registers values located in uploaded design:
+```
+make dump_regs
+```
+
+### Memory basic test
+
+Configures (without read/write leveling) memory and tests it:
+```
+make mem
+```
