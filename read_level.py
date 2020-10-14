@@ -79,6 +79,8 @@ def _compare(val, ref, fmt, nbytes=4):
         print("{:0{n}b} xor {:0{n}b} = {:0{n}b}".format(val, ref, val ^ ref, n=nbytes*8))
 
 def memtest(wb, seed=42, base=0x40000000, length=0x80, inc=8, verbose=None):
+    sdram_hardware_control(wb)
+
     rng = random.Random(seed)
     refdata = []
 
