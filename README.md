@@ -99,7 +99,7 @@ Dumps registers values located in uploaded design:
 make dump_regs
 ```
 
-### Memory basic test
+### Basic memory test
 
 Configures (without read/write leveling) memory and tests it:
 ```
