@@ -6,7 +6,7 @@ The aim of this project is to provide a platform for testing the [DRAM "Row Hamm
 ## Setup
 
 The setup consists of FPGA gateware and application side software.
-The following diagram illustrates general system architecture.
+The following diagram illustrates the general system architecture.
 
 ![Archtecture diagram](./doc/architecture.png)
 
@@ -15,15 +15,15 @@ The DRAM is connected to [LiteDRAM](https://github.com/enjoy-digital/litedram) w
 In the default bulk transfer mode the LiteDRAM controller is connected to PHY and ensures correct DRAM traffic.
 Bulk transfers can be controlled using dedicated Control & Status Registers (CSRs) and use LiteDRAM DMA to ensure fast operation.
 
-Payload Executor allows to execute a user-provide sequence of commands.
-It temporarily disconnects the DRAM controller from PHY, executes the instructions stored in an SRAM memory
+Payload Executor allow executing a user-provided sequence of commands.
+It temporarily disconnects the DRAM controller from PHY, executes the instructions stored in the SRAM memory
 translating them into DFI commands and finally reconnects the DRAM controller.
 
 The application side consists of a set of Python scripts communicating with the FPGA using the LiteX EtherBone bridge.
 
 ## Usage
 
-At this very moment scripts supports one fpga board: Arty-A7 (xc7a35t) and one simulation (based on Arty-A7).
+Currently, scripts support one FPGA board: Arty-A7 (xc7a35t) and one simulation (based on Arty-A7).
 
 ### Preparations
 
@@ -40,7 +40,7 @@ Generate bitstream for FPGA:
 make build
 ```
 
-results will be located in directry: `build/arty/gateware/arty.bit`
+the results will be located in directory: `build/arty/gateware/arty.bit`
 
 Upload gateware to Arty-A7:
 ```
@@ -59,9 +59,9 @@ make sim
 
 This command will generate intermediate files & simulate them with Verilator.
 
-WARN: Repositry has included wrapper script around `sudo` which disallows LiteX to mess with
-host network configuration. This forces user to manually configure TUN interface for valid
-communication with simulated device:
+WARNING: The repository contains a wrapper script around `sudo` which disallows LiteX to interfere with
+the host network configuration. This forces the user to manually configure TUN interface for valid
+communication with the simulated device:
 
 1. Create TUN interface:
 ```
@@ -83,11 +83,11 @@ TIP: By typing `make ARGS="--sim"` LiteX will generate only intermediate files a
 
 ### Using scripts
 
-Some example scripts included in a repository:
+Some example scripts included in the repository:
 
 #### Leds
 
-Turn on and off and on leds on Arty-A7 board:
+Turn the leds on Arty-A7 board on, off, and on again:
 ```
 make leds
 ```
