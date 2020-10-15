@@ -73,9 +73,10 @@ def read_delay_set(wb, value):
 def _compare(val, ref, fmt, nbytes=4):
     assert fmt in ["bin", "hex"]
     if fmt == "hex":
-        print("0x{:0{n}x} != 0x{:0{n}x}".format(rbyte, wbyte, n=nbytes*2))
+        print("0x{:0{n}x} {cmp} 0x{:0{n}x}".format(val, ref, n=nbytes*2,
+                                                   cmp="==" if val == ref else "!="))
     if fmt == "bin":
-        print("{:0{n}b} xor {:0{n}b} = {:0{n}b}".format(rbyte, wbyte, rbyte ^ wbyte, n=nbytes*8))
+        print("{:0{n}b} xor {:0{n}b} = {:0{n}b}".format(val, ref, val ^ ref, n=nbytes*8))
 
 def memtest(wb, seed=42, base=0x40000000, length=0x80, inc=8, verbose=None):
     rng = random.Random(seed)
@@ -97,14 +98,13 @@ def memtest(wb, seed=42, base=0x40000000, length=0x80, inc=8, verbose=None):
             errors += 1
             if verbose is not None:
                 print()
-                _compare(val, ref, style=verbose, nbytes=4)
+                _compare(val, ref, fmt=verbose, nbytes=4)
 
     return errors
 
 # Read leveling (software control) ---------------
 
 def get_byte(i, data):
-    #return (data & (0xff << i)) >> i
     return (data & (0xff << (8*i))) >> (8*i)
 
 class Settings:
@@ -144,8 +144,8 @@ def read_level_test(wb, settings, module, seed=42, verbose=None):
         for p in range(settings.nphases):
             val = 0
             for b in range(phase_bytes):
-                val |= get_byte(b, data_pattern[p*phase_bytes + b])
-                val << 8
+                val <<= 8
+                val |= data_pattern[p*phase_bytes + b]
             yield val
 
     # activate row
@@ -162,12 +162,12 @@ def read_level_test(wb, settings, module, seed=42, verbose=None):
     errors = 0
     for rdata, wdata in zip(rdatas, per_phase(data_pattern)):
         for i in [1, 2]:
-            rbyte = get_byte(i*settings.nmodules - 1 - module, rdata)
-            wbyte = get_byte(i*settings.nmodules - 1 - module, wdata)
+            rbyte = get_byte(i*settings.nmodules + module, rdata)
+            wbyte = get_byte(i*settings.nmodules + module, wdata)
             if rbyte != wbyte:
                 errors += 1
                 if verbose is not None:
-                    _compare(rbyte, wbyte, style=verbose, nbytes=1)
+                    _compare(rbyte, wbyte, fmt=verbose, nbytes=1)
 
     # precharge row
     sdram_cmd(wb, 0, 0, dfii_command_ras | dfii_command_we | dfii_command_cs)
