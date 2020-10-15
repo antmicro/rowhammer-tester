@@ -20,6 +20,7 @@ all::
 		--ddrphy \
 		--etherbone \
 		--leds \
+		--bulk \
 		\
 		$(ARGS)
 
@@ -58,6 +59,10 @@ leds:
 
 mem:
 	sleep 0.2 && python3 mem.py &
+	make --no-print-directory -C . srv || true
+
+bulk:
+	sleep 0.2 && python3 bulk.py &
 	make --no-print-directory -C . srv || true
 
 clean::

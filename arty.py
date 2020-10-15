@@ -246,6 +246,56 @@ class BaseSoC(SoCCore):
         if args.sim:
             self.comb += platform.trace.eq(1)
 
+        if args.bulk and args.ddrphy:
+            from litedram.frontend.dma import LiteDRAMDMAReader, LiteDRAMDMAWriter
+
+            #self.submodules.dram_dma = LiteDRAMDMAReader(port)
+
+            # j removethis boczar at antmicro dot com
+            #class RowHammerDMA(Module, AutoCSR):
+            #    def __init__(self, dma, bankbits, colbits):
+            #        self.enabled = CSRStorage()
+
+            #        shift = (colbits + bankbits)
+            #        address = [(1 << shift), (2 << shift)]
+
+            #        cnt = Signal()
+            #        self.sync += If(dma.sink.ready, cnt.eq(cnt + 1))
+
+            #        self.comb += [
+            #            dma.sink.address.eq(Array(address)[cnt]),
+            #            dma.sink.valid.eq(self.enabled.storage),
+            #            dma.source.ready.eq(1),
+            #        ]
+
+            class BulkWrite(Module, AutoCSR):
+                def __init__(self, dma, bankbits, colbits):
+                    self.enabled  = CSRStorage()
+                    self.address  = CSRStorage(size=(32*1))
+                    self.dataword = CSRStorage(size=(32*4))
+                    self.count    = CSRStorage(size=(32*1))
+                    self.reset    = CSRStorage()
+                    self.done     = CSRStatus()
+
+                    cnt = Signal(32*1)
+                    self.sync += If(self.enabled.storage, If(cnt < self.count.storage, If(dma.sink.ready, cnt.eq(cnt + 1))))
+                    self.sync += If(self.reset.storage, cnt.eq(0))
+                    self.sync += self.done.status.eq(self.count.storage == cnt)
+
+                    self.comb += [
+                        dma.sink.address.eq(self.address.storage + cnt),
+                        dma.sink.data.eq(self.dataword.storage),
+                        dma.sink.valid.eq(self.enabled.storage),
+                    ]
+
+            port = self.sdram.crossbar.get_port()
+            self.submodules.bulk_wr_dma   = LiteDRAMDMAWriter(port)
+            self.submodules.bulk_wr       = BulkWrite(self.bulk_wr_dma,
+                                                      bankbits=self.sdram.controller.settings.geom.bankbits,
+                                                      colbits=self.sdram.controller.settings.geom.colbits)
+            self.add_csr("bulk_wr")
+
+
     def generate_sdram_phy_py_header(self):
         f = open("sdram_init.py", "w")
         f.write(get_sdram_phy_py_header(
@@ -264,6 +314,7 @@ def main():
     parser.add_argument("--ddrphy", action="store_true", help="TODO")
     parser.add_argument("--leds", action="store_true", help="TODO")
     parser.add_argument("--etherbone",  action="store_true", help="Enable Etherbone support")
+    parser.add_argument("--bulk", action="store_true", help="TODO")
 
     builder_args(parser)
     soc_core_args(parser)
