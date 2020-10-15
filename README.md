@@ -101,7 +101,14 @@ make dump_regs
 
 ### Basic memory test
 
-Configures (without read/write leveling) memory and tests it:
+Configures memory and tests it:
 ```
 make mem
+```
+
+### Test bulk write
+
+Fills whole memory with known pattern (`0xa5a5a5a5`):
+```
+make bulk
 ```
