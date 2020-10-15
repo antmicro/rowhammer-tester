@@ -137,7 +137,7 @@ def read_level_test(wb, settings, module, seed=42, verbose=None):
 
     # generate pattern
     data_pattern = []
-    phase_bytes = wb.regs.sdram_dfii_pi0_wrdata.length
+    phase_bytes = wb.regs.sdram_dfii_pi0_wrdata.data_width // 8
     for p in range(settings.nphases):
         for b in range(phase_bytes):
             data_pattern.append(rng.randint(0, 256))
@@ -217,7 +217,7 @@ def read_level_find_best(scores):
     return best_bs, best_delay, best_length
 
 # Read level current module
-def read_level_module(wb, settings, module, delays_step=2, **kwargs):
+def read_level_module(wb, settings, module, delays_step=1, **kwargs):
     read_bitslip_rst(wb)
 
     scores = defaultdict(dict)  # {bitslip: {delay: errors}, ...}
@@ -225,11 +225,11 @@ def read_level_module(wb, settings, module, delays_step=2, **kwargs):
         read_delay_rst(wb)
         print("Bitslip {:02d}: |".format(bs), end="", flush=True)
 
-        for dly in range(0, settings.delays, delays_step):
-            errors = read_level_test(wb, settings, module, **kwargs)
-            # errors = memtest(wb, 0x80)
-            scores[bs][dly] = errors
-            print("1" if errors == 0 else "0", end="", flush=True)
+        for dly in range(settings.delays):
+            if dly % delays_step == 0:
+                errors = read_level_test(wb, settings, module, **kwargs)
+                scores[bs][dly] = errors
+                print("1" if errors == 0 else "0", end="", flush=True)
             read_delay_inc(wb)
 
         print("|")
@@ -270,7 +270,6 @@ if __name__ == "__main__":
         wrphase  = 3,
     )
 
-    read_level(wb, settings)
-    sdram_hardware_control(wb)
+    read_level(wb, settings, delays_step=1)
 
     wb.close()
