@@ -3,17 +3,12 @@ from operator import or_
 from functools import reduce
 from collections import defaultdict
 
-from litedram.common import PhySettings
-
 from sdram_init import *
 
 # DRAM commands ----------------------------------
 
 def sdram_software_control(wb):
     wb.regs.sdram_dfii_control.write(dfii_control_cke|dfii_control_odt|dfii_control_reset_n)
-
-def sdram_hardware_control(wb):
-    wb.regs.sdram_dfii_control.write(dfii_control_sel)
 
 def sdram_cmd(wb, a, ba, command):
     sdram_software_control(wb)
@@ -67,42 +62,6 @@ def read_delay_set(wb, value):
     read_delay_rst(wb)
     for _ in range(value):
         read_delay_inc(wb)
-
-# Memory test (hardware control) -----------------
-
-def _compare(val, ref, fmt, nbytes=4):
-    assert fmt in ["bin", "hex"]
-    if fmt == "hex":
-        print("0x{:0{n}x} {cmp} 0x{:0{n}x}".format(val, ref, n=nbytes*2,
-                                                   cmp="==" if val == ref else "!="))
-    if fmt == "bin":
-        print("{:0{n}b} xor {:0{n}b} = {:0{n}b}".format(val, ref, val ^ ref, n=nbytes*8))
-
-def memtest(wb, seed=42, base=0x40000000, length=0x80, inc=8, verbose=None):
-    sdram_hardware_control(wb)
-
-    rng = random.Random(seed)
-    refdata = []
-
-    for i in range(length//inc):
-        data = [rng.randint(0, 2**32 - 1) for _ in range(inc)]
-        wb.write(base + 4*inc*i, data)
-        refdata += data
-
-    data = []
-    for i in range(length//inc):
-        data += wb.read(base + 4*inc*i, inc)
-    assert len(refdata) == len(data)
-
-    errors = 0
-    for val, ref in zip(data, refdata):
-        if val != ref:
-            errors += 1
-            if verbose is not None:
-                print()
-                _compare(val, ref, fmt=verbose, nbytes=4)
-
-    return errors
 
 # Read leveling (software control) ---------------
 
@@ -255,13 +214,8 @@ def read_level(wb, settings, **kwargs):
 
 # -----------------------
 
-if __name__ == "__main__":
-    from litex import RemoteClient
-
-    wb = RemoteClient()
-    wb.open()
-
-    settings = Settings(
+def default_arty_settings():
+    return Settings(
         nmodules = 2,
         bitslips = 8,
         delays   = 32,
@@ -270,6 +224,12 @@ if __name__ == "__main__":
         wrphase  = 3,
     )
 
-    read_level(wb, settings, delays_step=1)
+if __name__ == "__main__":
+    from litex import RemoteClient
+
+    wb = RemoteClient()
+    wb.open()
+
+    read_level(wb, default_arty_settings())
 
     wb.close()
