@@ -71,7 +71,7 @@ clean::
 # Deps
 deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)
 	git submodule update --init
-	pip3 install pythondata-misc-tapcfg
+	pip3 install --user pythondata-misc-tapcfg
 	(make --no-print-directory -C . \
 		verilator/image/bin/verilator \
 		xc3sprog/xc3sprog)
