@@ -49,6 +49,40 @@ def sdram_init(wb):
 
 # ###########################################################################
 
+def memwrite(wb, data, base=0x40000000, burst=16):
+    for i in range(0, len(data), burst):
+        wb.write(base + 4*i, data[i:i+burst])
+
+def memread(wb, n, base=0x40000000, burst=16):
+    data = []
+    for i in range(0, n, burst):
+        data += wb.read(base + 4*i, burst)
+    return data
+
+def memfill(wb, n, pattern=0xaaaaaaaa, **kwargs):
+    memwrite(wb, [pattern] * n, **kwargs)
+
+def memcheck(wb, n, pattern=0xaaaaaaaa, **kwargs):
+    data = memread(wb, n, **kwargs)
+    errors = [(i, w) for i, w in enumerate(data) if w != pattern]
+    return errors
+
+def memspeed(wb, n, **kwargs):
+    def measure(fun, name):
+        start = time.time()
+        fun(wb, n, **kwargs)
+        elapsed = time.time() - start
+        print('{:5} speed: {:6.2f} KB/s ({:.1f} sec)'.format(name, (n//4)/elapsed / 1e3, elapsed))
+
+    def memcheck_assert(*args, **kwargs):
+        errors = memcheck(*args, **kwargs)
+        assert len(errors) == 0
+
+    measure(memfill, 'Write')
+    measure(memcheck_assert, 'Read')
+
+# ###########################################################################
+
 def _compare(val, ref, fmt, nbytes=4):
     assert fmt in ["bin", "hex"]
     if fmt == "hex":
@@ -152,5 +186,25 @@ if __name__ == "__main__":
     print('\nMemtest (random):')
     errors = memtest_random(wb, length=0x2000)
     print('OK' if errors == 0 else 'FAIL: errors = {}'.format(errors))
+
+    if '--memspeed' in sys.argv[1:]:
+        for n in [0x1000//4, 0x10000//4, 0x100000//4]:
+            print('Size = 0x{:08x}'.format(n*4))
+            memspeed(wb, n)
+        # Example results:
+        #  Size = 0x00001000
+        #   Write speed:  48.14 KB/s (0.0 sec)
+        #   Read  speed:   2.08 KB/s (0.1 sec)
+        #  Size = 0x00010000
+        #   Write speed:  82.45 KB/s (0.0 sec)
+        #   Read  speed:   3.09 KB/s (1.3 sec)
+        #  Size = 0x00100000
+        #   Write speed: 123.88 KB/s (0.5 sec)
+        #   Read  speed:   3.04 KB/s (21.6 sec)
+        #  Size = 0x01000000
+        #   Write speed:  47.24 KB/s (22.2 sec)
+        # So reading 1MB takes ~21.6 seconds.
+        # We have 256MB DRAM on board, so it should take ~1.5 hour to read.
+        # Writing is an order of magnitude faster.
 
     wb.close()
