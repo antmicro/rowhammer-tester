@@ -167,7 +167,9 @@ class BaseSoC(SoCCore):
                 self.submodules.ddrphy = SDRAMPHYModel(
                     module    = sdram_module,
                     settings  = phy_settings,
-                    clk_freq  = sdram_clk_freq)
+                    clk_freq  = sdram_clk_freq,
+                    verbosity = 3,
+                )
 
 
             self.add_csr("ddrphy")
@@ -315,13 +317,15 @@ def main():
     parser.add_argument("--leds", action="store_true", help="TODO")
     parser.add_argument("--etherbone",  action="store_true", help="Enable Etherbone support")
     parser.add_argument("--bulk", action="store_true", help="TODO")
+    parser.add_argument("--sys-clk-freq", default="100e6", help="TODO")
 
     builder_args(parser)
     soc_core_args(parser)
     vivado_build_args(parser)
     args = parser.parse_args()
 
-    soc = BaseSoC(args.toolchain, args=args,
+    sys_clk_freq = int(float(args.sys_clk_freq))
+    soc = BaseSoC(args.toolchain, args=args, sys_clk_freq=sys_clk_freq,
         **soc_core_argdict(args))
     builder = Builder(soc, **builder_argdict(args))
     builder_kwargs = vivado_build_argdict(args);
@@ -334,7 +338,7 @@ def main():
 
     else:
         sim_config = SimConfig()
-        sim_config.add_clocker("sys_clk", freq_hz=1e6)
+        sim_config.add_clocker("sys_clk", freq_hz=sys_clk_freq)
         if args.etherbone:
             sim_config.add_module("ethernet", "eth", args={"interface": "arty", "ip":"192.168.100.1"})
 
