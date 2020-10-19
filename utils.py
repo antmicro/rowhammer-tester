@@ -96,6 +96,7 @@ def memdump(data, base=0x40000000, chunk_len=16):
         c = "".join(tochar(chunk[i] if i < len(chunk) else 0) for i in range(chunk_len))
         print("0x{addr:08x}:  {bytes}  {chars}".format(addr=base + chunk_len*i, bytes=b, chars=c))
 
+
 # Open a remote connection in an interactive session (e.g. when sourced as `ipython -i <thisfile>`)
 if __name__ == "__main__":
     import sys

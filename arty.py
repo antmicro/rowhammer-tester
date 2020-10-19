@@ -251,24 +251,41 @@ class BaseSoC(SoCCore):
         if args.bulk and args.ddrphy:
             from litedram.frontend.dma import LiteDRAMDMAReader, LiteDRAMDMAWriter
 
-            #self.submodules.dram_dma = LiteDRAMDMAReader(port)
+            class RowHammerDMA(Module, AutoCSR):
+                def __init__(self, dma):
+                    address_width = len(dma.sink.address)
 
-            # j removethis boczar at antmicro dot com
-            #class RowHammerDMA(Module, AutoCSR):
-            #    def __init__(self, dma, bankbits, colbits):
-            #        self.enabled = CSRStorage()
+                    self.enabled  = CSRStorage()
+                    self.address0 = CSRStorage(address_width)
+                    self.address1 = CSRStorage(address_width)
+                    self.count    = CSRStatus(32)
 
-            #        shift = (colbits + bankbits)
-            #        address = [(1 << shift), (2 << shift)]
+                    counter = Signal(32)
+                    self.comb += self.count.status.eq(counter)
+                    self.sync += \
+                        If(self.enabled.storage,
+                            If(dma.sink.valid & dma.sink.ready,
+                                counter.eq(counter + 1)
+                            )
+                        ).Elif(self.count.we,  # clear on read when not enabled
+                            counter.eq(0)
+                        )
 
-            #        cnt = Signal()
-            #        self.sync += If(dma.sink.ready, cnt.eq(cnt + 1))
+                    address = Signal(address_width)
+                    self.comb += Case(counter[0], {
+                        0: address.eq(self.address0.storage),
+                        1: address.eq(self.address1.storage),
+                    })
 
-            #        self.comb += [
-            #            dma.sink.address.eq(Array(address)[cnt]),
-            #            dma.sink.valid.eq(self.enabled.storage),
-            #            dma.source.ready.eq(1),
-            #        ]
+                    self.comb += [
+                        dma.sink.address.eq(address),
+                        dma.sink.valid.eq(self.enabled.storage),
+                        dma.source.ready.eq(1),
+                    ]
+
+            self.submodules.rowhammer_dma = LiteDRAMDMAReader(self.sdram.crossbar.get_port())
+            self.submodules.rowhammer = RowHammerDMA(self.rowhammer_dma)
+            self.add_csr("rowhammer")
 
             class BulkWrite(Module, AutoCSR):
                 def __init__(self, dma, bankbits, colbits):
