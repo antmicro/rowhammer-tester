@@ -28,6 +28,7 @@ from litedram.phy.model import SDRAMPHYModel
 from litedram import modules as litedram_modules
 #from litedram import phy as litedram_phys
 from litedram.init import get_sdram_phy_py_header
+from litedram.core.controller import ControllerSettings
 
 from liteeth.phy.mii import LiteEthPHYMII
 
@@ -171,6 +172,8 @@ class BaseSoC(SoCCore):
                     verbosity = 3,
                 )
 
+            controller_settings = ControllerSettings()
+            controller_settings.with_auto_precharge = False
 
             self.add_csr("ddrphy")
             self.add_sdram("sdram",
@@ -180,7 +183,8 @@ class BaseSoC(SoCCore):
                 size                    = kwargs.get("max_sdram_size", 0x40000000),
                 l2_cache_size           = 0,
                 l2_cache_min_data_width = 0, #128
-                l2_cache_reverse        = True
+                l2_cache_reverse        = True,
+                controller_settings     = controller_settings
             )
 
         # Ethernet / Etherbone ---------------------------------------------------------------------
