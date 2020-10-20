@@ -5,7 +5,7 @@ PYTHONPATH = $(PWD)/migen:$(PWD)/litex:$(PWD)/liteeth:$(PWD)/liteiclink:$(PWD)/l
 export PYTHONPATH
 
 all::
-	python3 arty.py \
+	$(WRAPPER) python3 arty.py \
 		--cpu-type None \
 		--no-timer --no-ctrl --no-uart \
 		\
@@ -31,7 +31,11 @@ build: FORCE
 
 sim: FORCE
 	( PATH="$(PWD)/verilator/image/bin:$(PWD)/bin:$$PATH" \
-			make --no-print-directory -C . ARGS="--build --sim" all )
+			make --no-print-directory -C . ARGS="--build --sim $(ARGS)" all )
+
+sim-analyze: FORCE
+	( PATH="$(PWD)/verilator/image/bin:$(PWD)/bin:$$PATH" \
+			make --no-print-directory -C . WRAPPER="python3 sim_runner.py" ARGS="--build --sim $(ARGS)" all )
 
 upload up:
 	./xc3sprog/xc3sprog -c nexys4 build/arty/gateware/arty.bit

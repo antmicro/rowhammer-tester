@@ -107,7 +107,8 @@ def row_hammer(wb, *, rows, column=512, bank=0, colbits=10, read_count=10e6):
         n = (max(address_list) - min(address_list)) // 4
         # extend to whole bursts
         n = ceil(n / 4) * 4
-        memfill(wb, n, pattern=row_pattern(row), base=address_list[0])
+        pattern = row_pattern(row)
+        memfill(wb, n, pattern=pattern, base=address_list[0])
         if row % 16 == 0:
             print('.', end='', flush=True)
 
@@ -187,6 +188,7 @@ if __name__ == "__main__":
     parser.add_argument('--column', type=int, default=512, help='Column to read from')
     parser.add_argument('--colbits', type=int, default=10, help='Number of column bits')  # FIXME: take from our design
     parser.add_argument('--read_count', type=float, default=10e6, help='How many reads to perform for single address pair')
+    parser.add_argument('--hammer-only', action='store_true', help='Run only the row hammer sequence on rows (nrows, nrows+1)')
     args = parser.parse_args()
 
     from litex import RemoteClient
@@ -194,6 +196,17 @@ if __name__ == "__main__":
     wb = RemoteClient()
     wb.open()
 
-    row_hammer(wb, rows=range(args.nrows), bank=args.bank, column=args.column, colbits=args.colbits, read_count=args.read_count)
+    rows = range(args.nrows)
+    bank = args.bank
+    column = args.column
+    colbits = args.colbits
+    read_count = args.read_count
+
+    if args.hammer_only:
+        converter = DRAMAddressConverter()
+        rows = [args.nrows, args.nrows + 1]
+        row_hammer_attack(wb, converter, bank=bank, rows=rows, col=column, read_count=read_count)
+    else:
+        row_hammer(wb, rows=rows, bank=bank, column=column, colbits=colbits, read_count=read_count)
 
     wb.close()
