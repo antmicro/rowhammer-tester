@@ -1,4 +1,5 @@
 import time
+import random
 from math import ceil
 from operator import or_
 from functools import reduce
@@ -62,7 +63,7 @@ class DRAMAddressConverter:
     def decode_dma(self, address):
         return self._decode(address << self.address_align)
 
-def row_hammer_attack(wb, converter, *, bank, rows, col, read_count):
+def row_hammer_attack(wb, converter, *, bank, rows, col, read_count, rowbits):
     assert len(rows) == 2
 
     wb.regs.rowhammer_enabled.write(0)
@@ -70,14 +71,14 @@ def row_hammer_attack(wb, converter, *, bank, rows, col, read_count):
     wb.regs.rowhammer_address1.write(converter.encode_dma(bank=bank, row=rows[1], col=col))
     wb.regs.rowhammer_enabled.write(1)
 
+    n = len(str(2**rowbits - 1))
     def print_step(current_count):
-        print('  Rows = ({:3d},{:3d}), Count = {:5.1f}M / {:5.1f}M'.format(
-            *rows, current_count/1e6, read_count/1e6), end='  \r', flush=True)
+        print('  Rows = ({:{n}d},{:{n}d}), Count = {:6.2f}M / {:6.2f}M'.format(
+            *rows, current_count/1e6, read_count/1e6, n=n), end='  \r', flush=False)
 
     while True:
         count = wb.regs.rowhammer_count.read()
         print_step(count)
-        time.sleep(0.05)
         if count >= read_count:
             break
 
@@ -85,49 +86,62 @@ def row_hammer_attack(wb, converter, *, bank, rows, col, read_count):
     print_step(wb.regs.rowhammer_count.read())  # also clears the value
     print()
 
-def row_hammer(wb, *, rows, column=512, bank=0, colbits=10, read_count=10e6):
+def patterns_const(rows, value):
+    return {row: value for row in rows}
+
+def patterns_alternating_per_row(rows):
+    return {row: 0xffffffff if row % 2 == 0 else 0x00000000 for row in rows}
+
+def patterns_random_per_row(rows, seed=42):
+    rng = random.Random(seed)
+    return {row: rng.randint(0, 2**32 - 1) for row in rows}
+
+def row_hammer(wb, *, row_pairs, column=512, bank=0, colbits=10, rowbits=14,
+               read_count=10e6, pattern=patterns_alternating_per_row):
+    print('\nPreparing ...')
+    # get all the rows we will be attacking
+    rows = set()
+    for row1, row2 in row_pairs:
+        rows.add(row1)
+        rows.add(row2)
     rows = list(rows)
-
+    # get row patterns and address lists
+    row_patterns = pattern(rows)
     converter = DRAMAddressConverter()
-    burst_width = 2*16 * 4  # 2 (DDR) * databits (DQ pins) * nphases (1:4 freq ratio)
-    # col_width = 16
-    bus_width = 32
-    burst_len = burst_width // bus_width
-
-    def row_pattern(row):
-        return 0x55555555 if row % 2 == 0 else 0xaaaaaaaa
-
     address_lists = {
         row: [converter.encode_bus(bank=bank, row=row, col=col) for col in range(2**colbits)]
         for row in rows
     }
 
+    def row_accesses():
+        for row, address_list in address_lists.items():
+            n = (max(address_list) - min(address_list)) // 4
+            # extend to whole bursts
+            n = ceil(n / 4) * 4
+            base_addr = address_list[0]
+            yield row, n, base_addr
+
     print('\nFilling memory with data ...')
-    for row, address_list in address_lists.items():
-        n = (max(address_list) - min(address_list)) // 4
-        # extend to whole bursts
-        n = ceil(n / 4) * 4
-        pattern = row_pattern(row)
-        memfill(wb, n, pattern=pattern, base=address_list[0])
+    for row, n, base in row_accesses():
+        memfill(wb, n, pattern=row_patterns[row], base=base)
         if row % 16 == 0:
             print('.', end='', flush=True)
 
     def check():
         ok = True
-        for row, address_list in address_lists.items():
-            n = (max(address_list) - min(address_list)) // 4
-            errors = memcheck(wb, n, pattern=row_pattern(row), base=address_list[0])
+        for row, n, base in row_accesses():
+            errors = memcheck(wb, n, pattern=row_patterns[row], base=base)
             for i, word in errors:
                 ok = False
-                addr = 0x40000000 + 4*i
-                bank, row, col = converter.decode_bus(addr)
+                addr = base + 4*i
+                bank, _row, col = converter.decode_bus(addr)
                 print("Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(
-                    addr, word, row, col))
+                    addr, word, _row, col))
             if row % 16 == 0:
                 print('.', end='', flush=True)
         return ok
 
-    print('\nVerifying memory ...')
+    print('\nVerifying written memory ...')
     if check():
         print('OK')
     else:
@@ -135,13 +149,11 @@ def row_hammer(wb, *, rows, column=512, bank=0, colbits=10, read_count=10e6):
        return
 
     print('\nRunning row hammer attack ...')
-    # for i in range(len(rows) - 1):
-    #     rh_rows = rows[i:i+2]
-    for i in range(len(rows)//2):
-        rh_rows = rows[2*i:2*i + 2]
-        row_hammer_attack(wb, converter, bank=bank, rows=rh_rows, col=column, read_count=read_count)
+    for row1, row2 in row_pairs:
+        row_hammer_attack(wb, converter, bank=bank, rows=[row1, row2], col=column,
+                          read_count=read_count, rowbits=rowbits)
 
-    print('\nChecking tested rows ...')
+    print('\nChecking tested memory ...')
     print('OK') if check() else print("ERROR")
 
 def encode_decode_test(wb):
@@ -187,8 +199,13 @@ if __name__ == "__main__":
     parser.add_argument('--bank', type=int, default=0, help='Bank number')
     parser.add_argument('--column', type=int, default=512, help='Column to read from')
     parser.add_argument('--colbits', type=int, default=10, help='Number of column bits')  # FIXME: take from our design
+    parser.add_argument('--rowbits', type=int, default=14, help='Number of row bits')  # FIXME: take from our design
     parser.add_argument('--read_count', type=float, default=10e6, help='How many reads to perform for single address pair')
     parser.add_argument('--hammer-only', action='store_true', help='Run only the row hammer sequence on rows (nrows, nrows+1)')
+    parser.add_argument('--pattern', choices=['all_zeros', 'all_ones', 'alternating_in_row', 'alternating_per_row', 'random_per_row'],
+                        default='alternating_per_row', help='Pattern written to DRAM before running attacks')
+    parser.add_argument('--row-pairs', choices=['sequential', 'random'], default='sequential',
+                        help='How the rows for subsequent attacks are selected')
     args = parser.parse_args()
 
     from litex import RemoteClient
@@ -196,17 +213,30 @@ if __name__ == "__main__":
     wb = RemoteClient()
     wb.open()
 
-    rows = range(args.nrows)
-    bank = args.bank
-    column = args.column
-    colbits = args.colbits
-    read_count = args.read_count
-
     if args.hammer_only:
         converter = DRAMAddressConverter()
         rows = [args.nrows, args.nrows + 1]
-        row_hammer_attack(wb, converter, bank=bank, rows=rows, col=column, read_count=read_count)
+        row_hammer_attack(wb, converter, bank=args.bank, rows=rows, col=args.column,
+                          colbits=args.colbits, rowbits=args.rowbits, read_count=args.read_count)
     else:
-        row_hammer(wb, rows=rows, bank=bank, column=column, colbits=colbits, read_count=read_count)
+        rng = random.Random(42)
+        def rand_row():
+            return rng.randint(0, 2**args.rowbits - 1)
+
+        row_pairs = {
+            'sequential': [(0, i) for i in range(args.nrows)],
+            'random': [(rand_row(), rand_row()) for i in range(args.nrows)],
+        }[args.row_pairs]
+
+        pattern = {
+            'all_zeros': lambda rows: patterns_const(rows, 0x00000000),
+            'all_ones': lambda rows: patterns_const(rows, 0xffffffff),
+            'alternating_in_row': lambda rows: patterns_const(rows, 0xaaaaaaaa),
+            'alternating_per_row': patterns_alternating_per_row,
+            'random_per_row': patterns_random_per_row,
+        }[args.pattern]
+
+        row_hammer(wb, row_pairs=row_pairs, bank=args.bank, column=args.column, colbits=args.colbits,
+                   rowbits=args.rowbits, read_count=args.read_count, pattern=pattern)
 
     wb.close()
