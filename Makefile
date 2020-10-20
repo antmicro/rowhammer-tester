@@ -27,7 +27,7 @@ all::
 FORCE:
 
 build: FORCE
-	( .  $(VIVADO) ; make --no-print-directory -C . ARGS="--build" all )
+	( .  $(VIVADO) ; make --no-print-directory -C . ARGS="--build $(ARGS)" all )
 
 sim: FORCE
 	( PATH="$(PWD)/verilator/image/bin:$(PWD)/bin:$$PATH" \
