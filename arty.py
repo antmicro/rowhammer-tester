@@ -21,6 +21,7 @@ from litex.soc.integration.soc_core import *
 #from litex.soc.integration.soc_sdram import *
 from litex.soc.integration.builder import *
 from litex.soc.cores.led import LedChaser
+from litex.soc import doc
 
 from litedram.modules import MT41K128M16
 from litedram.phy import s7ddrphy
@@ -368,6 +369,12 @@ def main():
 
         if args.ddrphy:
             soc.generate_sdram_phy_py_header()
+
+    doc.generate_docs(soc,
+        base_dir     = "build/documentation",
+        project_name = "LiteX Row Hammer Tester",
+        author       = "Antmicro"
+    )
 
     #if args.load:
     #    prog = soc.platform.create_programmer()

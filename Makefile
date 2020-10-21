@@ -69,13 +69,17 @@ bulk:
 	sleep 0.2 && python3 bulk.py &
 	make --no-print-directory -C . srv || true
 
+doc: FORCE
+	( make --no-print-directory -C . all; \
+		python3 -m sphinx -b html build/documentation build/documentation/html )
+
 clean::
 	rm -rf build csr.csv analyzer.csv sdram_init.py
 
 # Deps
 deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)
 	git submodule update --init
-	pip3 install --user pythondata-misc-tapcfg
+	pip3 install --user pythondata-misc-tapcfg sphinx sphinxcontrib-wavedrom
 	(make --no-print-directory -C . \
 		verilator/image/bin/verilator \
 		xc3sprog/xc3sprog)
