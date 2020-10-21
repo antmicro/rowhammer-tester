@@ -29,6 +29,7 @@ jobs:
       - name: Build Sphinx documentation
         run: |
           make doc
+          touch build/documentation/html/.nojekyll
 
       - name: Deploy gh-pages
         if: ${{ github.event_name == 'push' }}
