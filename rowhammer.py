@@ -63,7 +63,7 @@ class DRAMAddressConverter:
     def decode_dma(self, address):
         return self._decode(address << self.address_align)
 
-def row_hammer_attack(wb, converter, *, bank, rows, col, read_count, rowbits):
+def row_hammer_attack(wb, converter, *, bank, rows, col, read_count, rowbits, i=None, niter=None):
     assert len(rows) == 2
 
     wb.regs.rowhammer_enabled.write(0)
@@ -71,10 +71,19 @@ def row_hammer_attack(wb, converter, *, bank, rows, col, read_count, rowbits):
     wb.regs.rowhammer_address1.write(converter.encode_dma(bank=bank, row=rows[1], col=col))
     wb.regs.rowhammer_enabled.write(1)
 
-    n = len(str(2**rowbits - 1))
+    row_w = len(str(2**rowbits - 1))
+    if niter is not None:
+        assert i is not None
+        iter_w = len(str(niter))
+
     def print_step(current_count):
-        print('  Rows = ({:{n}d},{:{n}d}), Count = {:6.2f}M / {:6.2f}M'.format(
-            *rows, current_count/1e6, read_count/1e6, n=n), end='  \r', flush=False)
+        if niter is not None:
+            iter_fmt = 'Iter {:{n}} / {:{n}}, '.format(i, niter, n=iter_w)
+        else:
+            iter_fmt = ''
+        s = '  {it}Rows = ({:{n}d},{:{n}d}), Count = {:5.2f}M / {:5.2f}M'.format(
+            *rows, current_count/1e6, read_count/1e6, n=row_w, it=iter_fmt)
+        print(s, end='  \r')
 
     while True:
         count = wb.regs.rowhammer_count.read()
@@ -149,9 +158,9 @@ def row_hammer(wb, *, row_pairs, column=512, bank=0, colbits=10, rowbits=14,
        return
 
     print('\nRunning row hammer attack ...')
-    for row1, row2 in row_pairs:
+    for i, (row1, row2) in enumerate(row_pairs):
         row_hammer_attack(wb, converter, bank=bank, rows=[row1, row2], col=column,
-                          read_count=read_count, rowbits=rowbits)
+                          read_count=read_count, rowbits=rowbits, i=i, niter=len(row_pairs))
 
     print('\nChecking tested memory ...')
     print('OK') if check() else print("ERROR")
