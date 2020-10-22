@@ -106,7 +106,8 @@ def patterns_random_per_row(rows, seed=42):
     return {row: rng.randint(0, 2**32 - 1) for row in rows}
 
 def row_hammer(wb, *, row_pairs, column=512, bank=0, colbits=10, rowbits=14,
-               read_count=10e6, pattern=patterns_alternating_per_row):
+               read_count=10e6, pattern=patterns_alternating_per_row,
+               verify_initial=True, verbose_errors=False, error_histogram=False):
     print('\nPreparing ...')
     # get all the rows we will be attacking
     rows = set()
@@ -137,25 +138,41 @@ def row_hammer(wb, *, row_pairs, column=512, bank=0, colbits=10, rowbits=14,
             print('.', end='', flush=True)
 
     def check():
-        ok = True
+        errors = {}
         for row, n, base in row_accesses():
-            errors = memcheck(wb, n, pattern=row_patterns[row], base=base)
-            for i, word in errors:
-                ok = False
-                addr = base + 4*i
-                bank, _row, col = converter.decode_bus(addr)
-                print("Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(
-                    addr, word, _row, col))
+            errors[row] = memcheck(wb, n, pattern=row_patterns[row], base=base)
             if row % 16 == 0:
                 print('.', end='', flush=True)
-        return ok
+        for row in errors:
+            if len(errors[row]) > 0:
+                print("Errors for row={:{n}}: {}".format(
+                    row, len(errors[row]), n=len(str(2**rowbits-1))))
+            if verbose_errors:
+                for i, word in errors[row]:
+                    addr = base + 4*i
+                    bank, _row, col = converter.decode_bus(addr)
+                    print("Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(
+                        addr, word, _row, col))
 
-    print('\nVerifying written memory ...')
-    if check():
-        print('OK')
-    else:
-       print("ERROR")
-       return
+        n_errors = sum(1 if len(e) > 0 else 0 for e in errors.values())
+        if n_errors > 0 and error_histogram:
+            from matplotlib import pyplot as plt
+            row_errors = [len(errors.get(row, [])) for row in rows]
+            plt.bar(rows, row_errors, width=1)
+            plt.grid(True)
+            plt.xlabel('row')
+            plt.ylabel('errors')
+            plt.show()
+
+        return n_errors == 0
+
+    if verify_initial:
+        print('\nVerifying written memory ...')
+        if check():
+            print('OK')
+        else:
+            print("ERROR")
+            return
 
     print('\nRunning row hammer attack ...')
     for i, (row1, row2) in enumerate(row_pairs):
@@ -226,7 +243,7 @@ if __name__ == "__main__":
         converter = DRAMAddressConverter()
         rows = [args.nrows, args.nrows + 1]
         row_hammer_attack(wb, converter, bank=args.bank, rows=rows, col=args.column,
-                          colbits=args.colbits, rowbits=args.rowbits, read_count=args.read_count)
+                          rowbits=args.rowbits, read_count=args.read_count)
     else:
         rng = random.Random(42)
         def rand_row():

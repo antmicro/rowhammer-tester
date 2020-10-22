@@ -72,7 +72,7 @@ def memspeed(wb, n, **kwargs):
 
     def memcheck_assert(*args, **kwargs):
         errors = memcheck(*args, **kwargs)
-        assert len(errors) == 0
+        assert len(errors) == 0, len(errors)
 
     measure(memfill, 'Write')
     measure(memcheck_assert, 'Read')
