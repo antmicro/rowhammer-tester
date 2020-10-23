@@ -3,7 +3,7 @@
 The aim of this project is to provide a platform for testing the [DRAM "Row Hammer" vulnerability](https://users.ece.cmu.edu/~yoonguk/papers/kim-isca14.pdf).
 
 
-## Setup
+## Archtecture
 
 The setup consists of FPGA gateware and application side software.
 The following diagram illustrates the general system architecture.
@@ -21,16 +21,37 @@ translating them into DFI commands and finally reconnects the DRAM controller.
 
 The application side consists of a set of Python scripts communicating with the FPGA using the LiteX EtherBone bridge.
 
-## Usage
+## Documentation
 
-Currently, scripts support one FPGA board: Arty-A7 (xc7a35t) and one simulation (based on Arty-A7).
+The gareware documentation for the `master` branch is hosted on Github Pages [here](https://antmicro.github.io/litex-rowhammer-tester/).
 
-### Preparations
+## Installing dependencies
 
-Download submodules and build helper software:
+Make sure you have Python 3 installed with the `venv` module, and the dependencies required to build
+[verilator](https://github.com/verilator/verilator) and [xc3sprog](https://github.com/matrix-io/xc3sprog).
+To install the dependencies on Ubuntu 18.04 LTS run:
+```
+apt install build-essential cmake flex bison libftdi-dev libjson-c-dev uml-utilities python3 python3-venv
+```
+
+Then run:
 ```
 make deps
 ```
+This will download and build all the dependencies and setup a [Python virtual environment](https://docs.python.org/3/library/venv.html) under `./venv` directory with all the required packages installed.
+
+To enter the environment you have to `source venv/bin/activate`
+and to build the bitstream you need to `source /PATH/TO/Vivado/VERSION/settings64.sh`.
+This can be automated with tools like [direnv](https://github.com/direnv/direnv) with the following `.envrc` file:
+```
+source venv/bin/activate
+source /PATH/TO/Vivado/VERSION/settings64.sh
+```
+
+All other commands assume that you run Python from the virtual environment with `vivado` in your `PATH`.
+## Usage
+
+Currently, scripts support one FPGA board: Arty-A7 (xc7a35t) and one simulation (based on Arty-A7).
 
 ### Build & upload gateware for Arty-A7
 
@@ -81,34 +102,22 @@ iptables -A OUTPUT -o arty -j ACCEPT
 
 TIP: By typing `make ARGS="--sim"` LiteX will generate only intermediate files and stop right after.
 
+### Build documentation
+
+The html documentation will be available in `build/documentation/html/index.html`:
+```
+make doc
+```
+
 ### Using scripts
 
-Some example scripts included in the repository:
-
-#### Leds
-
-Turn the leds on Arty-A7 board on, off, and on again:
+To use the scripts you first need to start `litex_server` in another terminal:
 ```
-make leds
+make srv
 ```
 
-### Register dump
+The you can use the provided scripts to control the FPGA:
 
-Dumps registers values located in uploaded design:
-```
-make dump_regs
-```
-
-### Basic memory test
-
-Configures memory and tests it:
-```
-make mem
-```
-
-### Test bulk write
-
-Fills whole memory with known pattern (`0xa5a5a5a5`):
-```
-make bulk
-```
+* `leds.py` - Turn the leds on Arty-A7 board on, off, and on again
+* `dump_regs.py` - Dump the values of all CSRs
+* `mem.py` - Memory initialzation and test (use `--no-init` to avoid initialzation, e.g. in simulation)

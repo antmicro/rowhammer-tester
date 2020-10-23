@@ -37,10 +37,10 @@ upload up:
 	./third_party/xc3sprog/xc3sprog -c nexys4 build/arty/gateware/arty.bit
 
 srv:
-	./litex/litex/tools/litex_server.py --udp --udp-ip=192.168.100.50
+	litex_server --udp --udp-ip=192.168.100.50
 
 #srv-uart:
-#	./litex/litex/tools/litex_server.py --uart --uart-port=/dev/ttyUSB2
+#	litex_server --uart --uart-port=/dev/ttyUSB2
 
 dump_regs:
 	sleep 0.2 && python3 dump_regs.py &
