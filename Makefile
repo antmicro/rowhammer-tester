@@ -4,6 +4,8 @@ VIVADO ?= /eda/xilinx/Vivado/2019.2/settings64.sh
 PYTHONPATH = $(PWD)/migen:$(PWD)/litex:$(PWD)/liteeth:$(PWD)/liteiclink:$(PWD)/litescope:$(PWD)/litedram
 export PYTHONPATH
 
+PATH := $(PWD)/venv/bin:$(PATH)
+
 all::
 	$(WRAPPER) python3 arty.py \
 		--cpu-type None \
@@ -79,10 +81,16 @@ clean::
 # Deps
 deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)
 	git submodule update --init
-	pip3 install --user pythondata-misc-tapcfg sphinx sphinxcontrib-wavedrom
 	(make --no-print-directory -C . \
 		verilator/image/bin/verilator \
-		xc3sprog/xc3sprog)
+		xc3sprog/xc3sprog \
+		python-deps)
+
+python-deps: venv/bin/activate
+	pip install -r requirements.txt
+
+venv/bin/activate:
+	python3 -m venv venv
 
 verilator/image/bin/verilator: verilator/configure.ac
 	(cd verilator && autoconf && \

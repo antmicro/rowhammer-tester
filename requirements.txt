@@ -1,0 +1,10 @@
+pythondata-misc-tapcfg
+sphinx
+sphinxcontrib-wavedrom
+
+-e ./migen
+-e ./litex
+-e ./litedram
+-e ./liteeth
+-e ./liteiclink
+-e ./litescope

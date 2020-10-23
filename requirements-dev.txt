@@ -1,0 +1,4 @@
+ipython
+ipdb
+matplotlib
+pyqt5
