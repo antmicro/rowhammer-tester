@@ -86,16 +86,16 @@ class RowHammer:
                               for col in range(2**self.colbits)]
         return addresses
 
-    def attack(self, row0, row1, read_count, progress_header=''):
+    def attack(self, row1, row2, read_count, progress_header=''):
         # Make sure that the row hammer module is in reset state
         self.wb.regs.rowhammer_enabled.write(0)
         self.wb.regs.rowhammer_count.read()  # clears the value
 
         # Configure the row hammer attacker
         addresses = [self.converter.encode_dma(bank=self.bank, col=self.column, row=r)
-                     for r in [row0, row1]]
-        self.wb.regs.rowhammer_address0.write(addresses[0])
-        self.wb.regs.rowhammer_address1.write(addresses[1])
+                     for r in [row1, row2]]
+        self.wb.regs.rowhammer_address1.write(addresses[0])
+        self.wb.regs.rowhammer_address2.write(addresses[1])
         self.wb.regs.rowhammer_enabled.write(1)
 
         row_strw = len(str(2**self.rowbits - 1))
@@ -103,7 +103,7 @@ class RowHammer:
         def progress(count):
             s = '  {}'.format(progress_header + ' ' if progress_header else '')
             s += 'Rows = ({:{n}d},{:{n}d}), Count = {:5.2f}M / {:5.2f}M'.format(
-                row0, row1, count/1e6, read_count/1e6, n=row_strw)
+                row1, row2, count/1e6, read_count/1e6, n=row_strw)
             print(s, end='  \r')
 
         while True:
@@ -178,9 +178,9 @@ class RowHammer:
                 return
 
         print('\nRunning row hammer attacks ...')
-        for i, (row0, row1) in enumerate(row_pairs):
+        for i, (row1, row2) in enumerate(row_pairs):
             s = 'Iter {:{n}} / {:{n}}'.format(i, len(row_pairs), n=len(str(len(row_pairs))))
-            self.attack(row0, row1, read_count=read_count, progress_header=s)
+            self.attack(row1, row2, read_count=read_count, progress_header=s)
 
         print('\nVerifying attacked memory ...')
         errors = self.check_errors(row_patterns, row_progress=row_progress)
