@@ -111,7 +111,7 @@ make doc
 
 ### Using scripts
 
-To use the scripts you first need to start `litex_server` in another terminal:
+To use the scripts located in `scripts/` directory you first need to start `litex_server` in another terminal:
 ```
 make srv
 ```
@@ -121,3 +121,4 @@ The you can use the provided scripts to control the FPGA:
 * `leds.py` - Turn the leds on Arty-A7 board on, off, and on again
 * `dump_regs.py` - Dump the values of all CSRs
 * `mem.py` - Memory initialzation and test (use `--no-init` to avoid initialzation, e.g. in simulation)
+* `rowhammer.py` - Perform a row hammer attack (use `--help` for script options)
