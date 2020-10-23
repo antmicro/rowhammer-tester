@@ -1,5 +1,6 @@
 import time
 
+import sdram_init as _sdram_init
 from sdram_init import *
 
 # ###########################################################################
@@ -17,7 +18,7 @@ def sdram_init(wb):
     # so this is hardcoded for now
     # update: Hacky but works
     control_cmds = []
-    with open('sdram_init.py', 'r') as f:
+    with open(_sdram_init.__file__, 'r') as f:
         n = 0
         while True:
             line = f.readline()
