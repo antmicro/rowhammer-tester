@@ -1,76 +1,33 @@
 PATH := $(PWD)/venv/bin:$(PATH)
+PATH := $(PWD)/bin::$(PATH)
+PATH := $(PWD)/third_party/verilator/image/bin:$(PATH)
 
-all::
-	$(WRAPPER) python3 arty.py \
-		--cpu-type None \
-		--no-timer --no-ctrl --no-uart \
-		\
-			--integrated-rom-size 0 \
-			--integrated-sram-size 0 \
-			--integrated-main-ram-size 0 \
-		\
-		--no-compile-software \
-		--no-compile-gateware \
-		--csr-csv csr.csv \
-		\
-		--ddrphy \
-		--etherbone \
-		--leds \
-		--bulk \
-		\
-		$(ARGS)
+all:
+	python gateware/arty.py
 
 FORCE:
 
 build: FORCE
-	( .  $(VIVADO) ; make --no-print-directory -C . ARGS="--build $(ARGS)" all )
+	python gateware/arty.py --build
 
 sim: FORCE
-	( PATH="$(PWD)/third_party/verilator/image/bin:$(PWD)/bin:$$PATH" \
-			make --no-print-directory -C . ARGS="--build --sim $(ARGS)" all )
+	python gateware/arty.py --build --sim
 
 sim-analyze: FORCE
-	( PATH="$(PWD)/third_party/verilator/image/bin:$(PWD)/bin:$$PATH" \
-			make --no-print-directory -C . WRAPPER="python3 sim_runner.py" ARGS="--build --sim $(ARGS)" all )
+	python scripts/sim_runner.py python gateware/arty.py --build --sim
 
-upload up:
+upload up: FORCE
 	./third_party/xc3sprog/xc3sprog -c nexys4 build/arty/gateware/arty.bit
 
-srv:
+srv: FORCE
 	litex_server --udp --udp-ip=192.168.100.50
 
-#srv-uart:
-#	litex_server --uart --uart-port=/dev/ttyUSB2
-
-dump_regs:
-	sleep 0.2 && python3 dump_regs.py &
-	make --no-print-directory -C . srv || true
-
-read_level:
-	sleep 0.2 && python3 read_level.py &
-	make --no-print-directory -C . srv || true
-
-analyzer:
-	python3 analyzer.py
-
-leds:
-	sleep 0.2 && python3 leds.py &
-	make --no-print-directory -C . srv || true
-
-mem:
-	sleep 0.2 && python3 mem.py &
-	make --no-print-directory -C . srv || true
-
-bulk:
-	sleep 0.2 && python3 bulk.py &
-	make --no-print-directory -C . srv || true
-
 doc: FORCE
-	( make --no-print-directory -C . all; \
-		python3 -m sphinx -b html build/documentation build/documentation/html )
+	python gateware/arty.py --docs
+	python -m sphinx -b html build/documentation build/documentation/html
 
 clean::
-	rm -rf build csr.csv analyzer.csv sdram_init.py
+	rm -rf build csr.csv analyzer.csv scripts/sdram_init.py
 
 # Deps
 deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)

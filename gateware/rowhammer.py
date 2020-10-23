@@ -3,7 +3,6 @@ from migen import *
 from litex.soc.interconnect.csr import CSRStatus, CSRStorage, AutoCSR
 from litex.soc.integration.doc import AutoDoc, ModuleDoc
 
-
 class RowHammerDMA(Module, AutoCSR, AutoDoc, ModuleDoc):
     """
     Row Hammer DMA attacker
