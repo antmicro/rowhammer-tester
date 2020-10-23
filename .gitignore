@@ -1,6 +1,7 @@
 *.swp
-image/
 __pycache__/
-build/
-csr.csv
-sdram_init.py
+/build/
+/csr.csv
+/scripts/sdram_init.py
+/venv/
+/prog/
