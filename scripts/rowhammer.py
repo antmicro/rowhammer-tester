@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import time
 import random
 from operator import or_
@@ -230,7 +232,12 @@ if __name__ == "__main__":
     parser.add_argument('--const-rows-pair', type=int, nargs=2, required=False, help='When using --row-pairs constant')
     parser.add_argument('--plot', action='store_true', help='Plot errors distribution') # requiers matplotlib and pyqt5 packages
     parser.add_argument('-v', '--verbose', action='store_true', help='Be more verbose')
+    parser.add_argument("--srv", action="store_true", help='Start LiteX server')
     args = parser.parse_args()
+
+    if args.srv:
+        from wrapper import litex_srv
+        litex_srv()
 
     from litex import RemoteClient
 
