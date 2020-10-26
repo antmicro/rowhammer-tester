@@ -1,6 +1,7 @@
 PATH := $(PWD)/venv/bin:$(PATH)
 PATH := $(PWD)/bin::$(PATH)
 PATH := $(PWD)/third_party/verilator/image/bin:$(PATH)
+export PATH
 
 all:
 	python gateware/arty.py
