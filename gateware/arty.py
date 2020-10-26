@@ -491,7 +491,7 @@ def main():
     soc.generate_sdram_phy_py_header(os.path.join(script_dir, "..", "scripts", "sdram_init.py"))
 
     builder_kwargs = builder_argdict(args)
-    builder_kwargs["csr_csv"] = os.path.join(script_dir, "..", "csr.csv")
+    builder_kwargs["csr_csv"] = os.path.join(script_dir, "..", "scripts", "csr.csv")
     builder = Builder(soc, **builder_kwargs)
     build_kwargs = vivado_build_argdict(args)
 

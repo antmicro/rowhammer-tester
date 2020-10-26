@@ -28,7 +28,7 @@ doc: FORCE
 	python -m sphinx -b html build/documentation build/documentation/html
 
 clean::
-	rm -rf build csr.csv analyzer.csv scripts/sdram_init.py
+	rm -rf build scripts/csr.csv analyzer.csv scripts/sdram_init.py
 
 # Deps
 deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)
