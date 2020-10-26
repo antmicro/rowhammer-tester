@@ -1,6 +1,5 @@
 import time
 import random
-from math import ceil
 from operator import or_
 from functools import reduce
 
@@ -119,8 +118,6 @@ class RowHammer:
     def row_access_iterator(self, burst=16):
         for row, addresses in self.addresses_per_row.items():
             n = (max(addresses) - min(addresses)) // 4
-            # extend to whole bursts
-            n = ceil(n / burst) * burst
             base_addr = addresses[0]
             yield row, n, base_addr
 

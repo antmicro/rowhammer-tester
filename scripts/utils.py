@@ -54,7 +54,7 @@ def memread(wb, n, base=0x40000000, burst=16):
     data = []
     for i in range(0, n, burst):
         data += wb.read(base + 4*i, burst)
-    return data
+    return data[:n]
 
 def memfill(wb, n, pattern=0xaaaaaaaa, **kwargs):
     memwrite(wb, [pattern] * n, **kwargs)
