@@ -126,7 +126,7 @@ class RowHammer:
     def check_errors(self, row_patterns, row_progress=16):
         row_errors = {}
         for row, n, base in self.row_access_iterator():
-            row_errors[row] = memcheck(wb, n, pattern=row_patterns[row], base=base)
+            row_errors[row] = memcheck(wb, n, pattern=row_patterns[row], base=base, burst=255)
             if row % row_progress == 0:
                 print('.', end='', flush=True)
         return row_errors
@@ -162,7 +162,7 @@ class RowHammer:
 
         print('\nFilling memory with data ...')
         for row, n, base in self.row_access_iterator():
-            memfill(wb, n, pattern=row_patterns[row], base=base)
+            memfill(wb, n, pattern=row_patterns[row], base=base, burst=255)
             if row % row_progress == 0:
                 print('.', end='', flush=True)
 

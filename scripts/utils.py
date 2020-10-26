@@ -46,11 +46,11 @@ def sdram_init(wb):
 
 # ###########################################################################
 
-def memwrite(wb, data, base=0x40000000, burst=16):
+def memwrite(wb, data, base=0x40000000, burst=0xff):
     for i in range(0, len(data), burst):
         wb.write(base + 4*i, data[i:i+burst])
 
-def memread(wb, n, base=0x40000000, burst=16):
+def memread(wb, n, base=0x40000000, burst=0xff):
     data = []
     for i in range(0, n, burst):
         data += wb.read(base + 4*i, burst)
@@ -67,16 +67,15 @@ def memcheck(wb, n, pattern=0xaaaaaaaa, **kwargs):
 def memspeed(wb, n, **kwargs):
     def measure(fun, name):
         start = time.time()
-        fun(wb, n, **kwargs)
+        ret = fun(wb, n, **kwargs)
         elapsed = time.time() - start
-        print('{:5} speed: {:6.2f} KB/s ({:.1f} sec)'.format(name, (n//4)/elapsed / 1e3, elapsed))
-
-    def memcheck_assert(*args, **kwargs):
-        errors = memcheck(*args, **kwargs)
-        assert len(errors) == 0, len(errors)
+        print('{:5} speed: {:6.2f} KB/s ({:.1f} sec)'.format(name, (n*4)/elapsed / 1e3, elapsed))
+        return ret
 
     measure(memfill, 'Write')
-    measure(memcheck_assert, 'Read')
+    data = measure(memread, 'Read')
+    errors = [(i, w) for i, w in enumerate(data) if w != kwargs.get('pattern', 0xaaaaaaaa)]
+    assert len(errors) == 0, len(errors)
 
 def memdump(data, base=0x40000000, chunk_len=16):
     def tochar(val):
