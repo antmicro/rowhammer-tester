@@ -215,7 +215,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('nrows', type=int, help='Number of rows to consider')
+    parser.add_argument('--nrows', type=int, default=0, help='Number of rows to consider')
     parser.add_argument('--bank', type=int, default=0, help='Bank number')
     parser.add_argument('--column', type=int, default=512, help='Column to read from')
     parser.add_argument('--colbits', type=int, default=10, help='Number of column bits')  # FIXME: take from our design
@@ -233,7 +233,16 @@ if __name__ == "__main__":
     parser.add_argument('--plot', action='store_true', help='Plot errors distribution') # requiers matplotlib and pyqt5 packages
     parser.add_argument('-v', '--verbose', action='store_true', help='Be more verbose')
     parser.add_argument("--srv", action="store_true", help='Start LiteX server')
+    parser.add_argument("--experiment-no", type=int, default=0, help='Run preconfigured experiment #no')
     args = parser.parse_args()
+
+    if args.experiment_no == 1:
+        args.nrows = 512
+        args.read_count = 15e6
+        args.pattern = '01_in_row'
+        args.row_pairs = 'const'
+        args.const_rows_pair = 88, 99
+        args.no_refresh = True
 
     if args.srv:
         from wrapper import litex_srv
