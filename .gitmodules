@@ -1,26 +1,26 @@
 [submodule "litedram"]
-	path = litedram
+	path = third_party/litedram
 	url = https://github.com/enjoy-digital/litedram.git
 [submodule "liteeth"]
-	path = liteeth
+	path = third_party/liteeth
 	url = https://github.com/enjoy-digital/liteeth.git
 [submodule "liteiclink"]
-	path = liteiclink
+	path = third_party/liteiclink
 	url = https://github.com/enjoy-digital/liteiclink.git
 [submodule "litescope"]
-	path = litescope
+	path = third_party/litescope
 	url = https://github.com/enjoy-digital/litescope.git
 [submodule "litex"]
-	path = litex
+	path = third_party/litex
 	url = https://github.com/enjoy-digital/litex.git
 [submodule "migen"]
-	path = migen
+	path = third_party/migen
 	url = https://github.com/m-labs/migen
 [submodule "verilator"]
-	path = verilator
+	path = third_party/verilator
 	url = https://github.com/verilator/verilator.git
 	ignore = dirty
 [submodule "xc3sprog"]
-	path = xc3sprog
+	path = third_party/xc3sprog
 	url = https://github.com/matrix-io/xc3sprog.git
 	ignore = dirty

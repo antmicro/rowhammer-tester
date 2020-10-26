@@ -1,0 +1,11 @@
+pythondata-misc-tapcfg
+sphinx
+sphinxcontrib-wavedrom
+
+# use editable mode
+-e third_party/migen
+-e third_party/litex
+-e third_party/litedram
+-e third_party/liteeth
+-e third_party/liteiclink
+-e third_party/litescope
