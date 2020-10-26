@@ -53,3 +53,5 @@ third_party/xc3sprog/xc3sprog: third_party/xc3sprog/CMakeLists.txt
 	(cd third_party/xc3sprog && patch -Np1 < ../xc3sprog.patch && \
 		cmake . && make -j`nproc`)
 
+env: venv/bin/activate
+	@env bash --init-file "$(PWD)/venv/bin/activate"
