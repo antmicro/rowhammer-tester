@@ -46,11 +46,11 @@ def sdram_init(wb):
 
 # ###########################################################################
 
-def memwrite(wb, data, base=0x40000000, burst=16):
+def memwrite(wb, data, base=0x40000000, burst=0xff):
     for i in range(0, len(data), burst):
         wb.write(base + 4*i, data[i:i+burst])
 
-def memread(wb, n, base=0x40000000, burst=16):
+def memread(wb, n, base=0x40000000, burst=0xff):
     data = []
     for i in range(0, n, burst):
         data += wb.read(base + 4*i, burst)
