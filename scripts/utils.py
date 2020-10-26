@@ -67,16 +67,15 @@ def memcheck(wb, n, pattern=0xaaaaaaaa, **kwargs):
 def memspeed(wb, n, **kwargs):
     def measure(fun, name):
         start = time.time()
-        fun(wb, n, **kwargs)
+        ret = fun(wb, n, **kwargs)
         elapsed = time.time() - start
-        print('{:5} speed: {:6.2f} KB/s ({:.1f} sec)'.format(name, (n//4)/elapsed / 1e3, elapsed))
-
-    def memcheck_assert(*args, **kwargs):
-        errors = memcheck(*args, **kwargs)
-        assert len(errors) == 0, len(errors)
+        print('{:5} speed: {:6.2f} KB/s ({:.1f} sec)'.format(name, (n*4)/elapsed / 1e3, elapsed))
+        return ret
 
     measure(memfill, 'Write')
-    measure(memcheck_assert, 'Read')
+    data = measure(memread, 'Read')
+    errors = [(i, w) for i, w in enumerate(data) if w != kwargs.get('pattern', 0xaaaaaaaa)]
+    assert len(errors) == 0, len(errors)
 
 def memdump(data, base=0x40000000, chunk_len=16):
     def tochar(val):
