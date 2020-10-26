@@ -242,39 +242,12 @@ class BaseSoC(SoCCore):
         if args.sim:
             self.comb += platform.trace.eq(1)
 
-        # Bulk -------------------------------------------------------------------------------------
+        # Rowhammer --------------------------------------------------------------------------------
         from litedram.frontend.dma import LiteDRAMDMAReader, LiteDRAMDMAWriter
 
         self.submodules.rowhammer_dma = LiteDRAMDMAReader(self.sdram.crossbar.get_port())
         self.submodules.rowhammer = RowHammerDMA(self.rowhammer_dma)
         self.add_csr("rowhammer")
-
-        class BulkWrite(Module, AutoCSR):
-            def __init__(self, dma, bankbits, colbits):
-                self.enabled  = CSRStorage()
-                self.address  = CSRStorage(size=(32*1))
-                self.dataword = CSRStorage(size=(32*4))
-                self.count    = CSRStorage(size=(32*1))
-                self.reset    = CSRStorage()
-                self.done     = CSRStatus()
-
-                cnt = Signal(32*1)
-                self.sync += If(self.enabled.storage, If(cnt < self.count.storage, If(dma.sink.ready, cnt.eq(cnt + 1))))
-                self.sync += If(self.reset.storage, cnt.eq(0))
-                self.sync += self.done.status.eq(self.count.storage == cnt)
-
-                self.comb += [
-                    dma.sink.address.eq(self.address.storage + cnt),
-                    dma.sink.data.eq(self.dataword.storage),
-                    dma.sink.valid.eq(self.enabled.storage),
-                ]
-
-        port = self.sdram.crossbar.get_port()
-        self.submodules.bulk_wr_dma   = LiteDRAMDMAWriter(port)
-        self.submodules.bulk_wr       = BulkWrite(self.bulk_wr_dma,
-                                                  bankbits=self.sdram.controller.settings.geom.bankbits,
-                                                  colbits=self.sdram.controller.settings.geom.colbits)
-        self.add_csr("bulk_wr")
 
         # Bist -------------------------------------------------------------------------------------
         if not args.no_memory_bist:
