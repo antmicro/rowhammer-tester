@@ -28,7 +28,7 @@ jobs:
 
       - name: Build Sphinx documentation
         run: |
-          make doc
+          make python-deps doc
           touch build/documentation/html/.nojekyll
 
       - name: Deploy gh-pages
