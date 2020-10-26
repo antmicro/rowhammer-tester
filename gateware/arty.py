@@ -22,6 +22,7 @@ from litex.soc.integration.soc_core import *
 from litex.soc.integration.builder import *
 from litex.soc.cores.led import LedChaser
 from litex.soc import doc
+from litex.soc.integration.doc import AutoDoc, ModuleDoc
 
 from litedram.modules import MT41K128M16
 from litedram.phy import s7ddrphy
@@ -174,8 +175,16 @@ class BaseSoC(SoCCore):
                 verbosity = 3,
             )
 
+        class ControllerDynamicSettings(Module, AutoCSR, AutoDoc):
+            """Allows to change LiteDRAMController behaviour at runtime"""
+            def __init__(self):
+                self.refresh = CSRStorage(reset=1, description="Enable/disable Refresh commands sending")
+
+        self.submodules.controller_settings = ControllerDynamicSettings()
+        self.add_csr("controller_settings")
         controller_settings = ControllerSettings()
-        controller_settings.with_auto_precharge = False
+        controller_settings.with_auto_precharge = True
+        controller_settings.with_refresh = self.controller_settings.refresh.storage
 
         self.add_csr("ddrphy")
         self.add_sdram("sdram",

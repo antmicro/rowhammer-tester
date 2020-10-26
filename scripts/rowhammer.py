@@ -67,8 +67,8 @@ class DRAMAddressConverter:
 ################################################################################
 
 class RowHammer:
-    def __init__(self, wb, *, nrows, rowbits, colbits, column, bank, rows_start=0,
-                 verbose=False, plot=False):
+    def __init__(self, wb, *, nrows, rowbits, colbits, column, bank,
+                 rows_start=0, no_refresh=False, verbose=False, plot=False):
         for name, val in locals().items():
             setattr(self, name, val)
         self.converter = DRAMAddressConverter(colbits=colbits, rowbits=rowbits)
@@ -174,10 +174,18 @@ class RowHammer:
                 self.display_errors(errors)
                 return
 
+        if self.no_refresh:
+            print('\nDisabling refresh ...')
+            wb.regs.controller_settings_refresh.write(0)
+
         print('\nRunning row hammer attacks ...')
         for i, (row1, row2) in enumerate(row_pairs):
             s = 'Iter {:{n}} / {:{n}}'.format(i, len(row_pairs), n=len(str(len(row_pairs))))
             self.attack(row1, row2, read_count=read_count, progress_header=s)
+
+        if self.no_refresh:
+            print('\nReenabling refresh ...')
+            wb.regs.controller_settings_refresh.write(1)
 
         print('\nVerifying attacked memory ...')
         errors = self.check_errors(row_patterns, row_progress=row_progress)
@@ -213,6 +221,7 @@ if __name__ == "__main__":
     parser.add_argument('--start-row', type=int, default=0, help='Starting row (range = (start, start+nrows))')
     parser.add_argument('--read_count', type=float, default=10e6, help='How many reads to perform for single address pair')
     parser.add_argument('--hammer-only', nargs=2, type=int, help='Run only the row hammer attack')
+    parser.add_argument('--no-refresh', action='store_true', help='Disable refresh commands during the attacks')
     parser.add_argument('--pattern', default='01_per_row',
                         choices=['all_0', 'all_1', '01_in_row', '01_per_row', 'rand_per_row'],
                         help='Pattern written to DRAM before running attacks')
@@ -229,14 +238,15 @@ if __name__ == "__main__":
     wb.open()
 
     row_hammer = RowHammer(wb,
-        nrows=args.nrows,
-        rowbits=args.rowbits,
-        colbits=args.colbits,
-        column=args.column,
-        bank=args.bank,
-        rows_start=args.start_row,
-        verbose=args.verbose,
-        plot=args.plot,
+        nrows      = args.nrows,
+        rowbits    = args.rowbits,
+        colbits    = args.colbits,
+        column     = args.column,
+        bank       = args.bank,
+        rows_start = args.start_row,
+        verbose    = args.verbose,
+        plot       = args.plot,
+        no_refresh = args.no_refresh,
     )
 
     if args.hammer_only:
