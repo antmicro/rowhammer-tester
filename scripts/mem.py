@@ -92,6 +92,10 @@ if __name__ == "__main__":
     import sys
     from litex import RemoteClient
 
+    if '--srv' in sys.argv[1:]:
+        from wrapper import litex_srv
+        litex_srv()
+
     wb = RemoteClient()
     wb.open()
 

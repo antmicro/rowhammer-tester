@@ -52,3 +52,6 @@ third_party/verilator/image/bin/verilator: third_party/verilator/configure.ac
 third_party/xc3sprog/xc3sprog: third_party/xc3sprog/CMakeLists.txt
 	(cd third_party/xc3sprog && patch -Np1 < ../xc3sprog.patch && \
 		cmake . && make -j`nproc`)
+
+mem-init:
+	(cd scripts && python3 mem.py --srv)
