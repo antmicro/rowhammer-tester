@@ -1,8 +1,10 @@
 from enum import IntEnum, unique
+from functools import reduce
+from operator import or_
 
 from migen import *
 
-from litex.soc.interconnect.csr import CSR, CSRStatus, CSRStorage, AutoCSR
+from litex.soc.interconnect.csr import CSR, CSRStatus, CSRStorage, CSRField, AutoCSR
 from litex.soc.integration.doc import AutoDoc, ModuleDoc
 
 @unique
@@ -134,35 +136,68 @@ class Encoder:
         address |= (rowcol) << self.bankbits
         return address
 
+@ResetInserter()
+class Scratchpad(Module):
+    """
+    Scratchpad memory filled with data from subsequent READ commands
+    """
+    def __init__(self, mem, dfi):
+        assert mem.width == len(dfi.p0.rddata) * len(dfi.phases)
+
+        self.counter  = Signal(max=mem.depth - 1)
+        self.overflow = Signal()
+
+        wr_port = mem.get_port(write_capable=True)
+        self.specials += wr_port
+
+        self.comb += [
+            wr_port.adr.eq(self.counter),
+            wr_port.dat_w.eq(Cat(*[p.rddata for p in dfi.phases])),
+            wr_port.we.eq(reduce(or_, [p.rddata_valid for p in dfi.phases])),
+        ]
+
+        self.sync += [
+            If(wr_port.we,
+                If(self.counter == mem.depth - 1,
+                    self.overflow.eq(1),
+                    self.counter.eq(0),
+                ).Else(
+                    self.counter.eq(self.counter + 1)
+                )
+            )
+        ]
 
 class PayloadExecutor(Module, AutoCSR, AutoDoc):
-    def __init__(self, mem, dfi, dfi_sel, **kwargs):
+    def __init__(self, mem_payload, mem_scratchpad, dfi, dfi_sel, **kwargs):
         self.description = ModuleDoc("""
         Executes the DRAM payload from memory
 
         {}
         """.format(Decoder.__doc__))
 
-        self.run             = Signal()
-        self.ready           = Signal()
-        self.program_counter = Signal(max=mem.depth - 1)
-        self.loop_counter    = Signal(Decoder.LOOP_COUNT)
-        self.idle_counter    = Signal(Decoder.TIMESLICE)
+        self.start               = Signal()
+        self.ready               = Signal()
+        self.program_counter     = Signal(max=mem_payload.depth - 1)
+        self.loop_counter        = Signal(Decoder.LOOP_COUNT)
+        self.idle_counter        = Signal(Decoder.TIMESLICE)
+
+        # Scratchpad
+        self.submodules.scratchpad = Scratchpad(mem_scratchpad, dfi)
 
         # Fetcher
         # simple async reads, later we would probably want 1 cycle prefetch?
         instruction = Signal(Decoder.INSTRUCTION)
-        mem_port = mem.get_port(write_capable=False, async_read=True)
-        self.specials += mem_port
+        payload_port = mem_payload.get_port(write_capable=False, async_read=True)
+        self.specials += payload_port
         self.comb += [
-            mem_port.adr.eq(self.program_counter),
-            instruction.eq(mem_port.dat_r),
+            payload_port.adr.eq(self.program_counter),
+            instruction.eq(payload_port.dat_r),
         ]
 
         # Decoder
         self.submodules.decoder = decoder = Decoder(instruction, **kwargs)
-        assert len(self.loop_counter) == len(decoder.loop_count)
 
+        # Executor
         dfi_selected = [
             dfi_sel.eq(1),
             self.ready.eq(0),
@@ -172,12 +207,12 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             *[p.reset_n.eq(1) for p in dfi.phases],
         ]
 
-        # Executor
         self.submodules.fsm = fsm = FSM()
         fsm.act("READY",
             dfi_sel.eq(0),
             self.ready.eq(1),
-            If(self.run,
+            self.scratchpad.reset.eq(self.start),
+            If(self.start,
                 NextState("RUN"),
                 NextValue(self.program_counter, 0),
             )
@@ -185,7 +220,7 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         fsm.act("RUN",
             *dfi_selected,
             # Always execute the whole program
-            If(self.program_counter == mem.depth - 1,
+            If(self.program_counter == mem_payload.depth - 1,
                 NextState("READY")
             ),
             # Execute instruction
@@ -243,16 +278,21 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             )
         )
 
-        # TODO: Reader
-        # If dfi.phase.rddata_valid then write to scratchpad and increment counter
-
     def add_csrs(self):
-        self._run = CSR()
+        self._start = CSR()
         # CSR does not take a description parameter so we must set it manually
-        self._run.description = "Writing to this register initializes payload execution"
-        self._ready = CSRStatus(description="Indicates that the executor is not running")
+        self._start.description = "Writing to this register initializes payload execution"
+        self._status = CSRStatus(fields=[
+            CSRField("ready", description="Indicates that the executor is not running"),
+            CSRField("overflow", description="Indicates the scratchpad memory address counter"
+                     " has overflown due to the number of READ commands sent during execution"),
+        ], description="Payload executor status register")
+        self._read_count = CSRStatus(len(self.scratchpad.counter), description="Number of data"
+                                     " from READ commands that is stored in the scratchpad memory")
 
         self.comb += [
-            self.run.eq(self._run.re),
-            self._ready.status.eq(self.ready),
+            self.start.eq(self._start.re),
+            self._status.fields.ready.eq(self.ready),
+            self._status.fields.overflow.eq(self.scratchpad.overflow),
+            self._read_count.status.eq(self.scratchpad.counter),
         ]

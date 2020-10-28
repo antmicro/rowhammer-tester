@@ -263,19 +263,21 @@ class BaseSoC(SoCCore):
         if not args.no_memory_bist:
             from litedram.frontend.bist import LiteDRAMBISTGenerator, LiteDRAMBISTChecker
 
-            def add_xram(self, name, origin, mem):
+            def add_xram(self, name, origin, mem, mode='rw'):
                 from litex.soc.interconnect import wishbone
                 from litex.soc.integration.soc import SoCRegion
+                ram     = wishbone.SRAM(mem, bus=wishbone.Interface(data_width=mem.width),
+                                        read_only='w' not in mode)
                 ram_bus = wishbone.Interface(data_width=self.bus.data_width)
-                ram     = wishbone.SRAM(mem, bus=ram_bus)
-                self.bus.add_slave(name, ram.bus, SoCRegion(origin=origin, size=mem.width * mem.depth, mode='rw'))
+                self.submodules += wishbone.Converter(ram_bus, ram.bus)
+                region = SoCRegion(origin=origin, size=mem.width * mem.depth, mode=mode)
+                self.bus.add_slave(name, ram_bus, region)
                 self.check_if_exists(name)
                 self.logger.info("RAM {} {} {}.".format(
                     colorer(name),
                     colorer("added", color="green"),
                     self.bus.regions[name]))
                 setattr(self.submodules, name, ram)
-                return
 
             # ------------------------------ writer ------------------------------------
             memory_w0  = Memory(32, 1024)
@@ -458,17 +460,26 @@ class BaseSoC(SoCCore):
         # Payload executor -------------------------------------------------------------------------
         if not args.no_payload_executor:
             # TODO: disconnect bus during payload execution
-            payload_mem  = Memory(32, 4 * 2**10)
-            self.specials += payload_mem
+
+            phy_settings = self.sdram.controller.settings.phy
+            scratchpad_width = phy_settings.dfi_databits * phy_settings.nphases
+            scratchpad_size  = 2**10
+
+            payload_mem    = Memory(32, 4 * 2**10)
+            scratchpad_mem = Memory(scratchpad_width, scratchpad_size // (scratchpad_width//8))
+            self.specials += payload_mem, scratchpad_mem
+
             add_xram(self, name='payload', mem=payload_mem, origin=0x35000000)
+            add_xram(self, name='scratchpad', mem=scratchpad_mem, origin=0x36000000, mode='r')
 
             self.submodules.payload_executor = PayloadExecutor(
-                mem      = payload_mem,
-                dfi      = self.sdram.dfii.ext_dfi,
-                dfi_sel  = self.sdram.dfii.ext_dfi_sel,
-                bankbits = self.sdram.controller.settings.geom.bankbits,
-                rowbits  = self.sdram.controller.settings.geom.rowbits,
-                colbits  = self.sdram.controller.settings.geom.colbits,
+                mem_payload    = payload_mem,
+                mem_scratchpad = scratchpad_mem,
+                dfi            = self.sdram.dfii.ext_dfi,
+                dfi_sel        = self.sdram.dfii.ext_dfi_sel,
+                bankbits       = self.sdram.controller.settings.geom.bankbits,
+                rowbits        = self.sdram.controller.settings.geom.rowbits,
+                colbits        = self.sdram.controller.settings.geom.colbits,
             )
             self.payload_executor.add_csrs()
             self.add_csr('payload_executor')
