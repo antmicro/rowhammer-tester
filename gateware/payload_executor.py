@@ -48,9 +48,10 @@ class Decoder(Module):
 
     Instruction format::
 
-                 LSB                       MSB
-        others:  OP_CODE | TIMESLICE | ADDRESS
-        loop:    OP_CODE | COUNT     | JUMP
+              LSB                       MSB
+        dfi:  OP_CODE | TIMESLICE | ADDRESS
+        noop: OP_CODE | TIMESLICE_NOOP
+        loop: OP_CODE | COUNT     | JUMP
 
     Where ADDRESS depends on the DFI command and is one of::
 
@@ -59,22 +60,24 @@ class Decoder(Module):
         RANK | BANK | ROW
     """.format(op_codes=OpCode.table())
 
-    INSTRUCTION = 32
-    OP_CODE     = 3
-    TIMESLICE   = 10
-    ADDRESS     = 19
-    LOOP_COUNT  = 15
-    LOOP_JUMP   = 14
+    INSTRUCTION    = 32
+    OP_CODE        = 3
+    TIMESLICE      = 7
+    ADDRESS        = 22
+    TIMESLICE_NOOP = TIMESLICE + ADDRESS
+    LOOP_COUNT     = 15
+    LOOP_JUMP      = 14
 
     def __init__(self, instruction, *, rankbits, bankbits, rowbits, colbits):
         assert len(instruction) == self.INSTRUCTION
+        assert self.OP_CODE + self.TIMESLICE_NOOP == self.INSTRUCTION
         assert self.OP_CODE + self.TIMESLICE + self.ADDRESS == self.INSTRUCTION
         assert self.OP_CODE + self.LOOP_COUNT + self.LOOP_JUMP == self.INSTRUCTION
         assert rankbits + bankbits + max(rowbits, colbits) <= self.ADDRESS
 
         self.op_code = Signal(self.OP_CODE)
         # DFI-mappable instructions
-        self.timeslice   = Signal(self.TIMESLICE)
+        self.timeslice   = Signal(self.TIMESLICE_NOOP)
         self.address     = Signal(self.ADDRESS)  # TODO: NOOP could resuse it as timeslice
         self.cas         = Signal()
         self.ras         = Signal()
@@ -88,7 +91,11 @@ class Decoder(Module):
         tail = instruction[self.OP_CODE:]
         self.comb += [
             self.op_code.eq(instruction[:self.OP_CODE]),
-            self.timeslice.eq(tail[:self.TIMESLICE]),
+            If(self.op_code == OpCode.NOOP,
+                self.timeslice.eq(tail[:self.TIMESLICE_NOOP]),
+            ).Else(
+                self.timeslice.eq(tail[:self.TIMESLICE]),
+            ),
             self.address.eq(tail[self.TIMESLICE:]),
             self.loop_count.eq(tail[:self.LOOP_COUNT]),
             self.loop_jump.eq(tail[self.LOOP_COUNT:]),
@@ -105,7 +112,7 @@ class Decoder(Module):
 
 class Encoder:
     """Helper for writing payloads"""
-    def __init__(self, nranks, bankbits):
+    def __init__(self, bankbits, nranks=1):
         self.nranks = nranks
         self.bankbits = bankbits
 
@@ -115,6 +122,11 @@ class Encoder:
                 (Decoder.OP_CODE,    op_code),
                 (Decoder.LOOP_COUNT, kwargs['count']),
                 (Decoder.LOOP_JUMP,  kwargs['jump']),
+            ]
+        elif op_code == OpCode.NOOP:
+            parts = [
+                (Decoder.OP_CODE,        op_code),
+                (Decoder.TIMESLICE_NOOP, kwargs['timeslice']),
             ]
         else:
             parts = [
@@ -140,7 +152,7 @@ class Encoder:
             rowcol = 0
         address = bank & (2**self.bankbits - 1)
         address |= (rowcol) << self.bankbits
-        if self.nranks > 0:
+        if self.nranks > 1:
             address <<= log2_int(self.nranks)
             address |= rank
         return address
@@ -189,7 +201,7 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         self.ready               = Signal()
         self.program_counter     = Signal(max=mem_payload.depth - 1)
         self.loop_counter        = Signal(Decoder.LOOP_COUNT)
-        self.idle_counter        = Signal(Decoder.TIMESLICE)
+        self.idle_counter        = Signal(Decoder.TIMESLICE_NOOP)
 
         # Scratchpad
         self.submodules.scratchpad = Scratchpad(mem_scratchpad, dfi)

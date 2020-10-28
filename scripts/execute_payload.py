@@ -44,6 +44,7 @@ def execute(wb):
     # Write some data to the column we are reading to check that scratchpad gets filled
     converter = DRAMAddressConverter()
     wb.write(converter.encode_bus(bank=3, row=100, col=200), [0xbaadc0de])
+    time.sleep(0.01)
 
     print('Transferring the payload ...')
     # for i, instr in enumerate(program):
