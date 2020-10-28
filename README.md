@@ -21,10 +21,6 @@ translating them into DFI commands and finally reconnects the DRAM controller.
 
 The application side consists of a set of Python scripts communicating with the FPGA using the LiteX EtherBone bridge.
 
-## Documentation
-
-The gareware documentation for the `master` branch is hosted on Github Pages [here](https://antmicro.github.io/litex-rowhammer-tester/).
-
 ## Installing dependencies
 
 Make sure you have Python 3 installed with the `venv` module, and the dependencies required to build
@@ -49,28 +45,37 @@ source /PATH/TO/Vivado/VERSION/settings64.sh
 ```
 
 All other commands assume that you run Python from the virtual environment with `vivado` in your `PATH`.
+
+> Some options to the scripts may require additional Python dependencies. To install them run `pip install -r requirements-dev.txt` inside the virtual environment.
+
+## Documentation
+
+The gareware documentation for the `master` branch is hosted on Github Pages [here](https://antmicro.github.io/litex-rowhammer-tester/).
+To build the documentation from sources, use:
+```
+make doc
+```
+The documentation will be located in `build/documentation/html/index.html`.
+
 ## Usage
 
 Currently, scripts support one FPGA board: Arty-A7 (xc7a35t) and one simulation (based on Arty-A7).
 
-### Build & upload gateware for Arty-A7
+### Arty-A7 board
 
-Generate bitstream for FPGA:
-
+Connect the board USB and Ethernet cables to your computer, then configure the network. The board IP address will be `192.168.100.50` (so you could e.g. use `192.168.100.2/24`).
+Then generate the FPGA bitstream:
 ```
 make build
 ```
-
-the results will be located in directory: `build/arty/gateware/arty.bit`
-
-Upload gateware to Arty-A7:
+the results will be located in directory: `build/arty/gateware/arty.bit`. To upload it use:
 ```
 make upload
 ```
 
-TIP: By typing `make` (without `build`) LiteX will generate build files without invoking Vivado.
+> TIP: By typing `make` (without `build`) LiteX will generate build files without invoking Vivado.
 
-### Build & run simulation based on Arty-A7
+### Arty-A7 simulation
 
 Generate intermediate files & run simulation:
 
@@ -102,23 +107,38 @@ iptables -A OUTPUT -o arty -j ACCEPT
 
 TIP: By typing `make ARGS="--sim"` LiteX will generate only intermediate files and stop right after.
 
-### Build documentation
+### Controlling the board
 
-The html documentation will be available in `build/documentation/html/index.html`:
-```
-make doc
-```
-
-### Using scripts
-
-To use the scripts located in `scripts/` directory you first need to start `litex_server` in another terminal:
+Board control is the same for both simulation and hardware runs.
+In order to communicate with the board via EtherBone, the `litex_server` needs to be started with the following command:
 ```
 make srv
 ```
+The build files (CSRs address list) must be up to date. It can be re-generated with `make` without arguments.
 
-The you can use the provided scripts to control the FPGA:
+Then in another terminal you can use the Python scripts provided, e.g:
+```
+cd scripts/
+python leds.py  # stop with Ctrl-C
+```
+
+Some scripts are simple and do not take command line arguments, others will provide help via `SCRIPT.PY --help`.
+
+#### Examples
+
+Simple scripts:
 
 * `leds.py` - Turn the leds on Arty-A7 board on, off, and on again
 * `dump_regs.py` - Dump the values of all CSRs
-* `mem.py` - Memory initialzation and test (use `--no-init` to avoid initialzation, e.g. in simulation)
-* `rowhammer.py` - Perform a row hammer attack (use `--help` for script options)
+
+Before the DRAM memory can be used the initialization and leveling must be performed. To do this run:
+```
+python mem.py
+```
+
+> NOTE: when running in simulation running the read leveling will fail. To avoid it use `python mem.py --no-init`
+
+To perform a row hammer attack sequence use the `rowhammer.py` script (see `--help`), e.g:
+```
+python rowhammer.py 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --plot
+```
