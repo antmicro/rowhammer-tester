@@ -53,8 +53,8 @@ def memwrite(wb, data, base=0x40000000, burst=0xff):
 def memread(wb, n, base=0x40000000, burst=0xff):
     data = []
     for i in range(0, n, burst):
-        data += wb.read(base + 4*i, burst)
-    return data[:n]
+        data += wb.read(base + 4*i, min(burst, n - i))
+    return data
 
 def memfill(wb, n, pattern=0xaaaaaaaa, **kwargs):
     memwrite(wb, [pattern] * n, **kwargs)
