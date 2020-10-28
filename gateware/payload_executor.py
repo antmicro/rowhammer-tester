@@ -3,6 +3,7 @@ from functools import reduce
 from operator import or_
 
 from migen import *
+from migen.genlib.coding import Decoder as OneHotDecoder
 
 from litex.soc.interconnect.csr import CSR, CSRStatus, CSRStorage, CSRField, AutoCSR
 from litex.soc.integration.doc import AutoDoc, ModuleDoc
@@ -53,9 +54,9 @@ class Decoder(Module):
 
     Where ADDRESS depends on the DFI command and is one of::
 
-        LSB       MSB
-        BANK | COLUMN
-        BANK | ROW
+        LSB              MSB
+        RANK | BANK | COLUMN
+        RANK | BANK | ROW
     """.format(op_codes=OpCode.table())
 
     INSTRUCTION = 32
@@ -65,11 +66,11 @@ class Decoder(Module):
     LOOP_COUNT  = 15
     LOOP_JUMP   = 14
 
-    def __init__(self, instruction, *, bankbits, rowbits, colbits):
+    def __init__(self, instruction, *, rankbits, bankbits, rowbits, colbits):
         assert len(instruction) == self.INSTRUCTION
         assert self.OP_CODE + self.TIMESLICE + self.ADDRESS == self.INSTRUCTION
         assert self.OP_CODE + self.LOOP_COUNT + self.LOOP_JUMP == self.INSTRUCTION
-        assert bankbits + max(rowbits, colbits) <= self.ADDRESS
+        assert rankbits + bankbits + max(rowbits, colbits) <= self.ADDRESS
 
         self.op_code = Signal(self.OP_CODE)
         # DFI-mappable instructions
@@ -94,13 +95,18 @@ class Decoder(Module):
             self.cas.eq(self.op_code[0]),
             self.ras.eq(self.op_code[1]),
             self.we.eq(self.op_code[2]),
-            self.dfi_bank.eq(self.address[:bankbits]),
-            self.dfi_address.eq(self.address[bankbits:]),
+            self.dfi_bank.eq(self.address[rankbits:rankbits+bankbits]),
+            self.dfi_address.eq(self.address[rankbits+bankbits:]),
         ]
+
+        if rankbits:
+            self.dfi_rank = Signal(rankbits)
+            self.comb += self.dfi_bank.eq(self.address[:rankbits]),
 
 class Encoder:
     """Helper for writing payloads"""
-    def __init__(self, bankbits):
+    def __init__(self, nranks, bankbits):
+        self.nranks = nranks
         self.bankbits = bankbits
 
     def __call__(self, op_code, **kwargs):
@@ -124,7 +130,7 @@ class Encoder:
             n += width
         return instr
 
-    def address(self, *, bank=0, row=None, col=None):
+    def address(self, *, rank=None, bank=0, row=None, col=None):
         assert not (row is not None and col is not None)
         if row is not None:
             rowcol = row
@@ -134,6 +140,9 @@ class Encoder:
             rowcol = 0
         address = bank & (2**self.bankbits - 1)
         address |= (rowcol) << self.bankbits
+        if self.nranks > 0:
+            address <<= log2_int(self.nranks)
+            address |= rank
         return address
 
 @ResetInserter()
@@ -168,7 +177,8 @@ class Scratchpad(Module):
         ]
 
 class PayloadExecutor(Module, AutoCSR, AutoDoc):
-    def __init__(self, mem_payload, mem_scratchpad, dfi, dfi_sel, **kwargs):
+    def __init__(self, mem_payload, mem_scratchpad, dfi, dfi_sel, *,
+                 nranks, bankbits, rowbits, colbits):
         self.description = ModuleDoc("""
         Executes the DRAM payload from memory
 
@@ -195,16 +205,20 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         ]
 
         # Decoder
-        self.submodules.decoder = decoder = Decoder(instruction, **kwargs)
+        rankbits = log2_int(nranks)
+        self.submodules.decoder = decoder = Decoder(
+            instruction, rankbits=rankbits, bankbits=bankbits, rowbits=rowbits, colbits=colbits)
+        self.submodules.rank_decoder = OneHotDecoder(nranks)
+        if rankbits:
+            self.comb += self.rank_decoder.i.eq(self.decoder.dfi_rank)
 
         # Executor
         dfi_selected = [
             dfi_sel.eq(1),
             self.ready.eq(0),
-            # TODO: more ranks than 1
-            *[p.cke.eq(1) for p in dfi.phases],
-            *[p.odt.eq(1) for p in dfi.phases],
-            *[p.reset_n.eq(1) for p in dfi.phases],
+            *[p.cke.eq(Replicate(1, nranks)) for p in dfi.phases],
+            *[p.odt.eq(Replicate(1, nranks)) for p in dfi.phases],  # FIXME: needs to be dynamically driven for multi-rank systems
+            *[p.reset_n.eq(Replicate(1, nranks)) for p in dfi.phases],
         ]
 
         self.submodules.fsm = fsm = FSM()
@@ -254,19 +268,22 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
                 dfi.p0.cas_n.eq(~decoder.cas),
                 dfi.p0.ras_n.eq(~decoder.ras),
                 dfi.p0.we_n .eq(~decoder.we),
-                If(decoder.op_code == OpCode.NOOP,
-                    dfi.p0.cs_n.eq(Replicate(1, len(dfi.p0.cs_n))),
-                ).Else(
-                    dfi.p0.cs_n.eq(0),
-                ),
                 dfi.p0.address.eq(decoder.dfi_address),
                 dfi.p0.bank.eq(decoder.dfi_bank),
                 dfi.p0.rddata_en.eq(decoder.op_code == OpCode.READ),
+                # chip select
+                If(decoder.op_code == OpCode.NOOP,
+                    dfi.p0.cs_n.eq(Replicate(1, nranks)),
+                ).Elif(decoder.op_code == OpCode.REF,  # select all ranks on refresh
+                    dfi.p0.cs_n.eq(0),
+                ).Else(
+                    dfi.p0.cs_n.eq(~self.rank_decoder.o),
+                ),
             ),
         )
         fsm.act("IDLE",
             *dfi_selected,
-            *[p.cs_n.eq(Replicate(1, len(dfi.p0.cs_n))) for p in dfi.phases],
+            *[p.cs_n.eq(Replicate(1, nranks)) for p in dfi.phases],
             *[p.cas_n.eq(1) for p in dfi.phases],
             *[p.ras_n.eq(1) for p in dfi.phases],
             *[p.we_n.eq(1)  for p in dfi.phases],

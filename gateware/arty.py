@@ -477,6 +477,7 @@ class BaseSoC(SoCCore):
                 mem_scratchpad = scratchpad_mem,
                 dfi            = self.sdram.dfii.ext_dfi,
                 dfi_sel        = self.sdram.dfii.ext_dfi_sel,
+                nranks         = self.sdram.controller.settings.phy.nranks,
                 bankbits       = self.sdram.controller.settings.geom.bankbits,
                 rowbits        = self.sdram.controller.settings.geom.rowbits,
                 colbits        = self.sdram.controller.settings.geom.colbits,
