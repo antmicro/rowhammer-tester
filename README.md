@@ -36,17 +36,25 @@ make deps
 ```
 This will download and build all the dependencies and setup a [Python virtual environment](https://docs.python.org/3/library/venv.html) under `./venv` directory with all the required packages installed.
 
-To enter the environment you have to `source venv/bin/activate`
-and to build the bitstream you need to `source /PATH/TO/Vivado/VERSION/settings64.sh`.
-This can be automated with tools like [direnv](https://github.com/direnv/direnv) with the following `.envrc` file:
+Virtual environment allows you to use Python without installing the packages system-wide.
+To enter the environment you have to run `source venv/bin/activate` in each new shell. 
+You can also use the provided `make env` target which will start a new Bash shell with the virtualenv already sourced. 
+You can install packages inside the virtual environment by entering the environment and then using `pip`.
+
+> Some options to the scripts may require additional Python dependencies. To install them run `pip install -r requirements-dev.txt` inside the virtual environment.
+
+To build the bitstream you will also need to have Vivado installed and the `vivado` command available in your `PATH`.
+To configure Vivado in the current shell you need to `source /PATH/TO/Vivado/VERSION/settings64.sh`.
+This can be put in your `.bashrc` or other shell init script.
+
+To make the process automatic without hard-coding these things in shell init script,
+tools like [direnv](https://github.com/direnv/direnv) can be used. A sample `.envrc` file would then look like this:
 ```
 source venv/bin/activate
 source /PATH/TO/Vivado/VERSION/settings64.sh
 ```
 
 All other commands assume that you run Python from the virtual environment with `vivado` in your `PATH`.
-
-> Some options to the scripts may require additional Python dependencies. To install them run `pip install -r requirements-dev.txt` inside the virtual environment.
 
 ## Documentation
 
@@ -116,8 +124,10 @@ make srv
 ```
 The build files (CSRs address list) must be up to date. It can be re-generated with `make` without arguments.
 
-Then in another terminal you can use the Python scripts provided, e.g:
+Then in another terminal you can use the Python scripts provided. *Remember to enter the Python virtual environment before running the scripts!*
+For example to use the `leds.py` script run the following:
 ```
+source ./venv/bin/activate
 cd scripts/
 python leds.py  # stop with Ctrl-C
 ```
@@ -140,5 +150,9 @@ python mem.py
 
 To perform a row hammer attack sequence use the `rowhammer.py` script (see `--help`), e.g:
 ```
-python rowhammer.py 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --plot
+python rowhammer.py 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh
+```
+To generate a plot (requires `pip install -r requirements-dev.txt`) one can use:
+```
+python rowhammer.py 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh --plot
 ```
