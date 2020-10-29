@@ -123,7 +123,8 @@ class Platform(SimPlatform):
 # BaseSoC ------------------------------------------------------------------------------------------
 
 class BaseSoC(SoCCore):
-    def __init__(self, toolchain="vivado", sys_clk_freq=int(100e6), args=None, **kwargs):
+    def __init__(self, toolchain="vivado", sys_clk_freq=int(100e6), args=None,
+                 ip_address="192.168.100.50", mac_address=0x10e2d5000001, udp_port=1234, **kwargs):
         if not args.sim:
             platform = arty.Platform(toolchain=toolchain)
         else:
@@ -207,8 +208,7 @@ class BaseSoC(SoCCore):
             self.add_csr("ethphy")
 
             self.add_etherbone(phy=self.ethphy,
-                               ip_address="192.168.100.50",
-                               mac_address=0x10e2d5000001)
+                               ip_address=ip_address, mac_address=mac_address, udp_port=udp_port)
         else:
             # Ethernet PHY (simulation)
             self.submodules.ethphy = LiteEthPHYModel(self.platform.request("eth", 0)) # FIXME
@@ -216,12 +216,12 @@ class BaseSoC(SoCCore):
 
             # Ethernet Core
             ethcore = LiteEthUDPIPCore(self.ethphy,
-                ip_address="192.168.100.50",
-                mac_address=0x10e2d5000001,
+                ip_address  = ip_address,
+                mac_address = mac_address,
                 clk_freq    = sys_clk_freq)
             self.submodules.ethcore = ethcore
             # Etherbone
-            self.submodules.etherbone = LiteEthEtherbone(self.ethcore.udp, 1234, mode="master")
+            self.submodules.etherbone = LiteEthEtherbone(self.ethcore.udp, udp_port, mode="master")
             self.add_wb_master(self.etherbone.wishbone.bus)
 
         # Leds -------------------------------------------------------------------------------------
@@ -473,6 +473,9 @@ def main():
     parser.add_argument("--sim", action="store_true", help="Build and run in simulation mode")
     parser.add_argument("--sys-clk-freq", default="100e6", help="TODO")
     parser.add_argument("--no-memory-bist", action="store_true", help="Enable memory BIST module")
+    parser.add_argument("--ip-address", default="192.168.100.50", help="Use given IP address")
+    parser.add_argument("--mac-address", default="0x10e2d5000001", help="Use given MAC address")
+    parser.add_argument("--udp-port", default="1234", help="Use given UDP port")
 
     builder_args(parser)
     soc_core_args(parser)
@@ -493,7 +496,14 @@ def main():
     ))
 
     sys_clk_freq = int(float(args.sys_clk_freq))
-    soc = BaseSoC(args.toolchain, args=args, sys_clk_freq=sys_clk_freq, **soc_kwargs)
+    soc = BaseSoC(
+        toolchain    = args.toolchain,
+        args         = args,
+        sys_clk_freq = sys_clk_freq,
+        ip_address   = args.ip_address,
+        mac_address  = int(args.mac_address, 0),
+        udp_port     = int(args.udp_port, 0),
+        **soc_kwargs)
 
     # FIXME: try to generate to build/ and make the scripts use that version?
     script_dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
@@ -510,7 +520,7 @@ def main():
     else:
         sim_config = SimConfig()
         sim_config.add_clocker("sys_clk", freq_hz=sys_clk_freq)
-        sim_config.add_module("ethernet", "eth", args={"interface": "arty", "ip": "192.168.100.1"})
+        sim_config.add_module("ethernet", "eth", args={"interface": "arty", "ip": args.ip_address})
 
         del build_kwargs['synth_mode']
         builder.build(**build_kwargs, run=args.build, sim_config=sim_config, trace=True, trace_fst=False)

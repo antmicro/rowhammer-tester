@@ -3,19 +3,24 @@ PATH := $(PWD)/bin::$(PATH)
 PATH := $(PWD)/third_party/verilator/image/bin:$(PATH)
 export PATH
 
+IP_ADDRESS  ?= 192.168.100.50
+MAC_ADDRESS ?= 0x10e2d5000001
+UDP_PORT    ?= 1234
+ARGS := --ip-address $(IP_ADDRESS) --mac-address $(MAC_ADDRESS) --udp-port $(UDP_PORT)
+
 all:
-	python gateware/arty.py
+	python gateware/arty.py $(ARGS)
 
 FORCE:
 
 build: FORCE
-	python gateware/arty.py --build
+	python gateware/arty.py --build $(ARGS)
 
 sim: FORCE
-	python gateware/arty.py --build --sim
+	python gateware/arty.py --build --sim $(ARGS)
 
 sim-analyze: FORCE
-	python scripts/sim_runner.py python gateware/arty.py --build --sim
+	python scripts/sim_runner.py python gateware/arty.py --build --sim $(ARGS)
 
 upload up: FORCE
 	./third_party/xc3sprog/xc3sprog -c nexys4 build/arty/gateware/arty.bit
@@ -24,7 +29,7 @@ srv: FORCE
 	litex_server --udp --udp-ip=192.168.100.50
 
 doc: FORCE
-	python gateware/arty.py --docs
+	python gateware/arty.py --docs $(ARGS)
 	python -m sphinx -b html build/documentation build/documentation/html
 
 clean::
