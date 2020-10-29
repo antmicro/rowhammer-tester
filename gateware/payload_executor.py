@@ -12,12 +12,12 @@ from litex.soc.integration.doc import AutoDoc, ModuleDoc
 class OpCode(IntEnum):
     NOOP = 0b000
     LOOP = 0b111
-    # (we, ras, cas)
-    ACT  = 0b010
-    PRE  = 0b110
-    REF  = 0b011
-    ZQC  = 0b100
-    READ = 0b001
+    # (ras, cas, we)
+    ACT  = 0b100
+    PRE  = 0b101
+    REF  = 0b110
+    ZQC  = 0b001
+    READ = 0b010
 
     @classmethod
     def table(cls):
@@ -99,9 +99,9 @@ class Decoder(Module):
             self.address.eq(tail[self.TIMESLICE:]),
             self.loop_count.eq(tail[:self.LOOP_COUNT]),
             self.loop_jump.eq(tail[self.LOOP_COUNT:]),
-            self.cas.eq(self.op_code[0]),
-            self.ras.eq(self.op_code[1]),
-            self.we.eq(self.op_code[2]),
+            self.cas.eq(self.op_code[1]),
+            self.ras.eq(self.op_code[2]),
+            self.we.eq(self.op_code[0]),
             self.dfi_bank.eq(self.address[rankbits:rankbits+bankbits]),
             self.dfi_address.eq(self.address[rankbits+bankbits:]),
         ]
