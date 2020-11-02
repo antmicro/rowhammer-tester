@@ -1,0 +1,99 @@
+// Compile: `protoc payload_ddr3.proto --python_out=.`
+
+syntax = "proto2";
+
+package payload_ddr3.proto;
+
+// Represents DRAM timing parameters as integer multiples of the
+// system clock (i.e., tick).
+message Timing {
+  // Picoseconds.
+  optional uint32 tick_ps = 1;
+  // Ticks.
+  optional uint32 ras = 2;
+  optional uint32 rp = 3;
+  optional uint32 rfc = 4;
+}
+
+// Encodes the instruction type.
+enum Opcode {
+  // Memory instructions.
+  // Refer to "DDR3 SDRAM Standard". JESD79-3F. July 2012.
+  ACT = 4;  // RAS: 1, CAS: 0, WE: 0
+  PRE = 5;  // RAS: 1, CAS: 0, WE: 1
+  REF = 6;  // RAS: 1, CAS: 1, WE: 0
+  // Non-memory instructions.
+  NOP = 0;
+  JMP = 7;
+  // Unused.
+  MAX = 8;
+}
+
+// Stores a single instruction. Implemented as a sum-type.
+message Instr {
+  // Memory instruction. Maps to a DRAM command.
+  message MemInstr {
+    enum Bits {
+      option allow_alias = true;
+      OPCODE = 3;
+      TIMESLICE = 8;
+      RANK = 2;
+      BANK = 3;
+      ADDR = 16;
+    }
+
+    // Must be one of ACT, PRE, REF.
+    optional Opcode opcode = 1;
+    // Number of ticks that separates this command from the one
+    // following it. Minimum is one when they are back-to-back.
+    optional uint32 timeslice = 2;
+    // Must be set to 0. Multi-ranks are not yet supported.
+    optional uint32 rank = 3;
+    optional uint32 bank = 4;
+    optional uint32 addr = 5;
+  }
+
+  // No-op instruction. Simply consumes time.
+  message NopInstr {
+    enum Bits {
+      OPCODE = 3;
+      TIMESLICE = 29;
+    }
+
+    // Must be NOP.
+    optional Opcode opcode = 1 [default = NOP];
+    // Number of ticks that separates this command from the one
+    // following it. Minimum is one when they are back-to-back.
+    optional uint32 timeslice = 2;
+  }
+
+  // Jump instruction. Emulates a do-while loop. Nesting is prohibited.
+  message JmpInstr {
+    enum Bits {
+      OPCODE = 3;
+      OFFSET = 14;
+      COUNT = 15;
+    }
+
+    // Must be JMP.
+    optional Opcode opcode = 1 [default = JMP];
+    // Number of instructions to jump backward. Minimum is one when the
+    // target comes directly before this one.
+    optional uint32 offset = 2;
+    // Number of loop iterations. Minimum is one because by the time the
+    // jump instruction is encountered, the loop has already been executed once.
+    optional uint32 count = 3;
+  }
+
+  oneof instr {
+    MemInstr mem = 1;
+    NopInstr nop = 2;
+    JmpInstr jmp = 3;
+  }
+}
+
+// Represents a time-stamped memory access pattern.
+message Payload {
+    optional Timing timing = 1;
+    repeated Instr instr = 2;
+}
