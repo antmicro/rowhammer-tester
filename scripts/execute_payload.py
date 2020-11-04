@@ -8,7 +8,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
 sys.path.append(os.path.join(SCRIPT_DIR, '..', 'gateware'))
 
 from payload_executor import Encoder, OpCode, Decoder
-from utils import memdump, memread, memfill, DRAMAddressConverter
+from utils import memdump, memread, memwrite, DRAMAddressConverter
 
 # Sample program
 encoder = Encoder(bankbits=3)
@@ -61,19 +61,18 @@ def word_gen(offset):
             next(gen)
 
 def execute(wb):
-    base = wb.mems.payload.base
     depth = wb.mems.payload.size // 4  # bytes to 32-bit instructions
 
-    # no need to fill with NOOPs as 0s are NOOPs
     program = [w for w in PAYLOAD]
+    program += [0] * (wb.mems.payload.size//4 - len(program))  # fill with NOOPs
 
     # Write some data to the column we are reading to check that scratchpad gets filled
     converter = DRAMAddressConverter()
     data = list(itertools.islice(word_gen(3), 128))
-    wb.write(converter.encode_bus(bank=0, row=100, col=200), data)
+    memwrite(wb, data, base=converter.encode_bus(bank=0, row=100, col=200))
 
     print('\nTransferring the payload ...')
-    wb.write(base, program)
+    memwrite(wb, program, base=wb.mems.payload.base)
 
     def ready():
         status = wb.regs.payload_executor_status.read()

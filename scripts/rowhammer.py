@@ -167,6 +167,7 @@ class RowHammer:
         print('  Payload size = {:5.2f}KB / {:5.2f}KB'.format(4*len(payload)/2**10, self.wb.mems.payload.size/2**10))
         print('  Payload row toggle count = {:5.2f}M'.format(toggle_count/1e6))
         assert len(payload) < self.wb.mems.payload.size//4
+        payload += [0] * (self.wb.mems.payload.size//4 - len(payload))  # fill with NOOPs
 
         print('\nTransferring the payload ...')
         memwrite(self.wb, payload, base=self.wb.mems.payload.base)
