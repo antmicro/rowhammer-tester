@@ -1,4 +1,6 @@
 import time
+from operator import or_
+from functools import reduce
 
 import sdram_init as _sdram_init
 from sdram_init import *
@@ -77,18 +79,18 @@ def memspeed(wb, n, **kwargs):
     errors = [(i, w) for i, w in enumerate(data) if w != kwargs.get('pattern', 0xaaaaaaaa)]
     assert len(errors) == 0, len(errors)
 
+def chunks(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+def word2byte(words, word_size=4):
+    for w in words:
+        for i in range(word_size):
+            yield (w & (0xff << 8*i)) >> 8*i
+
 def memdump(data, base=0x40000000, chunk_len=16):
     def tochar(val):
         return chr(val) if 0x20 <= val <= 0x7e else '.'
-
-    def chunks(lst, n):
-        for i in range(0, len(lst), n):
-            yield lst[i:i + n]
-
-    def word2byte(words):
-        for w in words:
-            for i in range(4):
-                yield (w & (0xff << 8*i)) >> 8*i
 
     data_bytes = list(word2byte(data))
     for i, chunk in enumerate(chunks(data_bytes, chunk_len)):
@@ -96,6 +98,66 @@ def memdump(data, base=0x40000000, chunk_len=16):
         c = "".join(tochar(chunk[i] if i < len(chunk) else 0) for i in range(chunk_len))
         print("0x{addr:08x}:  {bytes}  {chars}".format(addr=base + chunk_len*i, bytes=b, chars=c))
 
+################################################################################
+
+class DRAMAddressConverter:
+    def __init__(self, colbits=10, rowbits=14, bankbits=3,
+                 address_mapping='ROW_BANK_COL', address_align=3):
+        # FIXME: generate these from BaseSoC
+        # soc.sdram.controller.settings
+        self.colbits = colbits
+        self.rowbits = rowbits
+        self.bankbits = bankbits
+        self.address_mapping = address_mapping
+        self.address_align = address_align
+
+        assert self.address_mapping == 'ROW_BANK_COL'
+
+    def _encode(self, bank, row, col):
+        assert bank < 2**self.bankbits
+        assert col < 2**self.colbits
+        assert row < 2**self.rowbits
+
+        def masked(value, width, offset):
+            masked = value & (2**width - 1)
+            assert masked == value, "Value larger than value bit-width"
+            return masked << offset
+
+        return reduce(or_, [
+            masked(row,  self.rowbits,  self.bankbits + self.colbits),
+            masked(bank, self.bankbits, self.colbits),
+            masked(col,  self.colbits,  0),
+        ])
+
+    def encode_bus(self, *, bank, row, col, base=0x40000000, bus_align=2):
+        assert bus_align <= self.address_align
+        address = self._encode(bank, row, col)
+        return base + (address << (self.address_align - bus_align))
+
+    def encode_dma(self, *, bank, row, col):
+        address = self._encode(bank, row, col)
+        return address >> self.address_align
+
+    def _decode(self, address):
+        def extract(value, width, offset):
+            mask = 2**width - 1
+            return (value & (mask << offset)) >> offset
+
+        row = extract(address, self.rowbits, self.bankbits + self.colbits)
+        bank = extract(address, self.bankbits, self.colbits)
+        col = extract(address, self.colbits, 0)
+
+        return bank, row, col
+
+    def decode_bus(self, address, base=0x40000000, bus_align=2):
+        address -= base
+        address >>= self.address_align - bus_align
+        return self._decode(address)
+
+    def decode_dma(self, address):
+        return self._decode(address << self.address_align)
+
+################################################################################
 
 # Open a remote connection in an interactive session (e.g. when sourced as `ipython -i <thisfile>`)
 if __name__ == "__main__":

@@ -2,75 +2,17 @@
 
 import time
 import random
-from operator import or_
-from functools import reduce
+from math import ceil
 
-from utils import memfill, memcheck
-
-################################################################################
-
-class DRAMAddressConverter:
-    def __init__(self, colbits=10, rowbits=14, bankbits=3,
-                 address_mapping='ROW_BANK_COL', address_align=3):
-        # FIXME: generate these from BaseSoC
-        # soc.sdram.controller.settings
-        self.colbits = colbits
-        self.rowbits = rowbits
-        self.bankbits = bankbits
-        self.address_mapping = address_mapping
-        self.address_align = address_align
-
-        assert self.address_mapping == 'ROW_BANK_COL'
-
-    def _encode(self, bank, row, col):
-        assert bank < 2**self.bankbits
-        assert col < 2**self.colbits
-        assert row < 2**self.rowbits
-
-        def masked(value, width, offset):
-            masked = value & (2**width - 1)
-            assert masked == value, "Value larger than value bit-width"
-            return masked << offset
-
-        return reduce(or_, [
-            masked(row,  self.rowbits,  self.bankbits + self.colbits),
-            masked(bank, self.bankbits, self.colbits),
-            masked(col,  self.colbits,  0),
-        ])
-
-    def encode_bus(self, *, bank, row, col, base=0x40000000, bus_align=2):
-        assert bus_align <= self.address_align
-        address = self._encode(bank, row, col)
-        return base + (address << (self.address_align - bus_align))
-
-    def encode_dma(self, *, bank, row, col):
-        address = self._encode(bank, row, col)
-        return address >> self.address_align
-
-    def _decode(self, address):
-        def extract(value, width, offset):
-            mask = 2**width - 1
-            return (value & (mask << offset)) >> offset
-
-        row = extract(address, self.rowbits, self.bankbits + self.colbits)
-        bank = extract(address, self.bankbits, self.colbits)
-        col = extract(address, self.colbits, 0)
-
-        return bank, row, col
-
-    def decode_bus(self, address, base=0x40000000, bus_align=2):
-        address -= base
-        address >>= self.address_align - bus_align
-        return self._decode(address)
-
-    def decode_dma(self, address):
-        return self._decode(address << self.address_align)
+from execute_payload import Encoder, OpCode
+from utils import memfill, memcheck, memwrite, DRAMAddressConverter
 
 ################################################################################
 
 class RowHammer:
-    def __init__(self, wb, *, nrows, rowbits, colbits, column, bank,
-                 rows_start=0, no_refresh=False, verbose=False, plot=False):
+    def __init__(self, wb, *, nrows, bankbits, rowbits, colbits, column, bank,
+                 rows_start=0, no_refresh=False, verbose=False, plot=False,
+                 payload_executor=False):
         for name, val in locals().items():
             setattr(self, name, val)
         self.converter = DRAMAddressConverter(colbits=colbits, rowbits=rowbits)
@@ -126,7 +68,7 @@ class RowHammer:
     def check_errors(self, row_patterns, row_progress=16):
         row_errors = {}
         for row, n, base in self.row_access_iterator():
-            row_errors[row] = memcheck(wb, n, pattern=row_patterns[row], base=base, burst=255)
+            row_errors[row] = memcheck(self.wb, n, pattern=row_patterns[row], base=base, burst=255)
             if row % row_progress == 0:
                 print('.', end='', flush=True)
         return row_errors
@@ -162,7 +104,7 @@ class RowHammer:
 
         print('\nFilling memory with data ...')
         for row, n, base in self.row_access_iterator():
-            memfill(wb, n, pattern=row_patterns[row], base=base, burst=255)
+            memfill(self.wb, n, pattern=row_patterns[row], base=base, burst=255)
             if row % row_progress == 0:
                 print('.', end='', flush=True)
 
@@ -178,16 +120,19 @@ class RowHammer:
 
         if self.no_refresh:
             print('\nDisabling refresh ...')
-            wb.regs.controller_settings_refresh.write(0)
+            self.wb.regs.controller_settings_refresh.write(0)
 
         print('\nRunning row hammer attacks ...')
         for i, (row1, row2) in enumerate(row_pairs):
             s = 'Iter {:{n}} / {:{n}}'.format(i, len(row_pairs), n=len(str(len(row_pairs))))
-            self.attack(row1, row2, read_count=read_count, progress_header=s)
+            if self.payload_executor:
+                self.payload_executor_attack(read_count=read_count, row=row1)
+            else:
+                self.attack(row1, row2, read_count=read_count, progress_header=s)
 
         if self.no_refresh:
             print('\nReenabling refresh ...')
-            wb.regs.controller_settings_refresh.write(1)
+            self.wb.regs.controller_settings_refresh.write(1)
 
         print('\nVerifying attacked memory ...')
         errors = self.check_errors(row_patterns, row_progress=row_progress)
@@ -197,6 +142,44 @@ class RowHammer:
             print()
             self.display_errors(errors)
             return
+
+    def payload_executor_attack(self, read_count, row):
+        # FIXME: read from dedicated status registers
+        tras = 5
+        trp = 3
+        encoder = Encoder(bankbits=self.bankbits)
+        payload = [
+            encoder(OpCode.NOOP, timeslice=30),
+        ]
+
+        # fill payload so that we have >= desired read_count
+        count_max = 2**15 - 1
+        n_loops = ceil(read_count / (count_max + 1))
+        for _ in range(n_loops):
+            payload.extend([
+                encoder(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=self.bank, row=row)),
+                encoder(OpCode.PRE,  timeslice=trp, address=encoder.address(col=1 << 10)),  # all
+                encoder(OpCode.LOOP, count=count_max, jump=2),
+            ])
+        payload.append(encoder(OpCode.NOOP, timeslice=30))
+
+        toggle_count = (count_max + 1) * n_loops
+        print('  Payload size = {:5.2f}KB / {:5.2f}KB'.format(4*len(payload)/2**10, self.wb.mems.payload.size/2**10))
+        print('  Payload row toggle count = {:5.2f}M'.format(toggle_count/1e6))
+        assert len(payload) < self.wb.mems.payload.size//4
+
+        print('\nTransferring the payload ...')
+        memwrite(self.wb, payload, base=self.wb.mems.payload.base)
+
+        def ready():
+            status = self.wb.regs.payload_executor_status.read()
+            return (status & 1) != 0
+
+        print('\nExecuting ...')
+        assert ready()
+        self.wb.regs.payload_executor_start.write(1)
+        while not ready():
+            time.sleep(0.001)
 
 ################################################################################
 
@@ -220,6 +203,7 @@ if __name__ == "__main__":
     parser.add_argument('--column', type=int, default=512, help='Column to read from')
     parser.add_argument('--colbits', type=int, default=10, help='Number of column bits')  # FIXME: take from our design
     parser.add_argument('--rowbits', type=int, default=14, help='Number of row bits')  # FIXME: take from our design
+    parser.add_argument('--bankbits', type=int, default=3, help='Number of bank bits')  # FIXME: take from our design
     parser.add_argument('--start-row', type=int, default=0, help='Starting row (range = (start, start+nrows))')
     parser.add_argument('--read_count', type=float, default=10e6, help='How many reads to perform for single address pair')
     parser.add_argument('--hammer-only', nargs=2, type=int, help='Run only the row hammer attack')
@@ -231,6 +215,7 @@ if __name__ == "__main__":
                         help='How the rows for subsequent attacks are selected')
     parser.add_argument('--const-rows-pair', type=int, nargs=2, required=False, help='When using --row-pairs constant')
     parser.add_argument('--plot', action='store_true', help='Plot errors distribution') # requiers matplotlib and pyqt5 packages
+    parser.add_argument('--payload-executor', action='store_true', help='Do the attack using Payload Executor (1st row only)')
     parser.add_argument('-v', '--verbose', action='store_true', help='Be more verbose')
     parser.add_argument("--srv", action="store_true", help='Start LiteX server')
     parser.add_argument("--experiment-no", type=int, default=0, help='Run preconfigured experiment #no')
@@ -254,15 +239,17 @@ if __name__ == "__main__":
     wb.open()
 
     row_hammer = RowHammer(wb,
-        nrows      = args.nrows,
-        rowbits    = args.rowbits,
-        colbits    = args.colbits,
-        column     = args.column,
-        bank       = args.bank,
-        rows_start = args.start_row,
-        verbose    = args.verbose,
-        plot       = args.plot,
-        no_refresh = args.no_refresh,
+        nrows            = args.nrows,
+        bankbits         = args.bankbits,
+        rowbits          = args.rowbits,
+        colbits          = args.colbits,
+        column           = args.column,
+        bank             = args.bank,
+        rows_start       = args.start_row,
+        verbose          = args.verbose,
+        plot             = args.plot,
+        no_refresh       = args.no_refresh,
+        payload_executor = args.payload_executor,
     )
 
     if args.hammer_only:
