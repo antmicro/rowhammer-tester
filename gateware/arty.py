@@ -41,6 +41,7 @@ from liteeth.frontend.etherbone import LiteEthEtherbone
 from litex.soc.cores import uart
 
 from rowhammer import RowHammerDMA
+from payload_executor import PayloadExecutor
 
 # CRG ----------------------------------------------------------------------------------------------
 
@@ -454,6 +455,23 @@ class BaseSoC(SoCCore):
                                             w0_port, w1_port, w2_port, w3_port, adr_port)
             self.add_csr('reader')
 
+        # Payload executor -------------------------------------------------------------------------
+        if not args.no_payload_executor:
+            # TODO: disconnect bus during payload execution
+            payload_mem  = Memory(32, 4 * 2**10)
+            self.specials += payload_mem
+            add_xram(self, name='payload', mem=payload_mem, origin=0x35000000)
+
+            self.submodules.payload_executor = PayloadExecutor(
+                mem      = payload_mem,
+                dfi      = self.sdram.dfii.ext_dfi,
+                dfi_sel  = self.sdram.dfii.ext_dfi_sel,
+                bankbits = self.sdram.controller.settings.geom.bankbits,
+                rowbits  = self.sdram.controller.settings.geom.rowbits,
+                colbits  = self.sdram.controller.settings.geom.colbits,
+            )
+            self.payload_executor.add_csrs()
+            self.add_csr('payload_executor')
 
     def generate_sdram_phy_py_header(self, output_file):
         f = open(output_file, "w")
@@ -476,6 +494,7 @@ def main():
     parser.add_argument("--ip-address", default="192.168.100.50", help="Use given IP address")
     parser.add_argument("--mac-address", default="0x10e2d5000001", help="Use given MAC address")
     parser.add_argument("--udp-port", default="1234", help="Use given UDP port")
+    parser.add_argument("--no-payload-executor", action="store_true", help="Disable Payload Executor module")
 
     builder_args(parser)
     soc_core_args(parser)
