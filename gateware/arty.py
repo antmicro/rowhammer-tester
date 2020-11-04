@@ -231,24 +231,6 @@ class BaseSoC(SoCCore):
             sys_clk_freq = sys_clk_freq)
         self.add_csr("leds")
 
-        # Analyzer ---------------------------------------------------------------------------------
-        # analyzer_signals = [
-        #    self.bus.masters['master0'].stb,
-        #    self.bus.masters['master0'].cyc,
-        #    self.bus.masters['master0'].adr,
-        #    self.bus.masters['master0'].we,
-        #    self.bus.masters['master0'].ack,
-        #    self.bus.masters['master0'].sel,
-        #    self.bus.masters['master0'].dat_w,
-        #    self.bus.masters['master0'].dat_r,
-        # ]
-        # from litescope import LiteScopeAnalyzer
-        # self.submodules.analyzer = LiteScopeAnalyzer(analyzer_signals,
-        #    depth        = 512,
-        #    clock_domain = "sys",
-        #    csr_csv      = "analyzer.csv")
-        # self.add_csr("analyzer")
-
         if args.sim:
             self.comb += platform.trace.eq(1)
 
@@ -259,25 +241,25 @@ class BaseSoC(SoCCore):
         self.submodules.rowhammer = RowHammerDMA(self.rowhammer_dma)
         self.add_csr("rowhammer")
 
+        def add_xram(self, name, origin, mem, mode='rw'):
+            from litex.soc.interconnect import wishbone
+            from litex.soc.integration.soc import SoCRegion
+            ram     = wishbone.SRAM(mem, bus=wishbone.Interface(data_width=mem.width),
+                                    read_only='w' not in mode)
+            ram_bus = wishbone.Interface(data_width=self.bus.data_width)
+            self.submodules += wishbone.Converter(ram_bus, ram.bus)
+            region = SoCRegion(origin=origin, size=mem.width * mem.depth, mode=mode)
+            self.bus.add_slave(name, ram_bus, region)
+            self.check_if_exists(name)
+            self.logger.info("RAM {} {} {}.".format(
+                colorer(name),
+                colorer("added", color="green"),
+                self.bus.regions[name]))
+            setattr(self.submodules, name, ram)
+
         # Bist -------------------------------------------------------------------------------------
         if not args.no_memory_bist:
             from litedram.frontend.bist import LiteDRAMBISTGenerator, LiteDRAMBISTChecker
-
-            def add_xram(self, name, origin, mem, mode='rw'):
-                from litex.soc.interconnect import wishbone
-                from litex.soc.integration.soc import SoCRegion
-                ram     = wishbone.SRAM(mem, bus=wishbone.Interface(data_width=mem.width),
-                                        read_only='w' not in mode)
-                ram_bus = wishbone.Interface(data_width=self.bus.data_width)
-                self.submodules += wishbone.Converter(ram_bus, ram.bus)
-                region = SoCRegion(origin=origin, size=mem.width * mem.depth, mode=mode)
-                self.bus.add_slave(name, ram_bus, region)
-                self.check_if_exists(name)
-                self.logger.info("RAM {} {} {}.".format(
-                    colorer(name),
-                    colorer("added", color="green"),
-                    self.bus.regions[name]))
-                setattr(self.submodules, name, ram)
 
             # ------------------------------ writer ------------------------------------
             memory_w0  = Memory(32, 1024)
@@ -465,7 +447,7 @@ class BaseSoC(SoCCore):
             scratchpad_width = phy_settings.dfi_databits * phy_settings.nphases
             scratchpad_size  = 2**10
 
-            payload_mem    = Memory(32, 4 * 2**10)
+            payload_mem    = Memory(32, 2**10)
             scratchpad_mem = Memory(scratchpad_width, scratchpad_size // (scratchpad_width//8))
             self.specials += payload_mem, scratchpad_mem
 
@@ -481,9 +463,24 @@ class BaseSoC(SoCCore):
                 bankbits       = self.sdram.controller.settings.geom.bankbits,
                 rowbits        = self.sdram.controller.settings.geom.rowbits,
                 colbits        = self.sdram.controller.settings.geom.colbits,
+                rdphase        = self.sdram.controller.settings.phy.rdphase,
             )
             self.payload_executor.add_csrs()
             self.add_csr('payload_executor')
+
+        # # Analyzer ---------------------------------------------------------------------------------
+        # analyzer_signals = [
+        #     self.sdram.dfii.ext_dfi_sel,
+        #     *[p.rddata for p in self.ddrphy.dfi.phases],
+        #     *[p.rddata_valid for p in self.ddrphy.dfi.phases],
+        #     *[p.rddata_en for p in self.ddrphy.dfi.phases],
+        # ]
+        # from litescope import LiteScopeAnalyzer
+        # self.submodules.analyzer = LiteScopeAnalyzer(analyzer_signals,
+        #    depth        = 512,
+        #    clock_domain = "sys",
+        #    csr_csv      = "analyzer.csv")
+        # self.add_csr("analyzer")
 
     def generate_sdram_phy_py_header(self, output_file):
         f = open(output_file, "w")

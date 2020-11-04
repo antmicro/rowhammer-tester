@@ -171,7 +171,7 @@ class Scratchpad(Module):
         wr_port = mem.get_port(write_capable=True)
         self.specials += wr_port
 
-        self.comb += [
+        self.sync += [  # use sync for easier timing as we don't need comb here
             wr_port.adr.eq(self.counter),
             wr_port.dat_w.eq(Cat(*[p.rddata for p in dfi.phases])),
             wr_port.we.eq(reduce(or_, [p.rddata_valid for p in dfi.phases])),
@@ -188,9 +188,46 @@ class Scratchpad(Module):
             )
         ]
 
+class DFIExecutor(Module):
+    def __init__(self, dfi, decoder, rank_decoder):
+        self.phase = Signal(max=len(dfi.phases) - 1)
+        self.exec  = Signal()
+
+        nranks = len(dfi.p0.cs_n)
+
+        for i, phase in enumerate(dfi.phases):
+            self.comb += [
+                # constant signals
+                phase.cke.eq(Replicate(1, nranks)),
+                phase.odt.eq(Replicate(1, nranks)),  # FIXME: needs to be dynamically driven for multi-rank systems
+                phase.reset_n.eq(Replicate(1, nranks)),
+                # send the command on current phase
+                If((self.phase == i) & self.exec,  # selected
+                    phase.cas_n.eq(~decoder.cas),
+                    phase.ras_n.eq(~decoder.ras),
+                    phase.we_n .eq(~decoder.we),
+                    phase.address.eq(decoder.dfi_address),
+                    phase.bank.eq(decoder.dfi_bank),
+                    phase.rddata_en.eq(decoder.op_code == OpCode.READ),
+                    # chip select
+                    If(decoder.op_code == OpCode.NOOP,
+                        phase.cs_n.eq(Replicate(1, nranks)),
+                    ).Elif(decoder.op_code == OpCode.REF,  # select all ranks on refresh
+                        phase.cs_n.eq(0),
+                    ).Else(
+                        phase.cs_n.eq(~rank_decoder.o),
+                    ),
+                ).Else(  # inactive
+                    phase.cs_n.eq(Replicate(1, nranks)),
+                    phase.cas_n.eq(1),
+                    phase.ras_n.eq(1),
+                    phase.we_n.eq(1),
+                )
+            ]
+
 class PayloadExecutor(Module, AutoCSR, AutoDoc):
     def __init__(self, mem_payload, mem_scratchpad, dfi, dfi_sel, *,
-                 nranks, bankbits, rowbits, colbits):
+                 nranks, bankbits, rowbits, colbits, rdphase):
         self.description = ModuleDoc("""
         Executes the DRAM payload from memory
 
@@ -225,17 +262,9 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             self.comb += self.rank_decoder.i.eq(self.decoder.dfi_rank)
 
         # Executor
-        dfi_selected = [
-            dfi_sel.eq(1),
-            self.ready.eq(0),
-            *[p.cke.eq(Replicate(1, nranks)) for p in dfi.phases],
-            *[p.odt.eq(Replicate(1, nranks)) for p in dfi.phases],  # FIXME: needs to be dynamically driven for multi-rank systems
-            *[p.reset_n.eq(Replicate(1, nranks)) for p in dfi.phases],
-        ]
-
-        self.submodules.fsm = fsm = FSM()
-        fsm.act("READY",
-            dfi_sel.eq(0),
+        self.submodules.dfi_executor = DFIExecutor(dfi, self.decoder, self.rank_decoder)
+        self.submodules.fsm = FSM()
+        self.fsm.act("READY",
             self.ready.eq(1),
             self.scratchpad.reset.eq(self.start),
             If(self.start,
@@ -243,8 +272,8 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
                 NextValue(self.program_counter, 0),
             )
         )
-        fsm.act("RUN",
-            *dfi_selected,
+        self.fsm.act("RUN",
+            dfi_sel.eq(1),
             # Always execute the whole program
             If(self.program_counter == mem_payload.depth - 1,
                 NextState("READY")
@@ -271,34 +300,17 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
                     NextValue(self.idle_counter, decoder.timeslice - 1),
                     NextState("IDLE"),
                 ),
-                # DFI command
-                # FIXME: now only on phase 0
-                *[p.cs_n.eq(Replicate(1, len(dfi.p0.cs_n))) for p in dfi.phases[1:]],
-                *[p.cas_n.eq(1) for p in dfi.phases[1:]],
-                *[p.ras_n.eq(1) for p in dfi.phases[1:]],
-                *[p.we_n.eq(1)  for p in dfi.phases[1:]],
-                dfi.p0.cas_n.eq(~decoder.cas),
-                dfi.p0.ras_n.eq(~decoder.ras),
-                dfi.p0.we_n .eq(~decoder.we),
-                dfi.p0.address.eq(decoder.dfi_address),
-                dfi.p0.bank.eq(decoder.dfi_bank),
-                dfi.p0.rddata_en.eq(decoder.op_code == OpCode.READ),
-                # chip select
-                If(decoder.op_code == OpCode.NOOP,
-                    dfi.p0.cs_n.eq(Replicate(1, nranks)),
-                ).Elif(decoder.op_code == OpCode.REF,  # select all ranks on refresh
-                    dfi.p0.cs_n.eq(0),
+                # Send DFI command
+                self.dfi_executor.exec.eq(1),
+                If(decoder.cas & ~decoder.ras & ~decoder.we,  # READ command
+                    self.dfi_executor.phase.eq(rdphase),
                 ).Else(
-                    dfi.p0.cs_n.eq(~self.rank_decoder.o),
-                ),
+                    self.dfi_executor.phase.eq(0),
+                )
             ),
         )
-        fsm.act("IDLE",
-            *dfi_selected,
-            *[p.cs_n.eq(Replicate(1, nranks)) for p in dfi.phases],
-            *[p.cas_n.eq(1) for p in dfi.phases],
-            *[p.ras_n.eq(1) for p in dfi.phases],
-            *[p.we_n.eq(1)  for p in dfi.phases],
+        self.fsm.act("IDLE",
+            dfi_sel.eq(1),
             If(self.idle_counter == 0,
                 NextState("RUN"),
                 NextValue(self.program_counter, self.program_counter + 1),
