@@ -7,7 +7,7 @@ import itertools
 SCRIPT_DIR = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
 sys.path.append(os.path.join(SCRIPT_DIR, '..', 'gateware'))
 
-from payload_executor import Encoder, OpCode
+from payload_executor import Encoder, OpCode, Decoder
 from utils import memdump, memread, memfill, DRAMAddressConverter
 
 # Sample program

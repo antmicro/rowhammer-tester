@@ -4,7 +4,7 @@ import time
 import random
 from math import ceil
 
-from execute_payload import Encoder, OpCode
+from execute_payload import Encoder, OpCode, Decoder
 from utils import memfill, memcheck, memwrite, DRAMAddressConverter
 
 ################################################################################
@@ -153,7 +153,7 @@ class RowHammer:
         ]
 
         # fill payload so that we have >= desired read_count
-        count_max = 2**15 - 1
+        count_max = 2**Decoder.LOOP_COUNT - 1
         n_loops = ceil(read_count / (count_max + 1))
         for _ in range(n_loops):
             payload.extend([

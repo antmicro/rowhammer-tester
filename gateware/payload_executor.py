@@ -60,13 +60,14 @@ class Decoder(Module):
         RANK | BANK | ROW
     """.format(op_codes=OpCode.table())
 
+    # TODO: Load widths from .proto file
     INSTRUCTION    = 32
     OP_CODE        = 3
-    TIMESLICE      = 7
-    ADDRESS        = 22
+    TIMESLICE      = 8
+    ADDRESS        = 21
     TIMESLICE_NOOP = TIMESLICE + ADDRESS
-    LOOP_COUNT     = 15
-    LOOP_JUMP      = 14
+    LOOP_COUNT     = 20
+    LOOP_JUMP      = 9
 
     def __init__(self, instruction, *, rankbits, bankbits, rowbits, colbits):
         assert len(instruction) == self.INSTRUCTION
