@@ -248,7 +248,7 @@ class BaseSoC(SoCCore):
                                     read_only='w' not in mode)
             ram_bus = wishbone.Interface(data_width=self.bus.data_width)
             self.submodules += wishbone.Converter(ram_bus, ram.bus)
-            region = SoCRegion(origin=origin, size=mem.width * mem.depth, mode=mode)
+            region = SoCRegion(origin=origin, size=mem.width//8 * mem.depth, mode=mode)
             self.bus.add_slave(name, ram_bus, region)
             self.check_if_exists(name)
             self.logger.info("RAM {} {} {}.".format(
