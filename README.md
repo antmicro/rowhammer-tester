@@ -37,8 +37,8 @@ make deps
 This will download and build all the dependencies and setup a [Python virtual environment](https://docs.python.org/3/library/venv.html) under `./venv` directory with all the required packages installed.
 
 Virtual environment allows you to use Python without installing the packages system-wide.
-To enter the environment you have to run `source venv/bin/activate` in each new shell. 
-You can also use the provided `make env` target which will start a new Bash shell with the virtualenv already sourced. 
+To enter the environment you have to run `source venv/bin/activate` in each new shell.
+You can also use the provided `make env` target which will start a new Bash shell with the virtualenv already sourced.
 You can install packages inside the virtual environment by entering the environment and then using `pip`.
 
 > Some options to the scripts may require additional Python dependencies. To install them run `pip install -r requirements-dev.txt` inside the virtual environment.
@@ -150,9 +150,9 @@ python mem.py
 
 To perform a row hammer attack sequence use the `rowhammer.py` script (see `--help`), e.g:
 ```
-python rowhammer.py 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh
+python rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh
 ```
 To generate a plot (requires `pip install -r requirements-dev.txt`) one can use:
 ```
-python rowhammer.py 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh --plot
+python rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh --plot
 ```
