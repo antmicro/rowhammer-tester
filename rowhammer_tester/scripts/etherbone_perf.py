@@ -3,7 +3,7 @@ import cProfile
 
 import argparse
 
-from .utils import memread, memwrite
+from rowhammer_tester.scripts.utils import memread, memwrite, RemoteClient
 
 def run(wb, rw, n, *, burst, profile=True):
     datas = list(range(n))
@@ -57,8 +57,6 @@ if __name__ == "__main__":
     parser.add_argument('--burst', help='Burst size')
     parser.add_argument('--profile', action='store_true', help='Profile the code with cProfile')
     args = parser.parse_args()
-
-    from litex import RemoteClient
 
     wb = RemoteClient()
     wb.open()

@@ -4,7 +4,7 @@ import time
 import itertools
 
 from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
-from .utils import memdump, memread, memwrite, DRAMAddressConverter
+from rowhammer_tester.scripts.utils import memdump, memread, memwrite, DRAMAddressConverter, RemoteClient
 
 # Sample program
 encoder = Encoder(bankbits=3)
@@ -87,8 +87,6 @@ def execute(wb):
     memdump(scratchpad, base=0)
 
 if __name__ == "__main__":
-    from litex import RemoteClient
-
     wb = RemoteClient()
     wb.open()
 

@@ -5,6 +5,7 @@
 #
 
 import os
+import csv
 import argparse
 
 from migen import *
@@ -120,10 +121,6 @@ _io = [
     ("user_led", 3, Pins(1)),
 ]
 
-class Platform(SimPlatform):
-    def __init__(self):
-        SimPlatform.__init__(self, "SIM", _io)
-
 # BaseSoC ------------------------------------------------------------------------------------------
 
 class BaseSoC(SoCCore):
@@ -132,7 +129,7 @@ class BaseSoC(SoCCore):
         if not args.sim:
             platform = arty.Platform(toolchain=toolchain)
         else:
-            platform = Platform()
+            platform = SimPlatform("SIM", _io)
 
         # SoCCore ----------------------------------------------------------------------------------
         SoCCore.__init__(self, platform, sys_clk_freq,
@@ -328,6 +325,7 @@ class BaseSoC(SoCCore):
         # self.add_csr("analyzer")
 
     def generate_sdram_phy_py_header(self, output_file):
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
         f = open(output_file, "w")
         f.write(get_sdram_phy_py_header(
             self.sdram.controller.settings.phy,
@@ -378,14 +376,22 @@ def main():
         udp_port     = int(args.udp_port, 0),
         **soc_kwargs)
 
-    # FIXME: try to generate to build/ and make the scripts use that version?
-    script_dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
-    soc.generate_sdram_phy_py_header(os.path.join(script_dir, "..", "scripts", "sdram_init.py"))
-
     builder_kwargs = builder_argdict(args)
-    builder_kwargs["csr_csv"] = os.path.join(script_dir, "..", "scripts", "csr.csv")
+    if args.sim:  # always build in the build/arty/ directory
+        builder_kwargs["output_dir"] = os.path.join('build', 'arty')
     builder = Builder(soc, **builder_kwargs)
     build_kwargs = vivado_build_argdict(args)
+
+    # Generate files in the build directory
+    builder.csr_csv = os.path.join(builder.output_dir, 'csr.csv')
+    soc.generate_sdram_phy_py_header(os.path.join(builder.output_dir, "sdram_init.py"))
+    with open(os.path.join(builder.output_dir, 'defs.csv'), 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows([
+            ('IP_ADDRESS', args.ip_address),
+            ('MAC_ADDRESS', args.mac_address),
+            ('UDP_PORT', args.udp_port),
+        ])
 
     if not args.sim:
         builder.build(**build_kwargs, run=args.build)

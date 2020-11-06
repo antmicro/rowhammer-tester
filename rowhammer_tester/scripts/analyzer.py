@@ -3,33 +3,37 @@
 import sys
 import argparse
 
-from litex import RemoteClient
-from litescope import LiteScopeAnalyzerDriver
+from litescope.software.litescope_cli import *
 
-parser = argparse.ArgumentParser()
-#parser.add_argument("--ibus_stb",  action="store_true", help="Trigger on IBus Stb rising edge.")
-#parser.add_argument("--ibus_adr",  default=0x00000000,  help="Trigger on IBus Adr value.")
-parser.add_argument("--offset",    default=128,         help="Capture Offset.")
-parser.add_argument("--length",    default=512,         help="Capture Length.")
-args = parser.parse_args()
+from rowhammer_tester.scripts.utils import RemoteClient, get_generated_file
 
-wb = RemoteClient()
-wb.open()
+# Wrapper around litescope_cli
+if __name__ == "__main__":
+    args = parse_args()
 
-# # #
+    signals = get_signals(get_generated_file("analyzer.csv"))
+    if args.list:
+        for signal in signals:
+            print(signal)
+        sys.exit(0)
 
-analyzer = LiteScopeAnalyzerDriver(wb.regs, "analyzer", debug=True)
-analyzer.configure_group(0)
-#analyzer.add_rising_edge_trigger("simsoc_cpu_ibus_stb")
-#analyzer.configure_trigger(cond={"simsoc_cpu_ibus_adr": int(args.ibus_adr, 0)})
-#analyzer.configure_trigger(cond={})
-analyzer.configure_trigger(cond={"basesoc_etherbone_liteethetherbonewishbonemaster_bus_adr":'0b10000000000'})
-analyzer.run(offset=int(args.offset), length=int(args.length))
+    wb = RemoteClient()
+    wb.open()
 
-analyzer.wait_done()
-analyzer.upload()
-analyzer.save("dump.vcd")
+    try:
+        analyzer = LiteScopeAnalyzerDriver(wb.regs, "analyzer", debug=True)
+        analyzer.configure_group(0)
+        analyzer.configure_subsampler(int(args.subsampling, 0))
+        if not add_triggers(args, analyzer, signals):
+            print("WARNING: no trigger added!")
 
-# # #
+        analyzer.run(
+            offset = int(args.offset, 0),
+            length = None if args.length is None else int(args.length, 0)
+        )
 
-wb.close()
+        analyzer.wait_done()
+        analyzer.upload()
+        analyzer.save("dump.vcd")
+    finally:
+        wb.close()

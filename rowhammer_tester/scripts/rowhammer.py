@@ -2,10 +2,12 @@
 
 import time
 import random
+import argparse
 from math import ceil
 
 from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
-from .utils import memfill, memcheck, memwrite, DRAMAddressConverter
+from rowhammer_tester.scripts.utils import (memfill, memcheck, memwrite, DRAMAddressConverter,
+                                            litex_server, RemoteClient)
 
 ################################################################################
 
@@ -196,8 +198,6 @@ def patterns_random_per_row(rows, seed=42):
 
 
 if __name__ == "__main__":
-    import argparse
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--nrows', type=int, default=0, help='Number of rows to consider')
     parser.add_argument('--bank', type=int, default=0, help='Bank number')
@@ -231,10 +231,7 @@ if __name__ == "__main__":
         args.no_refresh = True
 
     if args.srv:
-        from wrapper import litex_srv
-        litex_srv()
-
-    from litex import RemoteClient
+        litex_server()
 
     wb = RemoteClient()
     wb.open()

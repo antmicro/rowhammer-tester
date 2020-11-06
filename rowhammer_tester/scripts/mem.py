@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import random
+import argparse
 
-from .utils import *
-from .read_level import read_level, default_arty_settings
+from rowhammer_tester.scripts.utils import *
+from rowhammer_tester.scripts.read_level import read_level, default_arty_settings
 
 def _compare(val, ref, fmt, nbytes=4):
     assert fmt in ["bin", "hex"]
@@ -89,17 +90,19 @@ def memtest_basic(wb, base=None, seed=42):
 # ###########################################################################
 
 if __name__ == "__main__":
-    import sys
-    from litex import RemoteClient
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--srv', action='store_true')
+    parser.add_argument('--no-init', action='store_true')
+    parser.add_argument('--memspeed', action='store_true')
+    args = parser.parse_args()
 
-    if '--srv' in sys.argv[1:]:
-        from wrapper import litex_srv
-        litex_srv()
+    if args.srv:
+        litex_server()
 
     wb = RemoteClient()
     wb.open()
 
-    if '--no-init' not in sys.argv[1:]:
+    if not args.no_init:
         print('SDRAM initialization:')
         sdram_init(wb)
 
@@ -113,7 +116,7 @@ if __name__ == "__main__":
     errors = memtest_random(wb, length=0x2000)
     print('OK' if errors == 0 else 'FAIL: errors = {}'.format(errors))
 
-    if '--memspeed' in sys.argv[1:]:
+    if args.memspeed:
         for n in [0x1000//4, 0x10000//4, 0x100000//4]:
             print('Size = 0x{:08x}'.format(n*4))
             memspeed(wb, n)
