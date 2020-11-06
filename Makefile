@@ -26,7 +26,7 @@ upload up: FORCE
 	./third_party/xc3sprog/xc3sprog -c nexys4 build/arty/gateware/arty.bit
 
 srv: FORCE
-	litex_server --udp --udp-ip=192.168.100.50
+	litex_server --udp --udp-ip $(IP_ADDRESS) --udp-port $(UDP_PORT)
 
 doc: FORCE
 	python gateware/arty.py --docs $(ARGS)
