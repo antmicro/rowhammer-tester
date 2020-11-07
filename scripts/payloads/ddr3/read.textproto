@@ -1,0 +1,52 @@
+# payload_ddr3.proto.Payload
+timing: {
+  tick_ps: 1000
+  ras: 32
+  rp: 10
+  rfc: 103
+  rcd: 10
+  ccd: 4
+  rtp: 8
+  rrd: 5
+  faw: 26
+}
+instr: {
+  mem: {
+    opcode: ACT
+    timeslice: 10
+    bank: 1
+    addr: 8192
+  }
+}
+instr: {
+  mem: {
+   opcode: RD
+    timeslice: 4
+    bank: 1
+    addr: 0
+  }
+}
+instr: {
+  mem: {
+   opcode: RD
+    timeslice: 4
+    bank: 1
+    addr: 8
+  }
+}
+instr: {
+  mem: {
+   opcode: RD
+    timeslice: 4
+    bank: 1
+    addr: 16
+  }
+}
+instr: {
+  mem: {
+   opcode: RD
+    timeslice: 4
+    bank: 1
+    addr: 24
+  }
+}

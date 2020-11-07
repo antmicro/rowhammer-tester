@@ -1,14 +1,16 @@
-# payload_ddr3.proto.Payload
+# payload_ddr4.proto.Payload
 timing: {
   tick_ps: 1000
   ras: 32
-  rp: 10
-  rfc: 103
-  rcd: 10
-  ccd: 4
+  rp: 12
+  rfc: 243
+  rcd: 12
+  ccd_l: 5
+  ccd_s: 4
   rtp: 8
-  rrd: 5
-  faw: 26
+  rrd_l: 6
+  rrd_s: 5
+  faw: 28
 }
 instr: {
   mem: {
@@ -19,7 +21,7 @@ instr: {
 instr: {
   mem: {
     opcode: PRE
-    timeslice: 9
+    timeslice: 11
   }
 }
 instr: {
