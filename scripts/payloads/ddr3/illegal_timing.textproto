@@ -1,0 +1,12 @@
+# payload_ddr3.proto.Payload
+timing: {
+  tick_ps: 1000
+  ras: 0
+  rp: 10
+  rfc: 103
+  rcd: 10
+  ccd: 4
+  rtp: 8
+  rrd: 5
+  faw: 26
+}
