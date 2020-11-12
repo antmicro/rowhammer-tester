@@ -68,7 +68,6 @@ third_party/xc3sprog/xc3sprog: third_party/xc3sprog/CMakeLists.txt
 env: venv/bin/activate
 	@env bash --init-file "$(PWD)/venv/bin/activate"
 
-# FIXME: should be called from top level or tests subdirectory
 test: FORCE
 	python -m unittest -v
 
