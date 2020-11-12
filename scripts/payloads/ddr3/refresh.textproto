@@ -1,0 +1,28 @@
+timing: {
+  tick_ps: 1000
+  ras: 32
+  rp: 10
+  rfc: 103
+  rcd: 10
+  ccd: 4
+  rtp: 8
+  rrd: 5
+  faw: 26
+}
+instr: {
+  mem: {
+    opcode: REF
+    timeslice: 103
+  }
+}
+instr: {
+  nop: {
+    timeslice: 7696
+  }
+}
+instr: {
+  jmp: {
+    offset: 2
+    count: 8191
+  }
+}

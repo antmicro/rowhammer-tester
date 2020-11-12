@@ -1,26 +1,30 @@
 # payload_ddr3.proto.Payload
-
 timing: {
   tick_ps: 1000
-  ras: 35
-  rp: 15
-  rfc: 100
+  ras: 32
+  rp: 10
+  rfc: 103
+  rcd: 10
+  ccd: 4
+  rtp: 8
+  rrd: 5
+  faw: 26
 }
 instr: {
   mem: {
     opcode: ACT
-    timeslice: 35
+    timeslice: 32
   }
 }
 instr: {
   mem: {
     opcode: PRE
-    timeslice: 14
+    timeslice: 9
   }
 }
 instr: {
   jmp: {
     offset: 2
-    count: 999999
+    count: 999
   }
 }

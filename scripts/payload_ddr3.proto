@@ -13,12 +13,20 @@ message Timing {
   optional uint32 ras = 2;
   optional uint32 rp = 3;
   optional uint32 rfc = 4;
+
+  optional uint32 rcd = 5;
+  optional uint32 ccd = 6;
+  optional uint32 rtp = 7;
+
+  optional uint32 rrd = 8;
+  optional uint32 faw = 9;
 }
 
 // Encodes the instruction type.
 enum Opcode {
   // Memory instructions.
   // Refer to "DDR3 SDRAM Standard". JESD79-3F. July 2012.
+  RD = 2;  // RAS: 0, CAS: 1, WE: 0
   ACT = 4;  // RAS: 1, CAS: 0, WE: 0
   PRE = 5;  // RAS: 1, CAS: 0, WE: 1
   REF = 6;  // RAS: 1, CAS: 1, WE: 0
@@ -42,7 +50,7 @@ message Instr {
       ADDR = 16;
     }
 
-    // Must be one of ACT, PRE, REF.
+    // Must be one of RD, ACT, PRE, REF.
     optional Opcode opcode = 1;
     // Number of ticks that separates this command from the one
     // following it. Minimum is one when they are back-to-back.
@@ -82,7 +90,7 @@ message Instr {
     // target comes directly before this one.
     optional uint32 offset = 2;
     // Number of loop iterations. Minimum is one because by the time the
-    // jump instruction is encountered, the loop has already been executed once.
+    // jump instruction is encountered, the loop has already executed once.
     optional uint32 count = 3;
   }
 
