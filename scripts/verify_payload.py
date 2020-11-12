@@ -5,6 +5,7 @@ from enum import Enum
 import sys
 import google.protobuf.text_format
 import ddr3lib
+import ddr4lib
 
 class DRAM(Enum):
   DDR3 = 1
@@ -37,8 +38,10 @@ def main() -> int:
   args = parser.parse_args()
   if args.dram == DRAM.DDR3.name.lower():
     dramlib = ddr3lib
+  elif args.dram == DRAM.DDR4.name.lower():
+    dramlib = ddr4lib
   else:
-    print('Only DDR3 is supported: `--dram=ddr3`')
+    print('Unsupported DRAM protocol:', args.dram)
     return -1
 
   # Parse textproto.

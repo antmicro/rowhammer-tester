@@ -13,12 +13,12 @@ timing: {
 instr: {
   mem: {
     opcode: ACT
-    timeslice: 9
+    timeslice: 100
   }
 }
 instr: {
   mem: {
-    opcode: RD
-    timeslice: 4
+   opcode: REF
+    timeslice: 103
   }
 }

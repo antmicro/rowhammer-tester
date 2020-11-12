@@ -18,13 +18,8 @@ instr: {
 }
 instr: {
   mem: {
-    opcode: RD
-    timeslice: 3
-  }
-}
-instr: {
-  mem: {
-    opcode: RD
-    timeslice: 8
+   opcode: RD
+    timeslice: 4
+    addr: 1
   }
 }

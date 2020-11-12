@@ -1,11 +1,11 @@
-// Compile: `protoc payload_ddr3.proto --python_out=.`
+// Compile: `protoc payload_ddr4.proto --python_out=.`
 
 syntax = "proto2";
 
-package payload_ddr3.proto;
+package payload_ddr4.proto;
 
-// Represents DRAM timing parameters as integer multiples of the
-// system clock (i.e., tick).
+// Represents DRAM timing parameters as integer multiples of the system clock
+// (i.e., tick).
 message Timing {
   // Picoseconds.
   optional uint32 tick_ps = 1;
@@ -16,41 +16,47 @@ message Timing {
   optional uint32 rfc = 4;
 
   optional uint32 rcd = 5;
-  optional uint32 ccd = 6;
-  optional uint32 rtp = 7;
+  optional uint32 ccd_l = 6;
+  optional uint32 ccd_s = 7;
+  optional uint32 rtp = 8;
 
-  optional uint32 rrd = 8;
-  optional uint32 faw = 9;
+  optional uint32 rrd_l = 9;
+  optional uint32 rrd_s = 10;
+  optional uint32 faw = 11;
 }
 
 // Encodes the instruction type.
 enum Opcode {
-  // Memory instructions. Refer to "DDR3 SDRAM Standard". JESD79-3F. July 2012.
-  RD = 2;   // RAS: 0, CAS: 1, WE: 0
-  ACT = 4;  // RAS: 1, CAS: 0, WE: 0
-  PRE = 5;  // RAS: 1, CAS: 0, WE: 1
-  REF = 6;  // RAS: 1, CAS: 1, WE: 0
+  // Memory instructions. Refer to "DDR4 SDRAM". JESD79-4B. July 2017.
+  RD = 2;   // ACT: 0, RAS: 0, CAS: 1, WE: 0
+  // Hard-coded to 8 despite how its lowest bits (RAS, CAS, WE) are repurposed as
+  // higher (but not the highest) bits of the address (ADDR16, ADDR15, ADDR14).
+  ACT = 8;  // ACT: 1, RAS: 0, CAS: 0, WE: 0
+  PRE = 5;  // ACT: 0, RAS: 1, CAS: 0, WE: 1
+  REF = 6;  // ACT: 0, RAS: 1, CAS: 1, WE: 0
 
   // Non-memory instructions.
   NOP = 0;
   JMP = 7;
 
   // Unused.
-  MAX = 8;
+  MAX = 9;
 }
 
-// Stores a single instruction. Implemented as a sum-type. 32 bits wide, but
+// Stores a single instruction. Implemented as a sum-type. 40 bits wide, but
 // subject to future expansion. Will maintain backwards compatibility.
 message Instr {
   // Memory instruction. Maps to a DRAM command.
   message MemInstr {
     enum Bits {
       option allow_alias = true;
-      OPCODE = 3;
-      TIMESLICE = 8;
+      OPCODE = 4;
+      TIMESLICE = 9;
       RANK = 2;
-      BANK = 3;
-      ADDR = 16;
+      STACK = 3;
+      BANK_GROUP = 2;
+      BANK = 2;
+      ADDR = 18;
     }
 
     // Must be one of RD, ACT, PRE, REF.
@@ -60,21 +66,25 @@ message Instr {
     optional uint32 timeslice = 2;
     // Must be set to 0. Multi-ranks are not yet supported.
     optional uint32 rank = 3;
-    optional uint32 bank = 4;
-    optional uint32 addr = 5;
+    // Must be set to 0. Die-stacks are not yet supported.
+    optional uint32 stack = 4;
+    optional uint32 bank_group = 5;
+    optional uint32 bank = 6;
+    optional uint32 addr = 7;
   }
 
   // No-op instruction. Simply consumes time.
   message NopInstr {
     enum Bits {
-      OPCODE = 3;
+      OPCODE = 4;
       TIMESLICE = 29;
+      UNUSED = 7;
     }
 
     // Must be NOP.
     optional Opcode opcode = 1 [default = NOP];
-    // Number of ticks that separates this command from the one following it.
-    // Minimum is one when they are back-to-back.
+    // Number of ticks that separates this command from the one
+    // following it. Minimum is one when they are back-to-back.
     optional uint32 timeslice = 2;
   }
 
@@ -82,9 +92,10 @@ message Instr {
   // Timeslice of one is implied.
   message JmpInstr {
     enum Bits {
-      OPCODE = 3;
+      OPCODE = 4;
       OFFSET = 9;
       COUNT = 20;
+      UNUSED = 7;
     }
 
     // Must be JMP.
