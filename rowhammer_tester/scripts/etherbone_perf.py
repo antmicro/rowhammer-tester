@@ -3,7 +3,7 @@ import cProfile
 
 import argparse
 
-from utils import memread, memwrite
+from .utils import memread, memwrite
 
 def run(wb, rw, n, *, burst, profile=True):
     datas = list(range(n))

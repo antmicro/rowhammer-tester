@@ -31,6 +31,7 @@ from litedram import modules as litedram_modules
 #from litedram import phy as litedram_phys
 from litedram.init import get_sdram_phy_py_header
 from litedram.core.controller import ControllerSettings
+from litedram.frontend.dma import LiteDRAMDMAReader, LiteDRAMDMAWriter
 
 from liteeth.phy.mii import LiteEthPHYMII
 
@@ -40,8 +41,10 @@ from liteeth.frontend.etherbone import LiteEthEtherbone
 
 from litex.soc.cores import uart
 
-from rowhammer import RowHammerDMA
-from payload_executor import PayloadExecutor
+from rowhammer_tester.gateware.writer import Writer
+from rowhammer_tester.gateware.reader import Reader
+from rowhammer_tester.gateware.rowhammer import RowHammerDMA
+from rowhammer_tester.gateware.payload_executor import PayloadExecutor
 
 # CRG ----------------------------------------------------------------------------------------------
 
@@ -235,8 +238,6 @@ class BaseSoC(SoCCore):
             self.comb += platform.trace.eq(1)
 
         # Rowhammer --------------------------------------------------------------------------------
-        from litedram.frontend.dma import LiteDRAMDMAReader, LiteDRAMDMAWriter
-
         self.submodules.rowhammer_dma = LiteDRAMDMAReader(self.sdram.crossbar.get_port())
         self.submodules.rowhammer = RowHammerDMA(self.rowhammer_dma)
         self.add_csr("rowhammer")
@@ -260,7 +261,6 @@ class BaseSoC(SoCCore):
         # Bist -------------------------------------------------------------------------------------
         if not args.no_memory_bist:
             # ------------------------------ writer ------------------------------------
-            from writer import Writer
             dram_wr_port = self.sdram.crossbar.get_port()
             self.submodules.writer = Writer(dram_wr_port)
             self.add_csr('writer')
@@ -273,7 +273,6 @@ class BaseSoC(SoCCore):
             add_xram(self, name='pattern_adr', mem=self.writer.memory_adr, origin=0x24000000)
 
             # ----------------------------- reader -------------------------------------
-            from reader import Reader
             dram_rd_port = self.sdram.crossbar.get_port()
             self.submodules.reader = Reader(dram_rd_port)
             self.add_csr('reader')

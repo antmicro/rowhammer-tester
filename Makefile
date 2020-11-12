@@ -1,35 +1,42 @@
-PATH := $(PWD)/venv/bin:$(PATH)
-PATH := $(PWD)/bin::$(PATH)
-PATH := $(PWD)/third_party/verilator/image/bin:$(PATH)
-export PATH
-
+# User configuration
+TARGET 	    ?= arty
 IP_ADDRESS  ?= 192.168.100.50
 MAC_ADDRESS ?= 0x10e2d5000001
 UDP_PORT    ?= 1234
+
+# # #
+
+# Gateware args
 ARGS := --ip-address $(IP_ADDRESS) --mac-address $(MAC_ADDRESS) --udp-port $(UDP_PORT)
 
+# Update PATH to activate the Python venv and include all required binaries
+PATH := $(PWD)/venv/bin:$(PATH)
+PATH := $(PWD)/bin:$(PATH)
+PATH := $(PWD)/third_party/verilator/image/bin:$(PATH)
+export PATH
+
 all:
-	python gateware/arty.py $(ARGS)
+	python rowhammer_tester/targets/$(TARGET).py $(ARGS)
 
 FORCE:
 
 build: FORCE
-	python gateware/arty.py --build $(ARGS)
+	python rowhammer_tester/targets/$(TARGET).py --build $(ARGS)
 
 sim: FORCE
-	python gateware/arty.py --build --sim $(ARGS)
+	python rowhammer_tester/targets/$(TARGET).py --build --sim $(ARGS)
 
 sim-analyze: FORCE
-	python scripts/sim_runner.py python gateware/arty.py --build --sim $(ARGS)
+	python rowhammer_tester/scripts/sim_runner.py python rowhammer_tester/targets/$(TARGET).py --build --sim $(ARGS)
 
 upload up: FORCE
-	./third_party/xc3sprog/xc3sprog -c nexys4 build/arty/gateware/arty.bit
+	./third_party/xc3sprog/xc3sprog -c nexys4 build/$(TARGET)/gateware/$(TARGET).bit
 
 srv: FORCE
 	litex_server --udp --udp-ip $(IP_ADDRESS) --udp-port $(UDP_PORT)
 
 doc: FORCE
-	python gateware/arty.py --docs $(ARGS)
+	python rowhammer_tester/targets/$(TARGET).py --docs $(ARGS)
 	python -m sphinx -b html build/documentation build/documentation/html
 
 clean::
@@ -63,7 +70,7 @@ env: venv/bin/activate
 
 # FIXME: should be called from top level or tests subdirectory
 test: FORCE
-	(cd gateware && python3 -m unittest discover -v -s $(PWD)/tests)
+	python -m unittest -v
 
 # FIXME: should this be generating the files in top level directory?
 protoc: FORCE

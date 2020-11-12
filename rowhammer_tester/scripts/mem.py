@@ -2,8 +2,8 @@
 
 import random
 
-from utils import *
-from read_level import read_level, default_arty_settings
+from .utils import *
+from .read_level import read_level, default_arty_settings
 
 def _compare(val, ref, fmt, nbytes=4):
     assert fmt in ["bin", "hex"]
