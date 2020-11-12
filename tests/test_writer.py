@@ -1,7 +1,7 @@
 import unittest
 
 from migen import *
-from writer import *
+from rowhammer_tester.gateware.writer import *
 
 class TestWriter(unittest.TestCase):
     def test_pattern_1(self):

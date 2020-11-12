@@ -1,7 +1,13 @@
 *.swp
 __pycache__/
+*.egg-info/
+
 /build/
-/csr.csv
-/scripts/sdram_init.py
 /venv/
 /prog/
+
+csr.csv
+analyzer.csv
+dump.vcd
+sdram_init.py
+vivado.*

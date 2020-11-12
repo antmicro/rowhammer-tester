@@ -4,8 +4,9 @@ import argparse
 from enum import Enum
 import sys
 import google.protobuf.text_format
-import ddr3lib
-import ddr4lib
+
+from rowhammer_tester.payload import ddr3lib
+from rowhammer_tester.payload import ddr4lib
 
 class DRAM(Enum):
   DDR3 = 1

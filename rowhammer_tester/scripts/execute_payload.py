@@ -3,12 +3,8 @@ import sys
 import time
 import itertools
 
-# FIXME: avoid having to modify path
-SCRIPT_DIR = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
-sys.path.append(os.path.join(SCRIPT_DIR, '..', 'gateware'))
-
-from payload_executor import Encoder, OpCode, Decoder
-from utils import memdump, memread, memwrite, DRAMAddressConverter
+from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
+from rowhammer_tester.scripts.utils import memdump, memread, memwrite, DRAMAddressConverter, RemoteClient
 
 # Sample program
 encoder = Encoder(bankbits=3)
@@ -91,8 +87,6 @@ def execute(wb):
     memdump(scratchpad, base=0)
 
 if __name__ == "__main__":
-    from litex import RemoteClient
-
     wb = RemoteClient()
     wb.open()
 

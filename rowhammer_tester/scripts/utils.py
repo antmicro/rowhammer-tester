@@ -1,9 +1,67 @@
+import os
+import csv
+import sys
+import glob
 import time
 from operator import or_
 from functools import reduce
 
-import sdram_init as _sdram_init
+# ###########################################################################
+
+def discover_generated_files_dir():
+    # Search for defs.csv file that should have been generated in build directory.
+    # Assume that we are building in repo root.
+    script_dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+    build_dir = os.path.normpath(os.path.join(script_dir, '..', '..', 'build'))
+    candidates = os.path.join(build_dir, '*', 'defs.csv')
+    results = glob.glob(candidates)
+    if not results:
+        raise ImportError(
+            'Could not find "defs.csv". Make sure to run target generator (from'
+            ' rowhammer_tester/targets/) in the root directory of this repository.')
+    elif len(results) > 1:
+        if 'TARGET' not in os.environ:
+            raise ImportError(
+                'More than one "defs.csv" file found. Set environmental variable'
+                ' TARGET to the name of the target to use (e.g. `export TARGET=arty`).')
+        gen_dir = os.path.join(build_dir, os.environ['TARGET'])
+    else:
+        gen_dir = os.path.dirname(results[0])
+
+    sys.path.append(gen_dir)
+    return gen_dir
+
+GENERATED_DIR = discover_generated_files_dir()
+
+# Import sdram_init.py
+sys.path.append(GENERATED_DIR)
+import sdram_init as sdram_init_defs
 from sdram_init import *
+
+def get_generated_file(name):
+    # For getting csr.csv/analyzer.csv
+    filename = os.path.join(GENERATED_DIR, name)
+    if not os.path.isfile(filename):
+        raise ImportError('Generated file "{}" not found in directory "{}"'.format(name, GENERATED_DIR))
+    return filename
+
+def get_generated_defs():
+    with open(get_generated_file('defs.csv'), newline='') as f:
+        reader = csv.reader(f)
+        return {name: value for name, value in reader}
+
+def RemoteClient(*args, **kwargs):
+    from litex import RemoteClient as _RemoteClient
+    return _RemoteClient(csr_csv=get_generated_file('csr.csv'), *args, **kwargs)
+
+def litex_server():
+    from litex.tools.litex_server import RemoteServer
+    from litex.tools.remote.comm_udp import CommUDP
+    defs = get_generated_defs()
+    comm = CommUDP(server=defs['IP_ADDRESS'], port=int(defs['UDP_PORT']))
+    server = RemoteServer(comm, '127.0.0.1', 1234)
+    server.open()
+    server.start(4)
 
 # ###########################################################################
 
@@ -20,7 +78,7 @@ def sdram_init(wb):
     # so this is hardcoded for now
     # update: Hacky but works
     control_cmds = []
-    with open(_sdram_init.__file__, 'r') as f:
+    with open(sdram_init_defs.__file__, 'r') as f:
         n = 0
         while True:
             line = f.readline()
@@ -161,10 +219,6 @@ class DRAMAddressConverter:
 
 # Open a remote connection in an interactive session (e.g. when sourced as `ipython -i <thisfile>`)
 if __name__ == "__main__":
-    import sys
-
     if bool(getattr(sys, 'ps1', sys.flags.interactive)):
-        from litex import RemoteClient
-
         wb = RemoteClient()
         wb.open()

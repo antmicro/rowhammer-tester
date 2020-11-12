@@ -65,19 +65,29 @@ make doc
 ```
 The documentation will be located in `build/documentation/html/index.html`.
 
+## Tests
+
+To run project tests use:
+```
+make test
+```
+
 ## Usage
 
-Currently, scripts support one FPGA board: Arty-A7 (xc7a35t) and one simulation (based on Arty-A7).
+The Makefile can be configured using environmental variables to modify the network configuration used and to select the target.
+Currently, only the Arty-A7 (xc7a35t) FPGA board is supported (`TARGET=arty`). It can be run on hardware or in simulation.
 
 ### Arty-A7 board
 
-Connect the board USB and Ethernet cables to your computer, then configure the network. The board IP address will be `192.168.100.50` (so you could e.g. use `192.168.100.2/24`).
+Connect the board USB and Ethernet cables to your computer, then configure the network. The board IP address will be `192.168.100.50` (so you could e.g. use `192.168.100.2/24`). `IP_ADDRESS` environmental variable can be used to modify the board address.
 Then generate the FPGA bitstream:
 ```
+export TARGET=arty
 make build
 ```
 the results will be located in directory: `build/arty/gateware/arty.bit`. To upload it use:
 ```
+export TARGET=arty
 make upload
 ```
 
@@ -88,6 +98,7 @@ make upload
 Generate intermediate files & run simulation:
 
 ```
+export TARGET=arty
 make sim
 ```
 
@@ -120,15 +131,17 @@ TIP: By typing `make ARGS="--sim"` LiteX will generate only intermediate files a
 Board control is the same for both simulation and hardware runs.
 In order to communicate with the board via EtherBone, the `litex_server` needs to be started with the following command:
 ```
+export IP_ADDRESS=192.168.100.50  # optional, should match the one used during build
 make srv
 ```
 The build files (CSRs address list) must be up to date. It can be re-generated with `make` without arguments.
 
-Then in another terminal you can use the Python scripts provided. *Remember to enter the Python virtual environment before running the scripts!*
+Then in another terminal you can use the Python scripts provided. *Remember to enter the Python virtual environment before running the scripts!* Also, the `TARGET` variable should be set to load configuration for the given target.
 For example to use the `leds.py` script run the following:
 ```
 source ./venv/bin/activate
-cd scripts/
+export TARGET=arty  # required to load target configuration
+cd rowhammer_tester/scripts/
 python leds.py  # stop with Ctrl-C
 ```
 

@@ -3,7 +3,7 @@ from operator import or_
 from functools import reduce
 from collections import defaultdict
 
-from sdram_init import *
+from rowhammer_tester.scripts.utils import *
 
 # DRAM commands ----------------------------------
 
@@ -225,8 +225,6 @@ def default_arty_settings():
     )
 
 if __name__ == "__main__":
-    from litex import RemoteClient
-
     wb = RemoteClient()
     wb.open()
 
