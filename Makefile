@@ -73,4 +73,4 @@ test: FORCE
 
 # FIXME: should this be generating the files in top level directory?
 protoc: FORCE
-	protoc -I scripts/ --python_out . scripts/*.proto
+	protoc -I rowhammer_tester/payload/ --python_out . rowhammer_tester/payload/*.proto
