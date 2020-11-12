@@ -64,3 +64,7 @@ env: venv/bin/activate
 # FIXME: should be called from top level or tests subdirectory
 test: FORCE
 	(cd gateware && python3 -m unittest discover -v -s $(PWD)/tests)
+
+# FIXME: should this be generating the files in top level directory?
+protoc: FORCE
+	protoc -I scripts/ --python_out . scripts/*.proto

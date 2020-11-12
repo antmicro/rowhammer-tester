@@ -27,7 +27,7 @@ Make sure you have Python 3 installed with the `venv` module, and the dependenci
 [verilator](https://github.com/verilator/verilator) and [xc3sprog](https://github.com/matrix-io/xc3sprog).
 To install the dependencies on Ubuntu 18.04 LTS run:
 ```
-apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel
+apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel protobuf-compiler
 ```
 
 Then run:

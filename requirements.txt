@@ -1,6 +1,7 @@
 pythondata-misc-tapcfg
 sphinx
 sphinxcontrib-wavedrom
+protobuf
 
 # use editable mode
 -e third_party/migen
