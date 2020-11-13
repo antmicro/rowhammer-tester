@@ -6,3 +6,4 @@
 -e third_party/liteeth
 -e third_party/liteiclink
 -e third_party/litescope
+-e third_party/litex-boards
