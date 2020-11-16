@@ -15,19 +15,21 @@ class TestReader(unittest.TestCase):
                 self.w1 = self.reader.memory_w1.get_port(write_capable=True)
                 self.w2 = self.reader.memory_w2.get_port(write_capable=True)
                 self.w3 = self.reader.memory_w3.get_port(write_capable=True)
-                self.specials += self.w0, self.w1, self.w2, self.w3
+                self.adr = self.reader.memory_adr.get_port(write_capable=True)
+                self.specials += self.w0, self.w1, self.w2, self.w3, self.adr
 
 
         def generator(dut):
             yield from dut.reader.reset.write(1)
+            yield
             yield from dut.reader.reset.write(0)
+            yield
 
             yield from dut.reader.count.write(8)
 
-            yield from dut.reader.mem_base.write(0x30000000)
             yield from dut.reader.mem_mask.write(0xffffffff)
-
-            yield from dut.reader.data_mask.write(0x0)
+            yield from dut.reader.gen_mask.write(0x00000000)
+            yield from dut.reader.skipfifo.write(0)
 
             yield dut.w0.adr.eq(0x0)
             yield dut.w0.dat_w.eq(0xffffffff)
@@ -57,6 +59,16 @@ class TestReader(unittest.TestCase):
             yield dut.w3.we.eq(0)
             yield
 
+            yield dut.adr.adr.eq(0x0)
+            yield dut.adr.dat_w.eq(0)
+            yield dut.adr.we.eq(1)
+            yield
+            yield dut.adr.we.eq(0)
+            yield
+
+            # Fifo should be empty
+            self.assertEqual((yield from dut.reader.err_rdy.read()), 0)
+
             yield from dut.reader.start.write(1)
             yield from dut.reader.start.write(0)
 
@@ -64,8 +76,31 @@ class TestReader(unittest.TestCase):
             for n in range(0, 200):
                 yield
 
-            ptr = yield from dut.reader.pointer.read()
-            self.assertEqual(ptr, 5)
+            #ptr = yield from dut.reader.pointer.read()
+            #self.assertEqual(ptr, 5)
+
+            # Check if ready
+            self.assertEqual((yield from dut.reader.done.read()), 8)
+            self.assertEqual((yield from dut.reader.ready.read()), 1)
+
+            self.assertEqual((yield from dut.reader.err_rdy.read()), 1)
+            self.assertEqual((yield from dut.reader.err_rd.read()), 3)
+
+            for n in range(0, 13): yield
+
+            self.assertEqual((yield from dut.reader.err_rdy.read()), 1)
+            self.assertEqual((yield from dut.reader.err_rd.read()), 5)
+
+            for n in range(0, 17): yield
+
+            self.assertEqual((yield from dut.reader.err_rdy.read()), 0)
+
+            for n in range(0, 23): yield
+
+            yield from dut.reader.reset.write(1)
+            yield
+            yield from dut.reader.reset.write(0)
+            yield
 
 
         @passive
@@ -81,8 +116,8 @@ class TestReader(unittest.TestCase):
 
                     #print('RD: {:08x}'.format(address))
 
-                    # FIXME: Make this more generic
-                    if address == (0x30000000 + 0x5):
+                    # FIXME: Make this more generic and use counter_shift
+                    if address == 0x5 or address == 0x3:
                         yield dram_port.rdata.data.eq(0xfffffffffffffffeffffffffffffffff)
                     else:
                         yield dram_port.rdata.data.eq(0xffffffffffffffffffffffffffffffff)
