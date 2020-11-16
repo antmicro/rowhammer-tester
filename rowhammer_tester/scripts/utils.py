@@ -215,7 +215,130 @@ class DRAMAddressConverter:
     def decode_dma(self, address):
         return self._decode(address << self.address_align)
 
-################################################################################
+# ######################### HW (accel) memory utils #############################
+
+#
+# wb - remote handle
+# offset - memory offset in bytes (modulo 16)
+# size - memory size in bytes (modulo 16)
+# patterns - pattern to fill memory
+#
+def hw_memset(wb, offset, size, patterns, dbg=False):
+    assert size % 16 == 0
+    assert len(patterns) == 1 # FIXME: Support more patterns
+
+    pattern = patterns[0] & 0xffffffff
+
+    if dbg:
+        print('hw_memset: offset: 0x{:08x}, size: 0x{:08x}, pattern: 0x{:08x}'.format(offset, size, pattern))
+
+    # Reset module
+    wb.regs.writer_start.write(0)
+    wb.regs.writer_reset.write(1)
+    wb.regs.writer_reset.write(0)
+
+    assert wb.regs.writer_done.read() == 0
+
+    # TODO: Deprecated, remove
+    wb.regs.writer_mem_base.write(0x00000000)
+
+    # Unmask whole address space. TODO: Unmask only part of it?
+    wb.regs.writer_mem_mask.write(0xffffffff)
+
+    # FIXME: Support more patterns
+    wb.write(wb.mems.pattern_w0.base, pattern)
+    wb.write(wb.mems.pattern_w1.base, pattern)
+    wb.write(wb.mems.pattern_w2.base, pattern)
+    wb.write(wb.mems.pattern_w3.base, pattern)
+    wb.write(wb.mems.pattern_adr.base, offset // 16)
+    # Unmask just one pattern/offset
+    wb.regs.writer_data_mask.write(0x00000000)
+
+    # 4 (words) x 4 (bytes)
+    wb.regs.writer_count.write(size // 16)
+
+    # Start module
+    wb.regs.writer_start.write(1)
+    wb.regs.writer_start.write(0)
+
+    # FIXME: Support progress
+    while True:
+        if wb.regs.writer_done.read():
+            break
+        else:
+            time.sleep(10 / 1e3) # 10 ms
+
+
+def hw_memtest(wb, offset, size, patterns, dbg=False):
+    assert size % 16 == 0
+    assert len(patterns) == 1 # FIXME: Support more patterns
+
+    pattern = patterns[0] & 0xffffffff
+
+    if dbg:
+        print('hw_memtest: offset: 0x{:08x}, size: 0x{:08x}, pattern: 0x{:08x}'.format(offset, size, pattern))
+
+    wb.regs.reader_start.write(0)
+    wb.regs.reader_reset.write(1)
+    wb.regs.reader_reset.write(0)
+
+    assert wb.regs.reader_ready.read() == 0
+
+    # Flush error fifo
+    while wb.regs.reader_err_rdy.read():
+        wb.regs.reader_err_rd.read()
+
+    assert wb.regs.reader_err_rdy.read() == 0
+
+    # Enable error FIFO
+    wb.regs.reader_skipfifo.write(0)
+
+    # Unmask whole address space. TODO: Unmask only part of it?
+    wb.regs.reader_mem_mask.write(0xffffffff)
+
+    wb.write(wb.mems.pattern_rd_w0.base, pattern)
+    wb.write(wb.mems.pattern_rd_w1.base, pattern)
+    wb.write(wb.mems.pattern_rd_w2.base, pattern)
+    wb.write(wb.mems.pattern_rd_w3.base, pattern)
+    wb.write(wb.mems.pattern_rd_adr.base, offset // 16)
+    # Unmask just one pattern/offset
+    wb.regs.reader_gen_mask.write(0x00000000)
+
+    # 4 (words) x 4 (bytes)
+    wb.regs.reader_count.write(size // 16)
+
+    wb.regs.reader_start.write(1)
+    wb.regs.reader_start.write(0)
+
+    errors = []
+
+    # Read unmatched offset
+    def append_errors(wb, err):
+        while wb.regs.reader_err_rdy.read():
+            off = wb.regs.reader_err_rd.read()
+            err.append(off)
+
+    # FIXME: Support progress
+    while True:
+        if wb.regs.reader_ready.read():
+            break
+        else:
+            append_errors(wb, errors)
+            time.sleep(10 / 1e3) # !0 ms
+
+    # Make sure we read all errors
+    append_errors(wb, errors)
+
+    assert wb.regs.reader_ready.read() == 1
+    assert wb.regs.reader_err_rdy.read() == 0
+
+    if dbg:
+        print('hw_memtest: errors: {:d}'.format(len(errors)))
+
+    return errors
+
+
+# ###############################################################################
 
 # Open a remote connection in an interactive session (e.g. when sourced as `ipython -i <thisfile>`)
 if __name__ == "__main__":

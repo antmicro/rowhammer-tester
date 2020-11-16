@@ -6,12 +6,14 @@ import argparse
 
 from datetime import datetime
 
-from rowhammer_tester.scripts.utils import RemoteClient, litex_server
+from rowhammer_tester.scripts.utils import RemoteClient, litex_server, hw_memset, hw_memtest
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--srv', action='store_true')
     parser.add_argument('--dbg', action='store_true')
+    parser.add_argument('--test-modules', action='store_true')
+    parser.add_argument('--test-memory', action='store_true')
     args = parser.parse_args()
 
     if args.srv:
@@ -20,88 +22,76 @@ if __name__ == "__main__":
     wb = RemoteClient()
     wb.open()
 
-    # --------------------------------------------------------------------
-
-    wb.regs.writer_start.write(0)
-    wb.regs.writer_reset.write(1)
-    time.sleep(10000 / 1e6)
-    wb.regs.writer_reset.write(0)
-
-    wb.write(0x20000000, 0xffffffff)  # patttern
-    wb.write(0x21000000, 0xffffffff)  # patttern
-    wb.write(0x22000000, 0xffffffff)  # patttern
-    wb.write(0x23000000, 0xffffffff)  # patttern
-    wb.write(0x24000000, 0x00000000)  # offset
-
+    # FIXME: Pass it as argument
+    mem_base  = 0x40000000
     mem_range = 256 * 1024 * 1024  # bytes
-    mem_mask  = (mem_range // 4 // 4) - 1
-    mem_count = mem_mask
 
-    wb.regs.writer_mem_base.write(0x0)
-    wb.regs.writer_mem_mask.write(mem_mask)  # memory range
-    wb.regs.writer_data_mask.write(0x00000000)  # just pattern from address 0x0
-    wb.regs.writer_count.write(mem_count)
-    wb.regs.writer_start.write(1)
+    if args.test_modules:
+        hw_memset(wb, 0x0, mem_range, [0xffffffff], args.dbg)
 
-    while True:
-        if wb.regs.writer_done.read():
-            break
-        else:
-            time.sleep(10000 / 1e6)
+        # --------------------------- Introduce error ------------------------
+        offsets = []
+        for i, n in enumerate(range(0, 100000)):
+            print('Generated {:d} offsets'.format(i), end='\r')
+            offset = random.Random(datetime.now()).randrange(0x0, 256 * 1024 * 1024 - 4)
+            if offset//16 not in offsets:
+                offsets.append(offset // 16)
+                if args.dbg:
+                    print('dbg: offset: ' + str(offset))
+                wb.write(mem_base + offset, wb.read(mem_base + offset) ^ 0x000010000)
+        print()
 
-    wb.regs.writer_start.write(0)
+        # Corner case
+        #offsets.append((mem_range - 4)//16)
+        #wb.write(mem_base + mem_range - 4, wb.read(mem_base + mem_range - 4) ^ 0x00100000)
+        #if args.dbg:
+        #    print('dbg: 0x{:08x}: 0x{:08x}'.format(mem_base + mem_range - 4, wb.read(mem_base + mem_range - 4)))
 
-    # --------------------------- Introduce error ------------------------
-    offset = random.Random(datetime.now()).randrange(0x0, 256 * 1024 * 1024 - 16)  # FIXME: Check corner case
-    if args.dbg:
-        print('offset: ' + str(offset) + ', expecting: ' + str((offset//16) * 16))
-    wb.write(0x40000000 + offset, wb.read(0x40000000 + offset) ^ 0x000010000)
-    # --------------------------------------------------------------------
+        print('dbg: offsets: {:d}'.format(len(offsets)))
+        # --------------------------------------------------------------------
 
-    wb.regs.reader_start.write(0)
-    wb.regs.reader_reset.write(1)
-    time.sleep(10000 / 1e6)
-    wb.regs.reader_reset.write(0)
+        start_time = time.time()
+        errors = hw_memtest(wb, 0x0, mem_range, [0xffffffff], args.dbg)
+        end_time = time.time()
 
-    # Flush reader err fifo
-    while wb.regs.reader_err_rdy.read():
-        print('flush')
-        wb.regs.reader_err_rd.read()
+        if args.dbg:
+            print('dbg: errors: {:d}, offsets: {:d}'.format(len(errors), len(offsets)))
 
-    # Expected pattern
-    wb.write(0x30000000, 0xffffffff)  # patttern
-    wb.write(0x31000000, 0xffffffff)  # patttern
-    wb.write(0x32000000, 0xffffffff)  # patttern
-    wb.write(0x33000000, 0xffffffff)  # patttern
-    wb.write(0x34000000, 0x00000000)  # offset
+        print('dbg: errors: {:d}, offsets: {:d}'.format(len(errors), len(offsets)))
+        if len(errors) != len(offsets):
+            missing = []
+            for off in offsets:
+                if off not in errors:
+                    missing.append(off)
 
-    wb.regs.reader_skipfifo.write(0)
+            for off in missing:
+                print('dbg: Missing offsets: 0x{:08x}'.format(off))
 
-    wb.regs.reader_mem_mask.write(mem_mask)  # memory range
-    wb.regs.reader_gen_mask.write(0x00000000)  # pattern range
+        assert len(errors) == len(offsets)
 
-    wb.regs.reader_count.write(mem_mask)
-    wb.regs.reader_start.write(1)
-    wb.regs.reader_start.write(0)
+        for off, err in zip(sorted(offsets), errors): # errors should be already sorted
+            if args.dbg:
+                print('dbg: 0x{:08x} == 0x{:08x}'.format(off, err))
+            assert off == err
 
-    while True:
-        if wb.regs.reader_ready.read():
-            break
-        else:
-            time.sleep(1000 / 1e6)
+        print('Execution time: {:.3f} s ({:.3f} errors / s)'.format(end_time - start_time, len(offsets)/(end_time - start_time)))
+        print("Test OK!")
 
-    # FIXME: assert
-    # --------------------
-    assert wb.regs.reader_err_rdy.read() == 1
-    ptr = wb.regs.reader_err_rd.read()
-    assert wb.regs.reader_err_rdy.read() == 0
-    if args.dbg:
-        print('ptr: 0x{:08x} : {:d}'.format(ptr, ptr * 16))
-        print('diff: {:d}'.format(ptr - (offset//16)))
-    assert(ptr == offset//16)
+    elif args.test_memory:
+        for p in [0xffffffff, 0xaaaaaaaa, 0x00000000, 0x55555555, \
+                  0x11111111, 0x22222222, 0x33333333, 0x44444444, \
+                  0x55555555, 0x66666666, 0x77777777, 0x88888888, \
+                  0x99999999, 0xaaaaaaaa, 0xbbbbbbbb, 0xcccccccc, \
+                  0xdddddddd, 0xeeeeeeee, 0xffffffff, 0x00000000]:
+            print('Testing with 0x{:08x} pattern'.format(p))
+            hw_memset(wb, 0x0, mem_range, [p], args.dbg)
+            #if p == 0x77777777: wb.write(mem_base + mem_range - 32, 0x77787777) # Inject error
+            err = hw_memtest(wb, 0x0, mem_range, [p], args.dbg)
+            if len(err) > 0:
+                print('!!! Failed pattern: {:08x} !!!'.format(p))
+                for p in err:
+                    print('Failed: 0x{:08x} == 0x{:08x}'.format(mem_base + p * 16, wb.read(mem_base + p * 16)))
+            else:
+                print("Test pattern OK!")
 
-    if args.dbg:
-        print('pointer: 0x{:08x} : {:d}'.format(ptr, ptr * 4 * 4))
-
-    print("Test OK!")
     wb.close()
