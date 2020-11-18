@@ -32,11 +32,15 @@ def discover_generated_files_dir():
     return gen_dir
 
 GENERATED_DIR = discover_generated_files_dir()
+print('Using generated target files in: {}'.format(os.path.relpath(GENERATED_DIR)))
 
 # Import sdram_init.py
 sys.path.append(GENERATED_DIR)
-import sdram_init as sdram_init_defs
-from sdram_init import *
+try:
+    import sdram_init as sdram_init_defs
+    from sdram_init import *
+except ModuleNotFoundError:
+    print('WARNING: sdram_init not loaded')
 
 def get_generated_file(name):
     # For getting csr.csv/analyzer.csv
@@ -67,9 +71,13 @@ def litex_server():
 
 def sdram_software_control(wb):
     wb.regs.sdram_dfii_control.write(dfii_control_cke|dfii_control_odt|dfii_control_reset_n)
+    if hasattr(wb.regs, 'ddrphy_en_vtc'):
+        wb.regs.ddrphy_en_vtc.write(0)
 
 def sdram_hardware_control(wb):
     wb.regs.sdram_dfii_control.write(dfii_control_sel)
+    if hasattr(wb.regs, 'ddrphy_en_vtc'):
+        wb.regs.ddrphy_en_vtc.write(1)
 
 def sdram_init(wb):
     sdram_software_control(wb)
@@ -89,18 +97,17 @@ def sdram_init(wb):
                     control_cmds.append(n)
                 n = n + 1
 
-    print('control_cmds: ' + str(control_cmds))
     for i, (comment, a, ba, cmd, delay) in enumerate(init_sequence):
         wb.regs.sdram_dfii_pi0_address.write(a)
         wb.regs.sdram_dfii_pi0_baddress.write(ba)
         if i in control_cmds:
-            print(comment + ' (ctrl)')
+            print('(ctl) ' + comment)
             wb.regs.sdram_dfii_control.write(cmd)
         else:
-            print(comment + ' (cmd)')
+            print('(cmd) ' + comment)
             wb.regs.sdram_dfii_pi0_command.write(cmd)
             wb.regs.sdram_dfii_pi0_command_issue.write(1)
-        time.sleep(0.001)
+        time.sleep(0.01 + delay * 1e-5)
 
     sdram_hardware_control(wb)
 
