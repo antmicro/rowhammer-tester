@@ -2,36 +2,22 @@
 
 import random
 import argparse
+import itertools
 
 from rowhammer_tester.scripts.utils import *
-from rowhammer_tester.scripts.read_level import read_level, default_arty_settings
-
-def _compare(val, ref, fmt, nbytes=4):
-    assert fmt in ["bin", "hex"]
-    if fmt == "hex":
-        print("0x{:0{n}x} {cmp} 0x{:0{n}x}".format(
-            val, ref, n=nbytes*2, cmp="==" if val == ref else "!="))
-    if fmt == "bin":
-        print("{:0{n}b} xor {:0{n}b} = {:0{n}b}".format(
-            val, ref, val ^ ref, n=nbytes*8))
+from rowhammer_tester.scripts.read_level import read_level, default_arty_settings, Settings
+from rowhammer_tester.scripts.read_level import read_level_hardcoded, write_level_hardcoded
 
 # Perform a memory test using a random data pattern and linear addressing
-def memtest_random(wb, base=None, length=0x80, inc=8, seed=42, verbose=None):
+def memtest(wb, length, *, generator, base=None, verbose=None, burst=255):
     sdram_hardware_control(wb)
     if base is None:
         base = wb.mems.main_ram.base
 
-    rng = random.Random(seed)
-    refdata = []
+    refdata = [next(generator) for _ in range(length)]
+    memwrite(wb, refdata, base=base, burst=burst)
 
-    for i in range(length//inc):
-        data = [rng.randint(0, 2**32 - 1) for _ in range(inc)]
-        wb.write(base + 4*inc*i, data)
-        refdata += data
-
-    data = []
-    for i in range(length//inc):
-        data += wb.read(base + 4*inc*i, inc)
+    data = memread(wb, length, base=base, burst=burst)
     assert len(refdata) == len(data)
 
     errors = 0
@@ -39,61 +25,18 @@ def memtest_random(wb, base=None, length=0x80, inc=8, seed=42, verbose=None):
         if val != ref:
             errors += 1
             if verbose is not None:
-                print()
-                _compare(val, ref, fmt=verbose, nbytes=4)
+                compare(val, ref, fmt=verbose, nbytes=4)
 
     return errors
-
-def memtest_basic(wb, base=None, seed=42):
-    sdram_hardware_control(wb)
-    if base is None:
-        base = wb.mems.main_ram.base
-
-    rng = random.Random(seed)
-    sdram_pattern = rng.randrange(0x0, 0x100000000)
-
-    wb.write(base, sdram_pattern)
-    value = wb.read(base)
-
-    if value != sdram_pattern:
-        print('Mem error at 0x{:08x} : 0x{:08x} != 0x{:08x}'
-            .format(base, value, sdram_pattern))
-        print('x: ' + str(["0x{:08x}".format(w) for w in wb.read(base, 4)]))
-    else:
-        for i in range(0, 1024):
-            wb.write(base + i, 0x55555555)
-        for i in range(1024, 2048):
-            wb.write(base + i, 0xaaaaaaaa)
-        for i in range(0, 1024):
-            val = wb.read(base + i)
-            assert(val == 0x55555555)
-        for i in range(1024, 2048):
-            val = wb.read(base + i)
-            assert(val == 0xaaaaaaaa)
-
-        print('1. ' + str(["0x{:08x}".format(w) for w in wb.read(base + 1024 - 2 * 4, 4)]))
-
-        for i in range(0, 1024):
-            wb.write(base + i, 0xaaaaaaaa)
-        for i in range(1024, 2048):
-            wb.write(base + i, 0x55555555)
-        for i in range(0, 1024):
-            val = wb.read(base + i)
-            assert(val == 0xaaaaaaaa)
-        for i in range(1024, 2048):
-            val = wb.read(base + i)
-            assert(val == 0x55555555)
-
-        print('2. ' + str(["0x{:08x}".format(w) for w in wb.read(base + 1024 - 2 * 4, 4)]))
-        print("Mem ok!")
 
 # ###########################################################################
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--srv', action='store_true')
-    parser.add_argument('--no-init', action='store_true')
-    parser.add_argument('--memspeed', action='store_true')
+    parser.add_argument('--srv', action='store_true', help='Start litex server')
+    parser.add_argument('--no-init', action='store_true', help='Do not perform initialization sequence')
+    parser.add_argument('--size', default='0x2000', help='Memtest size')
+    parser.add_argument('--memspeed', action='store_true', help='Run memroy speed test')
     args = parser.parse_args()
 
     if args.srv:
@@ -104,16 +47,67 @@ if __name__ == "__main__":
 
     if not args.no_init:
         print('SDRAM initialization:')
+        sdram_software_control(wb)
+        # Reset the PHY
+        wb.regs.ddrphy_rst.write(1)
+        time.sleep(0.2)
+        wb.regs.ddrphy_rst.write(0)
+        time.sleep(0.2)
+
+        # Perform the init sequence
         sdram_init(wb)
 
-        print('\nRead leveling:')
-        read_level(wb, default_arty_settings())
+        if hasattr(wb.regs, 'ddrphy_cdly_inc'):
+            print('\nWrite leveling:')
+            # TODO: write leveling
+            write_level_hardcoded(wb, cdly=271, delays=[
+                9,
+                9,
+                43,
+                49,
+                81,
+                88,
+                127,
+                93,
+            ])
+
+        if hasattr(wb.regs, 'ddrphy_rdly_dq_bitslip'):
+            print('\nRead leveling:')
+            settings = Settings(
+                nmodules = 8,
+                bitslips = 8,
+                delays   = 512,
+                nphases  = 4,
+                rdphase  = 2,
+                wrphase  = 2,
+            )
+            # read_level(wb, default_arty_settings())
+            # read_level(wb, settings, delays_step=32)
+            read_level_hardcoded(wb, config=[
+                (2, 196),
+                (2, 196),
+                (2, 146),
+                (2, 153),
+                (3, 378),
+                (3, 372),
+                (3, 331),
+                (3, 307),
+            ])
+
+    memtest_size = int(args.size, 0)
 
     print('\nMemtest (basic):')
-    memtest_basic(wb)
+    errors = memtest(wb, length=memtest_size, generator=itertools.cycle([0xaaaaaaaa, 0x55555555]))
+    print('OK' if errors == 0 else 'FAIL: errors = {}'.format(errors))
 
     print('\nMemtest (random):')
-    errors = memtest_random(wb, length=0x2000)
+
+    def rand_generator(seed):
+        rng = random.Random(seed)
+        while True:
+            yield rng.randint(0, 2**32 - 1)
+
+    errors = memtest(wb, length=memtest_size, generator=rand_generator(42))
     print('OK' if errors == 0 else 'FAIL: errors = {}'.format(errors))
 
     if args.memspeed:

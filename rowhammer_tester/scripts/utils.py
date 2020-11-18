@@ -113,6 +113,15 @@ def sdram_init(wb):
 
 # ###########################################################################
 
+def compare(val, ref, fmt, nbytes=4):
+    assert fmt in ["bin", "hex"]
+    if fmt == "hex":
+        print("0x{:0{n}x} {cmp} 0x{:0{n}x}".format(
+            val, ref, n=nbytes*2, cmp="==" if val == ref else "!="))
+    if fmt == "bin":
+        print("{:0{n}b} xor {:0{n}b} = {:0{n}b}".format(
+            val, ref, val ^ ref, n=nbytes*8))
+
 def memwrite(wb, data, base=0x40000000, burst=0xff):
     for i in range(0, len(data), burst):
         wb.write(base + 4*i, data[i:i+burst])
