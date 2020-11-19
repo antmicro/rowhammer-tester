@@ -11,12 +11,12 @@ encoder = Encoder(bankbits=3)
 PAYLOAD = [
     encoder(OpCode.NOOP, timeslice=50),
 
-    encoder(OpCode.ACT,  timeslice=10, address=encoder.address(bank=1, row=100)),
-    encoder(OpCode.READ, timeslice=10, address=encoder.address(bank=1, col=13)),
+    encoder(OpCode.ACT,  timeslice=20, address=encoder.address(bank=1, row=100)),
+    encoder(OpCode.READ, timeslice=20, address=encoder.address(bank=1, col=13)),
     encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=1, col=20)),
-    encoder(OpCode.PRE,  timeslice=10, address=encoder.address(bank=1)),
+    encoder(OpCode.PRE,  timeslice=20, address=encoder.address(bank=1)),
 
-    encoder(OpCode.ACT,  timeslice=10, address=encoder.address(bank=0, row=100)),
+    encoder(OpCode.ACT,  timeslice=20, address=encoder.address(bank=0, row=100)),
     encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=200)),
     encoder(OpCode.LOOP, count=8 - 1, jump=1),  # to READ col=200
     encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=208)),
@@ -31,9 +31,9 @@ PAYLOAD = [
 
     encoder(OpCode.ACT,  timeslice=60, address=encoder.address(bank=2, row=150)),
 
-    encoder(OpCode.PRE,  timeslice=10, address=encoder.address(col=1 << 10)),  # all
-    encoder(OpCode.REF,  timeslice=50),
-    encoder(OpCode.REF,  timeslice=50),
+    encoder(OpCode.PRE,  timeslice=20, address=encoder.address(col=1 << 10)),  # all
+    encoder(OpCode.REF,  timeslice=200),
+    encoder(OpCode.REF,  timeslice=200),
 
     encoder(OpCode.NOOP, timeslice=50),
 ]
@@ -63,7 +63,7 @@ def execute(wb):
     program += [0] * (wb.mems.payload.size//4 - len(program))  # fill with NOOPs
 
     # Write some data to the column we are reading to check that scratchpad gets filled
-    converter = DRAMAddressConverter()
+    converter = DRAMAddressConverter.load()
     data = list(itertools.islice(word_gen(3), 128))
     memwrite(wb, data, base=converter.encode_bus(bank=0, row=100, col=200))
 

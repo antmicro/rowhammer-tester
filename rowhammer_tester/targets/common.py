@@ -1,5 +1,6 @@
 import os
 import csv
+import json
 
 from migen import *
 
@@ -21,6 +22,7 @@ from litedram.core.controller import ControllerSettings
 from litedram.frontend.dma import LiteDRAMDMAReader
 from litedram.init import get_sdram_phy_py_header
 from litedram.phy.model import SDRAMPHYModel
+from litedram.common import PhySettings, GeomSettings, TimingSettings
 
 from liteeth.phy.model import LiteEthPHYModel
 from liteeth.core import LiteEthUDPIPCore
@@ -323,6 +325,18 @@ def get_sim_kwargs(args, interface='litex-sim'):
     return dict(sim_config=sim_config, trace=True, trace_fst=False)  # TODO: use FST format for smaller dumps
 
 
+class LiteDRAMSettingsEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, (ControllerSettings, GeomSettings, PhySettings, TimingSettings)):
+            ignored = ['self', 'refresh_cls']
+            return {k: v for k, v in vars(o).items() if k not in ignored}
+        elif isinstance(o, Signal) and isinstance(o.reset, Constant):
+            return o.reset
+        elif isinstance(o, Constant):
+            return o.value
+        print('o', end=' = '); __import__('pprint').pprint(o)
+        return super().default(o)
+
 def configure_generated_files(builder, args):
     # Generate target specific files in the build directory, for use by scripts
     # CSR location definitions
@@ -337,7 +351,9 @@ def configure_generated_files(builder, args):
             ('MAC_ADDRESS', args.mac_address),
             ('UDP_PORT',    args.udp_port),
         ])
-
+    # LiteDRAM settings (controller, phy, geom, timing)
+    with open(os.path.join(builder.output_dir, 'litedram_settings.json'), 'w') as f:
+        json.dump(builder.soc.sdram.controller.settings, f, cls=LiteDRAMSettingsEncoder, indent=4)
 
 def run(args, builder, build_kwargs):
     # Generate files in the build directory

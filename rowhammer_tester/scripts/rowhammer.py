@@ -7,7 +7,7 @@ from math import ceil
 
 from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
 from rowhammer_tester.scripts.utils import (memfill, memcheck, memwrite, DRAMAddressConverter,
-                                            litex_server, RemoteClient)
+                                            litex_server, RemoteClient, get_litedram_settings)
 
 ################################################################################
 
@@ -17,7 +17,7 @@ class RowHammer:
                  payload_executor=False):
         for name, val in locals().items():
             setattr(self, name, val)
-        self.converter = DRAMAddressConverter(colbits=colbits, rowbits=rowbits)
+        self.converter = DRAMAddressConverter.load()
         self.addresses_per_row = self._addresses_per_row()
 
     @property
@@ -196,15 +196,11 @@ def patterns_random_per_row(rows, seed=42):
     rng = random.Random(seed)
     return {row: rng.randint(0, 2**32 - 1) for row in rows}
 
-
-if __name__ == "__main__":
+def main(row_hammer_cls):
     parser = argparse.ArgumentParser()
     parser.add_argument('--nrows', type=int, default=0, help='Number of rows to consider')
     parser.add_argument('--bank', type=int, default=0, help='Bank number')
     parser.add_argument('--column', type=int, default=512, help='Column to read from')
-    parser.add_argument('--colbits', type=int, default=10, help='Number of column bits')  # FIXME: take from our design
-    parser.add_argument('--rowbits', type=int, default=14, help='Number of row bits')  # FIXME: take from our design
-    parser.add_argument('--bankbits', type=int, default=3, help='Number of bank bits')  # FIXME: take from our design
     parser.add_argument('--start-row', type=int, default=0, help='Starting row (range = (start, start+nrows))')
     parser.add_argument('--read_count', type=float, default=10e6, help='How many reads to perform for single address pair')
     parser.add_argument('--hammer-only', nargs=2, type=int, help='Run only the row hammer attack')
@@ -236,11 +232,12 @@ if __name__ == "__main__":
     wb = RemoteClient()
     wb.open()
 
-    row_hammer = RowHammer(wb,
+    settings = get_litedram_settings()
+    row_hammer = row_hammer_cls(wb,
         nrows            = args.nrows,
-        bankbits         = args.bankbits,
-        rowbits          = args.rowbits,
-        colbits          = args.colbits,
+        bankbits         = settings.geom.bankbits,
+        rowbits          = settings.geom.rowbits,
+        colbits          = settings.geom.colbits,
         column           = args.column,
         bank             = args.bank,
         rows_start       = args.start_row,
@@ -275,3 +272,6 @@ if __name__ == "__main__":
         row_hammer.run(row_pairs=row_pairs, read_count=args.read_count, pattern_generator=pattern)
 
     wb.close()
+
+if __name__ == "__main__":
+    main(row_hammer_cls=RowHammer)

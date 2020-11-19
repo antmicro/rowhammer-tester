@@ -2,9 +2,12 @@ import os
 import csv
 import sys
 import glob
+import json
 import time
 from operator import or_
 from functools import reduce
+
+from migen import log2_int
 
 # ###########################################################################
 
@@ -53,6 +56,10 @@ def get_generated_defs():
     with open(get_generated_file('defs.csv'), newline='') as f:
         reader = csv.reader(f)
         return {name: value for name, value in reader}
+
+def get_litedram_settings():
+    with open(get_generated_file('litedram_settings.json')) as f:
+        return json.load(f)
 
 def RemoteClient(*args, **kwargs):
     from litex import RemoteClient as _RemoteClient
@@ -175,17 +182,32 @@ def memdump(data, base=0x40000000, chunk_len=16):
 ################################################################################
 
 class DRAMAddressConverter:
-    def __init__(self, colbits=10, rowbits=14, bankbits=3,
-                 address_mapping='ROW_BANK_COL', address_align=3):
+    def __init__(self, *, colbits, rowbits, bankbits, address_align, address_mapping='ROW_BANK_COL'):
         # FIXME: generate these from BaseSoC
         # soc.sdram.controller.settings
         self.colbits = colbits
         self.rowbits = rowbits
         self.bankbits = bankbits
-        self.address_mapping = address_mapping
         self.address_align = address_align
-
+        self.address_mapping = address_mapping
         assert self.address_mapping == 'ROW_BANK_COL'
+
+    @classmethod
+    def load(cls):
+        settings = get_litedram_settings()
+        if settings.phy.memtype == "SDR":
+            burst_length = settings.phy.nphases
+        else:
+            from litedram.common import burst_lengths
+            burst_length = burst_lengths[settings.phy.memtype]
+        address_align = log2_int(burst_length)
+        return cls(
+            colbits         = settings.geom.colbits,
+            rowbits         = settings.geom.rowbits,
+            bankbits        = settings.geom.bankbits,
+            address_align   = address_align,
+            address_mapping = settings.address_mapping,
+        )
 
     def _encode(self, bank, row, col):
         assert bank < 2**self.bankbits
