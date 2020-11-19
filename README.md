@@ -15,7 +15,7 @@ The DRAM is connected to [LiteDRAM](https://github.com/enjoy-digital/litedram) w
 In the default bulk transfer mode the LiteDRAM controller is connected to PHY and ensures correct DRAM traffic.
 Bulk transfers can be controlled using dedicated Control & Status Registers (CSRs) and use LiteDRAM DMA to ensure fast operation.
 
-Payload Executor allow executing a user-provided sequence of commands.
+The Payload Executor allows executing a user-provided sequence of commands.
 It temporarily disconnects the DRAM controller from PHY, executes the instructions stored in the SRAM memory
 translating them into DFI commands and finally reconnects the DRAM controller.
 
@@ -34,9 +34,9 @@ Then run:
 ```
 make deps
 ```
-This will download and build all the dependencies and setup a [Python virtual environment](https://docs.python.org/3/library/venv.html) under `./venv` directory with all the required packages installed.
+This will download and build all the dependencies and setup a [Python virtual environment](https://docs.python.org/3/library/venv.html) under the `./venv` directory with all the required packages installed.
 
-Virtual environment allows you to use Python without installing the packages system-wide.
+The virtual environment allows you to use Python without installing the packages system-wide.
 To enter the environment you have to run `source venv/bin/activate` in each new shell.
 You can also use the provided `make env` target which will start a new Bash shell with the virtualenv already sourced.
 You can install packages inside the virtual environment by entering the environment and then using `pip`.
@@ -79,13 +79,13 @@ Currently, only the Arty-A7 (xc7a35t) FPGA board is supported (`TARGET=arty`). I
 
 ### Arty-A7 board
 
-Connect the board USB and Ethernet cables to your computer, then configure the network. The board IP address will be `192.168.100.50` (so you could e.g. use `192.168.100.2/24`). `IP_ADDRESS` environmental variable can be used to modify the board address.
+Connect the board USB and Ethernet cables to your computer, then configure the network. The board'w IP address will be `192.168.100.50` (so you could e.g. use `192.168.100.2/24`). The `IP_ADDRESS` environment variable can be used to modify the board's address.
 Then generate the FPGA bitstream:
 ```
 export TARGET=arty
 make build
 ```
-the results will be located in directory: `build/arty/gateware/arty.bit`. To upload it use:
+The results will be located in: `build/arty/gateware/arty.bit`. To upload it use:
 ```
 export TARGET=arty
 make upload
@@ -105,15 +105,15 @@ make sim
 This command will generate intermediate files & simulate them with Verilator.
 
 WARNING: The repository contains a wrapper script around `sudo` which disallows LiteX to interfere with
-the host network configuration. This forces the user to manually configure TUN interface for valid
+the host network configuration. This forces the user to manually configure a TUN interface for valid
 communication with the simulated device:
 
-1. Create TUN interface:
+1. Create the TUN interface:
 ```
 tunctl -u $USER -t arty
 ```
 
-2. Configure IP address of a interface:
+2. Configure the IP address of the interface:
 ```
 ifconfig arty 192.168.100.1/24 up
 ```
@@ -124,7 +124,7 @@ iptables -A INPUT -i arty -j ACCEPT
 iptables -A OUTPUT -o arty -j ACCEPT
 ```
 
-TIP: By typing `make ARGS="--sim"` LiteX will generate only intermediate files and stop right after.
+TIP: By typing `make ARGS="--sim"` LiteX will generate only intermediate files and stop right after that.
 
 ### Controlling the board
 
@@ -136,7 +136,7 @@ make srv
 ```
 The build files (CSRs address list) must be up to date. It can be re-generated with `make` without arguments.
 
-Then in another terminal you can use the Python scripts provided. *Remember to enter the Python virtual environment before running the scripts!* Also, the `TARGET` variable should be set to load configuration for the given target.
+Then, in another terminal, you can use the Python scripts provided. *Remember to enter the Python virtual environment before running the scripts!* Also, the `TARGET` variable should be set to load configuration for the given target.
 For example to use the `leds.py` script run the following:
 ```
 source ./venv/bin/activate
@@ -161,11 +161,11 @@ python mem.py
 
 > NOTE: when running in simulation running the read leveling will fail. To avoid it use `python mem.py --no-init`
 
-To perform a row hammer attack sequence use the `rowhammer.py` script (see `--help`), e.g:
+To perform a Row Hammer attack sequence use the `rowhammer.py` script (see `--help`), e.g:
 ```
 python rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh
 ```
-To generate a plot (requires `pip install -r requirements-dev.txt`) one can use:
+To generate a plot (requires `pip install -r requirements-dev.txt`) you can use:
 ```
 python rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh --plot
 ```
