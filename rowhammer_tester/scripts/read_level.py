@@ -89,6 +89,27 @@ class Settings:
         self.wrphase = wrphase
         self.rdphase = rdphase
 
+    @classmethod
+    def load(cls):
+        settings = get_litedram_settings()
+        if settings.phy.phytype in ["USDDRPHY", "USPDDRPHY"]:
+            bitslips = 8
+            delays = 512
+        elif settings.phy.phytype in ["A7DDRPHY", "K7DDRPHY", "V7DDRPHY"]:
+            bitslips = 8
+            delays = 32
+        elif phytype in ["ECP5DDRPHY"]:
+            bitslips = 4
+            delays = 8
+        return cls(
+            nmodules = settings.phy.databits//8,
+            bitslips = bitslips,
+            delays   = delays,
+            nphases  = settings.phy.nphases,
+            wrphase  = settings.phy.wrphase,
+            rdphase  = settings.phy.rdphase,
+        )
+
 # Perform single read+write and return number of errors
 def read_level_test(wb, settings, module, seed=42, verbose=None):
     rng = random.Random(seed)
@@ -275,20 +296,10 @@ def write_level_hardcoded(wb, cdly, delays):
 
 # -----------------------
 
-def default_arty_settings():
-    return Settings(
-        nmodules = 2,
-        bitslips = 8,
-        delays   = 32,
-        nphases  = 4,
-        rdphase  = 2,
-        wrphase  = 3,
-    )
-
 if __name__ == "__main__":
     wb = RemoteClient()
     wb.open()
 
-    read_level(wb, default_arty_settings())
+    read_level(wb, Settings.load())
 
     wb.close()

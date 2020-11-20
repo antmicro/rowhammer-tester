@@ -337,7 +337,7 @@ class LiteDRAMSettingsEncoder(json.JSONEncoder):
         print('o', end=' = '); __import__('pprint').pprint(o)
         return super().default(o)
 
-def configure_generated_files(builder, args):
+def configure_generated_files(builder, args, target_name):
     # Generate target specific files in the build directory, for use by scripts
     # CSR location definitions
     builder.csr_csv = os.path.join(builder.output_dir, 'csr.csv')
@@ -347,6 +347,7 @@ def configure_generated_files(builder, args):
     with open(os.path.join(builder.output_dir, 'defs.csv'), 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerows([
+            ('TARGET',      target_name),
             ('IP_ADDRESS',  args.ip_address),
             ('MAC_ADDRESS', args.mac_address),
             ('UDP_PORT',    args.udp_port),
@@ -355,9 +356,9 @@ def configure_generated_files(builder, args):
     with open(os.path.join(builder.output_dir, 'litedram_settings.json'), 'w') as f:
         json.dump(builder.soc.sdram.controller.settings, f, cls=LiteDRAMSettingsEncoder, indent=4)
 
-def run(args, builder, build_kwargs):
+def run(args, builder, build_kwargs, target_name):
     # Generate files in the build directory
-    configure_generated_files(builder, args)
+    configure_generated_files(builder, args, target_name)
 
     # Build & run
     if not args.sim:  # hardware

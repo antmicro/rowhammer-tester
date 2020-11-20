@@ -57,9 +57,19 @@ def get_generated_defs():
         reader = csv.reader(f)
         return {name: value for name, value in reader}
 
+class ReadonlySettings:
+    def __init__(self, s):
+        self._settings = s
+
+    def __getattr__(self, name):
+        val = self.__dict__['_settings'][name]
+        if isinstance(val, dict):
+            return ReadonlySettings(val)
+        return val
+
 def get_litedram_settings():
     with open(get_generated_file('litedram_settings.json')) as f:
-        return json.load(f)
+        return ReadonlySettings(json.load(f))
 
 def RemoteClient(*args, **kwargs):
     from litex import RemoteClient as _RemoteClient

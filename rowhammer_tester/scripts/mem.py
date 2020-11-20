@@ -5,7 +5,7 @@ import argparse
 import itertools
 
 from rowhammer_tester.scripts.utils import *
-from rowhammer_tester.scripts.read_level import read_level, default_arty_settings, Settings
+from rowhammer_tester.scripts.read_level import read_level, Settings
 from rowhammer_tester.scripts.read_level import read_level_hardcoded, write_level_hardcoded
 
 # Perform a memory test using a random data pattern and linear addressing
@@ -37,6 +37,7 @@ if __name__ == "__main__":
     parser.add_argument('--no-init', action='store_true', help='Do not perform initialization sequence')
     parser.add_argument('--size', default='0x2000', help='Memtest size')
     parser.add_argument('--memspeed', action='store_true', help='Run memroy speed test')
+    parser.add_argument('--max-delays', type=int, default=32, help='Avoid testing too many delays to save time')
     args = parser.parse_args()
 
     if args.srv:
@@ -59,6 +60,7 @@ if __name__ == "__main__":
 
         if hasattr(wb.regs, 'ddrphy_cdly_inc'):
             print('\nWrite leveling:')
+            assert get_generated_defs()['TARGET'] == 'zcu104'
             # TODO: write leveling
             write_level_hardcoded(wb, cdly=271, delays=[
                 9,
@@ -73,42 +75,41 @@ if __name__ == "__main__":
 
         if hasattr(wb.regs, 'ddrphy_rdly_dq_bitslip'):
             print('\nRead leveling:')
-            settings = Settings(
-                nmodules = 8,
-                bitslips = 8,
-                delays   = 512,
-                nphases  = 4,
-                rdphase  = 2,
-                wrphase  = 2,
-            )
-            # read_level(wb, default_arty_settings())
-            # read_level(wb, settings, delays_step=32)
-            read_level_hardcoded(wb, config=[
-                (2, 196),
-                (2, 196),
-                (2, 146),
-                (2, 153),
-                (3, 378),
-                (3, 372),
-                (3, 331),
-                (3, 307),
-            ])
+            settings = Settings.load()
+
+            # Make it faster by testing less delays
+            delays_step = 1
+            while settings.delays / delays_step > args.max_delays:
+                delays_step *= 2
+
+            if get_generated_defs()['TARGET'] == 'zcu104':
+                read_level_hardcoded(wb, config=[
+                    (2, 196),
+                    (2, 196),
+                    (2, 146),
+                    (2, 153),
+                    (3, 378),
+                    (3, 372),
+                    (3, 331),
+                    (3, 307),
+                ])
+            else:
+                read_level(wb, Settings.load(), delays_step=delays_step)
 
     memtest_size = int(args.size, 0)
 
-    print('\nMemtest (basic):')
-    errors = memtest(wb, length=memtest_size, generator=itertools.cycle([0xaaaaaaaa, 0x55555555]))
-    print('OK' if errors == 0 else 'FAIL: errors = {}'.format(errors))
-
-    print('\nMemtest (random):')
+    def run_memtest(name, generator, **kwargs):
+        print('\nMemtest ({})'.format(name))
+        errors = memtest(wb, length=memtest_size, generator=generator, **kwargs)
+        print('OK' if errors == 0 else 'FAIL: errors = {}'.format(errors))
 
     def rand_generator(seed):
         rng = random.Random(seed)
         while True:
             yield rng.randint(0, 2**32 - 1)
 
-    errors = memtest(wb, length=memtest_size, generator=rand_generator(42))
-    print('OK' if errors == 0 else 'FAIL: errors = {}'.format(errors))
+    run_memtest('basic', itertools.cycle([0xaaaaaaaa, 0x55555555]))
+    run_memtest('random', rand_generator(42))
 
     if args.memspeed:
         for n in [0x1000//4, 0x10000//4, 0x100000//4]:
