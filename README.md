@@ -126,6 +126,21 @@ iptables -A OUTPUT -o arty -j ACCEPT
 
 TIP: By typing `make ARGS="--sim"` LiteX will generate only intermediate files and stop right after that.
 
+### ZCU104 board
+
+Currently ZCU104 is not yet fully functional.
+It uses UART for communication instead of Ethernet and memory BIST is not fully integrated.
+Connect the power supply and microUSB cable and run:
+```
+export TARGET=zcu104
+make build ARGS=--no-memory-bist
+make upload ARGS=--no-memory-bist
+```
+Use all the scripts normally, but instead of starting the `litex_server` as described below, use:
+```
+litex_server --uart --uart-baudrate 1e6 --uart-port /dev/ttyUSB3   # use proper USB serial port
+```
+
 ### Controlling the board
 
 Board control is the same for both simulation and hardware runs.

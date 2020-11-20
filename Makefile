@@ -29,8 +29,8 @@ sim: FORCE
 sim-analyze: FORCE
 	python rowhammer_tester/scripts/sim_runner.py python rowhammer_tester/targets/$(TARGET).py --build --sim $(ARGS)
 
-upload up: FORCE
-	./third_party/xc3sprog/xc3sprog -c nexys4 build/$(TARGET)/gateware/$(TARGET).bit
+upload up load: FORCE
+	python rowhammer_tester/targets/$(TARGET).py --load $(ARGS)
 
 srv: FORCE
 	litex_server --udp --udp-ip $(IP_ADDRESS) --udp-port $(UDP_PORT)
