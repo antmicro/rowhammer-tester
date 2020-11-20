@@ -109,6 +109,9 @@ class RowHammer:
             memfill(self.wb, n, pattern=row_patterns[row], base=base, burst=255)
             if row % row_progress == 0:
                 print('.', end='', flush=True)
+            # makes sure to synchronize with the writes (without it for slower conenction
+            # we may have a timeout on the first read after writing)
+            self.wb.regs.ctrl_scratch.read()
 
         if verify_initial:
             print('\nVerifying written memory ...')
