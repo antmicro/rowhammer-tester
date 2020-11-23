@@ -28,8 +28,7 @@ from liteeth.phy.model import LiteEthPHYModel
 from liteeth.core import LiteEthUDPIPCore
 from liteeth.frontend.etherbone import LiteEthEtherbone
 
-from rowhammer_tester.gateware.writer import Writer
-from rowhammer_tester.gateware.reader import Reader
+from rowhammer_tester.gateware.bist import Reader, Writer
 from rowhammer_tester.gateware.rowhammer import RowHammerDMA
 from rowhammer_tester.gateware.payload_executor import PayloadExecutor
 
@@ -193,21 +192,24 @@ class RowHammerSoC(SoCCore):
         # Bist -------------------------------------------------------------------------------------
         if not args.no_memory_bist:
             mem_depth = 16
+
             # Writer
             dram_wr_port = self.sdram.crossbar.get_port()
             self.submodules.writer = Writer(dram_wr_port, mem_depth)
+            self.writer.add_csrs()
             self.add_csr('writer')
 
             self.add_memory(self.writer.mem_data, name='pattern_wr_data', origin=0x20000000)
-            self.add_memory(self.writer.mem_adr,  name='pattern_wr_addr', origin=0x21000000)
+            self.add_memory(self.writer.mem_addr, name='pattern_wr_addr', origin=0x21000000)
 
             # Reader
             dram_rd_port = self.sdram.crossbar.get_port()
             self.submodules.reader = Reader(dram_rd_port, mem_depth)
+            self.reader.add_csrs()
             self.add_csr('reader')
 
             self.add_memory(self.reader.mem_data, name='pattern_rd_data', origin=0x22000000)
-            self.add_memory(self.reader.mem_adr,  name='pattern_rd_addr', origin=0x23000000)
+            self.add_memory(self.reader.mem_addr, name='pattern_rd_addr', origin=0x23000000)
 
         # Payload executor -------------------------------------------------------------------------
         if not args.no_payload_executor:
