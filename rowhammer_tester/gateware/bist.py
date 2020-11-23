@@ -248,12 +248,14 @@ The current progress can be read from the `done` CSR.
         self._done         = CSRStatus(size=len(self.done), description='Current progress')
         self._error_count  = CSRStatus(size=len(self.error_count), description='Number of errors detected')
         self._skip_fifo    = CSRStorage(description='Skip waiting for user to read the errors FIFO')
-        self._error_offset = CSRStatus(description='Current offset of the error')
+        self._error_offset = CSRStatus(size=len(self.mem_mask), description='Current offset of the error')
+        self._error_ready  = CSRStatus(description='Error detected and ready to read')
 
         self.comb += [
             self._done.status.eq(self.done),
             self._error_count.status.eq(self.error_count),
             self.skip_fifo.eq(self._skip_fifo.storage),
             self._error_offset.status.eq(self.error.offset),
-            self.error.ready.eq(self._error_offset.re)
+            self.error.ready.eq(self._error_offset.we),
+            self._error_ready.status.eq(self.error.valid),
         ]

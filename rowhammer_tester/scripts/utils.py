@@ -284,15 +284,7 @@ def hw_memset(wb, offset, size, patterns, dbg=False):
     if dbg:
         print('hw_memset: offset: 0x{:08x}, size: 0x{:08x}, pattern: 0x{:08x}'.format(offset, size, pattern))
 
-    # Reset module
-    wb.regs.writer_start.write(0)
-    wb.regs.writer_reset.write(1)
-    wb.regs.writer_reset.write(0)
-
-    assert wb.regs.writer_done.read() == 0
-
-    # TODO: Deprecated, remove
-    wb.regs.writer_mem_base.write(0)
+    assert wb.regs.writer_ready.read() == 1
 
     # Unmask whole address space. TODO: Unmask only part of it?
     wb.regs.writer_mem_mask.write(0xffffffff)
@@ -307,14 +299,12 @@ def hw_memset(wb, offset, size, patterns, dbg=False):
 
     # Start module
     wb.regs.writer_start.write(1)
-    wb.regs.writer_start.write(0)
 
     # FIXME: Support progress
     while True:
-        if wb.regs.writer_done.read():
+        if wb.regs.writer_ready.read():
             break
-        else:
-            time.sleep(10 / 1e3) # 10 ms
+        time.sleep(10e-3) # 10 ms
 
 
 def hw_memtest(wb, offset, size, patterns, dbg=False):
@@ -331,20 +321,13 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     if dbg:
         print('hw_memtest: offset: 0x{:08x}, size: 0x{:08x}, pattern: 0x{:08x}'.format(offset, size, pattern))
 
-    wb.regs.reader_start.write(0)
-    wb.regs.reader_reset.write(1)
-    wb.regs.reader_reset.write(0)
-
-    assert wb.regs.reader_ready.read() == 0
+    assert wb.regs.reader_ready.read() == 1
 
     # Flush error fifo
-    while wb.regs.reader_err_rdy.read():
-        wb.regs.reader_err_rd.read()
-
-    assert wb.regs.reader_err_rdy.read() == 0
-
+    wb.regs.reader_skip_fifo.write(1)
+    time.sleep(0.010)
     # Enable error FIFO
-    wb.regs.reader_skipfifo.write(0)
+    wb.regs.reader_skip_fifo.write(0)
 
     # Unmask whole address space. TODO: Unmask only part of it?
     wb.regs.reader_mem_mask.write(0xffffffff)
@@ -358,29 +341,26 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     wb.regs.reader_count.write(size // nbytes)
 
     wb.regs.reader_start.write(1)
-    wb.regs.reader_start.write(0)
 
     errors = []
 
     # Read unmatched offset
     def append_errors(wb, err):
-        while wb.regs.reader_err_rdy.read():
-            off = wb.regs.reader_err_rd.read()
-            err.append(off)
+        while wb.regs.reader_error_ready.read():
+            err.append(wb.regs.reader_error_offset.read())
 
     # FIXME: Support progress
     while True:
         if wb.regs.reader_ready.read():
             break
-        else:
-            append_errors(wb, errors)
-            time.sleep(10 / 1e3) # !0 ms
+        append_errors(wb, errors)
+        time.sleep(10e-3) # !0 ms
 
     # Make sure we read all errors
     append_errors(wb, errors)
 
     assert wb.regs.reader_ready.read() == 1
-    assert wb.regs.reader_err_rdy.read() == 0
+    assert wb.regs.reader_error_ready.read() == 0
 
     if dbg:
         print('hw_memtest: errors: {:d}'.format(len(errors)))

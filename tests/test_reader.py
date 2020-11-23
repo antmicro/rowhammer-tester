@@ -1,76 +1,47 @@
 import unittest
 
 from migen import *
-from rowhammer_tester.gateware.reader import *
+from litedram.common import LiteDRAMNativePort
+from rowhammer_tester.gateware.bist import Reader
 
 class TestReader(unittest.TestCase):
     def test_pattern_1(self):
         class DUT(Module):
             def __init__(self):
-                from litedram.common import LiteDRAMNativePort
                 self.dram_port = LiteDRAMNativePort(address_width=32, data_width=32*4, mode='both')
-                self.submodules.reader = Reader(self.dram_port)
+                self.submodules.reader = Reader(self.dram_port, 16)
+                self.reader.add_csrs()
 
-                self.w0 = self.reader.memory_w0.get_port(write_capable=True)
-                self.w1 = self.reader.memory_w1.get_port(write_capable=True)
-                self.w2 = self.reader.memory_w2.get_port(write_capable=True)
-                self.w3 = self.reader.memory_w3.get_port(write_capable=True)
-                self.adr = self.reader.memory_adr.get_port(write_capable=True)
-                self.specials += self.w0, self.w1, self.w2, self.w3, self.adr
+                self.data = self.reader.mem_data.get_port(write_capable=True)
+                self.addr = self.reader.mem_addr.get_port(write_capable=True)
+                self.specials += self.data, self.addr
 
 
         def generator(dut):
-            yield from dut.reader.reset.write(1)
+            yield from dut.reader._count.write(8)
+
+            yield from dut.reader._mem_mask.write(0xffffffff)
+            yield from dut.reader._data_mask.write(0x00000000)
+            yield from dut.reader._skip_fifo.write(0)
+
+            yield dut.data.adr.eq(0x0)
+            yield dut.data.dat_w.eq(0xffffffffffffffffffffffffffffffff)
+            yield dut.data.we.eq(1)
             yield
-            yield from dut.reader.reset.write(0)
+            yield dut.data.we.eq(0)
             yield
 
-            yield from dut.reader.count.write(8)
-
-            yield from dut.reader.mem_mask.write(0xffffffff)
-            yield from dut.reader.gen_mask.write(0x00000000)
-            yield from dut.reader.skipfifo.write(0)
-
-            yield dut.w0.adr.eq(0x0)
-            yield dut.w0.dat_w.eq(0xffffffff)
-            yield dut.w0.we.eq(1)
+            yield dut.addr.adr.eq(0x0)
+            yield dut.addr.dat_w.eq(0)
+            yield dut.addr.we.eq(1)
             yield
-            yield dut.w0.we.eq(0)
-            yield
-
-            yield dut.w1.adr.eq(0x0)
-            yield dut.w1.dat_w.eq(0xffffffff)
-            yield dut.w1.we.eq(1)
-            yield
-            yield dut.w1.we.eq(0)
-            yield
-
-            yield dut.w2.adr.eq(0x0)
-            yield dut.w2.dat_w.eq(0xffffffff)
-            yield dut.w2.we.eq(1)
-            yield
-            yield dut.w2.we.eq(0)
-            yield
-
-            yield dut.w3.adr.eq(0x0)
-            yield dut.w3.dat_w.eq(0xffffffff)
-            yield dut.w3.we.eq(1)
-            yield
-            yield dut.w3.we.eq(0)
-            yield
-
-            yield dut.adr.adr.eq(0x0)
-            yield dut.adr.dat_w.eq(0)
-            yield dut.adr.we.eq(1)
-            yield
-            yield dut.adr.we.eq(0)
+            yield dut.addr.we.eq(0)
             yield
 
             # Fifo should be empty
-            self.assertEqual((yield from dut.reader.err_rdy.read()), 0)
+            self.assertEqual((yield from dut.reader._error_ready.read()), 0)
 
-            yield from dut.reader.start.write(1)
-            yield from dut.reader.start.write(0)
+            yield from dut.reader._start.write(1)
 
             # Fixme sync with read_handler
             for n in range(0, 200):
@@ -80,28 +51,22 @@ class TestReader(unittest.TestCase):
             #self.assertEqual(ptr, 5)
 
             # Check if ready
-            self.assertEqual((yield from dut.reader.done.read()), 8)
-            self.assertEqual((yield from dut.reader.ready.read()), 1)
+            self.assertEqual((yield from dut.reader._done.read()), 8)
+            self.assertEqual((yield from dut.reader._ready.read()), 1)
 
-            self.assertEqual((yield from dut.reader.err_rdy.read()), 1)
-            self.assertEqual((yield from dut.reader.err_rd.read()), 3)
+            self.assertEqual((yield from dut.reader._error_ready.read()), 1)
+            self.assertEqual((yield from dut.reader._error_offset.read()), 3)
 
             for n in range(0, 13): yield
 
-            self.assertEqual((yield from dut.reader.err_rdy.read()), 1)
-            self.assertEqual((yield from dut.reader.err_rd.read()), 5)
+            self.assertEqual((yield from dut.reader._error_ready.read()), 1)
+            self.assertEqual((yield from dut.reader._error_offset.read()), 5)
 
             for n in range(0, 17): yield
 
-            self.assertEqual((yield from dut.reader.err_rdy.read()), 0)
+            self.assertEqual((yield from dut.reader._error_ready.read()), 0)
 
             for n in range(0, 23): yield
-
-            yield from dut.reader.reset.write(1)
-            yield
-            yield from dut.reader.reset.write(0)
-            yield
-
 
         @passive
         def read_handler(dram_port):
