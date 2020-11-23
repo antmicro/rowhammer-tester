@@ -191,11 +191,11 @@ class RowHammerSoC(SoCCore):
 
         # Bist -------------------------------------------------------------------------------------
         if not args.no_memory_bist:
-            mem_depth = 16
+            pattern_depth = int(args.bist_pattern_length, 0)
 
             # Writer
             dram_wr_port = self.sdram.crossbar.get_port()
-            self.submodules.writer = Writer(dram_wr_port, mem_depth)
+            self.submodules.writer = Writer(dram_wr_port, pattern_depth)
             self.writer.add_csrs()
             self.add_csr('writer')
 
@@ -204,7 +204,7 @@ class RowHammerSoC(SoCCore):
 
             # Reader
             dram_rd_port = self.sdram.crossbar.get_port()
-            self.submodules.reader = Reader(dram_rd_port, mem_depth)
+            self.submodules.reader = Reader(dram_rd_port, pattern_depth)
             self.reader.add_csrs()
             self.add_csr('reader')
 
@@ -214,13 +214,11 @@ class RowHammerSoC(SoCCore):
         # Payload executor -------------------------------------------------------------------------
         if not args.no_payload_executor:
             # TODO: disconnect bus during payload execution
-
             phy_settings = self.sdram.controller.settings.phy
             scratchpad_width = phy_settings.dfi_databits * phy_settings.nphases
-            scratchpad_size  = 256
 
-            payload_mem    = Memory(32, 2**10)
-            scratchpad_mem = Memory(scratchpad_width, scratchpad_size // (scratchpad_width//8))
+            payload_mem    = Memory(32, int(args.payload_size, 0))
+            scratchpad_mem = Memory(scratchpad_width,  int(args.scratchpad_length, 0))
             self.specials += payload_mem, scratchpad_mem
 
             self.add_memory(payload_mem,    name='payload',    origin=0x30000000)
@@ -274,7 +272,13 @@ def parser_args(parser, sys_clk_freq):
     parser.add_argument("--sim", action="store_true", help="Build and run in simulation mode")
     parser.add_argument("--sys-clk-freq", default=sys_clk_freq, help="System clock frequency")
     parser.add_argument("--no-memory-bist", action="store_true", help="Disable memory BIST module")
+    parser.add_argument("--bist-pattern-length", default="256",
+                        help="BIST pattern memory depth (number of DMA accesses that can be stored)")
     parser.add_argument("--no-payload-executor", action="store_true", help="Disable Payload Executor module")
+    parser.add_argument("--payload-size", default="1024",
+                        help="Maxiumum number of payload instuctions (determines payload memory size)")
+    parser.add_argument("--scratchpad-length", default="256",
+                        help="Scratchpad memory depth (number of READ bursts that can be stored)")
     parser.add_argument("--ip-address", default="192.168.100.50", help="Use given IP address")
     parser.add_argument("--mac-address", default="0x10e2d5000001", help="Use given MAC address")
     parser.add_argument("--udp-port", default="1234", help="Use given UDP port")
