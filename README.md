@@ -128,13 +128,12 @@ TIP: By typing `make ARGS="--sim"` LiteX will generate only intermediate files a
 
 ### ZCU104 board
 
-Currently ZCU104 is not yet fully functional.
-It uses UART for communication instead of Ethernet and memory BIST is not fully integrated.
+Currently ZCU104 is not yet fully functional, as it uses UART for communication instead of Ethernet.
 Connect the power supply and microUSB cable and run:
 ```
 export TARGET=zcu104
-make build ARGS=--no-memory-bist
-make upload ARGS=--no-memory-bist
+make build
+make upload
 ```
 Use all the scripts normally, but instead of starting the `litex_server` as described below, use:
 ```
