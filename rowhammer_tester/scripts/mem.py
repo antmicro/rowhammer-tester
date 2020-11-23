@@ -84,14 +84,14 @@ if __name__ == "__main__":
 
             if get_generated_defs()['TARGET'] == 'zcu104':
                 read_level_hardcoded(wb, config=[
-                    (1, 184),
-                    (1, 184),
-                    (1, 136),
-                    (1, 136),
-                    (2, 368),
-                    (2, 360),
-                    (2, 328),
-                    (2, 296),
+                    (2, 184),
+                    (2, 184),
+                    (2, 136),
+                    (2, 136),
+                    (3, 368),
+                    (3, 360),
+                    (3, 328),
+                    (3, 296),
                 ])
             else:
                 read_level(wb, Settings.load(), delays_step=delays_step)

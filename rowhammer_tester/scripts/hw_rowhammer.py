@@ -24,7 +24,7 @@ class HwRowHammer(RowHammer):
         self.wb.regs.reader_reset.write(1)
         self.wb.regs.reader_reset.write(0)
 
-        assert wb.regs.reader_ready.read() == 0
+        assert self.wb.regs.reader_ready.read() == 0
 
         # Skip errors fifo
         self.wb.regs.reader_skipfifo.write(1)
@@ -34,8 +34,8 @@ class HwRowHammer(RowHammer):
         self.wb.regs.reader_gen_mask.write(0x00000001)
 
         # Attacked addresses
-        self.wb.write(self.wb.mems.pattern_rd_adr.base + 0x0, addresses[0])
-        self.wb.write(self.wb.mems.pattern_rd_adr.base + 0x4, addresses[1])
+        self.wb.write(self.wb.mems.pattern_rd_addr.base + 0x0, addresses[0])
+        self.wb.write(self.wb.mems.pattern_rd_addr.base + 0x4, addresses[1])
 
         # how many
         print('read_count: ' + str(int(read_count)))
@@ -52,9 +52,9 @@ class HwRowHammer(RowHammer):
             print(s, end='  \r')
 
         while True:
-            r_count = wb.regs.reader_done.read()
+            r_count = self.wb.regs.reader_done.read()
             progress(r_count)
-            if wb.regs.reader_ready.read():
+            if self.wb.regs.reader_ready.read():
                 break
             else:
                 time.sleep(10 / 1e3)
@@ -95,7 +95,7 @@ class HwRowHammer(RowHammer):
         #    hw_memset(self.wb, base - 0x40000000, 0x200 * 4, [row_patterns[row]])
         #    if row % row_progress == 0:
         #        print('.', end='', flush=True)
-        hw_memset(self.wb, 0x0, 256 * 1024 * 1024, [row_patterns[0]])
+        hw_memset(self.wb, 0x0, self.wb.mems.main_ram.size, [row_patterns[0]])
 
         if verify_initial:
             print('\nVerifying written memory ...')
@@ -106,7 +106,7 @@ class HwRowHammer(RowHammer):
             #    print('Error!')
             #    #self.display_errors(errors)
             #    return
-            errors = hw_memtest(self.wb, 0x0, 256 * 1024 * 1024, [row_patterns[0]])
+            errors = hw_memtest(self.wb, 0x0, self.wb.mems.main_ram.size, [row_patterns[0]])
             if len(errors):
                 print('Error!')
             else:
@@ -130,7 +130,7 @@ class HwRowHammer(RowHammer):
 
         print('\nVerifying attacked memory ...')
         #errors = self.check_errors(row_patterns, row_progress=row_progress)
-        errors = hw_memtest(self.wb, 0x0, 256 * 1024 * 1024, [row_patterns[0]])
+        errors = hw_memtest(self.wb, 0x0, self.wb.mems.main_ram.size, [row_patterns[0]])
         if len(errors):
             print('Errors')
             row_errors = {}

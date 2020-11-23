@@ -270,9 +270,13 @@ class DRAMAddressConverter:
 # offset - memory offset in bytes (modulo 16)
 # size - memory size in bytes (modulo 16)
 # patterns - pattern to fill memory
-#
 def hw_memset(wb, offset, size, patterns, dbg=False):
-    assert size % 16 == 0
+    # we are limited to multiples of DMA data width
+    settings = get_litedram_settings()
+    dma_data_width = settings.phy.dfi_databits * settings.phy.nphases
+    nbytes = dma_data_width // 8
+
+    assert size % nbytes == 0, 'DMA data width is {} bits'.format(dma_data_width)
     assert len(patterns) == 1 # FIXME: Support more patterns
 
     pattern = patterns[0] & 0xffffffff
@@ -288,22 +292,18 @@ def hw_memset(wb, offset, size, patterns, dbg=False):
     assert wb.regs.writer_done.read() == 0
 
     # TODO: Deprecated, remove
-    wb.regs.writer_mem_base.write(0x00000000)
+    wb.regs.writer_mem_base.write(0)
 
     # Unmask whole address space. TODO: Unmask only part of it?
     wb.regs.writer_mem_mask.write(0xffffffff)
 
     # FIXME: Support more patterns
-    wb.write(wb.mems.pattern_w0.base, pattern)
-    wb.write(wb.mems.pattern_w1.base, pattern)
-    wb.write(wb.mems.pattern_w2.base, pattern)
-    wb.write(wb.mems.pattern_w3.base, pattern)
-    wb.write(wb.mems.pattern_adr.base, offset // 16)
-    # Unmask just one pattern/offset
+    wb.write(wb.mems.pattern_wr_data.base, [pattern] * (nbytes//4))  # pattern is 32-bit
+    wb.write(wb.mems.pattern_wr_addr.base, offset // nbytes)
+    # Unmask just one pattern/offset (will always take data/addr from address 0)
     wb.regs.writer_data_mask.write(0x00000000)
 
-    # 4 (words) x 4 (bytes)
-    wb.regs.writer_count.write(size // 16)
+    wb.regs.writer_count.write(size // nbytes)
 
     # Start module
     wb.regs.writer_start.write(1)
@@ -318,7 +318,12 @@ def hw_memset(wb, offset, size, patterns, dbg=False):
 
 
 def hw_memtest(wb, offset, size, patterns, dbg=False):
-    assert size % 16 == 0
+    # we are limited to multiples of DMA data width
+    settings = get_litedram_settings()
+    dma_data_width = settings.phy.dfi_databits * settings.phy.nphases
+    nbytes = dma_data_width // 8
+
+    assert size % nbytes == 0, 'DMA data width is {} bits'.format(dma_data_width)
     assert len(patterns) == 1 # FIXME: Support more patterns
 
     pattern = patterns[0] & 0xffffffff
@@ -344,16 +349,13 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     # Unmask whole address space. TODO: Unmask only part of it?
     wb.regs.reader_mem_mask.write(0xffffffff)
 
-    wb.write(wb.mems.pattern_rd_w0.base, pattern)
-    wb.write(wb.mems.pattern_rd_w1.base, pattern)
-    wb.write(wb.mems.pattern_rd_w2.base, pattern)
-    wb.write(wb.mems.pattern_rd_w3.base, pattern)
-    wb.write(wb.mems.pattern_rd_adr.base, offset // 16)
-    # Unmask just one pattern/offset
+    # FIXME: Support more patterns
+    wb.write(wb.mems.pattern_rd_data.base, [pattern] * (nbytes//4))  # pattern is 32-bit
+    wb.write(wb.mems.pattern_rd_addr.base, offset // nbytes)
+    # Unmask just one pattern/offset (will always take data/addr from address 0)
     wb.regs.reader_gen_mask.write(0x00000000)
 
-    # 4 (words) x 4 (bytes)
-    wb.regs.reader_count.write(size // 16)
+    wb.regs.reader_count.write(size // nbytes)
 
     wb.regs.reader_start.write(1)
     wb.regs.reader_start.write(0)

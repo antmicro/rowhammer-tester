@@ -192,28 +192,22 @@ class RowHammerSoC(SoCCore):
 
         # Bist -------------------------------------------------------------------------------------
         if not args.no_memory_bist:
+            mem_depth = 16
             # Writer
             dram_wr_port = self.sdram.crossbar.get_port()
-            self.submodules.writer = Writer(dram_wr_port)
+            self.submodules.writer = Writer(dram_wr_port, mem_depth)
             self.add_csr('writer')
 
-            # TODO: Rename as 'pattern_wr_w?'
-            self.add_memory(self.writer.memory_w0,  name='pattern_w0',  origin=0x20000000)
-            self.add_memory(self.writer.memory_w1,  name='pattern_w1',  origin=0x21000000)
-            self.add_memory(self.writer.memory_w2,  name='pattern_w2',  origin=0x22000000)
-            self.add_memory(self.writer.memory_w3,  name='pattern_w3',  origin=0x23000000)
-            self.add_memory(self.writer.memory_adr, name='pattern_adr', origin=0x24000000)
+            self.add_memory(self.writer.mem_data, name='pattern_wr_data', origin=0x20000000)
+            self.add_memory(self.writer.mem_adr,  name='pattern_wr_addr', origin=0x21000000)
 
             # Reader
             dram_rd_port = self.sdram.crossbar.get_port()
-            self.submodules.reader = Reader(dram_rd_port)
+            self.submodules.reader = Reader(dram_rd_port, mem_depth)
             self.add_csr('reader')
 
-            self.add_memory(self.reader.memory_w0,  name='pattern_rd_w0',  origin=0x30000000)
-            self.add_memory(self.reader.memory_w1,  name='pattern_rd_w1',  origin=0x31000000)
-            self.add_memory(self.reader.memory_w2,  name='pattern_rd_w2',  origin=0x32000000)
-            self.add_memory(self.reader.memory_w3,  name='pattern_rd_w3',  origin=0x33000000)
-            self.add_memory(self.reader.memory_adr, name='pattern_rd_adr', origin=0x34000000)
+            self.add_memory(self.reader.mem_data, name='pattern_rd_data', origin=0x22000000)
+            self.add_memory(self.reader.mem_adr,  name='pattern_rd_addr', origin=0x23000000)
 
         # Payload executor -------------------------------------------------------------------------
         if not args.no_payload_executor:
@@ -221,14 +215,14 @@ class RowHammerSoC(SoCCore):
 
             phy_settings = self.sdram.controller.settings.phy
             scratchpad_width = phy_settings.dfi_databits * phy_settings.nphases
-            scratchpad_size  = 2**10
+            scratchpad_size  = 256
 
             payload_mem    = Memory(32, 2**10)
             scratchpad_mem = Memory(scratchpad_width, scratchpad_size // (scratchpad_width//8))
             self.specials += payload_mem, scratchpad_mem
 
-            self.add_memory(payload_mem, name='payload', origin=0x35000000)
-            self.add_memory(scratchpad_mem, name='scratchpad', origin=0x36000000, mode='r')
+            self.add_memory(payload_mem,    name='payload',    origin=0x30000000)
+            self.add_memory(scratchpad_mem, name='scratchpad', origin=0x31000000, mode='r')
 
             self.submodules.payload_executor = PayloadExecutor(
                 mem_payload    = payload_mem,

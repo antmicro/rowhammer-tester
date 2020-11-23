@@ -5,55 +5,58 @@ from litedram.frontend.dma import LiteDRAMDMAWriter
 
 
 class Writer(Module, AutoCSR):
-    def __init__(self, dram_port):
-        self.reset        = CSRStorage()
-        self.start        = CSRStorage()
-        self.done         = CSRStatus()
+    """DRAM DMA memory writer
 
-        self.count        = CSRStorage(size=(32*1))
+    This module allows to fill the DRAM with a given pattern.
 
-        self.mem_base     = CSRStorage(size=32)
-        self.mem_mask     = CSRStorage(size=32)
-        self.data_mask    = CSRStorage(size=32) # patterns
+    DRAM memory range can be configured using `mem_base` and `mem_mask` CSRs.
+    The number of DMA transfers is configured using the `count` CSR.
+
+    The access pattern is stored in `mem_data` and `mem_adr`.
+    The pattern address space can be limited using the `data_mask` CSR.
+
+    For example, having `mem_adr` filled with `[ 0x04, 0x02, 0x03, ... ]`
+    and `mem_data` filled with `[ 0xff, 0xaa, 0x55, ... ]` and setting
+    `data_mask = 0b01`, the pattern (address, data) written will be:
+    `[(0x04, 0xff), (0x02, 0xaa), (0x04, 0xff), ...]`
+    """
+    def __init__(self, dram_port, mem_depth):
+        self.reset     = CSRStorage(description='Reset the module')
+        self.start     = CSRStorage(description='Initialize the transfer')
+        self.done      = CSRStatus(description='Indicates that the transfer has finished')
+
+        self.count     = CSRStorage(size=(32*1), description='Desired number of transfers')
+
+        # TODO: remove mem_base as mem_adr should be enough?
+        self.mem_base  = CSRStorage(size=32, description='DRAM memory address offset')
+        self.mem_mask  = CSRStorage(size=32, description='DRAM memory address mask')
+        self.data_mask = CSRStorage(size=32, description='Pattern memories address mask')
 
         # FIXME: Increase fifo depth
         dma = LiteDRAMDMAWriter(dram_port, fifo_depth=1)
         self.submodules += dma
 
-        self.memory_w0  = Memory(32, 1024)
-        self.memory_w1  = Memory(32, 1024)
-        self.memory_w2  = Memory(32, 1024)
-        self.memory_w3  = Memory(32, 1024)
-        self.memory_adr = Memory(32, 1024)
-        self.specials += self.memory_w0, self.memory_w1, \
-                         self.memory_w2, self.memory_w3, \
-                         self.memory_adr
+        self.mem_data = Memory(dram_port.data_width, mem_depth)
+        self.mem_adr  = Memory(32, mem_depth)
+        self.specials += self.mem_data, self.mem_adr
 
-        self.autocsr_exclude = 'memory_w0', 'memory_w1', \
-                               'memory_w2', 'memory_w3', \
-                               'memory_adr'
+        self.autocsr_exclude = ('mem_data', 'mem_adr')
 
-        w0_port   = self.memory_w0.get_port()
-        w1_port   = self.memory_w1.get_port()
-        w2_port   = self.memory_w2.get_port()
-        w3_port   = self.memory_w3.get_port()
-        adr_port  = self.memory_adr.get_port()
-        self.specials += w0_port, w1_port, w2_port, w3_port, adr_port
+        data_port = self.mem_data.get_port()
+        adr_port  = self.mem_adr.get_port()
+        self.specials += data_port, adr_port
 
         cmd_counter = Signal(32)
 
         self.comb += [
-            w0_port.adr.eq(cmd_counter & self.data_mask.storage),
-            w1_port.adr.eq(cmd_counter & self.data_mask.storage),
-            w2_port.adr.eq(cmd_counter & self.data_mask.storage),
-            w3_port.adr.eq(cmd_counter & self.data_mask.storage),
+            data_port.adr.eq(cmd_counter & self.data_mask.storage),
             adr_port.adr.eq(cmd_counter & self.data_mask.storage),
         ]
 
         self.comb += [
             dma.sink.address.eq(self.mem_base.storage +
                                 adr_port.dat_r + (cmd_counter & self.mem_mask.storage)),
-            dma.sink.data.eq(Cat(w0_port.dat_r, w1_port.dat_r, w2_port.dat_r, w3_port.dat_r)),
+            dma.sink.data.eq(data_port.dat_r),
         ]
 
         fsm = FSM(reset_state="IDLE")

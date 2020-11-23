@@ -6,7 +6,7 @@ import argparse
 
 from datetime import datetime
 
-from rowhammer_tester.scripts.utils import RemoteClient, litex_server, hw_memset, hw_memtest
+from rowhammer_tester.scripts.utils import RemoteClient, litex_server, hw_memset, hw_memtest, get_litedram_settings
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -22,20 +22,25 @@ if __name__ == "__main__":
     wb = RemoteClient()
     wb.open()
 
-    # FIXME: Pass it as argument
-    mem_base  = 0x40000000
-    mem_range = 256 * 1024 * 1024  # bytes
+    mem_base  = wb.mems.main_ram.base
+    mem_range = wb.mems.main_ram.size  # bytes
+
+    # we are limited to multiples of DMA data width
+    settings = get_litedram_settings()
+    dma_data_width = settings.phy.dfi_databits * settings.phy.nphases
+    nbytes = dma_data_width // 8
 
     if args.test_modules:
         hw_memset(wb, 0x0, mem_range, [0xffffffff], args.dbg)
 
         # --------------------------- Introduce error ------------------------
+        rng = random.Random(datetime.now())
         offsets = []
-        for i, n in enumerate(range(0, 100000)):
+        for i, n in enumerate(range(0, 5000)):
             print('Generated {:d} offsets'.format(i), end='\r')
-            offset = random.Random(datetime.now()).randrange(0x0, 256 * 1024 * 1024 - 4)
-            if offset//16 not in offsets:
-                offsets.append(offset // 16)
+            offset = rng.randrange(0x0, mem_range - 4)
+            if offset//nbytes not in offsets:
+                offsets.append(offset // nbytes)
                 if args.dbg:
                     print('dbg: offset: ' + str(offset))
                 wb.write(mem_base + offset, wb.read(mem_base + offset) ^ 0x000010000)
@@ -90,7 +95,7 @@ if __name__ == "__main__":
             if len(err) > 0:
                 print('!!! Failed pattern: {:08x} !!!'.format(p))
                 for p in err:
-                    print('Failed: 0x{:08x} == 0x{:08x}'.format(mem_base + p * 16, wb.read(mem_base + p * 16)))
+                    print('Failed: 0x{:08x} == 0x{:08x}'.format(mem_base + p * nbytes, wb.read(mem_base + p * nbytes)))
             else:
                 print("Test pattern OK!")
 
