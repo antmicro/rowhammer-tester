@@ -341,7 +341,7 @@ def get_sim_kwargs(args, interface='litex-sim'):
         "interface": interface,
         "ip": args.ip_address,
     })
-    return dict(sim_config=sim_config, trace=True, trace_fst=False)  # TODO: use FST format for smaller dumps
+    return dict(sim_config=sim_config, trace=True, trace_fst=True)
 
 
 class LiteDRAMSettingsEncoder(json.JSONEncoder):

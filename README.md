@@ -103,6 +103,10 @@ make sim
 ```
 
 This command will generate intermediate files & simulate them with Verilator.
+After simulation has finished, a signals dump can be investigated using [gtkwave](http://gtkwave.sourceforge.net/):
+```
+gtkwave build/$TARGET/gateware/sim.fst
+```
 
 WARNING: The repository contains a wrapper script around `sudo` which disallows LiteX to interfere with
 the host network configuration. This forces the user to manually configure a TUN interface for valid
@@ -182,4 +186,9 @@ python rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pair
 To generate a plot (requires `pip install -r requirements-dev.txt`) you can use:
 ```
 python rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh --plot
+```
+
+To make use of BIST modules to fill/check the memory one can use:
+```
+python hw_rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh
 ```
