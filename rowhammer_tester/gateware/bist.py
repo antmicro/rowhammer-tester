@@ -34,6 +34,7 @@ the operation. When the operation is ongoing `ready` will be 0.
         self.start = Signal()
         self.ready = Signal()
         self.count = Signal(32)
+        self.done  = Signal(32)
 
         self.mem_mask = Signal(32)
         self.data_mask = Signal(32)
@@ -47,6 +48,7 @@ the operation. When the operation is ongoing `ready` will be 0.
         self._start.description = 'Write to the register starts the transfer (if ready=1)'
         self._ready = CSRStatus(description='Indicates that the transfer is not ongoing')
         self._count = CSRStorage(size=len(self.count), description='Desired number of DMA transfers')
+        self._done = CSRStatus(size=len(self.done), description='Number of completed DMA transfers')
         self._mem_mask = CSRStorage(
             size        = len(self.mem_mask),
             description = 'DRAM address mask for DMA transfers'
@@ -60,6 +62,7 @@ the operation. When the operation is ongoing `ready` will be 0.
             self.start.eq(self._start.re),
             self._ready.status.eq(self.ready),
             self.count.eq(self._count.storage),
+            self._done.status.eq(self.done),
             self.mem_mask.eq(self._mem_mask.storage),
             self.data_mask.eq(self._data_mask.storage),
         ]
@@ -87,6 +90,7 @@ Pattern
         cmd_counter = Signal(32)
 
         self.comb += [
+            self.done.eq(cmd_counter),
             # pattern
             self.data_port.adr.eq(cmd_counter & self.data_mask),
             self.addr_port.adr.eq(cmd_counter & self.data_mask),
@@ -149,7 +153,6 @@ NOTE: This value represents the number of erroneous *DMA transfers*.
 The current progress can be read from the `done` CSR.
         """.format(common=BISTModule.__doc__))
 
-        self.done         = Signal(32)  # current progress
         self.error_count  = Signal(32)
         self.skip_fifo    = Signal()
         self.error        = stream.Endpoint([('offset', 32)])
@@ -248,14 +251,12 @@ The current progress can be read from the `done` CSR.
     def add_csrs(self):
         super().add_csrs()
 
-        self._done         = CSRStatus(size=len(self.done), description='Current progress')
         self._error_count  = CSRStatus(size=len(self.error_count), description='Number of errors detected')
         self._skip_fifo    = CSRStorage(description='Skip waiting for user to read the errors FIFO')
         self._error_offset = CSRStatus(size=len(self.mem_mask), description='Current offset of the error')
         self._error_ready  = CSRStatus(description='Error detected and ready to read')
 
         self.comb += [
-            self._done.status.eq(self.done),
             self._error_count.status.eq(self.error_count),
             self.skip_fifo.eq(self._skip_fifo.storage),
             self._error_offset.status.eq(self.error.offset),

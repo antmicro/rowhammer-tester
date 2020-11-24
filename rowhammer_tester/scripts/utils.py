@@ -265,6 +265,18 @@ class DRAMAddressConverter:
 
 # ######################### HW (accel) memory utils #############################
 
+def _progress(current, max, bar_w=40, last=False, name='Progress', opt=None):
+    s = '{name}: [{bar:{bw}}] {cur:{n}} / {max:{n}}{opt}'.format(
+        name = name,
+        cur  = current,
+        max  = max,
+        n    = len(str(max)),
+        bar  = '=' * int(current/max * bar_w),
+        bw   = bar_w,
+        opt  = '' if opt is None else ' ({})'.format(opt)
+    )
+    print(s + ' ', end='\n' if last else '\r')
+
 #
 # wb - remote handle
 # offset - memory offset in bytes (modulo 16)
@@ -295,7 +307,8 @@ def hw_memset(wb, offset, size, patterns, dbg=False):
     # Unmask just one pattern/offset (will always take data/addr from address 0)
     wb.regs.writer_data_mask.write(0x00000000)
 
-    wb.regs.writer_count.write(size // nbytes)
+    count = size // nbytes
+    wb.regs.writer_count.write(count)
 
     # Start module
     wb.regs.writer_start.write(1)
@@ -304,7 +317,9 @@ def hw_memset(wb, offset, size, patterns, dbg=False):
     while True:
         if wb.regs.writer_ready.read():
             break
+        _progress(wb.regs.writer_done.read(), count)
         time.sleep(10e-3) # 10 ms
+    _progress(wb.regs.writer_done.read(), count, last=True)
 
 
 def hw_memtest(wb, offset, size, patterns, dbg=False):
@@ -338,23 +353,32 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     # Unmask just one pattern/offset (will always take data/addr from address 0)
     wb.regs.reader_data_mask.write(0x00000000)
 
-    wb.regs.reader_count.write(size // nbytes)
+    count = size // nbytes
+    count_w = len(str(count))
+    wb.regs.reader_count.write(count)
 
     wb.regs.reader_start.write(1)
 
     errors = []
 
+    def progress(last=False):
+        _progress(wb.regs.reader_done.read(), count, last=last, opt='Errors: {}'.format(len(errors)))
+
     # Read unmatched offset
     def append_errors(wb, err):
         while wb.regs.reader_error_ready.read():
             err.append(wb.regs.reader_error_offset.read())
+            progress()
 
     # FIXME: Support progress
     while True:
         if wb.regs.reader_ready.read():
             break
         append_errors(wb, errors)
+        _progress(wb.regs.reader_done.read(), count)
+        progress()
         time.sleep(10e-3) # !0 ms
+    progress(last=True)
 
     # Make sure we read all errors
     append_errors(wb, errors)
