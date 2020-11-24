@@ -185,8 +185,8 @@ def memdump(data, base=0x40000000, chunk_len=16):
 
     data_bytes = list(word2byte(data))
     for i, chunk in enumerate(chunks(data_bytes, chunk_len)):
-        b = " ".join("{:02x}".format(chunk[i] if i < len(chunk) else 0) for i in range(chunk_len))
-        c = "".join(tochar(chunk[i] if i < len(chunk) else 0) for i in range(chunk_len))
+        b = " ".join("{:2}".format('{:02x}'.format(chunk[i]) if i < len(chunk) else '') for i in range(chunk_len))
+        c = "".join(tochar(chunk[i]) if i < len(chunk) else ' ' for i in range(chunk_len))
         print("0x{addr:08x}:  {bytes}  {chars}".format(addr=base + chunk_len*i, bytes=b, chars=c))
 
 ################################################################################
