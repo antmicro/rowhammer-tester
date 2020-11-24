@@ -93,9 +93,23 @@ make upload
 
 > TIP: By typing `make` (without `build`) LiteX will generate build files without invoking Vivado.
 
-### Arty-A7 simulation
+### ZCU104 board
 
-Generate intermediate files & run simulation:
+Currently ZCU104 is not yet fully functional, as it uses UART for communication instead of Ethernet.
+Connect the power supply and microUSB cable and run:
+```
+export TARGET=zcu104
+make build
+make upload
+```
+Use all the scripts normally, but instead of starting the `litex_server` as described below, use:
+```
+litex_server --uart --uart-baudrate 1e6 --uart-port /dev/ttyUSB3   # use proper USB serial port
+```
+
+### Simulation
+
+Select `TARGET`, generate intermediate files & run simulation:
 
 ```
 export TARGET=arty
@@ -114,35 +128,21 @@ communication with the simulated device:
 
 1. Create the TUN interface:
 ```
-tunctl -u $USER -t arty
+tunctl -u $USER -t litex-sim
 ```
 
 2. Configure the IP address of the interface:
 ```
-ifconfig arty 192.168.100.1/24 up
+ifconfig litex-sim 192.168.100.1/24 up
 ```
 
 3. (Optionally) allow network traffic on this interface:
 ```
-iptables -A INPUT -i arty -j ACCEPT
-iptables -A OUTPUT -o arty -j ACCEPT
+iptables -A INPUT -i litex-sim -j ACCEPT
+iptables -A OUTPUT -o litex-sim -j ACCEPT
 ```
 
 TIP: By typing `make ARGS="--sim"` LiteX will generate only intermediate files and stop right after that.
-
-### ZCU104 board
-
-Currently ZCU104 is not yet fully functional, as it uses UART for communication instead of Ethernet.
-Connect the power supply and microUSB cable and run:
-```
-export TARGET=zcu104
-make build
-make upload
-```
-Use all the scripts normally, but instead of starting the `litex_server` as described below, use:
-```
-litex_server --uart --uart-baudrate 1e6 --uart-port /dev/ttyUSB3   # use proper USB serial port
-```
 
 ### Controlling the board
 
