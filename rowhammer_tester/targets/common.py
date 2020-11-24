@@ -28,7 +28,7 @@ from liteeth.phy.model import LiteEthPHYModel
 from liteeth.core import LiteEthUDPIPCore
 from liteeth.frontend.etherbone import LiteEthEtherbone
 
-from rowhammer_tester.gateware.bist import Reader, Writer
+from rowhammer_tester.gateware.bist import Reader, Writer, PatternMemory
 from rowhammer_tester.gateware.rowhammer import RowHammerDMA
 from rowhammer_tester.gateware.payload_executor import PayloadExecutor
 
@@ -191,38 +191,60 @@ class RowHammerSoC(SoCCore):
 
         # Bist -------------------------------------------------------------------------------------
         if not args.no_memory_bist:
-            pattern_depth = int(args.bist_pattern_length, 0)
+            pattern_data_size  = int(args.pattern_data_size, 0)
+            phy_settings       = self.sdram.controller.settings.phy
+            pattern_data_width = phy_settings.dfi_databits * phy_settings.nphases
+            pattern_length     = pattern_data_size//(pattern_data_width//8)
+
+            assert pattern_data_size % (pattern_data_width//8) == 0, \
+                'Pattern data memory size must be multiple of {} bytes'.format(pattern_data_width//8)
+
+            self.submodules.pattern_mem = PatternMemory(
+                data_width = pattern_data_width,
+                mem_depth  = pattern_length)
+            self.add_memory(self.pattern_mem.data, name='pattern_data', origin=0x20000000)
+            self.add_memory(self.pattern_mem.addr, name='pattern_addr', origin=0x21000000)
+            self.logger.info('{}: Length: {}, Data Width: {}-bit, Address width: {}-bit'.format(
+                colorer('BIST pattern'), colorer(pattern_length), colorer(pattern_data_width), colorer(32)))
 
             # Writer
             dram_wr_port = self.sdram.crossbar.get_port()
-            self.submodules.writer = Writer(dram_wr_port, pattern_depth)
+            self.submodules.writer = Writer(dram_wr_port, self.pattern_mem)
             self.writer.add_csrs()
             self.add_csr('writer')
 
-            self.add_memory(self.writer.mem_data, name='pattern_wr_data', origin=0x20000000)
-            self.add_memory(self.writer.mem_addr, name='pattern_wr_addr', origin=0x21000000)
-
             # Reader
             dram_rd_port = self.sdram.crossbar.get_port()
-            self.submodules.reader = Reader(dram_rd_port, pattern_depth)
+            self.submodules.reader = Reader(dram_rd_port, self.pattern_mem)
             self.reader.add_csrs()
             self.add_csr('reader')
 
-            self.add_memory(self.reader.mem_data, name='pattern_rd_data', origin=0x22000000)
-            self.add_memory(self.reader.mem_addr, name='pattern_rd_addr', origin=0x23000000)
+            assert pattern_data_width == dram_wr_port.data_width
+            assert pattern_data_width == dram_rd_port.data_width
 
         # Payload executor -------------------------------------------------------------------------
         if not args.no_payload_executor:
             # TODO: disconnect bus during payload execution
             phy_settings = self.sdram.controller.settings.phy
-            scratchpad_width = phy_settings.dfi_databits * phy_settings.nphases
 
-            payload_mem    = Memory(32, int(args.payload_size, 0))
-            scratchpad_mem = Memory(scratchpad_width,  int(args.scratchpad_length, 0))
+            scratchpad_width = phy_settings.dfi_databits * phy_settings.nphases
+            payload_size = int(args.payload_size, 0)
+            scratchpad_size = int(args.scratchpad_size, 0)
+            assert payload_size % 4 == 0, 'Payload memory size must be multiple of 4 bytes'
+            assert scratchpad_size % (scratchpad_width//8) == 0, \
+                'Scratchpad memory size must be multiple of {} bytes'.format(scratchpad_width//8)
+
+            scratchpad_depth = scratchpad_size//(scratchpad_width//8)
+            payload_mem    = Memory(32, payload_size//4)
+            scratchpad_mem = Memory(scratchpad_width, scratchpad_depth)
             self.specials += payload_mem, scratchpad_mem
 
             self.add_memory(payload_mem,    name='payload',    origin=0x30000000)
             self.add_memory(scratchpad_mem, name='scratchpad', origin=0x31000000, mode='r')
+            self.logger.info('{}: Length: {}, Data Width: {}-bit'.format(
+                colorer('Instruction payload'), colorer(payload_size//4), colorer(32)))
+            self.logger.info('{}: Length: {}, Data Width: {}-bit'.format(
+                colorer('Scratchpad memory'), colorer(scratchpad_depth), colorer(scratchpad_width)))
 
             self.submodules.payload_executor = PayloadExecutor(
                 mem_payload    = payload_mem,
@@ -272,13 +294,10 @@ def parser_args(parser, sys_clk_freq):
     parser.add_argument("--sim", action="store_true", help="Build and run in simulation mode")
     parser.add_argument("--sys-clk-freq", default=sys_clk_freq, help="System clock frequency")
     parser.add_argument("--no-memory-bist", action="store_true", help="Disable memory BIST module")
-    parser.add_argument("--bist-pattern-length", default="256",
-                        help="BIST pattern memory depth (number of DMA accesses that can be stored)")
+    parser.add_argument("--pattern-data-size", default="1024", help="BIST pattern data memory size in bytes")
     parser.add_argument("--no-payload-executor", action="store_true", help="Disable Payload Executor module")
-    parser.add_argument("--payload-size", default="1024",
-                        help="Maxiumum number of payload instuctions (determines payload memory size)")
-    parser.add_argument("--scratchpad-length", default="256",
-                        help="Scratchpad memory depth (number of READ bursts that can be stored)")
+    parser.add_argument("--payload-size", default="1024", help="Payload memory size in bytes")
+    parser.add_argument("--scratchpad-size", default="1024", help="Scratchpad memory size in bytes")
     parser.add_argument("--ip-address", default="192.168.100.50", help="Use given IP address")
     parser.add_argument("--mac-address", default="0x10e2d5000001", help="Use given MAC address")
     parser.add_argument("--udp-port", default="1234", help="Use given UDP port")

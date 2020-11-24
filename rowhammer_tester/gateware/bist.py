@@ -7,6 +7,13 @@ from litex.soc.integration.doc import AutoDoc, ModuleDoc
 from litedram.frontend.dma import LiteDRAMDMAReader, LiteDRAMDMAWriter
 
 
+class PatternMemory(Module):
+    def __init__(self, data_width, mem_depth, addr_width=32):
+        self.data = Memory(data_width, mem_depth)
+        self.addr = Memory(addr_width, mem_depth)
+        self.specials += self.data, self.addr
+
+
 class BISTModule(Module):
     """
 Provides RAM to store access pattern: `mem_addr` and `mem_data`.
@@ -23,7 +30,7 @@ To use this module, make sure that `ready` is 1, then write the desired
 number of transfers to `count`. Writing to the `start` CSR will initialize
 the operation. When the operation is ongoing `ready` will be 0.
     """
-    def __init__(self, dram_port, mem_depth):
+    def __init__(self, pattern_mem):
         self.start = Signal()
         self.ready = Signal()
         self.count = Signal(32)
@@ -31,14 +38,8 @@ the operation. When the operation is ongoing `ready` will be 0.
         self.mem_mask = Signal(32)
         self.data_mask = Signal(32)
 
-        self.mem_data = Memory(dram_port.data_width, mem_depth)
-        self.mem_addr = Memory(32, mem_depth)
-        self.specials += self.mem_data, self.mem_addr
-
-        self.autocsr_exclude = ('mem_data', 'mem_addr')
-
-        self.data_port = self.mem_data.get_port()
-        self.addr_port = self.mem_addr.get_port()
+        self.data_port = pattern_mem.data.get_port()
+        self.addr_port = pattern_mem.addr.get_port()
         self.specials += self.data_port, self.addr_port
 
     def add_csrs(self):
@@ -63,9 +64,10 @@ the operation. When the operation is ongoing `ready` will be 0.
             self.data_mask.eq(self._data_mask.storage),
         ]
 
+
 class Writer(BISTModule, AutoCSR, AutoDoc):
-    def __init__(self, dram_port, mem_depth):
-        super().__init__(dram_port, mem_depth)
+    def __init__(self, dram_port, pattern_mem):
+        super().__init__(pattern_mem)
 
         self.doc = ModuleDoc("""
 DMA DRAM writer.
@@ -116,9 +118,10 @@ Pattern
             )
         )
 
+
 class Reader(BISTModule, AutoCSR, AutoDoc):
-    def __init__(self, dram_port, mem_depth):
-        super().__init__(dram_port, mem_depth)
+    def __init__(self, dram_port, pattern_mem):
+        super().__init__(pattern_mem)
 
         self.doc = ModuleDoc("""
 DMA DRAM reader.
@@ -191,7 +194,7 @@ The current progress can be read from the `done` CSR.
 
         # Unmatched memory offsets
         error_bitcount = Signal(max=dram_port.data_width)
-        error_fifo = stream.SyncFIFO([('offset', 32)], depth=16, buffered=False)
+        error_fifo = stream.SyncFIFO([('offset', 32)], depth=4, buffered=False)
         self.submodules += error_fifo
 
         self.comb += [

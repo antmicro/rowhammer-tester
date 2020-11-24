@@ -2,18 +2,19 @@ import unittest
 
 from migen import *
 from litedram.common import LiteDRAMNativePort
-from rowhammer_tester.gateware.bist import Reader
+from rowhammer_tester.gateware.bist import Reader, PatternMemory
 
 class TestReader(unittest.TestCase):
     def test_pattern_1(self):
         class DUT(Module):
             def __init__(self):
                 self.dram_port = LiteDRAMNativePort(address_width=32, data_width=32*4, mode='both')
-                self.submodules.reader = Reader(self.dram_port, 16)
+                self.submodules.pattern_mem = PatternMemory(self.dram_port.data_width, 16)
+                self.submodules.reader = Reader(self.dram_port, self.pattern_mem)
                 self.reader.add_csrs()
 
-                self.data = self.reader.mem_data.get_port(write_capable=True)
-                self.addr = self.reader.mem_addr.get_port(write_capable=True)
+                self.data = self.pattern_mem.data.get_port(write_capable=True)
+                self.addr = self.pattern_mem.addr.get_port(write_capable=True)
                 self.specials += self.data, self.addr
 
 

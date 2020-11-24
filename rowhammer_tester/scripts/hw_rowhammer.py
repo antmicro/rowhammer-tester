@@ -19,23 +19,24 @@ class HwRowHammer(RowHammer):
         row_strw = len(str(2**self.rowbits - 1))
 
         # FIXME: ------------------ move to utils ----------------------------
-        # Make sure that the module is in reset state
-        self.wb.regs.reader_start.write(0)
-        self.wb.regs.reader_reset.write(1)
-        self.wb.regs.reader_reset.write(0)
+        # Flush error fifo
+        self.wb.regs.reader_skip_fifo.write(1)
+        time.sleep(0.1)
+        # Enable error FIFO
+        self.wb.regs.reader_skip_fifo.write(0)
 
-        assert self.wb.regs.reader_ready.read() == 0
+        assert self.wb.regs.reader_ready.read() == 1
 
         # Skip errors fifo
-        self.wb.regs.reader_skipfifo.write(1)
+        self.wb.regs.reader_skip_fifo.write(1)
 
         # Do not increment memory address
         self.wb.regs.reader_mem_mask.write(0x00000000)
-        self.wb.regs.reader_gen_mask.write(0x00000001)
+        self.wb.regs.reader_data_mask.write(0x00000001)
 
         # Attacked addresses
-        self.wb.write(self.wb.mems.pattern_rd_addr.base + 0x0, addresses[0])
-        self.wb.write(self.wb.mems.pattern_rd_addr.base + 0x4, addresses[1])
+        self.wb.write(self.wb.mems.pattern_addr.base + 0x0, addresses[0])
+        self.wb.write(self.wb.mems.pattern_addr.base + 0x4, addresses[1])
 
         # how many
         print('read_count: ' + str(int(read_count)))

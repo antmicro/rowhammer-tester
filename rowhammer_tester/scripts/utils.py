@@ -290,8 +290,8 @@ def hw_memset(wb, offset, size, patterns, dbg=False):
     wb.regs.writer_mem_mask.write(0xffffffff)
 
     # FIXME: Support more patterns
-    wb.write(wb.mems.pattern_wr_data.base, [pattern] * (nbytes//4))  # pattern is 32-bit
-    wb.write(wb.mems.pattern_wr_addr.base, offset // nbytes)
+    wb.write(wb.mems.pattern_data.base, [pattern] * (nbytes//4))  # pattern is 32-bit
+    wb.write(wb.mems.pattern_addr.base, offset // nbytes)
     # Unmask just one pattern/offset (will always take data/addr from address 0)
     wb.regs.writer_data_mask.write(0x00000000)
 
@@ -321,22 +321,22 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     if dbg:
         print('hw_memtest: offset: 0x{:08x}, size: 0x{:08x}, pattern: 0x{:08x}'.format(offset, size, pattern))
 
-    assert wb.regs.reader_ready.read() == 1
-
     # Flush error fifo
     wb.regs.reader_skip_fifo.write(1)
-    time.sleep(0.010)
+    time.sleep(0.1)
     # Enable error FIFO
     wb.regs.reader_skip_fifo.write(0)
+
+    assert wb.regs.reader_ready.read() == 1
 
     # Unmask whole address space. TODO: Unmask only part of it?
     wb.regs.reader_mem_mask.write(0xffffffff)
 
     # FIXME: Support more patterns
-    wb.write(wb.mems.pattern_rd_data.base, [pattern] * (nbytes//4))  # pattern is 32-bit
-    wb.write(wb.mems.pattern_rd_addr.base, offset // nbytes)
+    wb.write(wb.mems.pattern_data.base, [pattern] * (nbytes//4))  # pattern is 32-bit
+    wb.write(wb.mems.pattern_addr.base, offset // nbytes)
     # Unmask just one pattern/offset (will always take data/addr from address 0)
-    wb.regs.reader_gen_mask.write(0x00000000)
+    wb.regs.reader_data_mask.write(0x00000000)
 
     wb.regs.reader_count.write(size // nbytes)
 
