@@ -12,7 +12,7 @@ from rowhammer_tester.scripts.utils import (memfill, memcheck, memwrite, DRAMAdd
 ################################################################################
 
 class RowHammer:
-    def __init__(self, wb, *, nrows, bankbits, rowbits, colbits, column, bank,
+    def __init__(self, wb, *, settings, nrows, column, bank,
                  rows_start=0, no_refresh=False, verbose=False, plot=False,
                  payload_executor=False):
         for name, val in locals().items():
@@ -28,7 +28,7 @@ class RowHammer:
         addresses = {}
         for row in self.rows:
             addresses[row] = [self.converter.encode_bus(bank=self.bank, col=col, row=row)
-                              for col in range(2**self.colbits)]
+                              for col in range(2**self.settings.geom.colbits)]
         return addresses
 
     def attack(self, row1, row2, read_count, progress_header=''):
@@ -43,7 +43,7 @@ class RowHammer:
         self.wb.regs.rowhammer_address2.write(addresses[1])
         self.wb.regs.rowhammer_enabled.write(1)
 
-        row_strw = len(str(2**self.rowbits - 1))
+        row_strw = len(str(2**self.settings.geom.rowbits - 1))
 
         def progress(count):
             s = '  {}'.format(progress_header + ' ' if progress_header else '')
@@ -82,7 +82,7 @@ class RowHammer:
         for row in row_errors:
             if len(row_errors[row]) > 0:
                 print("row_errors for row={:{n}}: {}".format(
-                    row, len(row_errors[row]), n=len(str(2**self.rowbits-1))))
+                    row, len(row_errors[row]), n=len(str(2**self.settings.geom.rowbits-1))))
             if self.verbose:
                 for i, word in row_errors[row]:
                     base_addr = min(self.addresses_per_row[row])
@@ -152,7 +152,7 @@ class RowHammer:
         # FIXME: read from dedicated status registers
         tras = 5
         trp = 3
-        encoder = Encoder(bankbits=self.bankbits)
+        encoder = Encoder(bankbits=self.settings.geom.bankbits)
         payload = [
             encoder(OpCode.NOOP, timeslice=30),
         ]
@@ -235,12 +235,9 @@ def main(row_hammer_cls):
     wb = RemoteClient()
     wb.open()
 
-    settings = get_litedram_settings()
     row_hammer = row_hammer_cls(wb,
         nrows            = args.nrows,
-        bankbits         = settings.geom.bankbits,
-        rowbits          = settings.geom.rowbits,
-        colbits          = settings.geom.colbits,
+        settings         = get_litedram_settings(),
         column           = args.column,
         bank             = args.bank,
         rows_start       = args.start_row,
