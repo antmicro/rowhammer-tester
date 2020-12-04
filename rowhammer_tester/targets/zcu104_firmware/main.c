@@ -6,10 +6,8 @@
 #include "pl_mmap.h"
 #include "udp_server.h"
 #include "etherbone.h"
+#include "cmdline.h"
 #include "debug.h"
-
-#define UDP_PORT 1234
-#define SERVER_BUF_SIZE 4096
 
 void pl_mem_write(void *_pl_mem, uint32_t addr, uint32_t value) {
     struct pl_mmap *pl_mem = _pl_mem;
@@ -32,16 +30,16 @@ int run_server(struct pl_mmap *pl_mem) {
         .write = &pl_mem_write,
         .read = &pl_mem_read,
     };
-    return udp_server_run(&mem, (udp_server_callback) &etherbone_callback, UDP_PORT, SERVER_BUF_SIZE);
+    return udp_server_run(&mem, (udp_server_callback) &etherbone_callback,
+            cmdline_args.udp_port, cmdline_args.server_buf_size);
 }
 
 int main(int argc, char *argv[])
 {
-    (void) argc;
-    (void) argv;
+    parse_args(argc, argv);
 
     struct pl_mmap pl_mem;
-    if (pl_mmap_open(&pl_mem, PL_MEM_BASE, PL_MEM_SIZE) < 0) {
+    if (pl_mmap_open(&pl_mem, cmdline_args.pl_mem_base, cmdline_args.pl_mem_size) < 0) {
         return 1;
     }
 
@@ -51,4 +49,3 @@ int main(int argc, char *argv[])
 
     return ret;
 }
-

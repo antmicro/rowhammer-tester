@@ -3,9 +3,6 @@
 
 #include <sys/mman.h>
 
-#define PL_MEM_BASE 0x400000000
-#define PL_MEM_SIZE 0x100000000
-
 struct pl_mmap {
     void *mem;
     off_t base;
