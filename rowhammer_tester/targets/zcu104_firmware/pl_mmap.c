@@ -28,7 +28,7 @@ int pl_mmap_open(struct pl_mmap *pl_mem, off_t base_address, size_t size) {
         goto error;
     }
 
-    pl_mem->mem_fd = mem_fd;
+    close(mem_fd);
     pl_mem->mem = mem;
     pl_mem->base = page_base;
     pl_mem->len = len;
@@ -45,9 +45,5 @@ void pl_mmap_close(struct pl_mmap *pl_mem) {
         if (munmap(pl_mem->mem, pl_mem->len) == -1) {
             perror("Could not unmap memory");
         }
-    }
-    if (pl_mem->mem_fd > 0) {
-        close(pl_mem->mem_fd);
-        pl_mem->mem_fd = 0;
     }
 }

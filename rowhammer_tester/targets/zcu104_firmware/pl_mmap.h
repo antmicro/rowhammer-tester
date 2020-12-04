@@ -7,7 +7,6 @@
 #define PL_MEM_SIZE 0x100000000
 
 struct pl_mmap {
-    int mem_fd;
     void *mem;
     off_t base;
     size_t len;
