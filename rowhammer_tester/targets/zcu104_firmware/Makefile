@@ -1,24 +1,32 @@
-TARGET = zcu104fw
-# SOURCES := $(wildcard *.c)
-SOURCES := main.c pl_mmap.c udp_server.c
+TARGET := zcu104_etherbone
+SOURCES := $(wildcard *.c)
+
+DEBUG ?= 0
+ifeq ($(DEBUG),1)
+OPTIM := -Og -g
+else
+OPTIM := -O2 -DNDEBUG
+endif
 
 CC := aarch64-linux-gnu-gcc
-CFLAGS := -Og -g -Wall -Wextra
+CFLAGS := $(OPTIM) -Wall -Wextra -Werror
 
 BUILD_DIR = build
 OBJECTS := $(SOURCES:%.c=$(BUILD_DIR)/%.o)
 
-$(TARGET): $(OBJECTS)
-	@printf "%-6s %s\n" [LD] $(notdir $@)
-	$(CC) $(LDFLAGS) -o $(TARGET) $^
+all: $(BUILD_DIR)/$(TARGET)
 
-$(BUILD_DIR)/%.o: %.c
+$(BUILD_DIR)/$(TARGET): $(OBJECTS)
+	@printf "%-6s %s\n" [LD] $(notdir $@)
+	$(CC) $(LDFLAGS) -o $(BUILD_DIR)/$(TARGET) $^
+
+$(BUILD_DIR)/%.o: %.c Makefile
 	@mkdir -p $(dir $@)
 	@printf "%-6s %s\n" [CC] $(notdir $@)
 	$(CC) $(CFLAGS) -MD -MP -MF ${@:.o=.d} -c -o $@ $<
 
 clean:
-	rm -rf $(BUILD_DIR) $(TARGET)
+	rm -rf $(BUILD_DIR)
 
 # pull in dependency info for existing .o files
 -include $(OBJECTS:.o=.d)

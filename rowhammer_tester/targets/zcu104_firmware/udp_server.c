@@ -14,7 +14,7 @@ struct udp_server {
     char *buf;
 };
 
-int udp_server_run(int port, size_t buf_size, udp_server_callback callback) {
+int udp_server_run(void *arg, udp_server_callback callback, int port, size_t buf_size) {
     struct udp_server server = {0};
 
     // allocate buffer
@@ -51,16 +51,26 @@ int udp_server_run(int port, size_t buf_size, udp_server_callback callback) {
             goto error;
         }
 
+        dbg_printf("Received %d byte packet\n", received_len);
+        dbg_memdump(server.buf, received_len);
+
         // process the incoming data
-        int response_len = callback(server.buf, buf_size, received_len);
+        int response_len = callback(arg, server.buf, buf_size, received_len);
         if (response_len < 0) {
             fprintf(stderr, "Error while processing a packet from %s:%d\n",
                     inet_ntoa(src_addr.sin_addr), ntohs(src_addr.sin_port));
             goto error;
         }
 
+        // do not respond if there is no response data?
+        if (response_len == 0)
+            continue;
+
         // send the response
-        if (sendto(server.socket_fd, server.buf, 0, response_len, (struct sockaddr *) &src_addr, addr_len) == -1) {
+        dbg_printf("Sending %d byte response\n", response_len);
+        dbg_memdump(server.buf, response_len);
+
+        if (sendto(server.socket_fd, server.buf, response_len, 0, (struct sockaddr *) &src_addr, addr_len) == -1) {
             char msg[100];
             sprintf(msg, "Failed to reply to %s:%d", inet_ntoa(src_addr.sin_addr), ntohs(src_addr.sin_port));
             perror(msg);

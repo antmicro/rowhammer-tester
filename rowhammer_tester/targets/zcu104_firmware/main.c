@@ -5,81 +5,47 @@
 
 #include "pl_mmap.h"
 #include "udp_server.h"
+#include "etherbone.h"
+#include "debug.h"
 
-enum command {
-    CMD_WRITE,
-    CMD_READ,
-    CMD_SERVER,
-};
+#define UDP_PORT 1234
+#define SERVER_BUF_SIZE 4096
 
-int server_callback(char *buf, size_t buf_size, size_t recv_len) {
-    printf("Received %lu bytes\n", recv_len);
-    strcpy(buf, "Roger that");
-    return strlen(buf);
+void pl_mem_write(void *_pl_mem, uint32_t addr, uint32_t value) {
+    struct pl_mmap *pl_mem = _pl_mem;
+    uint32_t *mmap_addr = pl_mem->mem + addr;
+    dbg_printf("0x%08x <= 0x%08x\n", addr, value);
+    *mmap_addr = value;
+}
+
+uint32_t pl_mem_read(void *_pl_mem, uint32_t addr) {
+    struct pl_mmap *pl_mem = _pl_mem;
+    uint32_t *mmap_addr = pl_mem->mem + addr;
+    uint32_t value = *mmap_addr;
+    dbg_printf("0x%08x => 0x%08x\n", addr, value);
+    return value;
+}
+
+int run_server(struct pl_mmap *pl_mem) {
+    struct etherbone_memory_handlers mem = {
+        .arg = pl_mem,
+        .write = &pl_mem_write,
+        .read = &pl_mem_read,
+    };
+    return udp_server_run(&mem, (udp_server_callback) &etherbone_callback, UDP_PORT, SERVER_BUF_SIZE);
 }
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2) {
-        printf("Usage: %s (server | read <addr> | write <addr> <value>)\n", argv[0]);
-        printf("Reads addr.\n");
-        return 0;
-    }
-
-    const char* cmd_s = argv[1];
-    enum command cmd;
-    if (strcmp(cmd_s, "read") == 0) {
-        cmd = CMD_READ;
-    } else if (strcmp(cmd_s, "write") == 0) {
-        cmd = CMD_WRITE;
-    } else if (strcmp(cmd_s, "server") == 0) {
-        cmd = CMD_SERVER;
-    } else {
-        printf("Wrong command: %s\n", cmd_s);
-        return 1;
-    }
-
-    off_t offset = 0;
-    uint32_t value = 0;
-    if (cmd == CMD_READ || cmd == CMD_WRITE) {
-        if (argc < 3) {
-            printf("Missing address\n");
-            return 1;
-        }
-        offset = strtoul(argv[2], NULL, 0);
-    }
-    if (cmd == CMD_WRITE) {
-        if (argc < 4) {
-            printf("Missing write value\n");
-            return 1;
-        }
-        value = strtoul(argv[3], NULL, 0);
-    }
+    (void) argc;
+    (void) argv;
 
     struct pl_mmap pl_mem;
     if (pl_mmap_open(&pl_mem, PL_MEM_BASE, PL_MEM_SIZE) < 0) {
-        return 2;
+        return 1;
     }
 
-    uint32_t *addr = pl_mem.mem + offset;
-
-    int ret = 0;
-    switch (cmd) {
-        case CMD_READ:
-            printf("0x%08lx: 0x%08x\n", offset, *addr);
-            break;
-        case CMD_WRITE:
-            printf("0x%08lx = 0x%08x\n", offset, value);
-            *addr = value;
-            break;
-        case CMD_SERVER:
-            if (udp_server_run(1234, 4096, &server_callback) != 0) {
-                ret = 3;
-            }
-            break;
-        default:
-            ret = 4;
-    }
+    int ret = run_server(&pl_mem);
 
     pl_mmap_close(&pl_mem);
 
