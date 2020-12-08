@@ -95,17 +95,15 @@ make upload
 
 ### ZCU104 board
 
-Currently ZCU104 is not yet fully functional, as it uses UART for communication instead of Ethernet.
-Connect the power supply and microUSB cable and run:
+To build the bitstream run:
 ```
 export TARGET=zcu104
 make build
-make upload
 ```
-Use all the scripts normally, but instead of starting the `litex_server` as described below, use:
-```
-litex_server --uart --uart-baudrate 1e6 --uart-port /dev/ttyUSB3   # use proper USB serial port
-```
+ZCU104 requires booting from SD card and the bitstream will be loaded from there.
+For the instructions please read [firmware/zcu104/README.md].
+After preparing the SD card connect the power supply and Ethernet cable.
+The rest of the instructions are the same as for other boards.
 
 ### Simulation
 
