@@ -2,7 +2,7 @@
 
 On ZCU104 board the Ethernet PHY is connected to PS (processing system) instead of PL (programmable logic).
 For this reason it is necessary to route the Ethernet/EtherBone traffic through PC<->PS<->PL.
-To do this a simple EtherBone server has been implemented (source code can be found in the `etherbone/` directory).
+To do this a simple EtherBone server has been implemented (source code can be found in the `firmware/zcu104/etherbone/` directory).
 
 ## Board configuration
 
@@ -50,3 +50,24 @@ Instead of loading bitstream through the JTAG interface, it must be copied to th
 The bitstream will be loaded by the bootloader during system startup.
 First build the bitstream, then copy the bitstream file `build/zcu104/gateware/zcu104.bit` to the FAT32 partition on the SD card.
 Make sure it is named `zcu104.bit`.
+
+## Internals
+
+The `boot.bin` file consists of First Stage Bootloader, ARM Trusted Firmware, PMU Firmware and U-Boot.
+U-Boot first loads the FPGA bitstream, then loads the device tree and kernel image, and then boots.
+It is configured to run the following boot command:
+```
+load mmc 0:1 0x2000000 zcu104.bit
+fpga load 0 0x2000000 $filesize
+load mmc 0:1 0x2000000 system.dtb
+load mmc 0:1 0x3000000 Image
+booti 0x3000000 - 0x2000000
+```
+
+Kernel is started with the following bootargs:
+```
+earlycon clk_ignore_unused console=ttyPS0,115200 root=/dev/mmcblk0p2 rootwait rw earlyprintk rootfstype=ext4
+```
+
+Rootfs is minimal. It configures the network to use static IP address of `192.168.100.50`
+and then starts the EtherBone server (`firmware/zcu104/etherbone`).
