@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import time
 import cProfile
 
@@ -54,7 +56,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Measure EtherBone bridge performance')
     parser.add_argument('rw', choices=['memread', 'memwrite'], help='Transfer type')
     parser.add_argument('n', help='Number of 32-bit words transfered')
-    parser.add_argument('--burst', help='Burst size')
+    parser.add_argument('--burst', required=True, help='Burst size')
     parser.add_argument('--profile', action='store_true', help='Profile the code with cProfile')
     args = parser.parse_args()
 

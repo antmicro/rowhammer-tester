@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import time
 import random
 from operator import or_
