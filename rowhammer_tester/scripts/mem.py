@@ -38,6 +38,7 @@ if __name__ == "__main__":
     parser.add_argument('--size', default='0x2000', help='Memtest size')
     parser.add_argument('--memspeed', action='store_true', help='Run memroy speed test')
     parser.add_argument('--max-delays', type=int, default=32, help='Avoid testing too many delays to save time')
+    parser.add_argument('--read-level-hardcoded', action='store_true', help='Use predefined read leveling values')
     args = parser.parse_args()
 
     if args.srv:
@@ -82,7 +83,8 @@ if __name__ == "__main__":
             while settings.delays / delays_step > args.max_delays:
                 delays_step *= 2
 
-            if get_generated_defs()['TARGET'] == 'zcu104':
+            if args.read_level_hardcoded:
+                assert get_generated_defs()['TARGET'] == 'zcu104'
                 read_level_hardcoded(wb, config=[
                     (2, 184),
                     (2, 184),
