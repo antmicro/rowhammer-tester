@@ -101,7 +101,7 @@ export TARGET=zcu104
 make build
 ```
 ZCU104 requires booting from SD card and the bitstream will be loaded from there.
-For the instructions please read [firmware/zcu104/README.md].
+For the instructions please read [ZCU104 README](firmware/zcu104/README.md).
 After preparing the SD card connect the power supply and Ethernet cable.
 The rest of the instructions are the same as for other boards.
 
