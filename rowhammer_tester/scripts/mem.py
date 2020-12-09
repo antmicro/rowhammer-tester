@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import os
+import sys
 import random
 import argparse
 import itertools
@@ -34,11 +36,9 @@ def memtest(wb, length, *, generator, base=None, verbose=None, burst=255):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--srv', action='store_true', help='Start litex server')
-    parser.add_argument('--no-init', action='store_true', help='Do not perform initialization sequence')
     parser.add_argument('--size', default='0x2000', help='Memtest size')
     parser.add_argument('--memspeed', action='store_true', help='Run memroy speed test')
-    parser.add_argument('--max-delays', type=int, default=32, help='Avoid testing too many delays to save time')
-    parser.add_argument('--read-level-hardcoded', action='store_true', help='Use predefined read leveling values')
+    parser.add_argument('--no-cpu-uart', action='store_true', help='Do not print the stdout of CPU during DRAM initialization')
     args = parser.parse_args()
 
     if args.srv:
@@ -47,56 +47,23 @@ if __name__ == "__main__":
     wb = RemoteClient()
     wb.open()
 
-    if not args.no_init:
-        print('SDRAM initialization:')
-        sdram_software_control(wb)
-        # Reset the PHY
-        wb.regs.ddrphy_rst.write(1)
-        time.sleep(0.2)
-        wb.regs.ddrphy_rst.write(0)
-        time.sleep(0.2)
+    print(' === Waiting for CPU to initialize DRAM ===')
+    if hasattr(wb.regs, "uart_xover_rxempty"):
+        while wb.regs.ddrctrl_init_done.read() != 1:
+            if wb.regs.uart_xover_rxempty.read() == 0:
+                r = wb.regs.uart_xover_rxtx.read()
+                if not args.no_cpu_uart:
+                    sys.stdout.write(chr(r))
+    else:
+        while wb.regs.ddrctrl_init_done.read() != 1:
+            time.sleep(0.001)
 
-        # Perform the init sequence
-        sdram_init(wb)
-
-        if hasattr(wb.regs, 'ddrphy_cdly_inc'):
-            print('\nWrite leveling:')
-            assert get_generated_defs()['TARGET'] == 'zcu104'
-            # TODO: write leveling
-            write_level_hardcoded(wb, cdly=271, delays=[
-                9,
-                9,
-                43,
-                49,
-                81,
-                88,
-                127,
-                93,
-            ])
-
-        if hasattr(wb.regs, 'ddrphy_rdly_dq_bitslip'):
-            print('\nRead leveling:')
-            settings = Settings.load()
-
-            # Make it faster by testing less delays
-            delays_step = 1
-            while settings.delays / delays_step > args.max_delays:
-                delays_step *= 2
-
-            if args.read_level_hardcoded:
-                assert get_generated_defs()['TARGET'] == 'zcu104'
-                read_level_hardcoded(wb, config=[
-                    (2, 184),
-                    (2, 184),
-                    (2, 136),
-                    (2, 136),
-                    (3, 368),
-                    (3, 360),
-                    (3, 328),
-                    (3, 296),
-                ])
-            else:
-                read_level(wb, Settings.load(), delays_step=delays_step)
+    if wb.regs.ddrctrl_init_error.read() == 1:
+        print(' === Initialization failed ===')
+        sys.exit(1)
+    else:
+        print(' === Initialization succeeded. ===')
+        print('Proceeding ...')
 
     memtest_size = int(args.size, 0)
 

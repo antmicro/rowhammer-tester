@@ -17,7 +17,7 @@ from litex.build.sim.config import SimConfig
 from litex.build.sim import SimPlatform as _SimPlatform
 from litex.tools.litex_sim import get_sdram_phy_settings
 
-from litedram.gen import get_dram_ios
+from litedram.gen import get_dram_ios, LiteDRAMCoreControl
 from litedram.core.controller import ControllerSettings
 from litedram.frontend.dma import LiteDRAMDMAReader
 from litedram.init import get_sdram_phy_py_header
@@ -167,6 +167,10 @@ class RowHammerSoC(SoCCore):
             controller_settings     = controller_settings
         )
 
+        # CPU will report that leveling finished by writing to ddrctrl CSRs
+        self.submodules.ddrctrl = LiteDRAMCoreControl()
+        self.add_csr("ddrctrl")
+
         # Ethernet / Etherbone ---------------------------------------------------------------------
         if not args.sim:
             self.add_host_bridge()
@@ -308,13 +312,14 @@ def get_soc_kwargs(args):
     soc_kwargs = soc_core_argdict(args)
     # Set some defaults for SoC - no CPU, memory, etc.
     soc_kwargs.update(dict(
-        cpu_type                 = None,
-        no_timer                 = True,
-        no_ctrl                  = True,
-        no_uart                  = True,
-        uart_name                = "stub",
-        integrated_rom_size      = 0,
-        integrated_sram_size     = 0,
+        cpu_type                 = "vexriscv",
+        cpu_variant              = "minimal",
+        no_timer                 = False,
+        no_ctrl                  = False,
+        no_uart                  = False,
+        uart_name                = "crossover",
+        integrated_rom_size      = 0x8000,
+        integrated_sram_size     = 0x2000,
         integrated_main_ram_size = 0,
     ))
     # Common arguments to row hammer SoC

@@ -7,7 +7,9 @@ UDP_PORT    ?= 1234
 # # #
 
 # Gateware args
-ARGS := --ip-address $(IP_ADDRESS) --mac-address $(MAC_ADDRESS) --udp-port $(UDP_PORT)
+ARGS ?=
+NET_ARGS := --ip-address $(IP_ADDRESS) --mac-address $(MAC_ADDRESS) --udp-port $(UDP_PORT)
+TARGET_ARGS := $(NET_ARGS) $(ARGS)
 
 # Update PATH to activate the Python venv and include all required binaries
 # Adding vnev/bin to PATH forces usage of the Python binary from venv,
