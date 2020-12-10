@@ -77,7 +77,6 @@ class HwRowHammer(RowHammer):
             base_addr = min(self.addresses_per_row[row])
             row_errors[row].append(((addr - base_addr)//4, None))
 
-        print('dict(row_errors)', end=' = '); __import__('pprint').pprint(dict(row_errors))
         return dict(row_errors)
 
     def run(self, row_pairs, pattern_generator, read_count, row_progress=16, verify_initial=True):
