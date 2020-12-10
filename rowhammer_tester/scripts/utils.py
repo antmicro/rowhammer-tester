@@ -194,14 +194,14 @@ def memdump(data, base=0x40000000, chunk_len=16):
 ################################################################################
 
 class DRAMAddressConverter:
-    def __init__(self, *, colbits, rowbits, bankbits, address_align, address_mapping='ROW_BANK_COL'):
-        # FIXME: generate these from BaseSoC
-        # soc.sdram.controller.settings
+    def __init__(self, *, colbits, rowbits, bankbits, address_align, dram_port_width,
+                 address_mapping='ROW_BANK_COL'):
         self.colbits = colbits
         self.rowbits = rowbits
         self.bankbits = bankbits
         self.address_align = address_align
         self.address_mapping = address_mapping
+        self.dram_port_width = dram_port_width
         assert self.address_mapping == 'ROW_BANK_COL'
 
     @classmethod
@@ -219,6 +219,7 @@ class DRAMAddressConverter:
             bankbits        = settings.geom.bankbits,
             address_align   = address_align,
             address_mapping = settings.address_mapping,
+            dram_port_width = settings.phy.nphases * settings.phy.dfi_databits,
         )
 
     def _encode(self, bank, row, col):
@@ -237,10 +238,20 @@ class DRAMAddressConverter:
             masked(col,  self.colbits,  0),
         ])
 
-    def encode_bus(self, *, bank, row, col, base=0x40000000, bus_align=2):
-        assert bus_align <= self.address_align
+    def _get_bus_shift(self, bus_width):
+        addr_shift = log2_int(self.dram_port_width//bus_width)
+        bus_shift = log2_int(bus_width//8)
+        shift = addr_shift + bus_shift - self.address_align
+        return shift
+
+    def encode_bus(self, *, bank, row, col, base=0x40000000, bus_width=32):
+        shift = self._get_bus_shift(bus_width)
         address = self._encode(bank, row, col)
-        return base + (address << (self.address_align - bus_align))
+        if shift > 0:
+            address <<= shift
+        else:
+            address >>= -shift
+        return base + address
 
     def encode_dma(self, *, bank, row, col):
         address = self._encode(bank, row, col)
@@ -257,9 +268,13 @@ class DRAMAddressConverter:
 
         return bank, row, col
 
-    def decode_bus(self, address, base=0x40000000, bus_align=2):
+    def decode_bus(self, address, base=0x40000000, bus_width=32):
         address -= base
-        address >>= self.address_align - bus_align
+        shift = -1 * self._get_bus_shift(bus_width)
+        if shift > 0:
+            address <<= shift
+        else:
+            address >>= -shift
         return self._decode(address)
 
     def decode_dma(self, address):
