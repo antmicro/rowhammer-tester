@@ -1,0 +1,4 @@
+config BR2_PACKAGE_ZCU104_ETHERBONE
+    bool "zcu104_etherbone"
+    help
+        EtherBone server to access PL memory over ZynqUS+ PS->PL AXI
