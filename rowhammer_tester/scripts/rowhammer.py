@@ -32,14 +32,14 @@ class RowHammer:
             self._addresses_per_row[row] = addresses
         return self._addresses_per_row[row]
 
-    def attack(self, row1, row2, read_count, progress_header=''):
+    def attack(self, row_tuple, read_count, progress_header=''):
         # Make sure that the row hammer module is in reset state
         self.wb.regs.rowhammer_enabled.write(0)
         self.wb.regs.rowhammer_count.read()  # clears the value
 
         # Configure the row hammer attacker
         addresses = [self.converter.encode_dma(bank=self.bank, col=self.column, row=r)
-                     for r in [row1, row2]]
+                     for r in row_tuple]
         self.wb.regs.rowhammer_address1.write(addresses[0])
         self.wb.regs.rowhammer_address2.write(addresses[1])
         self.wb.regs.rowhammer_enabled.write(1)
@@ -48,8 +48,8 @@ class RowHammer:
 
         def progress(count):
             s = '  {}'.format(progress_header + ' ' if progress_header else '')
-            s += 'Rows = ({:{n}d},{:{n}d}), Count = {:5.2f}M / {:5.2f}M'.format(
-                row1, row2, count/1e6, read_count/1e6, n=row_strw)
+            s += 'Rows = {}, Count = {:5.2f}M / {:5.2f}M'.format(
+                row_tuple, count/1e6, read_count/1e6, n=row_strw)
             print(s, end='  \r')
 
         while True:
@@ -143,12 +143,12 @@ class RowHammer:
             self.wb.regs.controller_settings_refresh.write(0)
 
         print('\nRunning row hammer attacks ...')
-        for i, (row1, row2) in enumerate(row_pairs):
+        for i, row_tuple in enumerate(row_pairs):
             s = 'Iter {:{n}} / {:{n}}'.format(i, len(row_pairs), n=len(str(len(row_pairs))))
             if self.payload_executor:
-                self.payload_executor_attack(read_count=read_count, row=row1)
+                self.payload_executor_attack(read_count=read_count, row_tuple=row_tuple)
             else:
-                self.attack(row1, row2, read_count=read_count, progress_header=s)
+                self.attack(row_tuple, read_count=read_count, progress_header=s)
 
         if self.no_refresh:
             print('\nReenabling refresh ...')
@@ -163,7 +163,7 @@ class RowHammer:
             self.display_errors(errors)
             return
 
-    def payload_executor_attack(self, read_count, row):
+    def payload_executor_attack(self, read_count, row_tuple):
         # FIXME: read from dedicated status registers
         tras = 5
         trp = 3
@@ -176,12 +176,13 @@ class RowHammer:
         count_max = 2**Decoder.LOOP_COUNT - 1
         n_loops = ceil(read_count / (count_max + 1))
         for _ in range(n_loops):
-            payload.extend([
-                encoder(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=self.bank, row=row)),
-                encoder(OpCode.PRE,  timeslice=trp, address=encoder.address(col=1 << 10)),  # all
-                encoder(OpCode.LOOP, count=count_max, jump=2),
-            ])
-        payload.append(encoder(OpCode.NOOP, timeslice=30))
+            for row in row_tuple:
+                payload.extend([
+                    encoder(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=self.bank, row=row)),
+                    encoder(OpCode.PRE,  timeslice=trp, address=encoder.address(col=1 << 10)),  # all
+                    encoder(OpCode.LOOP, count=count_max, jump=2),
+                ])
+            payload.append(encoder(OpCode.NOOP, timeslice=30))
 
         toggle_count = (count_max + 1) * n_loops
         print('  Payload size = {:5.2f}KB / {:5.2f}KB'.format(4*len(payload)/2**10, self.wb.mems.payload.size/2**10))
@@ -228,7 +229,7 @@ def main(row_hammer_cls):
                         help='Pattern written to DRAM before running attacks')
     parser.add_argument('--row-pairs', choices=['sequential', 'const', 'random'], default='sequential',
                         help='How the rows for subsequent attacks are selected')
-    parser.add_argument('--const-rows-pair', type=int, nargs=2, required=False, help='When using --row-pairs constant')
+    parser.add_argument('--const-rows-pair', type=int, nargs='+', required=False, help='When using --row-pairs constant')
     parser.add_argument('--plot', action='store_true', help='Plot errors distribution') # requiers matplotlib and pyqt5 packages
     parser.add_argument('--payload-executor', action='store_true', help='Do the attack using Payload Executor (1st row only)')
     parser.add_argument('-v', '--verbose', action='store_true', help='Be more verbose')

@@ -14,9 +14,9 @@ from rowhammer_tester.scripts.rowhammer import RowHammer, main
 ################################################################################
 
 class HwRowHammer(RowHammer):
-    def attack(self, row1, row2, read_count, progress_header=''):
+    def attack(self, row_tuple, read_count, progress_header=''):
         addresses = [self.converter.encode_dma(bank=self.bank, col=self.column, row=r)
-                     for r in [row1, row2]]
+                     for r in row_tuple]
         row_strw = len(str(2**self.settings.geom.rowbits - 1))
 
         # FIXME: ------------------ move to utils ----------------------------
@@ -33,7 +33,7 @@ class HwRowHammer(RowHammer):
 
         # Do not increment memory address
         self.wb.regs.reader_mem_mask.write(0x00000000)
-        self.wb.regs.reader_data_mask.write(0x00000001)
+        self.wb.regs.reader_data_mask.write(len(row_tuple) - 1)
 
         # Attacked addresses
         memwrite(self.wb, addresses, base=self.wb.mems.pattern_addr.base)
@@ -48,8 +48,8 @@ class HwRowHammer(RowHammer):
 
         def progress(count):
             s = '  {}'.format(progress_header + ' ' if progress_header else '')
-            s += 'Rows = ({:{n}d},{:{n}d}), Count = {:5.2f}M / {:5.2f}M'.format(
-                row1, row2, count/1e6, read_count/1e6, n=row_strw)
+            s += 'Rows = {}, Count = {:5.2f}M / {:5.2f}M'.format(
+                row_tuple, count/1e6, read_count/1e6, n=row_strw)
             print(s, end='  \r')
 
         while True:
@@ -82,7 +82,6 @@ class HwRowHammer(RowHammer):
         print('\nPreparing ...')
         row_pattern = pattern_generator([self.rows[0]])[0]
         print('WARNING: only single word patterns supported, using: 0x{:08x}'.format(row_pattern))
-
         print('\nFilling memory with data ...')
         hw_memset(self.wb, 0x0, self.wb.mems.main_ram.size, [row_pattern])
 
@@ -101,12 +100,16 @@ class HwRowHammer(RowHammer):
             self.wb.regs.controller_settings_refresh.write(0)
 
         print('\nRunning row hammer attacks ...')
-        for i, (row1, row2) in enumerate(row_pairs):
+        for i, row_tuple in enumerate(row_pairs):
             s = 'Iter {:{n}} / {:{n}}'.format(i, len(row_pairs), n=len(str(len(row_pairs))))
             if self.payload_executor:
-                self.payload_executor_attack(read_count=read_count, row=row1)
+                self.payload_executor_attack(read_count=read_count, row_tuple=row_tuple)
             else:
-                self.attack(row1, row2, read_count=read_count, progress_header=s)
+                if len(row_tuple) & (len(row_tuple) - 1) != 0:
+                    print("ERROR: BIST only supports power of 2 rows\n")
+                    return
+
+                self.attack(row_tuple, read_count=read_count, progress_header=s)
 
         if self.no_refresh:
             print('\nReenabling refresh ...')
