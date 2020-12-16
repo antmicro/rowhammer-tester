@@ -79,7 +79,7 @@ Currently, only the Arty-A7 (xc7a35t) FPGA board is supported (`TARGET=arty`). I
 
 ### Arty-A7 board
 
-Connect the board USB and Ethernet cables to your computer, then configure the network. The board'w IP address will be `192.168.100.50` (so you could e.g. use `192.168.100.2/24`). The `IP_ADDRESS` environment variable can be used to modify the board's address.
+Connect the board USB and Ethernet cables to your computer, then configure the network. The board's IP address will be `192.168.100.50` (so you could e.g. use `192.168.100.2/24`). The `IP_ADDRESS` environment variable can be used to modify the board's address.
 Then generate the FPGA bitstream:
 ```
 export TARGET=arty
@@ -103,6 +103,11 @@ make build
 ZCU104 requires booting from SD card and the bitstream will be loaded from there.
 For the instructions please read [ZCU104 README](firmware/zcu104/README.md).
 After preparing the SD card connect the power supply and Ethernet cable.
+
+The board will use a static IP address `192.168.100.50`. 
+To change the network settings, edit the file `/etc/network/interfaces` on the root filesystem on SD card (default configuration can be found [here](https://github.com/antmicro/litex-rowhammer-tester/blob/master/firmware/zcu104/buildroot/rootfs_overlay/etc/network/interfaces)).
+It can be done by mounting the SD card on your computer and editing the file, or by logging to the Linux on ZCU104 PS, e.g. through serial console (connect the microUSB cable and use serial port, most likely `/dev/ttyUSB1`, but see [ZCU104 README](https://github.com/antmicro/litex-rowhammer-tester/tree/master/firmware/zcu104#zcu104-microusb) for details). Also remember to set `IP_ADDRESS` to the new value, as described in the Arty instructions.
+
 The rest of the instructions are the same as for other boards.
 
 ### Simulation
