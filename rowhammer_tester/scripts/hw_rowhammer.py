@@ -70,12 +70,12 @@ class HwRowHammer(RowHammer):
         errors = hw_memtest(self.wb, 0x0, self.wb.mems.main_ram.size, [row_pattern])
 
         row_errors = defaultdict(list)
-        for offset in errors:
-            addr = self.wb.mems.main_ram.base + offset * dma_data_bytes
+        for e in errors:
+            addr = self.wb.mems.main_ram.base + e.offset * dma_data_bytes
             bank, row, col = self.converter.decode_bus(addr)
             #print('err: 0x{:08x} = bank: {:d}, row: {:d}, col: {:d}'.format(addr, bank, row, col))
             base_addr = min(self.addresses_per_row[row])
-            row_errors[row].append(((addr - base_addr)//4, None))
+            row_errors[row].append(((addr - base_addr)//4, e.data, e.expected))
 
         return dict(row_errors)
 
@@ -90,10 +90,12 @@ class HwRowHammer(RowHammer):
         if verify_initial:
             print('\nVerifying written memory ...')
             errors = self.check_errors(row_pattern)
-            if len(errors):
-                print('Error!')
-            else:
+            if self.errors_count(errors) == 0:
                 print('OK')
+            else:
+                print()
+                self.display_errors(errors)
+                return
 
         if self.no_refresh:
             print('\nDisabling refresh ...')
