@@ -70,7 +70,8 @@ class RowHammer:
     def check_errors(self, row_patterns, row_progress=16):
         row_errors = {}
         for row, n, base in self.row_access_iterator():
-            row_errors[row] = memcheck(self.wb, n, pattern=row_patterns[row], base=base, burst=255)
+            errors = memcheck(self.wb, n, pattern=row_patterns[row], base=base, burst=255)
+            row_errors[row] = [(addr, data, row_patterns[row]) for addr, data in errors]
             if row % row_progress == 0:
                 print('.', end='', flush=True)
         return row_errors
@@ -78,13 +79,25 @@ class RowHammer:
     def errors_count(self, row_errors):
         return sum(1 if len(e) > 0 else 0 for e in row_errors.values())
 
+    @staticmethod
+    def bitcount(x):
+        return bin(x).count('1') # seems faster than operations on integers
+
+    @classmethod
+    def bitflips(cls, val, ref):
+        return cls.bitcount(val ^ ref)
+
+    def errors_bitcount(self, row_errors):
+        return sum(sum(self.bitflips(value, expected) for addr, value, expected in e) for e in row_errors.values())
+
     def display_errors(self, row_errors):
         for row in row_errors:
             if len(row_errors[row]) > 0:
-                print("row_errors for row={:{n}}: {}".format(
-                    row, len(row_errors[row]), n=len(str(2**self.settings.geom.rowbits-1))))
+                print("Bit-flips for row {:{n}}: {}".format(
+                    row, sum(self.bitflips(value, expected) for addr, value, expected in row_errors[row]),
+                    n=len(str(2**self.settings.geom.rowbits-1))))
             if self.verbose:
-                for i, word in row_errors[row]:
+                for i, word, expected in row_errors[row]:
                     base_addr = min(self.addresses_per_row[row])
                     addr = base_addr + 4*i
                     bank, _row, col = self.converter.decode_bus(addr)

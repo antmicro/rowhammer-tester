@@ -57,11 +57,17 @@ class TestReader(unittest.TestCase):
 
             self.assertEqual((yield from dut.reader._error_ready.read()), 1)
             self.assertEqual((yield from dut.reader._error_offset.read()), 3)
+            self.assertEqual((yield from dut.reader._error_data.read()), 0xfffffffffffffffeffffffffffffffff)
+            self.assertEqual((yield from dut.reader._error_expected.read()), 0xffffffffffffffffffffffffffffffff)
+            yield from dut.reader._error_continue.write(1)
 
             for n in range(0, 13): yield
 
             self.assertEqual((yield from dut.reader._error_ready.read()), 1)
             self.assertEqual((yield from dut.reader._error_offset.read()), 5)
+            self.assertEqual((yield from dut.reader._error_data.read()), 0xfffffffffffffffeffffffffffffffff)
+            self.assertEqual((yield from dut.reader._error_expected.read()), 0xffffffffffffffffffffffffffffffff)
+            yield from dut.reader._error_continue.write(1)
 
             for n in range(0, 17): yield
 

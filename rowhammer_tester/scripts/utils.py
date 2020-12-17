@@ -8,6 +8,7 @@ import json
 import time
 from operator import or_
 from functools import reduce
+from collections import namedtuple
 
 from migen import log2_int
 
@@ -339,6 +340,8 @@ def hw_memset(wb, offset, size, patterns, dbg=False):
     _progress(wb.regs.writer_done.read(), count, last=True)
 
 
+BISTError = namedtuple('BISTError', ['offset', 'data', 'expected'])
+
 def hw_memtest(wb, offset, size, patterns, dbg=False):
     # we are limited to multiples of DMA data width
     settings = get_litedram_settings()
@@ -384,7 +387,12 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     # Read unmatched offset
     def append_errors(wb, err):
         while wb.regs.reader_error_ready.read():
-            err.append(wb.regs.reader_error_offset.read())
+            err.append(BISTError(
+                offset   = wb.regs.reader_error_offset.read(),
+                data     = wb.regs.reader_error_data.read(),
+                expected = wb.regs.reader_error_expected.read(),
+            ))
+            wb.regs.reader_error_continue.write(1)
             progress()
 
     # FIXME: Support progress

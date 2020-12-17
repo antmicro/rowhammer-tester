@@ -39,6 +39,7 @@ if __name__ == "__main__":
         for i, n in enumerate(range(0, 5000)):
             print('Generated {:d} offsets'.format(i), end='\r')
             offset = rng.randrange(0x0, mem_range - 4)
+            offset &= ~0b11  # must be 32-bit aligned
             if offset//nbytes not in offsets:
                 offsets.append(offset // nbytes)
                 if args.dbg:
@@ -66,7 +67,7 @@ if __name__ == "__main__":
         if len(errors) != len(offsets):
             missing = []
             for off in offsets:
-                if off not in errors:
+                if off not in [e.offset for e in errors]:
                     missing.append(off)
 
             for off in missing:
@@ -76,8 +77,8 @@ if __name__ == "__main__":
 
         for off, err in zip(sorted(offsets), errors): # errors should be already sorted
             if args.dbg:
-                print('dbg: 0x{:08x} == 0x{:08x}'.format(off, err))
-            assert off == err
+                print('dbg: 0x{:08x} == 0x{:08x}'.format(off, err.offset))
+            assert off == err.offset
 
         print('Execution time: {:.3f} s ({:.3f} errors / s)'.format(end_time - start_time, len(offsets)/(end_time - start_time)))
         print("Test OK!")
@@ -91,11 +92,13 @@ if __name__ == "__main__":
             print('Testing with 0x{:08x} pattern'.format(p))
             hw_memset(wb, 0x0, mem_range, [p], args.dbg)
             #if p == 0x77777777: wb.write(mem_base + mem_range - 32, 0x77787777) # Inject error
-            err = hw_memtest(wb, 0x0, mem_range, [p], args.dbg)
-            if len(err) > 0:
+            errors = hw_memtest(wb, 0x0, mem_range, [p], args.dbg)
+            if len(errors) > 0:
                 print('!!! Failed pattern: {:08x} !!!'.format(p))
-                for p in err:
-                    print('Failed: 0x{:08x} == 0x{:08x}'.format(mem_base + p * nbytes, wb.read(mem_base + p * nbytes)))
+                for e in errors:
+                    print('Failed: 0x{:08x} == 0x{:08x}'.format(mem_base + e.offset * nbytes, wb.read(mem_base + e.offset * nbytes)))
+                    print('  data     = 0x{:x}'.foramt(e.data))
+                    print('  expected = 0x{:x}'.foramt(e.expected))
             else:
                 print("Test pattern OK!")
 
