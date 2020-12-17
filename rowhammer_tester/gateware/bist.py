@@ -143,9 +143,11 @@ Reading errors
 This module allows to check the locations of errors in the memory.
 It scans the configured memory area and compares the values read to
 the predefined pattern. If `skip_fifo` is 0, this module will stop
-after each error encountered and will wait until the error offset
-is read from the `error_offset` CSR. Setting `skip_fifo` to 1 will
-disable this behaviour.
+after each error encountered, so that it can be examined. Wait until
+the `error_ready` CSR is 1. Then use the CSRs `error_offset`,
+`error_data` and `error_expected` to examine the errors in the current
+transfer. To continue reading, write 1 to `error_continue` CSR.
+Setting `skip_fifo` to 1 will disable this behaviour entirely.
 
 The final nubmer of errors can be read from `error_count`.
 NOTE: This value represents the number of erroneous *DMA transfers*.
@@ -153,9 +155,15 @@ NOTE: This value represents the number of erroneous *DMA transfers*.
 The current progress can be read from the `done` CSR.
         """.format(common=BISTModule.__doc__))
 
+        error_desc = [
+            ('offset',   32),
+            ('data',     dram_port.data_width),
+            ('expected', dram_port.data_width),
+        ]
+
         self.error_count  = Signal(32)
         self.skip_fifo    = Signal()
-        self.error        = stream.Endpoint([('offset', 32)])
+        self.error        = stream.Endpoint(error_desc)
 
         # FIXME: Increase fifo depth
         dma = LiteDRAMDMAReader(dram_port)
@@ -196,13 +204,14 @@ The current progress can be read from the `done` CSR.
         counter_gen = Signal(32)
 
         # Unmatched memory offsets
-        error_bitcount = Signal(max=dram_port.data_width)
-        error_fifo = stream.SyncFIFO([('offset', 32)], depth=4, buffered=False)
+        error_fifo = stream.SyncFIFO(error_desc, depth=2, buffered=False)
         self.submodules += error_fifo
 
         self.comb += [
             self.data_port.adr.eq(counter_gen & self.data_mask),
             self.error.offset.eq(error_fifo.source.offset),
+            self.error.data.eq(error_fifo.source.data),
+            self.error.expected.eq(error_fifo.source.expected),
             self.error.valid.eq(error_fifo.source.valid),
             error_fifo.source.ready.eq(self.error.ready | self.skip_fifo),
             self.done.eq(counter_gen),
@@ -231,6 +240,8 @@ The current progress can be read from the `done` CSR.
                 If(dma.source.data != self.data_port.dat_r,
                     NextValue(self.error_count, self.error_count + 1),
                     NextValue(error_fifo.sink.offset, counter_gen),
+                    NextValue(error_fifo.sink.data, dma.source.data),
+                    NextValue(error_fifo.sink.expected, self.data_port.dat_r),
                     If(self.skip_fifo,
                         NextState("WAIT")
                     ).Else(
@@ -251,15 +262,21 @@ The current progress can be read from the `done` CSR.
     def add_csrs(self):
         super().add_csrs()
 
-        self._error_count  = CSRStatus(size=len(self.error_count), description='Number of errors detected')
-        self._skip_fifo    = CSRStorage(description='Skip waiting for user to read the errors FIFO')
-        self._error_offset = CSRStatus(size=len(self.mem_mask), description='Current offset of the error')
-        self._error_ready  = CSRStatus(description='Error detected and ready to read')
+        self._error_count    = CSRStatus(size=len(self.error_count), description='Number of errors detected')
+        self._skip_fifo      = CSRStorage(description='Skip waiting for user to read the errors FIFO')
+        self._error_offset   = CSRStatus(size=len(self.mem_mask), description='Current offset of the error')
+        self._error_data     = CSRStatus(size=len(self.data_port.dat_r), description='Erroneous value read from DRAM memory')
+        self._error_expected = CSRStatus(size=len(self.data_port.dat_r), description='Value expected to be read from DRAM memory')
+        self._error_ready    = CSRStatus(description='Error detected and ready to read')
+        self._error_continue = CSR()
+        self._error_continue.description = 'Continue reading until the next error'
 
         self.comb += [
             self._error_count.status.eq(self.error_count),
             self.skip_fifo.eq(self._skip_fifo.storage),
             self._error_offset.status.eq(self.error.offset),
-            self.error.ready.eq(self._error_offset.we),
+            self._error_data.status.eq(self.error.data),
+            self._error_expected.status.eq(self.error.expected),
+            self.error.ready.eq(self._error_continue.re),
             self._error_ready.status.eq(self.error.valid),
         ]

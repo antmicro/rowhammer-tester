@@ -385,6 +385,7 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     def append_errors(wb, err):
         while wb.regs.reader_error_ready.read():
             err.append(wb.regs.reader_error_offset.read())
+            wb.regs.reader_error_continue.write(1)
             progress()
 
     # FIXME: Support progress
