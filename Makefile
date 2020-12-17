@@ -23,32 +23,32 @@ export PATH
 ### Main targets ###
 
 all:
-	python rowhammer_tester/targets/$(TARGET).py $(ARGS)
+	python rowhammer_tester/targets/$(TARGET).py $(TARGET_ARGS)
 
 FORCE:
 
 build: FORCE
-	python rowhammer_tester/targets/$(TARGET).py --build $(ARGS)
+	python rowhammer_tester/targets/$(TARGET).py --build $(TARGET_ARGS)
 
 sim: FORCE
-	python rowhammer_tester/targets/$(TARGET).py --build --sim $(ARGS)
+	python rowhammer_tester/targets/$(TARGET).py --build --sim $(TARGET_ARGS)
 
 sim-analyze: FORCE
-	python rowhammer_tester/scripts/sim_runner.py python rowhammer_tester/targets/$(TARGET).py --build --sim $(ARGS)
+	python rowhammer_tester/scripts/sim_runner.py python rowhammer_tester/targets/$(TARGET).py --build --sim $(TARGET_ARGS)
 
 upload up load: FORCE
 ifeq ($(TARGET),zcu104)
 	@echo "For ZCU104 please copy the file build/zcu104/gateware/zcu104.bit to the boot partition on microSD card"
 	@exit 1
 else
-	python rowhammer_tester/targets/$(TARGET).py --load $(ARGS)
+	python rowhammer_tester/targets/$(TARGET).py --load $(TARGET_ARGS)
 endif
 
 srv: FORCE
 	litex_server --udp --udp-ip $(IP_ADDRESS) --udp-port $(UDP_PORT)
 
 doc: FORCE
-	python rowhammer_tester/targets/$(TARGET).py --docs $(ARGS)
+	python rowhammer_tester/targets/$(TARGET).py --docs $(TARGET_ARGS)
 	python -m sphinx -b html build/documentation build/documentation/html
 
 test: FORCE
