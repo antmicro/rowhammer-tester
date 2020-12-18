@@ -73,8 +73,7 @@ class HwRowHammer(RowHammer):
         for e in errors:
             addr = self.wb.mems.main_ram.base + e.offset * dma_data_bytes
             bank, row, col = self.converter.decode_bus(addr)
-            #print('err: 0x{:08x} = bank: {:d}, row: {:d}, col: {:d}'.format(addr, bank, row, col))
-            base_addr = min(self.addresses_per_row[row])
+            base_addr = min(self.addresses_per_row(row))
             row_errors[row].append(((addr - base_addr)//4, e.data, e.expected))
 
         return dict(row_errors)

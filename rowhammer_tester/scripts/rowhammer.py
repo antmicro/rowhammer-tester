@@ -18,18 +18,19 @@ class RowHammer:
         for name, val in locals().items():
             setattr(self, name, val)
         self.converter = DRAMAddressConverter.load()
-        self.addresses_per_row = self._addresses_per_row()
+        self._addresses_per_row = {}
 
     @property
     def rows(self):
         return list(range(self.rows_start, self.nrows))
 
-    def _addresses_per_row(self):
-        addresses = {}
-        for row in self.rows:
-            addresses[row] = [self.converter.encode_bus(bank=self.bank, col=col, row=row)
-                              for col in range(2**self.settings.geom.colbits)]
-        return addresses
+    def addresses_per_row(self, row):
+        # Calculate the addresses lazily and cache them
+        if row not in self._addresses_per_row:
+            addresses = [self.converter.encode_bus(bank=self.bank, col=col, row=row)
+                         for col in range(2**self.settings.geom.colbits)]
+            self._addresses_per_row[row] = addresses
+        return self._addresses_per_row[row]
 
     def attack(self, row1, row2, read_count, progress_header=''):
         # Make sure that the row hammer module is in reset state
@@ -62,7 +63,8 @@ class RowHammer:
         print()
 
     def row_access_iterator(self, burst=16):
-        for row, addresses in self.addresses_per_row.items():
+        for row in self.rows:
+            addresses = self.addresses_per_row(row)
             n = (max(addresses) - min(addresses)) // 4
             base_addr = addresses[0]
             yield row, n, base_addr
@@ -98,7 +100,7 @@ class RowHammer:
                     n=len(str(2**self.settings.geom.rowbits-1))))
             if self.verbose:
                 for i, word, expected in row_errors[row]:
-                    base_addr = min(self.addresses_per_row[row])
+                    base_addr = min(self.addresses_per_row(row))
                     addr = base_addr + 4*i
                     bank, _row, col = self.converter.decode_bus(addr)
                     print("Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(
