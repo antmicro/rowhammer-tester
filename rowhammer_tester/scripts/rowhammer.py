@@ -38,6 +38,7 @@ class RowHammer:
         self.wb.regs.rowhammer_count.read()  # clears the value
 
         # Configure the row hammer attacker
+        assert len(row_tuple) == 2, 'Use BIST modules/Payload Executor to row hammer different number of rows than 2'
         addresses = [self.converter.encode_dma(bank=self.bank, col=self.column, row=r)
                      for r in row_tuple]
         self.wb.regs.rowhammer_address1.write(addresses[0])
@@ -186,7 +187,7 @@ class RowHammer:
 
         toggle_count = (count_max + 1) * n_loops
         print('  Payload size = {:5.2f}KB / {:5.2f}KB'.format(4*len(payload)/2**10, self.wb.mems.payload.size/2**10))
-        print('  Payload row toggle count = {:5.2f}M'.format(toggle_count/1e6))
+        print('  Payload per-row toggle count = {:5.2f}M  x{} rows'.format(toggle_count/1e6, len(row_tuple)))
         assert len(payload) < self.wb.mems.payload.size//4
         payload += [0] * (self.wb.mems.payload.size//4 - len(payload))  # fill with NOOPs
 
