@@ -175,13 +175,17 @@ class RowHammer:
         # fill payload so that we have >= desired read_count
         count_max = 2**Decoder.LOOP_COUNT - 1
         n_loops = ceil(read_count / (count_max + 1))
+
+        assert len(row_tuple) * 2 < 2**Decoder.LOOP_JUMP
+
         for _ in range(n_loops):
             for row in row_tuple:
                 payload.extend([
                     encoder(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=self.bank, row=row)),
                     encoder(OpCode.PRE,  timeslice=trp, address=encoder.address(col=1 << 10)),  # all
-                    encoder(OpCode.LOOP, count=count_max, jump=2),
                 ])
+            payload.append(encoder(OpCode.LOOP, count=count_max, jump=2*len(row_tuple)))
+            
         # TODO: improve synchronization when connecting/disconnecting memory controller
         payload.append(encoder(OpCode.NOOP, timeslice=30))
 
