@@ -66,8 +66,8 @@ class Decoder(Module):
     TIMESLICE      = 8
     ADDRESS        = 21
     TIMESLICE_NOOP = TIMESLICE + ADDRESS
-    LOOP_COUNT     = 20
-    LOOP_JUMP      = 9
+    LOOP_COUNT     = 12
+    LOOP_JUMP      = 17
 
     def __init__(self, instruction, *, rankbits, bankbits, rowbits, colbits):
         assert len(instruction) == self.INSTRUCTION
