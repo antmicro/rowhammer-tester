@@ -164,9 +164,8 @@ class RowHammer:
             return
 
     def payload_executor_attack(self, read_count, row):
-        # FIXME: read from dedicated status registers
-        tras = 5
-        trp = 3
+        tras = self.settings.timing.tRAS
+        trp = self.settings.timing.tRP
         encoder = Encoder(bankbits=self.settings.geom.bankbits)
         payload = [
             encoder(OpCode.NOOP, timeslice=30),
