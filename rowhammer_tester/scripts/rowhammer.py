@@ -185,13 +185,16 @@ class RowHammer:
 
         refreshes = 0
         for outer_idx in range(n_loops):
+            local_refreshes = 0;
+            payload.append(encoder(OpCode.REF, timeslice=trfc))
+            accum = trfc;
             for row in row_tuple:
                 if accum + tras + trp > trefi and not self.no_refresh:
                     payload.append(encoder(OpCode.REF, timeslice=trfc))
                     # Invariant: time between the beginning of two refreshes
                     # is is less than tREFI.
                     accum = trfc
-                    refreshes = refreshes + 1
+                    local_refreshes += 1
                 accum += tras + trp
                 payload.extend([
                     encoder(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=self.bank, row=row)),
@@ -201,6 +204,7 @@ class RowHammer:
                 loop_count = ceil(read_count) % (count_max + 1)
             else:
                 loop_count = count_max;
+            refreshes += local_refreshes * loop_count;    
             payload.append(encoder(OpCode.LOOP, count=loop_count, jump=2*len(row_tuple)))
             
         # TODO: improve synchronization when connecting/disconnecting memory controller
