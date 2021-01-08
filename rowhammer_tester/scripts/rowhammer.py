@@ -169,6 +169,8 @@ class RowHammer:
         trp = self.settings.timing.tRP
         trefi = self.settings.timing.tREFI
         trfc = self.settings.timing.tRFC
+        print(' tras: {} trp: {} trefi: {} trfc: {}'.format(tras,
+            trp, trefi, trfc))
         accum = 0
         encoder = Encoder(bankbits=self.settings.geom.bankbits)
         payload = [
