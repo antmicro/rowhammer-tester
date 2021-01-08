@@ -181,7 +181,7 @@ class RowHammer:
 
         assert len(row_tuple) * 2 < 2**Decoder.LOOP_JUMP
 
-        for _ in range(n_loops):
+        for outer_idx in range(n_loops):
             for row in row_tuple:
                 if accum + tras + trp > trefi and not self.no_refresh:
                     payload.append(encoder(OpCode.REF, timeslice=trfc))
@@ -193,7 +193,11 @@ class RowHammer:
                     encoder(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=self.bank, row=row)),
                     encoder(OpCode.PRE,  timeslice=trp, address=encoder.address(col=1 << 10)),  # all
                 ])
-            payload.append(encoder(OpCode.LOOP, count=count_max, jump=2*len(row_tuple)))
+            if outer_idx == 0:
+                loop_count = ceil(read_count) % (count_max + 1)
+            else:
+                loop_count = count_max;
+            payload.append(encoder(OpCode.LOOP, count=loop_count, jump=2*len(row_tuple)))
             
         # TODO: improve synchronization when connecting/disconnecting memory controller
         payload.append(encoder(OpCode.NOOP, timeslice=30))
