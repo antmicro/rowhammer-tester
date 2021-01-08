@@ -213,9 +213,11 @@ class RowHammer:
 
         print('\nExecuting ...')
         assert ready()
+        start = time.time()
         self.wb.regs.payload_executor_start.write(1)
         while not ready():
             time.sleep(0.001)
+        print('Time taken: {}\n'.format(time.time() - start))  
 
 ################################################################################
 
