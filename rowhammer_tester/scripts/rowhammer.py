@@ -167,6 +167,9 @@ class RowHammer:
     def payload_executor_attack(self, read_count, row_tuple):
         tras = self.settings.timing.tRAS
         trp = self.settings.timing.tRP
+        trefi = self.settings.timing.tREFI
+        trfc = self.settings.timing.tRFC
+        accum = 0
         encoder = Encoder(bankbits=self.settings.geom.bankbits)
         payload = [
             encoder(OpCode.NOOP, timeslice=30),
@@ -180,6 +183,12 @@ class RowHammer:
 
         for _ in range(n_loops):
             for row in row_tuple:
+                if accum + tras + trp > trefi and not self.no_refresh:
+                    payload.append(encoder(OpCode.REF, timeslice=trfc))
+                    # Invariant: time between the beginning of two refreshes
+                    # is is less than tREFI.
+                    accum = trfc
+                accum += tras + trp
                 payload.extend([
                     encoder(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=self.bank, row=row)),
                     encoder(OpCode.PRE,  timeslice=trp, address=encoder.address(col=1 << 10)),  # all
