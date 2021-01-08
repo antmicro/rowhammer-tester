@@ -181,6 +181,7 @@ class RowHammer:
 
         assert len(row_tuple) * 2 < 2**Decoder.LOOP_JUMP
 
+        refreshes = 0
         for outer_idx in range(n_loops):
             for row in row_tuple:
                 if accum + tras + trp > trefi and not self.no_refresh:
@@ -188,6 +189,7 @@ class RowHammer:
                     # Invariant: time between the beginning of two refreshes
                     # is is less than tREFI.
                     accum = trfc
+                    refreshes = refreshes + 1
                 accum += tras + trp
                 payload.extend([
                     encoder(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=self.bank, row=row)),
@@ -205,6 +207,7 @@ class RowHammer:
         toggle_count = (count_max + 1) * n_loops
         print('  Payload size = {:5.2f}KB / {:5.2f}KB'.format(4*len(payload)/2**10, self.wb.mems.payload.size/2**10))
         print('  Payload per-row toggle count = {:5.2f}M  x{} rows'.format(toggle_count/1e6, len(row_tuple)))
+        print('  Payload refreshes = {}'.format(refreshes))
         assert len(payload) < self.wb.mems.payload.size//4
         payload += [0] * (self.wb.mems.payload.size//4 - len(payload))  # fill with NOOPs
 
