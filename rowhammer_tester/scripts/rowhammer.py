@@ -182,7 +182,8 @@ class RowHammer:
                     encoder(OpCode.PRE,  timeslice=trp, address=encoder.address(col=1 << 10)),  # all
                     encoder(OpCode.LOOP, count=count_max, jump=2),
                 ])
-            payload.append(encoder(OpCode.NOOP, timeslice=30))
+        # TODO: improve synchronization when connecting/disconnecting memory controller
+        payload.append(encoder(OpCode.NOOP, timeslice=30))
 
         toggle_count = (count_max + 1) * n_loops
         print('  Payload size = {:5.2f}KB / {:5.2f}KB'.format(4*len(payload)/2**10, self.wb.mems.payload.size/2**10))
