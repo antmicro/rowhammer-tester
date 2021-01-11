@@ -9,7 +9,6 @@ from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 from litex.soc.integration.builder import Builder
 from litex.soc.cores.clock import S7PLL, S7IDELAYCTRL
 
-from litedram.modules import MT41K128M16
 from litedram.phy import s7ddrphy
 
 from liteeth.phy.mii import LiteEthPHYMII
@@ -77,7 +76,7 @@ class SoC(common.RowHammerSoC):
             sys_clk_freq   = self.sys_clk_freq)
 
     def get_sdram_module(self):
-        return MT41K128M16(self.sys_clk_freq, "1:4")
+        return self.sdram_module_cls(self.sys_clk_freq, "1:4")
 
     def add_host_bridge(self):
         self.submodules.ethphy = LiteEthPHYMII(
@@ -97,7 +96,7 @@ def main():
     parser.add_argument("--toolchain", default="vivado", choices=['vivado', 'symbiflow'],
                         help="Gateware toolchain to use (default=vivado)")
 
-    common.parser_args(parser, sys_clk_freq='100e6')
+    common.parser_args(parser, sys_clk_freq='100e6', module='MT41K128M16')
     vivado_build_args(parser)
     args = parser.parse_args()
 

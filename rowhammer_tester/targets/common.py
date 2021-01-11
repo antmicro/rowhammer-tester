@@ -1,6 +1,7 @@
 import os
 import csv
 import json
+import argparse
 
 from migen import *
 
@@ -23,6 +24,7 @@ from litedram.frontend.dma import LiteDRAMDMAReader
 from litedram.init import get_sdram_phy_py_header
 from litedram.phy.model import SDRAMPHYModel
 from litedram.common import PhySettings, GeomSettings, TimingSettings
+import litedram.modules as litedram_modules
 
 from liteeth.phy.model import LiteEthPHYModel
 from liteeth.core import LiteEthUDPIPCore
@@ -82,10 +84,11 @@ class RowHammerSoC(SoCCore):
 
     # Common SoC configuration ---------------------------------------------------------------------
 
-    def __init__(self, *, args, sys_clk_freq, ip_address="192.168.100.50",
-                 mac_address=0x10e2d5000001, udp_port=1234, **kwargs):
+    def __init__(self, *, args, sys_clk_freq, sdram_module_cls,
+            ip_address="192.168.100.50", mac_address=0x10e2d5000001, udp_port=1234, **kwargs):
         self.args = args
         self.sys_clk_freq = sys_clk_freq
+        self.sdram_module_cls = sdram_module_cls
         self.ip_address = ip_address
         self.mac_address = mac_address
         self.udp_port = udp_port
@@ -291,20 +294,49 @@ class RowHammerSoC(SoCCore):
 
 # Build --------------------------------------------------------------------------------------------
 
-def parser_args(parser, sys_clk_freq):
-    parser.add_argument("--build", action="store_true", help="Build bitstream")
-    parser.add_argument("--load",  action="store_true", help="Load bitstream")
-    parser.add_argument("--docs",  action="store_true", help="Generate documentation")
-    parser.add_argument("--sim", action="store_true", help="Build and run in simulation mode")
-    parser.add_argument("--sys-clk-freq", default=sys_clk_freq, help="System clock frequency")
-    parser.add_argument("--no-memory-bist", action="store_true", help="Disable memory BIST module")
-    parser.add_argument("--pattern-data-size", default="1024", help="BIST pattern data memory size in bytes")
-    parser.add_argument("--no-payload-executor", action="store_true", help="Disable Payload Executor module")
-    parser.add_argument("--payload-size", default="1024", help="Payload memory size in bytes")
-    parser.add_argument("--scratchpad-size", default="1024", help="Scratchpad memory size in bytes")
-    parser.add_argument("--ip-address", default="192.168.100.50", help="Use given IP address")
-    parser.add_argument("--mac-address", default="0x10e2d5000001", help="Use given MAC address")
-    parser.add_argument("--udp-port", default="1234", help="Use given UDP port")
+def parser_args(parser, *, sys_clk_freq, module):
+    # Print defaults only for the arguments added here, as Litex has defaults embedded in help messages
+    class CustomArgumentDefaultHelpFormatter(argparse.HelpFormatter):
+        ARG_NAMES = []
+
+        def add_default(self, action):  # logic from argparse.ArgumentDefaultsHelpFormatter
+            help = action.help
+            if '%(default)' not in action.help:
+                if action.default is not argparse.SUPPRESS:
+                    defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
+                    if action.option_strings or action.nargs in defaulting_nargs:
+                        help += ' (default: %(default)s)'
+            return help
+
+        def _get_help_string(self, action):
+            for s in action.option_strings:
+                if s in self.ARG_NAMES:
+                    return self.add_default(action)
+            return action.help
+
+    parser.formatter_class = CustomArgumentDefaultHelpFormatter
+
+    def add_argument(*args, **kwargs):
+        CustomArgumentDefaultHelpFormatter.ARG_NAMES.extend(args)
+        parser.add_argument(*args, **kwargs)
+
+    # Target args
+    add_argument("--build", action="store_true", help="Build bitstream")
+    add_argument("--load",  action="store_true", help="Load bitstream")
+    add_argument("--docs",  action="store_true", help="Generate documentation")
+    add_argument("--sim", action="store_true", help="Build and run in simulation mode")
+    add_argument("--sys-clk-freq", default=sys_clk_freq, help="System clock frequency")
+    add_argument("--module", default=module, help="DRAM module")
+    add_argument("--no-memory-bist", action="store_true", help="Disable memory BIST module")
+    add_argument("--pattern-data-size", default="1024", help="BIST pattern data memory size in bytes")
+    add_argument("--no-payload-executor", action="store_true", help="Disable Payload Executor module")
+    add_argument("--payload-size", default="1024", help="Payload memory size in bytes")
+    add_argument("--scratchpad-size", default="1024", help="Scratchpad memory size in bytes")
+    add_argument("--ip-address", default="192.168.100.50", help="Use given IP address")
+    add_argument("--mac-address", default="0x10e2d5000001", help="Use given MAC address")
+    add_argument("--udp-port", default="1234", help="Use given UDP port")
+
+    # Litex args
     builder_args(parser)
     soc_core_args(parser)
 
@@ -324,11 +356,12 @@ def get_soc_kwargs(args):
     ))
     # Common arguments to row hammer SoC
     soc_kwargs.update(dict(
-        args         = args,
-        sys_clk_freq = int(float(args.sys_clk_freq)),
-        ip_address   = args.ip_address,
-        mac_address  = int(args.mac_address, 0),
-        udp_port     = int(args.udp_port, 0),
+        args             = args,
+        sys_clk_freq     = int(float(args.sys_clk_freq)),
+        sdram_module_cls = getattr(litedram_modules, args.module),
+        ip_address       = args.ip_address,
+        mac_address      = int(args.mac_address, 0),
+        udp_port         = int(args.udp_port, 0),
     ))
     return soc_kwargs
 

@@ -11,7 +11,6 @@ from litex.soc.integration.soc_core import colorer
 from litex.soc.cores.clock import USMMCM, USIDELAYCTRL, AsyncResetSynchronizer
 from litex.soc.interconnect import axi, wishbone
 
-from litedram.modules import MTA4ATF51264HZ
 from litedram.phy import usddrphy
 
 from liteeth.phy.usrgmii import LiteEthPHYRGMII
@@ -217,7 +216,7 @@ class SoC(common.RowHammerSoC):
             iodelay_clk_freq = 500e6)
 
     def get_sdram_module(self):
-        return MTA4ATF51264HZ(self.sys_clk_freq, "1:4")
+        return self.sdram_module_cls(self.sys_clk_freq, "1:4")
 
     def add_host_bridge(self):
         self.add_uartbone(name="serial", clk_freq=self.sys_clk_freq, baudrate=1e6, cd="uart")
@@ -227,7 +226,7 @@ class SoC(common.RowHammerSoC):
 def main():
     parser = argparse.ArgumentParser(description="LiteX SoC on ZCU104")
 
-    common.parser_args(parser, sys_clk_freq='125e6')
+    common.parser_args(parser, sys_clk_freq='125e6', module='MTA4ATF51264HZ')
     vivado_build_args(parser)
     args = parser.parse_args()
 
