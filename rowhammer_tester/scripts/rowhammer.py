@@ -309,7 +309,7 @@ def main(row_hammer_cls):
         assert not (args.row_pairs == 'const' and not args.const_rows_pair), 'Specify --const-rows-pair'
         row_pairs = {
             'sequential': [(0 + args.start_row, i + args.start_row) for i in range(args.nrows)],
-            'const': [tuple(args.const_rows_pair)],
+            'const': [tuple(args.const_rows_pair) if args.const_rows_pair else ()],
             'random': [(rand_row(), rand_row()) for i in range(args.nrows)],
         }[args.row_pairs]
 
