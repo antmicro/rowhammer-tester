@@ -214,15 +214,21 @@ class RowHammerSoC(SoCCore):
             self.logger.info('{}: Length: {}, Data Width: {}-bit, Address width: {}-bit'.format(
                 colorer('BIST pattern'), colorer(pattern_length), colorer(pattern_data_width), colorer(32)))
 
+            assert controller_settings.address_mapping == 'ROW_BANK_COL'
+            inversion_kwargs = dict(
+                rowbits   = int(self.args.bist_inversion_rowbits, 0),
+                row_shift = controller_settings.geom.bankbits + controller_settings.geom.colbits,
+            )
+
             # Writer
             dram_wr_port = self.sdram.crossbar.get_port()
-            self.submodules.writer = Writer(dram_wr_port, self.pattern_mem)
+            self.submodules.writer = Writer(dram_wr_port, self.pattern_mem, **inversion_kwargs)
             self.writer.add_csrs()
             self.add_csr('writer')
 
             # Reader
             dram_rd_port = self.sdram.crossbar.get_port()
-            self.submodules.reader = Reader(dram_rd_port, self.pattern_mem)
+            self.submodules.reader = Reader(dram_rd_port, self.pattern_mem, **inversion_kwargs)
             self.reader.add_csrs()
             self.add_csr('reader')
 
@@ -335,6 +341,7 @@ def parser_args(parser, *, sys_clk_freq, module):
     add_argument("--ip-address", default="192.168.100.50", help="Use given IP address")
     add_argument("--mac-address", default="0x10e2d5000001", help="Use given MAC address")
     add_argument("--udp-port", default="1234", help="Use given UDP port")
+    add_argument("--bist-inversion-rowbits", default="5", help="Number of row bits used for BIST data inversion feature")
 
     # Litex args
     builder_args(parser)

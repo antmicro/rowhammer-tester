@@ -9,7 +9,7 @@ from rowhammer_tester.gateware.bist import Reader, Writer, PatternMemory
 # DUT ----------------------------------------------------------------------------------------------
 
 class BISTDUT(Module):
-    def __init__(self, address_width=32, data_width=128, pattern_mem_length=32, pattern_init=None):
+    def __init__(self, address_width=32, data_width=128, pattern_mem_length=32, pattern_init=None, rowbits=5, row_shift=10):
         self.address_width = address_width
         self.data_width = data_width
         self.pattern_mem_length = pattern_mem_length
@@ -21,12 +21,14 @@ class BISTDUT(Module):
         self.addr = self.pattern_mem.addr.get_port(write_capable=True)
         self.specials += self.data, self.addr
 
+        inverter_kwargs = dict(rowbits=rowbits, row_shift=row_shift)
+
         self.read_port = LiteDRAMNativePort(address_width=address_width, data_width=data_width, mode='read')
-        self.submodules.reader = Reader(self.read_port, self.pattern_mem)
+        self.submodules.reader = Reader(self.read_port, self.pattern_mem, **inverter_kwargs)
         self.reader.add_csrs()
 
         self.write_port = LiteDRAMNativePort(address_width=address_width, data_width=data_width, mode='write')
-        self.submodules.writer = Writer(self.write_port, self.pattern_mem)
+        self.submodules.writer = Writer(self.write_port, self.pattern_mem, **inverter_kwargs)
         self.writer.add_csrs()
 
         # storage for port_handler (addr, we, data)
@@ -170,6 +172,11 @@ def access_pattern_test(bist_name, mem_inc, pattern, count):
 
     return test
 
+def inversion_address_matcher(address, divisor, selection_mask):
+    mod = address % divisor
+    onehot = 1 << mod
+    return (onehot & selection_mask) != 0
+
 # Writer -------------------------------------------------------------------------------------------
 
 class TestWriter(unittest.TestCase):
@@ -178,6 +185,46 @@ class TestWriter(unittest.TestCase):
     test_mem_inc_pattern_inc = access_pattern_test('writer', mem_inc=True, pattern=PATTERNS_ADDR_INC, count=13)
     test_mem_noinc_pattern_noinc = access_pattern_test('writer', mem_inc=False, pattern=PATTERNS_ADDR_0, count=13)
     test_mem_noinc_pattern_inc = access_pattern_test('writer', mem_inc=False, pattern=PATTERNS_ADDR_INC, count=13)
+
+    def test_row_data_invertion(self):
+        # specification
+        rowbits = 5
+        row_shift = 2   # assuming just 2 bits for column+bank
+        divisor_mask = 0b00111  # modulo divisor = 8
+        selection_mask = 0b00000000000000000000000010010010  # rows: 1, 4, 7
+
+        # fill whole memory with the same data
+        pattern = [(0x00, 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)]
+
+        modulo_divisor = divisor_mask + 1
+        count = modulo_divisor * 2**row_shift * 2
+
+        def generator(dut):
+            yield from dut.writer._count.write(count)
+            yield from dut.writer._mem_mask.write(0xffffffff)
+            yield from dut.writer._data_mask.write(0)
+
+            yield from dut.writer.inverter._divisor_mask.write(divisor_mask)
+            yield from dut.writer.inverter._selection_mask.write(selection_mask)
+
+            yield from dut.writer._start.write(1)
+            yield from dut.writer._start.write(0)
+
+            yield from wait_or_timeout(200, dut.writer._ready.read)
+
+        dut = BISTDUT(pattern_init=pattern, rowbits=rowbits, row_shift=row_shift)
+        generators = [generator(dut), *dut.default_port_handlers()]
+        run_simulation(dut, generators)
+
+        # print()
+        # for addr, we, data in dut.commands:
+        #     print('0x{:08x} {} 0x{:032x}'.format(addr, we, data))
+
+        for addr, we, data in dut.commands:
+            self.assertEqual(we, 1)
+            invert = inversion_address_matcher(addr >> row_shift, modulo_divisor, selection_mask)
+            expected = 0x55555555555555555555555555555555 if invert else 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+            self.assertEqual(data, expected, msg=addr)
 
 # Reader -------------------------------------------------------------------------------------------
 
@@ -268,3 +315,50 @@ class TestReader(unittest.TestCase):
         we = 0
         expected = [(addr, we, 0) for _, addr in zip(range(count), itertools.cycle(row_addresses))]
         self.assertEqual(dut.commands, expected)
+
+    def test_row_data_invertion(self):
+        # specification
+        rowbits = 5
+        row_shift = 2   # assuming just 2 bits for column+bank
+        divisor_mask = 0b00111  # modulo divisor = 8
+        selection_mask = 0b00000000000000000000000010010010  # rows: 1, 4, 7
+
+        # fill whole memory with the same data
+        pattern = [(0x00, 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)]
+
+        modulo_divisor = divisor_mask + 1
+        count = modulo_divisor * 2**row_shift * 2
+
+        def rdata_callback(addr):
+            invert = inversion_address_matcher(addr >> row_shift, modulo_divisor, selection_mask)
+            if invert:
+                return 0x55555555555555555555555555555555
+            return 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+        def generator(dut):
+            yield from dut.reader._skip_fifo.write(0)  # check errors
+            yield from dut.reader._count.write(count)
+            yield from dut.reader._mem_mask.write(0xffffffff)
+            yield from dut.reader._data_mask.write(0)
+
+            yield from dut.reader.inverter._divisor_mask.write(divisor_mask)
+            yield from dut.reader.inverter._selection_mask.write(selection_mask)
+
+            yield from dut.reader._start.write(1)
+            yield from dut.reader._start.write(0)
+
+            yield from wait_or_timeout(200, dut.reader._ready.read)
+
+        dut = BISTDUT(pattern_init=pattern, rowbits=rowbits, row_shift=row_shift)
+        generators = [generator(dut), dut.read_handler(rdata_callback)]
+        run_simulation(dut, generators, vcd_name='sim.vcd')
+
+        # print()
+        # for addr, we, data in dut.commands:
+        #     print('0x{:08x} {} 0x{:032x}'.format(addr, we, data))
+
+        for addr, we, data in dut.commands:
+            self.assertEqual(we, 0)
+            invert = inversion_address_matcher(addr >> row_shift, modulo_divisor, selection_mask)
+            expected = 0x55555555555555555555555555555555 if invert else 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+            self.assertEqual(data, expected, msg=addr)
