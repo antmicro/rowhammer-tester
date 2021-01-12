@@ -8,9 +8,20 @@ from litedram.frontend.dma import LiteDRAMDMAReader, LiteDRAMDMAWriter
 
 
 class PatternMemory(Module):
-    def __init__(self, data_width, mem_depth, addr_width=32):
-        self.data = Memory(data_width, mem_depth)
-        self.addr = Memory(addr_width, mem_depth)
+    """Memory for storing access pattern
+
+    It consists of two separate memories: `data` and `addr`, each of `mem_depth`,
+    but with different word widths. BIST modules read corresponding pairs (`data`,
+    `addr`) during operation. BISTWriter writes `data` to the given `addr`,
+    BISTReader reads `addr` and compares the data read to `data` from the pattern.
+    """
+    def __init__(self, data_width, mem_depth, addr_width=32, pattern_init=None):
+        addr_init, data_init = None, None
+        if pattern_init is not None:
+            addr_init, data_init = zip(*pattern_init)
+
+        self.data = Memory(data_width, mem_depth, init=data_init)
+        self.addr = Memory(addr_width, mem_depth, init=addr_init)
         self.specials += self.data, self.addr
 
 
