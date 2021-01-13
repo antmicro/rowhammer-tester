@@ -292,51 +292,63 @@ class TestDFIExecutor(unittest.TestCase):
 
 # PayloadExecutor --------------------------------------------------------------
 
+# Stores DFI command info
+class DFICmd(namedtuple('Cmd', ['cas', 'ras', 'we'])):
+    @property
+    def op_code(self):
+        for op, desc in DFI_COMMANDS.items():
+            if tuple(self) == (desc['cas'], desc['ras'], desc['we']):
+                return op
+        assert False
+
+
+# Information about DFI command seen on the bus
+HistoryEntry = namedtuple('HistoryEntry', ['time', 'phase', 'cmd'])
+
+
+class PayloadExecutorDUT(Module):
+    def __init__(self, payload,
+            data_width=128, scratchpad_depth=8, payload_depth=32, instruction_width=32,
+            bankbits=3, rowbits=14, colbits=10, nranks=1, dfi_databits=2*16, nphases=4, rdphase=2):
+        # store to be able to extract from dut later
+        self.params = locals()
+        self.payload = payload
+
+        assert len(payload) <= payload_depth, '{} vs {}'.format(len(payload), payload_depth)
+        self.mem_scratchpad = Memory(data_width, scratchpad_depth)
+        self.mem_payload = Memory(instruction_width, payload_depth, init=payload)
+        self.specials += self.mem_scratchpad, self.mem_payload
+
+        self.dfi_sel = Signal()
+        self.dfi = dfi.Interface(addressbits=max(rowbits, colbits), bankbits=bankbits,
+                nranks=nranks, databits=dfi_databits, nphases=nphases)
+        self.submodules.payload_executor = PayloadExecutor(
+            self.mem_payload, self.mem_scratchpad, self.dfi, self.dfi_sel,
+            nranks=nranks, bankbits=bankbits, rowbits=rowbits, colbits=colbits, rdphase=2)
+
+        self.dfi_history: list[HistoryEntry] = []
+
+    @passive
+    def dfi_monitor(self):
+        time = 0
+        while True:
+            for i, phase in enumerate(self.dfi.phases):
+                cas = 1 - (yield phase.cas_n)
+                ras = 1 - (yield phase.ras_n)
+                we = 1 - (yield phase.we_n)
+                entry = None
+                for op, desc in DFI_COMMANDS.items():
+                    if (cas, ras, we) == (desc['cas'], desc['ras'], desc['we']):
+                        cmd = DFICmd(cas=cas, ras=ras, we=we)
+                        entry = HistoryEntry(time=time, phase=i, cmd=cmd)
+                assert entry is not None, 'Unknown DFI command: cas={}, ras={}, we={}'.format(cas, ras, we)
+                if entry.cmd.op_code != OpCode.NOOP:  # omit NOOPs
+                    self.dfi_history.append(entry)
+            yield
+            time += 1
+
+
 class TestPayloadExecutor(unittest.TestCase):
-    class Cmd(namedtuple('Cmd', ['cas', 'ras', 'we'])):
-        @property
-        def op_code(self):
-            for op, desc in DFI_COMMANDS.items():
-                if tuple(self) == (desc['cas'], desc['ras'], desc['we']):
-                    return op
-            assert False
-
-    HistoryEntry = namedtuple('HistoryEntry', ['time', 'phase', 'cmd'])
-
-    class DUT(Module):
-        def __init__(self, payload):
-            self.mem_scratchpad = Memory(128, 8)
-            self.mem_payload = Memory(32, 32, init=payload)
-            self.specials += self.mem_scratchpad, self.mem_payload
-
-            self.dfi = dfi.Interface(addressbits=14, bankbits=3, nranks=1, databits=2*16, nphases=4)
-            self.dfi_sel = Signal()
-            self.submodules.payload_executor = PayloadExecutor(
-                self.mem_payload, self.mem_scratchpad, self.dfi, self.dfi_sel,
-                nranks=1, bankbits=3, rowbits=14, colbits=10, rdphase=2)
-
-            self.dfi_history: list[HistoryEntry] = []
-
-        @passive
-        def dfi_monitor(self):
-            Cmd, HistoryEntry = TestPayloadExecutor.Cmd, TestPayloadExecutor.HistoryEntry
-            time = 0
-            while True:
-                for i, phase in enumerate(self.dfi.phases):
-                    cas = 1 - (yield phase.cas_n)
-                    ras = 1 - (yield phase.ras_n)
-                    we = 1 - (yield phase.we_n)
-                    entry = None
-                    for op, desc in DFI_COMMANDS.items():
-                        if (cas, ras, we) == (desc['cas'], desc['ras'], desc['we']):
-                            cmd = Cmd(cas=cas, ras=ras, we=we)
-                            entry = HistoryEntry(time=time, phase=i, cmd=cmd)
-                    assert entry is not None, 'Unknown DFI command: cas={}, ras={}, we={}'.format(cas, ras, we)
-                    if entry.cmd.op_code != OpCode.NOOP:  # omit NOOPs
-                        self.dfi_history.append(entry)
-                yield
-                time += 1
-
     def test_payload(self):
         def generator(dut):
             yield dut.payload_executor.start.eq(1)
@@ -378,7 +390,7 @@ class TestPayloadExecutor(unittest.TestCase):
             encoder(OpCode.NOOP, timeslice=50),
         ]
 
-        dut = self.DUT(payload)
+        dut = PayloadExecutorDUT(payload)
         run_simulation(dut, [generator(dut), dut.dfi_monitor()])
 
         # compare DFI history to what payload should yield
@@ -387,3 +399,91 @@ class TestPayloadExecutor(unittest.TestCase):
         self.assertEqual(len(dut.dfi_history), len(op_codes))
         for entry, op in zip(dut.dfi_history, op_codes):
             self.assertEqual(entry.cmd.op_code, op)
+
+# Interactive tests --------------------------------------------------------------------------------
+
+def run_payload_executor(dut: PayloadExecutorDUT, *, print_period=1):
+    info = {}
+
+    def generator(dut):
+        yield dut.payload_executor.start.eq(1)
+        yield
+        yield dut.payload_executor.start.eq(0)
+        yield
+
+        cycles = 1  # for previous yield
+        while not (yield dut.payload_executor.ready):
+            if cycles % print_period == 0:
+                pc = (yield dut.payload_executor.program_counter)
+                lc = (yield dut.payload_executor.loop_counter)
+                # ic = (yield dut.payload_executor.idle_counter)
+                print('PC = {:6}  LC = {:6}   '.format(pc, lc), end='\r')
+            yield
+            cycles += 1
+
+        info['cycles'] = cycles
+        info['read_count'] = (yield dut.payload_executor.scratchpad.counter)
+        info['overflow'] = (yield dut.payload_executor.scratchpad.overflow)
+
+    print('Payload length = {}'.format(len(dut.payload)))
+
+    print('\nSimulating payload execution ...')
+    run_simulation(dut, [generator(dut), dut.dfi_monitor()])
+    print('\nFinished')
+
+    print('\nInfo:')
+    for k, v in info.items():
+        print('  {} = {}'.format(k, v))
+
+    # merge same commands in history
+    Group = namedtuple('Group', ['op_code', 'entries'])
+    groups = []
+    for i, entry in enumerate(dut.dfi_history):
+        op_code = entry.cmd.op_code
+        prev = groups[-1] if len(groups) > 0 else None
+        if prev is not None and prev.op_code == op_code:
+            prev.entries.append(entry)
+        else:
+            groups.append(Group(op_code, [entry]))
+
+    print('\nDFI commands history:')
+    cumtime = 0
+    for i, group in enumerate(groups):
+        start_time = group.entries[0].time
+        group_time = None
+        if i+1 < len(groups):
+            group_time = groups[i+1].entries[0].time - start_time
+        print('{:4} x {:3}: start_time = {} group_time = {}'.format(
+            group.op_code.name, len(group.entries), start_time, group_time))
+        cumtime += group_time or 0
+    print('Total execution cycles = {}'.format(info['cycles']))
+
+
+if __name__ == "__main__":
+    import argparse
+    from rowhammer_tester.scripts.rowhammer import generate_row_hammer_payload
+    from rowhammer_tester.scripts.utils import get_litedram_settings
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('row_sequence', nargs='+')
+    parser.add_argument('--read-count', default='100')
+    parser.add_argument('--payload-size', default='0x1000')
+    parser.add_argument('--bank', default='0')
+    parser.add_argument('--refresh', action='store_true')
+    args = parser.parse_args()
+
+    settings = get_litedram_settings()
+
+    payload_size = int(args.payload_size, 0)
+    payload = generate_row_hammer_payload(
+        read_count       = int(float(args.read_count)),
+        row_sequence     = [int(r) for r in args.row_sequence],
+        timings          = settings.timing,
+        bankbits         = settings.geom.bankbits,
+        bank             = int(args.bank, 0),
+        payload_mem_size = payload_size,
+        refresh          = args.refresh,
+    )
+
+    dut = PayloadExecutorDUT(payload, payload_depth=payload_size//4)
+    run_payload_executor(dut)
