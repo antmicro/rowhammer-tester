@@ -168,39 +168,39 @@ class SoC(common.RowHammerSoC):
         super().__init__(**kwargs)
 
         # ZynqUS+ PS -------------------------------------------------------------------------------
+        if not self.args.sim:
+            # Add Zynq US+ PS wrapper
+            self.submodules.ps = ZynqUSPS()
 
-        # Add Zynq US+ PS wrapper
-        self.submodules.ps = ZynqUSPS()
+            # Configure PS->PL AXI
+            # AXI(128) -> AXILite(128) -> AXILite(32) -> WishBone(32) -> SoC Interconnect
+            axi_ps = self.ps.add_axi_gp_fpd_master()
 
-        # Configure PS->PL AXI
-        # AXI(128) -> AXILite(128) -> AXILite(32) -> WishBone(32) -> SoC Interconnect
-        axi_ps = self.ps.add_axi_gp_fpd_master()
+            axi_lite_ps = axi.AXILiteInterface(data_width=axi_ps.data_width, address_width=axi_ps.address_width)
+            self.submodules += axi.AXI2AXILite(axi_ps, axi_lite_ps)
 
-        axi_lite_ps = axi.AXILiteInterface(data_width=axi_ps.data_width, address_width=axi_ps.address_width)
-        self.submodules += axi.AXI2AXILite(axi_ps, axi_lite_ps)
+            axi_lite_ps_32 = axi.AXILiteInterface(data_width=32, address_width=40)
+            self.submodules += axi.AXILiteConverter(axi_lite_ps, axi_lite_ps_32)
 
-        axi_lite_ps_32 = axi.AXILiteInterface(data_width=32, address_width=40)
-        self.submodules += axi.AXILiteConverter(axi_lite_ps, axi_lite_ps_32)
+            # Use M_AXI_HPM0_FPD base address thaht will fit our whole address space (0x0004_0000_0000)
+            base_address = None
+            for base, size in self.ps.PS_MEMORY_MAP['gp_fpd_master'][0]:
+                if size >= 2**30-1:
+                    base_address = base
+                    break
+            assert base_address is not None
 
-        # Use M_AXI_HPM0_FPD base address thaht will fit our whole address space (0x0004_0000_0000)
-        base_address = None
-        for base, size in self.ps.PS_MEMORY_MAP['gp_fpd_master'][0]:
-            if size >= 2**30-1:
-                base_address = base
-                break
-        assert base_address is not None
+            def chunks(lst, n):
+                for i in range(0, len(lst), n):
+                    yield lst[i:i + n]
 
-        def chunks(lst, n):
-            for i in range(0, len(lst), n):
-                yield lst[i:i + n]
+            addr_str = '_'.join(chunks('{:012x}'.format(base_address), 4))
+            self.logger.info("Connecting PS AXI master from PS address {}.".format(colorer('0x' + addr_str)))
 
-        addr_str = '_'.join(chunks('{:012x}'.format(base_address), 4))
-        self.logger.info("Connecting PS AXI master from PS address {}.".format(colorer('0x' + addr_str)))
-
-        wb_ps = wishbone.Interface(adr_width=40-2)  # AXILite2Wishbone requires the same address widths
-        self.submodules += axi.AXILite2Wishbone(axi_lite_ps_32, wb_ps, base_address=base_address)
-        # silently ignores address bits above 30
-        self.bus.add_master(name='ps_axi', master=wb_ps)
+            wb_ps = wishbone.Interface(adr_width=40-2)  # AXILite2Wishbone requires the same address widths
+            self.submodules += axi.AXILite2Wishbone(axi_lite_ps_32, wb_ps, base_address=base_address)
+            # silently ignores address bits above 30
+            self.bus.add_master(name='ps_axi', master=wb_ps)
 
     def get_platform(self):
         return zcu104.Platform()
