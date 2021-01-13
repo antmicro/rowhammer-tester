@@ -11,6 +11,73 @@ from rowhammer_tester.scripts.utils import (memfill, memcheck, memwrite, DRAMAdd
 
 ################################################################################
 
+def generate_row_hammer_payload(*,
+        read_count, row_sequence, timings, bankbits, bank, payload_mem_size,
+        refresh=False, verbose=True):
+    encoder = Encoder(bankbits=bankbits)
+
+    tras = timings.tRAS
+    trp = timings.tRP
+    trefi = timings.tREFI
+    trfc = timings.tRFC
+    if verbose:
+        print('Generating payload:')
+        for t in ['tRAS', 'tRP', 'tREFI', 'tRFC']:
+            print('  {} = {}'.format(t, getattr(timings, t)))
+
+    # TODO: improve synchronization when connecting/disconnecting memory controller
+    payload = [
+        encoder(OpCode.NOOP, timeslice=30)
+    ]
+
+    # fill payload so that we have >= desired read_count
+    count_max = 2**Decoder.LOOP_COUNT - 1
+    n_loops = ceil(read_count / (count_max + 1))
+
+    assert len(row_sequence) * 2 < 2**Decoder.LOOP_JUMP
+
+    refresh_op = OpCode.REF if refresh else OpCode.NOOP
+
+    refreshes = 0
+    for outer_idx in range(n_loops):
+        local_refreshes = 1;
+        payload.append(encoder(refresh_op, timeslice=trfc - 1))
+        accum = trfc
+        for row in row_sequence:
+            if accum + tras + trp > trefi:
+                payload.append(encoder(refresh_op, timeslice=trfc - 1))
+                # Invariant: time between the beginning of two refreshes
+                # is is less than tREFI.
+                accum = trfc
+                local_refreshes += 1
+            accum += tras + trp
+            payload.extend([
+                encoder(OpCode.ACT,  timeslice=tras - 1, address=encoder.address(bank=bank, row=row)),
+                encoder(OpCode.PRE,  timeslice=trp - 1, address=encoder.address(col=1 << 10)),  # all
+            ])
+        if outer_idx == 0:
+            loop_count = ceil(read_count) % (count_max + 1)
+        else:
+            loop_count = count_max;
+        refreshes += local_refreshes * loop_count;
+        jump_target = 2*len(row_sequence) + 1
+        payload.append(encoder(OpCode.LOOP, count=loop_count, jump=jump_target))
+
+    payload.append(encoder(OpCode.NOOP, timeslice=30))  # FIXME: remove when control synchronization is ready
+
+    if verbose:
+        toggle_count = (count_max + 1) * n_loops
+        print('  Payload size = {:5.2f}KB / {:5.2f}KB'.format(4*len(payload)/2**10, payload_mem_size/2**10))
+        print('  Payload per-row toggle count = {:5.2f}M  x{} rows'.format(toggle_count/1e6, len(row_sequence)))
+        print('  Payload refreshes (if enabled) = {}'.format(refreshes))
+
+    assert len(payload) <= payload_mem_size//4
+    payload += [0] * (payload_mem_size//4 - len(payload))  # fill with NOOPs
+
+    return payload
+
+################################################################################
+
 class RowHammer:
     def __init__(self, wb, *, settings, nrows, column, bank,
                  rows_start=0, no_refresh=False, verbose=False, plot=False,
@@ -165,64 +232,15 @@ class RowHammer:
             return
 
     def payload_executor_attack(self, read_count, row_tuple):
-        tras = self.settings.timing.tRAS
-        trp = self.settings.timing.tRP
-        trefi = self.settings.timing.tREFI
-        trfc = self.settings.timing.tRFC
-        print(' tras: {} trp: {} trefi: {} trfc: {}'.format(tras,
-            trp, trefi, trfc))
-        accum = 0
-        encoder = Encoder(bankbits=self.settings.geom.bankbits)
-        payload = [
-            encoder(OpCode.NOOP, timeslice=30),
-        ]
-
-        # fill payload so that we have >= desired read_count
-        count_max = 2**Decoder.LOOP_COUNT - 1
-        n_loops = ceil(read_count / (count_max + 1))
-
-        assert len(row_tuple) * 2 < 2**Decoder.LOOP_JUMP
-
-        refreshes = 0
-        for outer_idx in range(n_loops):
-            local_refreshes = 1;
-            if self.no_refresh:
-                payload.append(encoder(OpCode.NOOP, timeslice=trfc - 1))
-            else:
-                payload.append(encoder(OpCode.REF, timeslice=trfc - 1))
-            accum = trfc;
-            for row in row_tuple:
-                if accum + tras + trp > trefi:
-                    if self.no_refresh:
-                        payload.append(encoder(OpCode.NOOP, timeslice=trfc - 1))
-                    else:
-                        payload.append(encoder(OpCode.REF, timeslice=trfc - 1))
-                    # Invariant: time between the beginning of two refreshes
-                    # is is less than tREFI.
-                    accum = trfc
-                    local_refreshes += 1
-                accum += tras + trp
-                payload.extend([
-                    encoder(OpCode.ACT,  timeslice=tras - 1, address=encoder.address(bank=self.bank, row=row)),
-                    encoder(OpCode.PRE,  timeslice=trp - 1, address=encoder.address(col=1 << 10)),  # all
-                ])
-            if outer_idx == 0:
-                loop_count = ceil(read_count) % (count_max + 1)
-            else:
-                loop_count = count_max;
-            refreshes += local_refreshes * loop_count;
-            jump_target=2*len(row_tuple) + 1
-            payload.append(encoder(OpCode.LOOP, count=loop_count, jump=jump_target))
-
-        # TODO: improve synchronization when connecting/disconnecting memory controller
-        payload.append(encoder(OpCode.NOOP, timeslice=30))
-
-        toggle_count = (count_max + 1) * n_loops
-        print('  Payload size = {:5.2f}KB / {:5.2f}KB'.format(4*len(payload)/2**10, self.wb.mems.payload.size/2**10))
-        print('  Payload per-row toggle count = {:5.2f}M  x{} rows'.format(toggle_count/1e6, len(row_tuple)))
-        print('  Payload refreshes (if enabled) = {}'.format(refreshes))
-        assert len(payload) < self.wb.mems.payload.size//4
-        payload += [0] * (self.wb.mems.payload.size//4 - len(payload))  # fill with NOOPs
+        payload = generate_row_hammer_payload(
+            read_count       = read_count,
+            row_sequence     = row_tuple,
+            timings          = self.settings.timing,
+            bankbits         = self.settings.geom.bankbits,
+            bank             = self.bank,
+            payload_mem_size = self.wb.mems.payload.size,
+            refresh          = not self.no_refresh,
+        )
 
         print('\nTransferring the payload ...')
         memwrite(self.wb, payload, base=self.wb.mems.payload.base)

@@ -246,6 +246,8 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
 
         # Fetcher
         # simple async reads, later we would probably want 1 cycle prefetch?
+        assert mem_payload.width == Decoder.INSTRUCTION, \
+                'Wrong payload memory word width: {} vs {}'.format(mem_payload.width, Decoder.INSTRUCTION)
         instruction = Signal(Decoder.INSTRUCTION)
         payload_port = mem_payload.get_port(write_capable=False, async_read=True)
         self.specials += payload_port
