@@ -14,7 +14,7 @@ from rowhammer_tester.scripts.utils import (memfill, memcheck, memwrite, DRAMAdd
 class RowHammer:
     def __init__(self, wb, *, settings, nrows, column, bank,
                  rows_start=0, no_refresh=False, verbose=False, plot=False,
-                 payload_executor=False):
+                 payload_executor=False, data_inversion=False):
         for name, val in locals().items():
             setattr(self, name, val)
         self.converter = DRAMAddressConverter.load()
@@ -117,6 +117,10 @@ class RowHammer:
             plt.show()
 
     def run(self, row_pairs, pattern_generator, read_count, row_progress=16, verify_initial=False):
+        # TODO: need to invert data when writing/reading, make sure Python integer inversion works correctly
+        if self.data_inversion:
+            raise NotImplementedError('Currently only HW rowhammer supports data inversion')
+
         print('\nPreparing ...')
         row_patterns = pattern_generator(self.rows)
 
@@ -236,6 +240,7 @@ def main(row_hammer_cls):
     parser.add_argument('-v', '--verbose', action='store_true', help='Be more verbose')
     parser.add_argument("--srv", action="store_true", help='Start LiteX server')
     parser.add_argument("--experiment-no", type=int, default=0, help='Run preconfigured experiment #no')
+    parser.add_argument("--data-inversion", nargs=2, help='Invert pattern data for victim rows (divisor, mask)')
     args = parser.parse_args()
 
     if args.experiment_no == 1:
@@ -262,6 +267,7 @@ def main(row_hammer_cls):
         plot             = args.plot,
         no_refresh       = args.no_refresh,
         payload_executor = args.payload_executor,
+        data_inversion   = args.data_inversion,
     )
 
     if args.hammer_only:
