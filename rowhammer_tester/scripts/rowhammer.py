@@ -167,6 +167,11 @@ class RowHammer:
     def payload_executor_attack(self, read_count, row_tuple):
         tras = self.settings.timing.tRAS
         trp = self.settings.timing.tRP
+        trefi = self.settings.timing.tREFI
+        trfc = self.settings.timing.tRFC
+        print(' tras: {} trp: {} trefi: {} trfc: {}'.format(tras,
+            trp, trefi, trfc))
+        accum = 0
         encoder = Encoder(bankbits=self.settings.geom.bankbits)
         payload = [
             encoder(OpCode.NOOP, timeslice=30),
@@ -175,19 +180,47 @@ class RowHammer:
         # fill payload so that we have >= desired read_count
         count_max = 2**Decoder.LOOP_COUNT - 1
         n_loops = ceil(read_count / (count_max + 1))
-        for _ in range(n_loops):
+
+        assert len(row_tuple) * 2 < 2**Decoder.LOOP_JUMP
+
+        refreshes = 0
+        for outer_idx in range(n_loops):
+            local_refreshes = 1;
+            if self.no_refresh:
+                payload.append(encoder(OpCode.NOOP, timeslice=trfc - 1))
+            else:
+                payload.append(encoder(OpCode.REF, timeslice=trfc - 1))
+            accum = trfc;
             for row in row_tuple:
+                if accum + tras + trp > trefi:
+                    if self.no_refresh:
+                        payload.append(encoder(OpCode.NOOP, timeslice=trfc - 1))
+                    else:
+                        payload.append(encoder(OpCode.REF, timeslice=trfc - 1))
+                    # Invariant: time between the beginning of two refreshes
+                    # is is less than tREFI.
+                    accum = trfc
+                    local_refreshes += 1
+                accum += tras + trp
                 payload.extend([
-                    encoder(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=self.bank, row=row)),
-                    encoder(OpCode.PRE,  timeslice=trp, address=encoder.address(col=1 << 10)),  # all
-                    encoder(OpCode.LOOP, count=count_max, jump=2),
+                    encoder(OpCode.ACT,  timeslice=tras - 1, address=encoder.address(bank=self.bank, row=row)),
+                    encoder(OpCode.PRE,  timeslice=trp - 1, address=encoder.address(col=1 << 10)),  # all
                 ])
+            if outer_idx == 0:
+                loop_count = ceil(read_count) % (count_max + 1)
+            else:
+                loop_count = count_max;
+            refreshes += local_refreshes * loop_count;
+            jump_target=2*len(row_tuple) + 1
+            payload.append(encoder(OpCode.LOOP, count=loop_count, jump=jump_target))
+
         # TODO: improve synchronization when connecting/disconnecting memory controller
         payload.append(encoder(OpCode.NOOP, timeslice=30))
 
         toggle_count = (count_max + 1) * n_loops
         print('  Payload size = {:5.2f}KB / {:5.2f}KB'.format(4*len(payload)/2**10, self.wb.mems.payload.size/2**10))
         print('  Payload per-row toggle count = {:5.2f}M  x{} rows'.format(toggle_count/1e6, len(row_tuple)))
+        print('  Payload refreshes (if enabled) = {}'.format(refreshes))
         assert len(payload) < self.wb.mems.payload.size//4
         payload += [0] * (self.wb.mems.payload.size//4 - len(payload))  # fill with NOOPs
 
@@ -200,9 +233,11 @@ class RowHammer:
 
         print('\nExecuting ...')
         assert ready()
+        start = time.time()
         self.wb.regs.payload_executor_start.write(1)
         while not ready():
             time.sleep(0.001)
+        print('Time taken: {}\n'.format(time.time() - start))
 
 ################################################################################
 
@@ -274,7 +309,7 @@ def main(row_hammer_cls):
         assert not (args.row_pairs == 'const' and not args.const_rows_pair), 'Specify --const-rows-pair'
         row_pairs = {
             'sequential': [(0 + args.start_row, i + args.start_row) for i in range(args.nrows)],
-            'const': [tuple(args.const_rows_pair)],
+            'const': [tuple(args.const_rows_pair) if args.const_rows_pair else ()],
             'random': [(rand_row(), rand_row()) for i in range(args.nrows)],
         }[args.row_pairs]
 
