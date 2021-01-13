@@ -329,11 +329,20 @@ class TestReader(unittest.TestCase):
         modulo_divisor = divisor_mask + 1
         count = modulo_divisor * 2**row_shift * 2
 
+        errors = [0x2, 0x6]
+
         def rdata_callback(addr):
             invert = inversion_address_matcher(addr >> row_shift, modulo_divisor, selection_mask)
             if invert:
-                return 0x55555555555555555555555555555555
-            return 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                if addr in errors:
+                    return 0x5d555555555555555555555555555555
+                else:
+                    return 0x55555555555555555555555555555555
+            else:
+                if addr in errors:
+                    return 0xabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                else:
+                    return 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
         def generator(dut):
             yield from dut.reader._skip_fifo.write(0)  # check errors
@@ -346,6 +355,21 @@ class TestReader(unittest.TestCase):
 
             yield from dut.reader._start.write(1)
             yield from dut.reader._start.write(0)
+
+            # check error
+            for error in errors:
+                yield from wait_or_timeout(50, dut.reader._error_ready.read)
+
+                self.assertEqual((yield from dut.reader._error_offset.read()), error)
+                if inversion_address_matcher(error >> row_shift, modulo_divisor, selection_mask):
+                    self.assertEqual((yield from dut.reader._error_data.read()), 0x5d555555555555555555555555555555)
+                    self.assertEqual((yield from dut.reader._error_expected.read()), 0x55555555555555555555555555555555)
+                else:
+                    self.assertEqual((yield from dut.reader._error_data.read()), 0xabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)
+                    self.assertEqual((yield from dut.reader._error_expected.read()), 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)
+
+                yield from dut.reader._error_continue.write(1)
+                yield
 
             yield from wait_or_timeout(200, dut.reader._ready.read)
 
@@ -360,5 +384,8 @@ class TestReader(unittest.TestCase):
         for addr, we, data in dut.commands:
             self.assertEqual(we, 0)
             invert = inversion_address_matcher(addr >> row_shift, modulo_divisor, selection_mask)
-            expected = 0x55555555555555555555555555555555 if invert else 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+            if addr in errors:
+                expected = 0x5d555555555555555555555555555555 if invert else 0xabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+            else:
+                expected = 0x55555555555555555555555555555555 if invert else 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
             self.assertEqual(data, expected, msg=addr)

@@ -47,7 +47,7 @@ class AddressSelector(Module):
         ]
 
 
-class RowDataInverter(Module):
+class RowDataInverter(Module, AutoCSR):
     """Inverts data for given range of row bits
 
     Specify small range, e.g. rowbits=5, keep in mind that
