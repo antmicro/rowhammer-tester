@@ -215,9 +215,10 @@ class RowHammerSoC(SoCCore):
                 colorer('BIST pattern'), colorer(pattern_length), colorer(pattern_data_width), colorer(32)))
 
             assert controller_settings.address_mapping == 'ROW_BANK_COL'
+            row_offset = controller_settings.geom.bankbits + controller_settings.geom.colbits
             inversion_kwargs = dict(
                 rowbits   = int(self.args.bist_inversion_rowbits, 0),
-                row_shift = controller_settings.geom.bankbits + controller_settings.geom.colbits,
+                row_shift = row_offset - self.sdram.controller.interface.address_align,
             )
 
             # Writer

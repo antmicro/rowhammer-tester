@@ -153,8 +153,7 @@ Pattern
 {common}
         """.format(common=BISTModule.__doc__))
 
-        # FIXME: Increase fifo depth
-        dma = LiteDRAMDMAWriter(dram_port, fifo_depth=1)
+        dma = LiteDRAMDMAWriter(dram_port, fifo_depth=4)
         self.submodules += dma
 
         cmd_counter = Signal(32)
@@ -247,12 +246,11 @@ The current progress can be read from the `done` CSR.
         self.skip_fifo    = Signal()
         self.error        = stream.Endpoint(error_desc)
 
-        # FIXME: Increase fifo depth
-        dma = LiteDRAMDMAReader(dram_port)
+        dma = LiteDRAMDMAReader(dram_port, fifo_depth=4)
         self.submodules += dma
 
         # pass addresses from address FSM (command producer) to pattern FSM (data consumer)
-        address_fifo = stream.SyncFIFO([('address', len(dma.sink.address))], depth=2)
+        address_fifo = stream.SyncFIFO([('address', len(dma.sink.address))], depth=4)
         self.submodules += address_fifo
 
         # ----------------- Address FSM -----------------
@@ -261,7 +259,6 @@ The current progress can be read from the `done` CSR.
         self.comb += [
             self.addr_port.adr.eq(counter_addr & self.data_mask),
             dma.sink.address.eq(self.addr_port.dat_r + (counter_addr & self.mem_mask)),
-            address_fifo.sink.address.eq(dma.sink.address),
         ]
 
         # Using temporary state 'WAIT' to obtain address offset from memory
@@ -272,18 +269,22 @@ The current progress can be read from the `done` CSR.
                 NextState("WAIT"),
             )
         )
-        fsm_addr.act("WAIT",  # TODO: we could pipeline the access
-            If(counter_addr >= self.count,
-                NextState("READY")
-            ).Else(
-                NextState("WR_ADDR")
+        fsm_addr.act("WAIT",
+            # FIXME: should be possible to write the address in WR_ADDR
+            address_fifo.sink.valid.eq(counter_addr != 0),
+            If(address_fifo.sink.ready | (counter_addr == 0),
+                If(counter_addr >= self.count,
+                    NextState("READY")
+                ).Else(
+                    NextState("WR_ADDR")
+                )
             )
         )
         fsm_addr.act("WR_ADDR",
-            # send address only if we can push it to both the dma and the queue for pattern FSM
-            address_fifo.sink.valid.eq(dma.sink.valid & dma.sink.ready),
-            dma.sink.valid.eq(address_fifo.sink.ready),
+            dma.sink.valid.eq(1),
             If(dma.sink.ready,
+                # send the address in WAIT
+                NextValue(address_fifo.sink.address, dma.sink.address),
                 NextValue(counter_addr, counter_addr + 1),
                 NextState("WAIT")
             )
@@ -299,7 +300,7 @@ The current progress can be read from the `done` CSR.
         # DMA data may be inverted using AddressSelector
         data_expected = Signal.like(dma.source.data)
         self.submodules.inverter = RowDataInverter(
-            addr      = counter_gen,
+            addr      = address_fifo.source.address,
             data_in   = self.data_port.dat_r,
             data_out  = data_expected,
             rowbits   = rowbits,
@@ -333,11 +334,9 @@ The current progress can be read from the `done` CSR.
             )
         )
         fsm_pattern.act("RD_DATA",
-            dma.source.ready.eq(1),
-            If(dma.source.valid,
+            If(dma.source.valid & address_fifo.source.valid,
                 # we must now change FSM state in single cycle
-                # pop current address from the fifo (address_fifo must be valid now
-                # because we sent an address at the same moment as the DMA command)
+                dma.source.ready.eq(1),
                 address_fifo.source.ready.eq(1),
                 # count the command
                 NextValue(counter_gen, counter_gen + 1),
