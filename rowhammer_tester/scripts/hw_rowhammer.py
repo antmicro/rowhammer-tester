@@ -79,15 +79,16 @@ class HwRowHammer(RowHammer):
         return dict(row_errors)
 
     def run(self, row_pairs, pattern_generator, read_count, row_progress=16, verify_initial=True):
+        divisor, mask = 0, 0
         if self.data_inversion:
             divisor, mask = self.data_inversion
             divisor = int(divisor, 0)
             mask = int(mask, 0)
-            assert (divisor & (divisor - 1)) == 0, 'Divisor must be power of 2'
-            self.wb.regs.writer_inverter_divisor_mask.write(divisor - 1)
-            self.wb.regs.reader_inverter_divisor_mask.write(divisor - 1)
-            self.wb.regs.writer_inverter_selection_mask.write(mask)
-            self.wb.regs.reader_inverter_selection_mask.write(mask)
+        assert (divisor & (divisor - 1)) == 0, 'Divisor must be power of 2'
+        self.wb.regs.writer_inverter_divisor_mask.write(divisor - 1)
+        self.wb.regs.reader_inverter_divisor_mask.write(divisor - 1)
+        self.wb.regs.writer_inverter_selection_mask.write(mask)
+        self.wb.regs.reader_inverter_selection_mask.write(mask)
 
         print('\nPreparing ...')
         row_pattern = pattern_generator([self.rows[0]])[0]
