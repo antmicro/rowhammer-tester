@@ -129,35 +129,60 @@ class Encoder:
         self.nranks = nranks
         self.bankbits = bankbits
 
-    def __call__(self, op_code, **kwargs):
-        if op_code == OpCode.LOOP:
-            parts = [
-                (Decoder.OP_CODE,    op_code),
-                (Decoder.LOOP_COUNT, kwargs['count']),
-                (Decoder.LOOP_JUMP,  kwargs['jump']),
-            ]
-        elif op_code == OpCode.NOOP:
-            parts = [
-                (Decoder.OP_CODE,        op_code),
-                (Decoder.TIMESLICE_NOOP, kwargs['timeslice']),
-            ]
-        else:
-            assert kwargs['timeslice'] != 0, 'Timeslice for instructions other than NOOP should be > 0'
-            no_address = [OpCode.REF]  # PRE requires bank address
-            assert 'address' in kwargs or op_code in no_address, \
-                '{} instruction requires `address`'.format(op_code.name)
-            parts = [
-                (Decoder.OP_CODE,   op_code),
-                (Decoder.TIMESLICE, kwargs['timeslice']),
-                (Decoder.ADDRESS,   kwargs.get('address', 0)),
-            ]
+    class I:
+        """Instuction specification without encoding the value yet"""
+        def __init__(self, op_code, **kwargs):
+            self.op_code = op_code
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+            if op_code == OpCode.LOOP:
+                self._parts = [
+                    (Decoder.OP_CODE,    op_code),
+                    (Decoder.LOOP_COUNT, kwargs['count']),
+                    (Decoder.LOOP_JUMP,  kwargs['jump']),
+                ]
+            elif op_code == OpCode.NOOP:
+                self._parts = [
+                    (Decoder.OP_CODE,        op_code),
+                    (Decoder.TIMESLICE_NOOP, kwargs['timeslice']),
+                ]
+            else:
+                assert kwargs['timeslice'] != 0, 'Timeslice for instructions other than NOOP should be > 0'
+                no_address = [OpCode.REF]  # PRE requires bank address
+                assert 'address' in kwargs or op_code in no_address, \
+                    '{} instruction requires `address`'.format(op_code.name)
+                self._parts = [
+                    (Decoder.OP_CODE,   op_code),
+                    (Decoder.TIMESLICE, kwargs['timeslice']),
+                    (Decoder.ADDRESS,   kwargs.get('address', 0)),
+                ]
+
+    def __call__(self, target, **kwargs):
+        if isinstance(target, OpCode):
+            return self.encode(target, **kwargs)
+        elif isinstance(target, self.I):
+            assert len(kwargs) == 0, 'No kwargs expected for Encoder.I'
+            return self.encode_spec(target)
+        elif hasattr(target, '__iter__'):
+            assert len(kwargs) == 0, 'No kwargs expected for iterable'
+            return self.encode_payload(target)
+        raise TypeError('One of the following is expected: OpCode+kwargs, Encoder.I, list[Encoder.I]')
+
+    def encode(self, op_code, **kwargs):
+        return self.encode_spec(self.I(op_code, **kwargs))
+
+    def encode_spec(self, spec):
+        assert isinstance(spec, self.I)
         instr = 0
         n = 0
-        for width, val in parts:
+        for width, val in spec._parts:
             mask = 2**width - 1
             instr |= (val & mask) << n
             n += width
         return instr
+
+    def encode_payload(self, payload):
+        return [self.encode_spec(i) for i in payload]
 
     def address(self, *, rank=None, bank=0, row=None, col=None):
         assert not (row is not None and col is not None)

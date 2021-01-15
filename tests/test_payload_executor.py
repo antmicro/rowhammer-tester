@@ -502,19 +502,19 @@ class TestPayloadExecutor(unittest.TestCase):
         # Check execution time with timeslices longer than 1
         encoder = Encoder(bankbits=3)
         payload = [
-            encoder(OpCode.ACT,  timeslice=7,  address=encoder.address(bank=1, row=100)),
-            encoder(OpCode.READ, timeslice=3,  address=encoder.address(bank=1, col=20)),
-            encoder(OpCode.PRE,  timeslice=5,  address=encoder.address(bank=1)),
-            encoder(OpCode.REF,  timeslice=10),
-            encoder(OpCode.NOOP, timeslice=0),  # STOP
+            encoder.I(OpCode.ACT,  timeslice=7,  address=encoder.address(bank=1, row=100)),
+            encoder.I(OpCode.READ, timeslice=3,  address=encoder.address(bank=1, col=20)),
+            encoder.I(OpCode.PRE,  timeslice=5,  address=encoder.address(bank=1)),
+            encoder.I(OpCode.REF,  timeslice=10),
+            encoder.I(OpCode.NOOP, timeslice=0),  # STOP
         ]
 
-        dut = PayloadExecutorDUT(payload)
+        dut = PayloadExecutorDUT(encoder(payload))
         self.run_payload(dut)
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE, OpCode.REF]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.cycles, 7 + 3 + 5 + 10 + 1)
+        self.assertEqual(dut.cycles, sum(max(1, i.timeslice) for i in payload))
 
 # Interactive tests --------------------------------------------------------------------------------
 
