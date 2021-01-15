@@ -404,10 +404,11 @@ def configure_generated_files(builder, args, target_name):
     with open(os.path.join(builder.output_dir, 'defs.csv'), 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerows([
-            ('TARGET',      target_name),
-            ('IP_ADDRESS',  args.ip_address),
-            ('MAC_ADDRESS', args.mac_address),
-            ('UDP_PORT',    args.udp_port),
+            ('TARGET',       target_name),
+            ('IP_ADDRESS',   args.ip_address),
+            ('MAC_ADDRESS',  args.mac_address),
+            ('UDP_PORT',     args.udp_port),
+            ('SYS_CLK_FREQ', args.sys_clk_freq),
         ])
     # LiteDRAM settings (controller, phy, geom, timing)
     with open(os.path.join(builder.output_dir, 'litedram_settings.json'), 'w') as f:

@@ -6,14 +6,30 @@ import argparse
 from math import ceil
 
 from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
-from rowhammer_tester.scripts.utils import (memfill, memcheck, memwrite, DRAMAddressConverter,
-                                            litex_server, RemoteClient, get_litedram_settings)
+from rowhammer_tester.scripts.utils import (
+    memfill, memcheck, memwrite, DRAMAddressConverter, litex_server, RemoteClient,
+    get_litedram_settings, get_generated_defs)
 
 ################################################################################
 
+def get_expected_execution_cycles(payload):
+    cycles = 0
+    for i, instr in enumerate(payload):
+        cycles += 1
+        if instr.op_code == OpCode.NOOP and instr.timeslice == 0:  # STOP
+            break
+        elif instr.op_code == OpCode.LOOP:
+            # there should be no STOP or LOOP instructions inside loop body
+            body = payload[i - instr.jump:i]
+            cycles += instr.count * sum(ii.timeslice for ii in body)
+        else:
+            # -1 because we've already included 1 cycle for this instruction
+            cycles += instr.timeslice - 1
+    return cycles
+
 def generate_row_hammer_payload(*,
         read_count, row_sequence, timings, bankbits, bank, payload_mem_size,
-        refresh=False, verbose=True):
+        refresh=False, verbose=True, sys_clk_freq=None):
     encoder = Encoder(bankbits=bankbits)
 
     tras = timings.tRAS
@@ -27,7 +43,7 @@ def generate_row_hammer_payload(*,
 
     # TODO: improve synchronization when connecting/disconnecting memory controller
     payload = [
-        encoder(OpCode.NOOP, timeslice=30)
+        encoder.I(OpCode.NOOP, timeslice=30)
     ]
 
     # fill payload so that we have >= desired read_count
@@ -41,19 +57,19 @@ def generate_row_hammer_payload(*,
     refreshes = 0
     for outer_idx in range(n_loops):
         local_refreshes = 1
-        payload.append(encoder(refresh_op, timeslice=trfc))
+        payload.append(encoder.I(refresh_op, timeslice=trfc))
         accum = trfc
         for row in row_sequence:
             if accum + tras + trp > trefi:
-                payload.append(encoder(refresh_op, timeslice=trfc))
+                payload.append(encoder.I(refresh_op, timeslice=trfc))
                 # Invariant: time between the beginning of two refreshes
                 # is is less than tREFI.
                 accum = trfc
                 local_refreshes += 1
             accum += tras + trp
             payload.extend([
-                encoder(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=bank, row=row)),
-                encoder(OpCode.PRE,  timeslice=trp, address=encoder.address(col=1 << 10)),  # all
+                encoder.I(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=bank, row=row)),
+                encoder.I(OpCode.PRE,  timeslice=trp, address=encoder.address(col=1 << 10)),  # all
             ])
         if outer_idx == 0:
             loop_count = ceil(read_count) % (count_max + 1)
@@ -61,20 +77,26 @@ def generate_row_hammer_payload(*,
             loop_count = count_max
         refreshes += local_refreshes * loop_count
         jump_target = 2*len(row_sequence) + 1
-        payload.append(encoder(OpCode.LOOP, count=loop_count, jump=jump_target))
+        payload.append(encoder.I(OpCode.LOOP, count=loop_count, jump=jump_target))
 
-    payload.append(encoder(OpCode.NOOP, timeslice=30))  # FIXME: remove when control synchronization is ready
+    payload.append(encoder.I(OpCode.NOOP, timeslice=30))  # FIXME: remove when control synchronization is ready
+    payload.append(encoder.I(OpCode.NOOP, timeslice=0))  # STOP
 
     if verbose:
         toggle_count = (count_max + 1) * n_loops
+        expected_cycles = get_expected_execution_cycles(payload)
         print('  Payload size = {:5.2f}KB / {:5.2f}KB'.format(4*len(payload)/2**10, payload_mem_size/2**10))
-        print('  Payload per-row toggle count = {:5.2f}M  x{} rows'.format(toggle_count/1e6, len(row_sequence)))
+        count = '{:.3f}M'.format(toggle_count/1e6) if toggle_count > 1e6 else '{:.3f}K'.format(toggle_count/1e3)
+        print('  Payload per-row toggle count = {}  x{} rows'.format(count, len(row_sequence)))
         print('  Payload refreshes (if enabled) = {}'.format(refreshes))
+        time = ''
+        if sys_clk_freq is not None:
+            time = ' = {:.3f} ms'.format(1/sys_clk_freq * expected_cycles * 1e3)
+        print('  Expected execution time = {} cycles'.format(expected_cycles) + time)
 
     assert len(payload) <= payload_mem_size//4
-    payload += [0] * (payload_mem_size//4 - len(payload))  # fill with NOOPs
 
-    return payload
+    return encoder(payload)
 
 ################################################################################
 
@@ -232,6 +254,7 @@ class RowHammer:
             return
 
     def payload_executor_attack(self, read_count, row_tuple):
+        sys_clk_freq = float(get_generated_defs()['SYS_CLK_FREQ'])
         payload = generate_row_hammer_payload(
             read_count       = read_count,
             row_sequence     = row_tuple,
@@ -240,6 +263,7 @@ class RowHammer:
             bank             = self.bank,
             payload_mem_size = self.wb.mems.payload.size,
             refresh          = not self.no_refresh,
+            sys_clk_freq     = sys_clk_freq,
         )
 
         print('\nTransferring the payload ...')
@@ -255,7 +279,8 @@ class RowHammer:
         self.wb.regs.payload_executor_start.write(1)
         while not ready():
             time.sleep(0.001)
-        print('Time taken: {}\n'.format(time.time() - start))
+        elapsed = time.time() - start
+        print('Time taken: {:.3f} ms\n'.format(elapsed * 1e3))
 
 ################################################################################
 
