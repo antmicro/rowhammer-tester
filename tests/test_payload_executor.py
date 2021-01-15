@@ -122,7 +122,10 @@ class TestDecoder(unittest.TestCase):
             encoder = Encoder(bankbits=3)
 
             for op in OpCode:
-                kwargs = dict(count=1, jump=1) if op == OpCode.LOOP else dict(timeslice=1)
+                kwargs = {
+                    OpCode.LOOP: dict(count=1, jump=1),
+                    OpCode.NOOP: dict(timeslice=1),
+                }.get(op, dict(timeslice=1, address=0))  # others
                 yield dut.instruction.eq(encoder(op, **kwargs))
                 yield
                 self.assertEqual((yield dut.decoder.op_code), op)
@@ -171,7 +174,7 @@ class TestDecoder(unittest.TestCase):
             encoder = Encoder(bankbits=3)
 
             timeslice_max = 2**Decoder.TIMESLICE - 1
-            yield dut.instruction.eq(encoder(OpCode.ACT, timeslice=timeslice_max))
+            yield dut.instruction.eq(encoder(OpCode.ACT, timeslice=timeslice_max, address=0))
             yield
             self.assertEqual((yield dut.decoder.timeslice), timeslice_max)
 
@@ -502,7 +505,7 @@ class TestPayloadExecutor(unittest.TestCase):
             encoder(OpCode.ACT,  timeslice=7,  address=encoder.address(bank=1, row=100)),
             encoder(OpCode.READ, timeslice=3,  address=encoder.address(bank=1, col=20)),
             encoder(OpCode.PRE,  timeslice=5,  address=encoder.address(bank=1)),
-            encoder(OpCode.REF,  timeslice=10, address=encoder.address(col=1 << 10)),  # all banks
+            encoder(OpCode.REF,  timeslice=10),
             encoder(OpCode.NOOP, timeslice=0),  # STOP
         ]
 

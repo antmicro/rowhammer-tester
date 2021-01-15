@@ -143,6 +143,9 @@ class Encoder:
             ]
         else:
             assert kwargs['timeslice'] != 0, 'Timeslice for instructions other than NOOP should be > 0'
+            no_address = [OpCode.REF]  # PRE requires bank address
+            assert 'address' in kwargs or op_code in no_address, \
+                '{} instruction requires `address`'.format(op_code.name)
             parts = [
                 (Decoder.OP_CODE,   op_code),
                 (Decoder.TIMESLICE, kwargs['timeslice']),
