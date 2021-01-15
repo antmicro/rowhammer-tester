@@ -40,26 +40,26 @@ def generate_row_hammer_payload(*,
 
     refreshes = 0
     for outer_idx in range(n_loops):
-        local_refreshes = 1;
-        payload.append(encoder(refresh_op, timeslice=trfc - 1))
+        local_refreshes = 1
+        payload.append(encoder(refresh_op, timeslice=trfc))
         accum = trfc
         for row in row_sequence:
             if accum + tras + trp > trefi:
-                payload.append(encoder(refresh_op, timeslice=trfc - 1))
+                payload.append(encoder(refresh_op, timeslice=trfc))
                 # Invariant: time between the beginning of two refreshes
                 # is is less than tREFI.
                 accum = trfc
                 local_refreshes += 1
             accum += tras + trp
             payload.extend([
-                encoder(OpCode.ACT,  timeslice=tras - 1, address=encoder.address(bank=bank, row=row)),
-                encoder(OpCode.PRE,  timeslice=trp - 1, address=encoder.address(col=1 << 10)),  # all
+                encoder(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=bank, row=row)),
+                encoder(OpCode.PRE,  timeslice=trp, address=encoder.address(col=1 << 10)),  # all
             ])
         if outer_idx == 0:
             loop_count = ceil(read_count) % (count_max + 1)
         else:
-            loop_count = count_max;
-        refreshes += local_refreshes * loop_count;
+            loop_count = count_max
+        refreshes += local_refreshes * loop_count
         jump_target = 2*len(row_sequence) + 1
         payload.append(encoder(OpCode.LOOP, count=loop_count, jump=jump_target))
 
