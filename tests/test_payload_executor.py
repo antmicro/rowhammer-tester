@@ -327,6 +327,10 @@ class PayloadExecutorDUT(Module):
             nranks=nranks, bankbits=bankbits, rowbits=rowbits, colbits=colbits, rdphase=2)
 
         self.dfi_history: list[HistoryEntry] = []
+        self.cycles = 0
+
+    def get_generators(self):
+        return [self.dfi_monitor(), self.cycles_counter()]
 
     @passive
     def dfi_monitor(self):
@@ -347,9 +351,18 @@ class PayloadExecutorDUT(Module):
             yield
             time += 1
 
+    @passive
+    def cycles_counter(self):
+        self.cycles = 0
+        while not (yield self.payload_executor.start):
+            yield
+        yield
+        while not (yield self.payload_executor.ready):
+            yield
+            self.cycles += 1
 
 class TestPayloadExecutor(unittest.TestCase):
-    def test_payload(self):
+    def run_payload(self, dut, **kwargs):
         def generator(dut):
             yield dut.payload_executor.start.eq(1)
             yield
@@ -359,6 +372,36 @@ class TestPayloadExecutor(unittest.TestCase):
             while not (yield dut.payload_executor.ready):
                 yield
 
+        run_simulation(dut, [generator(dut), *dut.get_generators()], **kwargs)
+
+    def test_timeslice_0_noop_legal(self):
+        Encoder(bankbits=3)(OpCode.NOOP, timeslice=0)
+
+    def test_timeslice_0_other_illegal(self):
+        with self.assertRaises(AssertionError):
+            Encoder(bankbits=3)(OpCode.ACT, timeslice=0)
+
+    def test_payload_simple(self):
+        encoder = Encoder(bankbits=3)
+        payload = [
+            encoder(OpCode.ACT,  timeslice=10, address=encoder.address(bank=1, row=100)),
+            encoder(OpCode.READ, timeslice=10, address=encoder.address(bank=1, col=13)),
+            encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=1, col=20)),
+            encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=1, col=20)),
+            encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=1, col=20)),
+            encoder(OpCode.PRE,  timeslice=10, address=encoder.address(bank=1)),
+        ]
+
+        dut = PayloadExecutorDUT(payload)
+        self.run_payload(dut)
+
+        # compare DFI history to what payload should yield
+        op_codes = [OpCode.ACT] + 4*[OpCode.READ] + [OpCode.PRE]
+        self.assertEqual(len(dut.dfi_history), len(op_codes))
+        for entry, op in zip(dut.dfi_history, op_codes):
+            self.assertEqual(entry.cmd.op_code, op)
+
+    def test_payload_loop(self):
         encoder = Encoder(bankbits=3)
         payload = [
             encoder(OpCode.NOOP, timeslice=50),
@@ -391,14 +434,53 @@ class TestPayloadExecutor(unittest.TestCase):
         ]
 
         dut = PayloadExecutorDUT(payload)
-        run_simulation(dut, [generator(dut), dut.dfi_monitor()])
+        self.run_payload(dut)
 
-        # compare DFI history to what payload should yield
         op_codes = [OpCode.ACT] + 2*[OpCode.READ] + [OpCode.PRE] \
             + [OpCode.ACT] + (8+9)*[OpCode.READ] + [OpCode.ACT] + [OpCode.PRE] + 2*[OpCode.REF]
         self.assertEqual(len(dut.dfi_history), len(op_codes))
         for entry, op in zip(dut.dfi_history, op_codes):
             self.assertEqual(entry.cmd.op_code, op)
+
+    def test_stop(self):
+        encoder = Encoder(bankbits=3)
+        payload = [
+            encoder(OpCode.ACT,  timeslice=10, address=encoder.address(bank=1, row=100)),
+            encoder(OpCode.READ, timeslice=10, address=encoder.address(bank=1, col=13)),
+            encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=1, col=20)),
+            encoder(OpCode.NOOP, timeslice=0),  # STOP instruction
+            encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=1, col=20)),
+            encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=1, col=20)),
+            encoder(OpCode.PRE,  timeslice=10, address=encoder.address(bank=1)),
+        ]
+
+        dut = PayloadExecutorDUT(payload)
+        self.run_payload(dut)
+
+        op_codes = [OpCode.ACT] + 2*[OpCode.READ]
+        self.assertEqual(len(dut.dfi_history), len(op_codes))
+        for entry, op in zip(dut.dfi_history, op_codes):
+            self.assertEqual(entry.cmd.op_code, op)
+
+    def test_timeslice_cycles(self):
+        encoder = Encoder(bankbits=3)
+        payload = [
+            encoder(OpCode.ACT,  timeslice=1, address=encoder.address(bank=1, row=100)),
+            encoder(OpCode.READ, timeslice=1, address=encoder.address(bank=1, col=20)),
+            encoder(OpCode.PRE,  timeslice=1, address=encoder.address(bank=1)),
+            encoder(OpCode.NOOP, timeslice=1),  # takes 1 cycle
+            encoder(OpCode.NOOP, timeslice=0),  # STOP, takes 1 cycle
+        ]
+
+        dut = PayloadExecutorDUT(payload)
+        self.run_payload(dut)
+
+        op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
+        self.assertEqual(len(dut.dfi_history), len(op_codes))
+        for entry, op in zip(dut.dfi_history, op_codes):
+            self.assertEqual(entry.cmd.op_code, op)
+
+        self.assertEqual(dut.cycles, 5)
 
 # Interactive tests --------------------------------------------------------------------------------
 

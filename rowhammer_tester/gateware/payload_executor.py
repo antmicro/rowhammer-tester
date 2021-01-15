@@ -37,9 +37,17 @@ class Decoder(Module):
     **Instruction decoder**
 
     All instructions are 32-bit. The format of most instructions is the same,
-    except for the LOOP instruction, which has a constant TIMESLICE of 0.
+    except for the LOOP instruction, which has a constant TIMESLICE of 1.
 
-    **NOTE:** LOOP instruction will *jump* COUNT times, meaning that the "code"
+    NOOP with a TIMESLICE of 0 is a special case which is interpreted as
+    STOP instruction. When this instruction is encountered execution gets
+    finished imediatelly.
+
+    **NOTE:** TIMESLICE is the number of cycles the instruction will take. This
+    means that instructions other than NOOP that use TIMESLICE=0 are illegal
+    (although will silently be executed as having TIMESLICE=1).
+
+    **NOTE2:** LOOP instruction will *jump* COUNT times, meaning that the "code"
     inside the loop will effectively be executed COUNT+1 times.
 
     Op codes:
@@ -52,6 +60,7 @@ class Decoder(Module):
         dfi:  OP_CODE | TIMESLICE | ADDRESS
         noop: OP_CODE | TIMESLICE_NOOP
         loop: OP_CODE | COUNT     | JUMP
+        stop: <NOOP>  | 0
 
     Where ADDRESS depends on the DFI command and is one of::
 
@@ -88,6 +97,8 @@ class Decoder(Module):
         # Loop instruction
         self.loop_count = Signal(self.LOOP_COUNT)  # max 32K loops
         self.loop_jump  = Signal(self.LOOP_JUMP)  # max jump by 16K instructions
+        # Stop instruction (NOOP with TIMESLICE=0)
+        self.stop = Signal()
 
         tail = instruction[self.OP_CODE:]
         self.comb += [
@@ -100,6 +111,7 @@ class Decoder(Module):
             self.address.eq(tail[self.TIMESLICE:]),
             self.loop_count.eq(tail[:self.LOOP_COUNT]),
             self.loop_jump.eq(tail[self.LOOP_COUNT:]),
+            self.stop.eq((self.op_code == OpCode.NOOP) & (self.timeslice == 0)),
             self.cas.eq(self.op_code[1]),
             self.ras.eq(self.op_code[2]),
             self.we.eq(self.op_code[0]),
@@ -130,6 +142,7 @@ class Encoder:
                 (Decoder.TIMESLICE_NOOP, kwargs['timeslice']),
             ]
         else:
+            assert kwargs['timeslice'] != 0, 'Timeslice for instructions other than NOOP should be > 0'
             parts = [
                 (Decoder.OP_CODE,   op_code),
                 (Decoder.TIMESLICE, kwargs['timeslice']),
@@ -277,8 +290,8 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         )
         self.fsm.act("RUN",
             dfi_sel.eq(1),
-            # Always execute the whole program
-            If(self.program_counter == mem_payload.depth - 1,
+            # Terminate after executing the whole program or when STOP instruction is encountered
+            If((self.program_counter == mem_payload.depth - 1) | decoder.stop,
                 NextState("READY")
             ),
             # Execute instruction
@@ -296,11 +309,12 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
                ),
             ).Else(
                 # DFI instruction
-                If(decoder.timeslice == 0,
+                # Timeslice=0 should be illegal but we still consider it as =1
+                If((decoder.timeslice == 0) | (decoder.timeslice == 1),
                     NextValue(self.program_counter, self.program_counter + 1)
                 ).Else(
                     # Wait in idle loop after sending the command
-                    NextValue(self.idle_counter, decoder.timeslice - 1),
+                    NextValue(self.idle_counter, decoder.timeslice - 2),
                     NextState("IDLE"),
                 ),
                 # Send DFI command
