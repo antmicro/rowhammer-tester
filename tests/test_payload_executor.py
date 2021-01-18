@@ -378,9 +378,8 @@ class TestPayloadExecutor(unittest.TestCase):
         run_simulation(dut, [generator(dut), *dut.get_generators()], **kwargs)
 
     def assert_history(self, history, op_codes):
-        self.assertEqual(len(history), len(op_codes))
-        for entry, op in zip(history, op_codes):
-            self.assertEqual(entry.cmd.op_code, op)
+        history_ops = [entry.cmd.op_code for entry in history]
+        self.assertEqual(history_ops, op_codes)
 
     def test_timeslice_0_noop_legal(self):
         # Check that encoding NOOP with timeslice=0 is legal (STOP instruction)

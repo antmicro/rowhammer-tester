@@ -286,14 +286,15 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         self.submodules.scratchpad = Scratchpad(mem_scratchpad, dfi)
 
         # Fetcher
-        # simple async reads, later we would probably want 1 cycle prefetch?
+        # uses synchronious port, instruction is ready 1 cycle after fetch_address is asserted
         assert mem_payload.width == Decoder.INSTRUCTION, \
                 'Wrong payload memory word width: {} vs {}'.format(mem_payload.width, Decoder.INSTRUCTION)
         instruction = Signal(Decoder.INSTRUCTION)
-        payload_port = mem_payload.get_port(write_capable=False, async_read=True)
+        fetch_address = Signal.like(self.program_counter)
+        payload_port = mem_payload.get_port(write_capable=False)
         self.specials += payload_port
         self.comb += [
-            payload_port.adr.eq(self.program_counter),
+            payload_port.adr.eq(fetch_address),
             instruction.eq(payload_port.dat_r),
         ]
 
@@ -312,8 +313,9 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             self.ready.eq(1),
             self.scratchpad.reset.eq(self.start),
             If(self.start,
-                NextState("RUN"),
+                fetch_address.eq(0),
                 NextValue(self.program_counter, 0),
+                NextState("RUN"),
             )
         )
         self.fsm.act("RUN",
@@ -324,22 +326,25 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             ),
             # Execute instruction
             If(decoder.op_code == OpCode.LOOP,
-               # If a loop instruction with count=0 is found it will be a NOOP
-               If(self.loop_counter != decoder.loop_count,
-                   # Continue the loop
-                   NextValue(self.program_counter, self.program_counter - decoder.loop_jump),
-                   NextValue(self.loop_counter, self.loop_counter + 1),
-               ).Else(
-                   # Finish the loop
-                   # Set loop_counter to 0 so that next loop instruction will start properly
-                   NextValue(self.program_counter, self.program_counter + 1),
-                   NextValue(self.loop_counter, 0),
-               ),
+                # If a loop instruction with count=0 is found it will be a NOOP
+                If(self.loop_counter != decoder.loop_count,
+                    # Continue the loop
+                    fetch_address.eq(self.program_counter - decoder.loop_jump),
+                    NextValue(self.program_counter, fetch_address),
+                    NextValue(self.loop_counter, self.loop_counter + 1),
+                ).Else(
+                    # Finish the loop
+                    # Set loop_counter to 0 so that next loop instruction will start properly
+                    fetch_address.eq(self.program_counter + 1),
+                    NextValue(self.program_counter, fetch_address),
+                    NextValue(self.loop_counter, 0),
+                ),
             ).Else(
                 # DFI instruction
                 # Timeslice=0 should be illegal but we still consider it as =1
                 If((decoder.timeslice == 0) | (decoder.timeslice == 1),
-                    NextValue(self.program_counter, self.program_counter + 1)
+                    fetch_address.eq(self.program_counter + 1),
+                    NextValue(self.program_counter, fetch_address),
                 ).Else(
                     # Wait in idle loop after sending the command
                     NextValue(self.idle_counter, decoder.timeslice - 2),
@@ -357,8 +362,9 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         self.fsm.act("IDLE",
             dfi_sel.eq(1),
             If(self.idle_counter == 0,
+                fetch_address.eq(self.program_counter + 1),
+                NextValue(self.program_counter, fetch_address),
                 NextState("RUN"),
-                NextValue(self.program_counter, self.program_counter + 1),
             ).Else(
                 NextValue(self.idle_counter, self.idle_counter - 1),
             )
