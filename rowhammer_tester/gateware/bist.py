@@ -1,5 +1,7 @@
 from migen import *
 
+from migen.genlib.coding import Decoder as OneHotDecoder
+
 from litex.soc.interconnect import stream
 from litex.soc.interconnect.csr import AutoCSR, CSRStorage, CSRStatus, CSR
 from litex.soc.integration.doc import AutoDoc, ModuleDoc
@@ -8,10 +10,78 @@ from litedram.frontend.dma import LiteDRAMDMAReader, LiteDRAMDMAWriter
 
 
 class PatternMemory(Module):
-    def __init__(self, data_width, mem_depth, addr_width=32):
-        self.data = Memory(data_width, mem_depth)
-        self.addr = Memory(addr_width, mem_depth)
+    """Memory for storing access pattern
+
+    It consists of two separate memories: `data` and `addr`, each of `mem_depth`,
+    but with different word widths. BIST modules read corresponding pairs (`data`,
+    `addr`) during operation. BISTWriter writes `data` to the given `addr`,
+    BISTReader reads `addr` and compares the data read to `data` from the pattern.
+    """
+    def __init__(self, data_width, mem_depth, addr_width=32, pattern_init=None):
+        addr_init, data_init = None, None
+        if pattern_init is not None:
+            addr_init, data_init = zip(*pattern_init)
+
+        self.data = Memory(data_width, mem_depth, init=data_init)
+        self.addr = Memory(addr_width, mem_depth, init=addr_init)
         self.specials += self.data, self.addr
+
+
+class AddressSelector(Module):
+    # Selects addresses given two mask as done in:
+    # https://github.com/google/hammer-kit/blob/40f3988cac39e20ed0294d20bc886e17376ef47b/hammer.c#L270
+    def __init__(self, nbits):
+        self.address        = Signal(nbits)     # part of address used for selection
+        self.selected       = Signal()          # 1 if selection_mask matches
+        self.divisor_mask   = Signal(nbits)     # modulo division using provided mask
+        self.selection_mask = Signal(2**nbits)  # used to select addresses after division
+
+        decoder = OneHotDecoder(len(self.selection_mask))
+        self.submodules += decoder
+        assert len(decoder.i) == len(self.divisor_mask)
+        assert len(decoder.o) == len(self.selection_mask)
+
+        self.comb += [
+            decoder.i.eq(self.address & self.divisor_mask),
+            self.selected.eq((self.selection_mask & decoder.o) != 0),
+        ]
+
+
+class RowDataInverter(Module, AutoCSR):
+    """Inverts data for given range of row bits
+
+    Specify small range, e.g. rowbits=5, keep in mind that
+    AddressSelector has to construct one-hot encoded signal
+    with width of 2**rowbits with 1 bit per row, so it quickly
+    becomes huge.
+    """
+    def __init__(self, addr, data_in, data_out, rowbits, row_shift):
+        nrows = 2**rowbits
+        assert rowbits <= 6, \
+            'High rowbits={} leads to {}-bit selection_mask, this is most likely not desired.'.format(rowbits, nrows) \
+            + ' See:\n{}'.format(self.__doc__)
+
+        self.submodules.selector = selector = AddressSelector(nbits=rowbits)
+
+        self.comb += [
+            selector.address.eq(addr[row_shift:row_shift + rowbits]),
+            If(selector.selected,
+                data_out.eq(~data_in)
+            ).Else(
+                data_out.eq(data_in)
+            )
+        ]
+
+    def add_csrs(self):
+        self._divisor_mask = CSRStorage(len(self.selector.divisor_mask),
+            description="Divisor mask for selecting rows for which pattern data gets inverted")
+        self._selection_mask = CSRStorage(len(self.selector.selection_mask),
+            description="Selection mask for selecting rows for which pattern data gets inverted")
+
+        self.comb += [
+            self.selector.divisor_mask.eq(self._divisor_mask.storage),
+            self.selector.selection_mask.eq(self._selection_mask.storage),
+        ]
 
 
 class BISTModule(Module):
@@ -69,7 +139,7 @@ the operation. When the operation is ongoing `ready` will be 0.
 
 
 class Writer(BISTModule, AutoCSR, AutoDoc):
-    def __init__(self, dram_port, pattern_mem):
+    def __init__(self, dram_port, pattern_mem, *, rowbits, row_shift):
         super().__init__(pattern_mem)
 
         self.doc = ModuleDoc("""
@@ -83,8 +153,7 @@ Pattern
 {common}
         """.format(common=BISTModule.__doc__))
 
-        # FIXME: Increase fifo depth
-        dma = LiteDRAMDMAWriter(dram_port, fifo_depth=1)
+        dma = LiteDRAMDMAWriter(dram_port, fifo_depth=4)
         self.submodules += dma
 
         cmd_counter = Signal(32)
@@ -96,8 +165,16 @@ Pattern
             self.addr_port.adr.eq(cmd_counter & self.data_mask),
             # DMA
             dma.sink.address.eq(self.addr_port.dat_r + (cmd_counter & self.mem_mask)),
-            dma.sink.data.eq(self.data_port.dat_r),
         ]
+
+        # DMA data may be inverted using AddressSelector
+        self.submodules.inverter = RowDataInverter(
+            addr      = dma.sink.address,
+            data_in   = self.data_port.dat_r,
+            data_out  = dma.sink.data,
+            rowbits   = rowbits,
+            row_shift = row_shift,
+        )
 
         self.submodules.fsm = fsm = FSM()
         fsm.act("READY",
@@ -122,9 +199,13 @@ Pattern
             )
         )
 
+    def add_csrs(self):
+        super().add_csrs()
+        self.inverter.add_csrs()
+
 
 class Reader(BISTModule, AutoCSR, AutoDoc):
-    def __init__(self, dram_port, pattern_mem):
+    def __init__(self, dram_port, pattern_mem, *, rowbits, row_shift):
         super().__init__(pattern_mem)
 
         self.doc = ModuleDoc("""
@@ -165,9 +246,12 @@ The current progress can be read from the `done` CSR.
         self.skip_fifo    = Signal()
         self.error        = stream.Endpoint(error_desc)
 
-        # FIXME: Increase fifo depth
-        dma = LiteDRAMDMAReader(dram_port)
+        dma = LiteDRAMDMAReader(dram_port, fifo_depth=4)
         self.submodules += dma
+
+        # pass addresses from address FSM (command producer) to pattern FSM (data consumer)
+        address_fifo = stream.SyncFIFO([('address', len(dma.sink.address))], depth=4)
+        self.submodules += address_fifo
 
         # ----------------- Address FSM -----------------
         counter_addr = Signal(32)
@@ -185,16 +269,22 @@ The current progress can be read from the `done` CSR.
                 NextState("WAIT"),
             )
         )
-        fsm_addr.act("WAIT",  # TODO: we could pipeline the access
-            If(counter_addr >= self.count,
-                NextState("READY")
-            ).Else(
-                NextState("WR_ADDR")
+        fsm_addr.act("WAIT",
+            # FIXME: should be possible to write the address in WR_ADDR
+            address_fifo.sink.valid.eq(counter_addr != 0),
+            If(address_fifo.sink.ready | (counter_addr == 0),
+                If(counter_addr >= self.count,
+                    NextState("READY")
+                ).Else(
+                    NextState("WR_ADDR")
+                )
             )
         )
         fsm_addr.act("WR_ADDR",
             dma.sink.valid.eq(1),
             If(dma.sink.ready,
+                # send the address in WAIT
+                NextValue(address_fifo.sink.address, dma.sink.address),
                 NextValue(counter_addr, counter_addr + 1),
                 NextState("WAIT")
             )
@@ -206,6 +296,16 @@ The current progress can be read from the `done` CSR.
         # Unmatched memory offsets
         error_fifo = stream.SyncFIFO(error_desc, depth=2, buffered=False)
         self.submodules += error_fifo
+
+        # DMA data may be inverted using AddressSelector
+        data_expected = Signal.like(dma.source.data)
+        self.submodules.inverter = RowDataInverter(
+            addr      = address_fifo.source.address,
+            data_in   = self.data_port.dat_r,
+            data_out  = data_expected,
+            rowbits   = rowbits,
+            row_shift = row_shift,
+        )
 
         self.comb += [
             self.data_port.adr.eq(counter_gen & self.data_mask),
@@ -234,14 +334,18 @@ The current progress can be read from the `done` CSR.
             )
         )
         fsm_pattern.act("RD_DATA",
-            dma.source.ready.eq(1),
-            If(dma.source.valid,
+            If(dma.source.valid & address_fifo.source.valid,
+                # we must now change FSM state in single cycle
+                dma.source.ready.eq(1),
+                address_fifo.source.ready.eq(1),
+                # count the command
                 NextValue(counter_gen, counter_gen + 1),
-                If(dma.source.data != self.data_port.dat_r,
+                # next state depends on if there was an error
+                If(dma.source.data != data_expected,
                     NextValue(self.error_count, self.error_count + 1),
-                    NextValue(error_fifo.sink.offset, counter_gen),
+                    NextValue(error_fifo.sink.offset, address_fifo.source.address),
                     NextValue(error_fifo.sink.data, dma.source.data),
-                    NextValue(error_fifo.sink.expected, self.data_port.dat_r),
+                    NextValue(error_fifo.sink.expected, data_expected),
                     If(self.skip_fifo,
                         NextState("WAIT")
                     ).Else(
@@ -261,6 +365,7 @@ The current progress can be read from the `done` CSR.
 
     def add_csrs(self):
         super().add_csrs()
+        self.inverter.add_csrs()
 
         self._error_count    = CSRStatus(size=len(self.error_count), description='Number of errors detected')
         self._skip_fifo      = CSRStorage(description='Skip waiting for user to read the errors FIFO')
