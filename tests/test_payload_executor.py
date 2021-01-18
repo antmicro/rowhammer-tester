@@ -6,6 +6,8 @@ from litex.gen.sim import *
 from litedram.phy import dfi
 from migen.genlib.coding import Decoder as OneHotDecoder
 
+from litedram.dfii import DFIInjector
+
 from rowhammer_tester.gateware.payload_executor import *
 
 class Hex:
@@ -312,7 +314,8 @@ HistoryEntry = namedtuple('HistoryEntry', ['time', 'phase', 'cmd'])
 class PayloadExecutorDUT(Module):
     def __init__(self, payload,
             data_width=128, scratchpad_depth=8, payload_depth=32, instruction_width=32,
-            bankbits=3, rowbits=14, colbits=10, nranks=1, dfi_databits=2*16, nphases=4, rdphase=2):
+            bankbits=3, rowbits=14, colbits=10, nranks=1, dfi_databits=2*16, nphases=4, rdphase=2,
+            with_refresh=True, refresh_delay=3):
         # store to be able to extract from dut later
         self.params = locals()
         self.payload = payload
@@ -322,24 +325,33 @@ class PayloadExecutorDUT(Module):
         self.mem_payload = Memory(instruction_width, payload_depth, init=payload)
         self.specials += self.mem_scratchpad, self.mem_payload
 
-        self.dfi_sel = Signal()
-        self.dfi = dfi.Interface(addressbits=max(rowbits, colbits), bankbits=bankbits,
-                nranks=nranks, databits=dfi_databits, nphases=nphases)
+        dfi_params = dict(addressbits=max(rowbits, colbits), bankbits=bankbits, nranks=nranks,
+            databits=dfi_databits, nphases=nphases)
+        self.refresher_ce = Signal()
+        self.submodules.dfii = DFIInjector(**dfi_params)
+        self.submodules.dfi_switch = DFISwitch(
+            with_refresh = with_refresh,
+            dfii         = self.dfii,
+            refresher_ce = self.refresher_ce)
+
         self.submodules.payload_executor = PayloadExecutor(
-            self.mem_payload, self.mem_scratchpad, self.dfi, self.dfi_sel,
+            self.mem_payload, self.mem_scratchpad, self.dfi_switch,
             nranks=nranks, bankbits=bankbits, rowbits=rowbits, colbits=colbits, rdphase=2)
 
         self.dfi_history: list[HistoryEntry] = []
-        self.cycles = 0
+        self.runtime_cycles = 0  # time when memory controller is disconnected
+        self.execution_cycles = 0  # time when actually executing the payload
 
     def get_generators(self):
-        return [self.dfi_monitor(), self.cycles_counter()]
+        return [self.dfi_monitor(), self.cycles_counter(), self.refresher()]
 
     @passive
-    def dfi_monitor(self):
+    def dfi_monitor(self, dfi=None):
+        if dfi is None:
+            dfi = self.dfii.ext_dfi
         time = 0
         while True:
-            for i, phase in enumerate(self.dfi.phases):
+            for i, phase in enumerate(dfi.phases):
                 cas = 1 - (yield phase.cas_n)
                 ras = 1 - (yield phase.ras_n)
                 we = 1 - (yield phase.we_n)
@@ -356,13 +368,40 @@ class PayloadExecutorDUT(Module):
 
     @passive
     def cycles_counter(self):
-        self.cycles = 0
+        self.execution_cycles = 0
+        self.runtime_cycles = 0
         while not (yield self.payload_executor.start):
             yield
         yield
         while not (yield self.payload_executor.ready):
             yield
-            self.cycles += 1
+            self.runtime_cycles += 1
+            if (yield self.payload_executor.executing):
+                self.execution_cycles += 1
+
+    @passive
+    def refresher(self):
+        if not self.params['with_refresh']:
+            return
+
+        counter = 0
+        while True:
+            while not (yield self.refresher_ce):
+                yield
+            if counter == self.params['refresh_delay']:
+                counter = 0
+                yield self.dfii.slave.phases[0].cs_n.eq(0)
+                yield self.dfii.slave.phases[0].cas_n.eq(0)
+                yield self.dfii.slave.phases[0].ras_n.eq(0)
+                yield self.dfii.slave.phases[0].we_n.eq(1)
+                yield
+                yield self.dfii.slave.phases[0].cs_n.eq(1)
+                yield self.dfii.slave.phases[0].cas_n.eq(1)
+                yield self.dfii.slave.phases[0].ras_n.eq(1)
+                yield self.dfii.slave.phases[0].we_n.eq(1)
+            else:
+                counter += 1
+                yield
 
 class TestPayloadExecutor(unittest.TestCase):
     def run_payload(self, dut, **kwargs):
@@ -461,7 +500,7 @@ class TestPayloadExecutor(unittest.TestCase):
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.cycles, 4)
+        self.assertEqual(dut.execution_cycles, 4)
 
     def test_execution_cycles_default_stop(self):
         # Check execution time with no explicit STOP, but rest of memory is filled with zeros (=STOP)
@@ -477,7 +516,7 @@ class TestPayloadExecutor(unittest.TestCase):
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.cycles, 4)
+        self.assertEqual(dut.execution_cycles, 4)
 
     def test_execution_cycles_no_stop(self):
         # Check execution time when there is no STOP instruction (rest of memory filled with NOOPs)
@@ -495,7 +534,7 @@ class TestPayloadExecutor(unittest.TestCase):
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.cycles, depth)
+        self.assertEqual(dut.execution_cycles, depth)
 
     def test_execution_cycles_longer(self):
         # Check execution time with timeslices longer than 1
@@ -513,7 +552,26 @@ class TestPayloadExecutor(unittest.TestCase):
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE, OpCode.REF]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.cycles, sum(max(1, i.timeslice) for i in payload))
+        self.assertEqual(dut.execution_cycles, sum(max(1, i.timeslice) for i in payload))
+
+    def test_execution_refresh_delay(self):
+        # Check that payload execution is started after refresh command
+        encoder = Encoder(bankbits=3)
+        payload = [
+            encoder.I(OpCode.ACT,  timeslice=9,  address=encoder.address(bank=1, row=100)),
+            encoder.I(OpCode.PRE,  timeslice=10, address=encoder.address(bank=1)),
+            encoder.I(OpCode.NOOP, timeslice=0),  # STOP
+        ]
+        switch_latency = 1
+        for refresh_delay in [0, 2, 4, 11]:
+            with self.subTest(refresh_delay=refresh_delay):
+                dut = PayloadExecutorDUT(encoder(payload), refresh_delay=refresh_delay)
+                self.run_payload(dut)
+
+                op_codes = [OpCode.ACT, OpCode.PRE]
+                self.assert_history(dut.dfi_history, op_codes)
+                self.assertEqual(dut.execution_cycles, 20)
+                self.assertEqual(dut.runtime_cycles, 20 + max(1, refresh_delay) + switch_latency)
 
 # Interactive tests --------------------------------------------------------------------------------
 

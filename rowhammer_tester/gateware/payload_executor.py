@@ -1,12 +1,14 @@
 from enum import IntEnum, unique
 from functools import reduce
-from operator import or_
+from operator import or_, and_
 
 from migen import *
 from migen.genlib.coding import Decoder as OneHotDecoder
 
 from litex.soc.interconnect.csr import CSR, CSRStatus, CSRStorage, CSRField, AutoCSR
 from litex.soc.integration.doc import AutoDoc, ModuleDoc
+
+from litedram.core.refresher import Refresher
 
 @unique
 class OpCode(IntEnum):
@@ -267,8 +269,58 @@ class DFIExecutor(Module):
                 )
             ]
 
+class CERefresher(Module):
+    # Refresher that can be stopped
+    def __init__(self, *args, **kwargs):
+        refresher = CEInserter()(Refresher(*args, **kwargs))
+        self.submodules += refresher
+
+        self.ce = refresher.ce
+        self.cmd = refresher.cmd
+
+class DFISwitch(Module):
+    # Synchronizes disconnection of the MC to last REF/ZQC command sent by MC
+    # Refresher must provide `ce` signal
+    def __init__(self, with_refresh, dfii, refresher_ce):
+        self.wants_dfi = Signal()
+        self.dfi_ready = Signal()
+        self.dfi = dfii.ext_dfi
+
+        # We wait for the last command issues by Refresher (always on phase 0)
+        last_cmd_phase = dfii.slave.phases[0]
+        # FIXME: sometimes ZQCS needs to be sent after refresh, currently it will be missed
+        # last_cmd = dict(cas_n=1, ras_n=1, we_n=0)  # ZQCS
+        last_cmd = dict(cas_n=0, ras_n=0, we_n=1)  # REF
+        is_last_cmd = reduce(and_, [getattr(last_cmd_phase, s) == last_cmd[s] for s in ["cas_n", "ras_n", "we_n"]])
+
+        # We stop clocking Refresher during payload execution to stop its timing counters
+        freeze_refresher = Signal()
+        self.comb += refresher_ce.eq(~freeze_refresher)
+
+        self.submodules.fsm = fsm = FSM()
+        fsm.act("MEMORY-CONTROLLER",
+            If(self.wants_dfi,
+                If(with_refresh,
+                    If((last_cmd_phase.cs_n == 0) & is_last_cmd,
+                        freeze_refresher.eq(1),
+                        NextState("PAYLOAD-EXECUTION")
+                    )
+                ).Else(
+                    NextState("PAYLOAD-EXECUTION")
+                )
+            )
+        )
+        fsm.act("PAYLOAD-EXECUTION",
+            freeze_refresher.eq(1),
+            self.dfi_ready.eq(1),
+            dfii.ext_dfi_sel.eq(1),
+            If(~self.wants_dfi,
+                NextState("MEMORY-CONTROLLER")
+            )
+        )
+
 class PayloadExecutor(Module, AutoCSR, AutoDoc):
-    def __init__(self, mem_payload, mem_scratchpad, dfi, dfi_sel, *,
+    def __init__(self, mem_payload, mem_scratchpad, dfi_switch, *,
                  nranks, bankbits, rowbits, colbits, rdphase):
         self.description = ModuleDoc("""
         Executes the DRAM payload from memory
@@ -277,13 +329,14 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         """.format(Decoder.__doc__))
 
         self.start               = Signal()
+        self.executing           = Signal()
         self.ready               = Signal()
         self.program_counter     = Signal(max=mem_payload.depth - 1)
         self.loop_counter        = Signal(Decoder.LOOP_COUNT)
         self.idle_counter        = Signal(Decoder.TIMESLICE_NOOP)
 
         # Scratchpad
-        self.submodules.scratchpad = Scratchpad(mem_scratchpad, dfi)
+        self.submodules.scratchpad = Scratchpad(mem_scratchpad, dfi_switch.dfi)
 
         # Fetcher
         # uses synchronious port, instruction is ready 1 cycle after fetch_address is asserted
@@ -307,19 +360,26 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             self.comb += self.rank_decoder.i.eq(self.decoder.dfi_rank)
 
         # Executor
-        self.submodules.dfi_executor = DFIExecutor(dfi, self.decoder, self.rank_decoder)
+        self.submodules.dfi_executor = DFIExecutor(dfi_switch.dfi, self.decoder, self.rank_decoder)
         self.submodules.fsm = FSM()
         self.fsm.act("READY",
             self.ready.eq(1),
-            self.scratchpad.reset.eq(self.start),
             If(self.start,
-                fetch_address.eq(0),
+                NextState("WAIT-DFI"),
+            )
+        )
+        self.fsm.act("WAIT-DFI",
+            self.scratchpad.reset.eq(1),
+            fetch_address.eq(0),
+            dfi_switch.wants_dfi.eq(1),
+            If(dfi_switch.dfi_ready,
                 NextValue(self.program_counter, 0),
-                NextState("RUN"),
+                NextState("RUN")
             )
         )
         self.fsm.act("RUN",
-            dfi_sel.eq(1),
+            self.executing.eq(1),
+            dfi_switch.wants_dfi.eq(1),
             # Terminate after executing the whole program or when STOP instruction is encountered
             If((self.program_counter == mem_payload.depth - 1) | decoder.stop,
                 NextState("READY")
@@ -360,7 +420,8 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             ),
         )
         self.fsm.act("IDLE",
-            dfi_sel.eq(1),
+            self.executing.eq(1),
+            dfi_switch.wants_dfi.eq(1),
             If(self.idle_counter == 0,
                 fetch_address.eq(self.program_counter + 1),
                 NextValue(self.program_counter, fetch_address),
