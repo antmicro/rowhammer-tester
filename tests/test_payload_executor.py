@@ -327,12 +327,12 @@ class PayloadExecutorDUT(Module):
 
         dfi_params = dict(addressbits=max(rowbits, colbits), bankbits=bankbits, nranks=nranks,
             databits=dfi_databits, nphases=nphases)
-        self.refresher_ce = Signal()
+        self.refresher_reset = Signal()
         self.submodules.dfii = DFIInjector(**dfi_params)
         self.submodules.dfi_switch = DFISwitch(
-            with_refresh = with_refresh,
-            dfii         = self.dfii,
-            refresher_ce = self.refresher_ce)
+            with_refresh    = with_refresh,
+            dfii            = self.dfii,
+            refresher_reset = self.refresher_reset)
 
         self.submodules.payload_executor = PayloadExecutor(
             self.mem_payload, self.mem_scratchpad, self.dfi_switch,
@@ -386,22 +386,24 @@ class PayloadExecutorDUT(Module):
 
         counter = 0
         while True:
-            while not (yield self.refresher_ce):
-                yield
-            if counter == self.params['refresh_delay']:
+            if (yield self.refresher_reset):
                 counter = 0
-                yield self.dfii.slave.phases[0].cs_n.eq(0)
-                yield self.dfii.slave.phases[0].cas_n.eq(0)
-                yield self.dfii.slave.phases[0].ras_n.eq(0)
-                yield self.dfii.slave.phases[0].we_n.eq(1)
                 yield
-                yield self.dfii.slave.phases[0].cs_n.eq(1)
-                yield self.dfii.slave.phases[0].cas_n.eq(1)
-                yield self.dfii.slave.phases[0].ras_n.eq(1)
-                yield self.dfii.slave.phases[0].we_n.eq(1)
             else:
-                counter += 1
-                yield
+                if counter == self.params['refresh_delay']:
+                    counter = 0
+                    yield self.dfii.slave.phases[0].cs_n.eq(0)
+                    yield self.dfii.slave.phases[0].cas_n.eq(0)
+                    yield self.dfii.slave.phases[0].ras_n.eq(0)
+                    yield self.dfii.slave.phases[0].we_n.eq(1)
+                    yield
+                    yield self.dfii.slave.phases[0].cs_n.eq(1)
+                    yield self.dfii.slave.phases[0].cas_n.eq(1)
+                    yield self.dfii.slave.phases[0].ras_n.eq(1)
+                    yield self.dfii.slave.phases[0].we_n.eq(1)
+                else:
+                    counter += 1
+                    yield
 
 class TestPayloadExecutor(unittest.TestCase):
     def run_payload(self, dut, **kwargs):

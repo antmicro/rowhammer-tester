@@ -269,19 +269,19 @@ class DFIExecutor(Module):
                 )
             ]
 
-class CERefresher(Module):
+class SyncableRefresher(Module):
     # Refresher that can be stopped
     def __init__(self, *args, **kwargs):
-        refresher = CEInserter()(Refresher(*args, **kwargs))
+        refresher = ResetInserter()(Refresher(*args, **kwargs))
         self.submodules += refresher
 
-        self.ce = refresher.ce
+        self.reset = refresher.reset
         self.cmd = refresher.cmd
 
 class DFISwitch(Module):
     # Synchronizes disconnection of the MC to last REF/ZQC command sent by MC
     # Refresher must provide `ce` signal
-    def __init__(self, with_refresh, dfii, refresher_ce):
+    def __init__(self, with_refresh, dfii, refresher_reset):
         self.wants_dfi = Signal()
         self.dfi_ready = Signal()
         self.dfi = dfii.ext_dfi
@@ -293,16 +293,11 @@ class DFISwitch(Module):
         last_cmd = dict(cas_n=0, ras_n=0, we_n=1)  # REF
         is_last_cmd = reduce(and_, [getattr(last_cmd_phase, s) == last_cmd[s] for s in ["cas_n", "ras_n", "we_n"]])
 
-        # We stop clocking Refresher during payload execution to stop its timing counters
-        freeze_refresher = Signal()
-        self.comb += refresher_ce.eq(~freeze_refresher)
-
         self.submodules.fsm = fsm = FSM()
         fsm.act("MEMORY-CONTROLLER",
             If(self.wants_dfi,
                 If(with_refresh,
                     If((last_cmd_phase.cs_n == 0) & is_last_cmd,
-                        freeze_refresher.eq(1),
                         NextState("PAYLOAD-EXECUTION")
                     )
                 ).Else(
@@ -311,10 +306,11 @@ class DFISwitch(Module):
             )
         )
         fsm.act("PAYLOAD-EXECUTION",
-            freeze_refresher.eq(1),
             self.dfi_ready.eq(1),
             dfii.ext_dfi_sel.eq(1),
             If(~self.wants_dfi,
+                # Reset Refresher so that it starts counting tREFI from 0
+                refresher_reset.eq(1),
                 NextState("MEMORY-CONTROLLER")
             )
         )

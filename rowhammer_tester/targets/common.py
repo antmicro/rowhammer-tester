@@ -32,7 +32,7 @@ from liteeth.frontend.etherbone import LiteEthEtherbone
 
 from rowhammer_tester.gateware.bist import Reader, Writer, PatternMemory
 from rowhammer_tester.gateware.rowhammer import RowHammerDMA
-from rowhammer_tester.gateware.payload_executor import PayloadExecutor, DFISwitch, CERefresher
+from rowhammer_tester.gateware.payload_executor import PayloadExecutor, DFISwitch, SyncableRefresher
 
 # SoC ----------------------------------------------------------------------------------------------
 
@@ -160,7 +160,7 @@ class RowHammerSoC(SoCCore):
         controller_settings = ControllerSettings()
         controller_settings.with_auto_precharge = True
         controller_settings.with_refresh = self.controller_settings.refresh.storage
-        controller_settings.refresh_cls = CERefresher
+        controller_settings.refresh_cls = SyncableRefresher
 
         self.add_sdram("sdram",
             phy                     = self.ddrphy,
@@ -262,9 +262,9 @@ class RowHammerSoC(SoCCore):
                 colorer('Scratchpad memory'), colorer(scratchpad_depth), colorer(scratchpad_width)))
 
             dfi_switch = DFISwitch(
-                with_refresh = self.sdram.controller.settings.with_refresh,
-                dfii         = self.sdram.dfii,
-                refresher_ce = self.sdram.controller.refresher.ce,
+                with_refresh    = self.sdram.controller.settings.with_refresh,
+                dfii            = self.sdram.dfii,
+                refresher_reset = self.sdram.controller.refresher.reset,
             )
             self.submodules += dfi_switch
 
