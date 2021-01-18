@@ -37,9 +37,17 @@ class Decoder(Module):
     **Instruction decoder**
 
     All instructions are 32-bit. The format of most instructions is the same,
-    except for the LOOP instruction, which has a constant TIMESLICE of 0.
+    except for the LOOP instruction, which has a constant TIMESLICE of 1.
 
-    **NOTE:** LOOP instruction will *jump* COUNT times, meaning that the "code"
+    NOOP with a TIMESLICE of 0 is a special case which is interpreted as
+    STOP instruction. When this instruction is encountered execution gets
+    finished imediatelly.
+
+    **NOTE:** TIMESLICE is the number of cycles the instruction will take. This
+    means that instructions other than NOOP that use TIMESLICE=0 are illegal
+    (although will silently be executed as having TIMESLICE=1).
+
+    **NOTE2:** LOOP instruction will *jump* COUNT times, meaning that the "code"
     inside the loop will effectively be executed COUNT+1 times.
 
     Op codes:
@@ -52,6 +60,7 @@ class Decoder(Module):
         dfi:  OP_CODE | TIMESLICE | ADDRESS
         noop: OP_CODE | TIMESLICE_NOOP
         loop: OP_CODE | COUNT     | JUMP
+        stop: <NOOP>  | 0
 
     Where ADDRESS depends on the DFI command and is one of::
 
@@ -88,6 +97,8 @@ class Decoder(Module):
         # Loop instruction
         self.loop_count = Signal(self.LOOP_COUNT)  # max 32K loops
         self.loop_jump  = Signal(self.LOOP_JUMP)  # max jump by 16K instructions
+        # Stop instruction (NOOP with TIMESLICE=0)
+        self.stop = Signal()
 
         tail = instruction[self.OP_CODE:]
         self.comb += [
@@ -100,6 +111,7 @@ class Decoder(Module):
             self.address.eq(tail[self.TIMESLICE:]),
             self.loop_count.eq(tail[:self.LOOP_COUNT]),
             self.loop_jump.eq(tail[self.LOOP_COUNT:]),
+            self.stop.eq((self.op_code == OpCode.NOOP) & (self.timeslice == 0)),
             self.cas.eq(self.op_code[1]),
             self.ras.eq(self.op_code[2]),
             self.we.eq(self.op_code[0]),
@@ -117,31 +129,60 @@ class Encoder:
         self.nranks = nranks
         self.bankbits = bankbits
 
-    def __call__(self, op_code, **kwargs):
-        if op_code == OpCode.LOOP:
-            parts = [
-                (Decoder.OP_CODE,    op_code),
-                (Decoder.LOOP_COUNT, kwargs['count']),
-                (Decoder.LOOP_JUMP,  kwargs['jump']),
-            ]
-        elif op_code == OpCode.NOOP:
-            parts = [
-                (Decoder.OP_CODE,        op_code),
-                (Decoder.TIMESLICE_NOOP, kwargs['timeslice']),
-            ]
-        else:
-            parts = [
-                (Decoder.OP_CODE,   op_code),
-                (Decoder.TIMESLICE, kwargs['timeslice']),
-                (Decoder.ADDRESS,   kwargs.get('address', 0)),
-            ]
+    class I:
+        """Instuction specification without encoding the value yet"""
+        def __init__(self, op_code, **kwargs):
+            self.op_code = op_code
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+            if op_code == OpCode.LOOP:
+                self._parts = [
+                    (Decoder.OP_CODE,    op_code),
+                    (Decoder.LOOP_COUNT, kwargs['count']),
+                    (Decoder.LOOP_JUMP,  kwargs['jump']),
+                ]
+            elif op_code == OpCode.NOOP:
+                self._parts = [
+                    (Decoder.OP_CODE,        op_code),
+                    (Decoder.TIMESLICE_NOOP, kwargs['timeslice']),
+                ]
+            else:
+                assert kwargs['timeslice'] != 0, 'Timeslice for instructions other than NOOP should be > 0'
+                no_address = [OpCode.REF]  # PRE requires bank address
+                assert 'address' in kwargs or op_code in no_address, \
+                    '{} instruction requires `address`'.format(op_code.name)
+                self._parts = [
+                    (Decoder.OP_CODE,   op_code),
+                    (Decoder.TIMESLICE, kwargs['timeslice']),
+                    (Decoder.ADDRESS,   kwargs.get('address', 0)),
+                ]
+
+    def __call__(self, target, **kwargs):
+        if isinstance(target, OpCode):
+            return self.encode(target, **kwargs)
+        elif isinstance(target, self.I):
+            assert len(kwargs) == 0, 'No kwargs expected for Encoder.I'
+            return self.encode_spec(target)
+        elif hasattr(target, '__iter__'):
+            assert len(kwargs) == 0, 'No kwargs expected for iterable'
+            return self.encode_payload(target)
+        raise TypeError('One of the following is expected: OpCode+kwargs, Encoder.I, list[Encoder.I]')
+
+    def encode(self, op_code, **kwargs):
+        return self.encode_spec(self.I(op_code, **kwargs))
+
+    def encode_spec(self, spec):
+        assert isinstance(spec, self.I)
         instr = 0
         n = 0
-        for width, val in parts:
+        for width, val in spec._parts:
             mask = 2**width - 1
             instr |= (val & mask) << n
             n += width
         return instr
+
+    def encode_payload(self, payload):
+        return [self.encode_spec(i) for i in payload]
 
     def address(self, *, rank=None, bank=0, row=None, col=None):
         assert not (row is not None and col is not None)
@@ -277,8 +318,8 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         )
         self.fsm.act("RUN",
             dfi_sel.eq(1),
-            # Always execute the whole program
-            If(self.program_counter == mem_payload.depth - 1,
+            # Terminate after executing the whole program or when STOP instruction is encountered
+            If((self.program_counter == mem_payload.depth - 1) | decoder.stop,
                 NextState("READY")
             ),
             # Execute instruction
@@ -296,11 +337,12 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
                ),
             ).Else(
                 # DFI instruction
-                If(decoder.timeslice == 0,
+                # Timeslice=0 should be illegal but we still consider it as =1
+                If((decoder.timeslice == 0) | (decoder.timeslice == 1),
                     NextValue(self.program_counter, self.program_counter + 1)
                 ).Else(
                     # Wait in idle loop after sending the command
-                    NextValue(self.idle_counter, decoder.timeslice - 1),
+                    NextValue(self.idle_counter, decoder.timeslice - 2),
                     NextState("IDLE"),
                 ),
                 # Send DFI command
