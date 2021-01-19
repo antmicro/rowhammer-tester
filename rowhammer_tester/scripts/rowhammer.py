@@ -55,7 +55,7 @@ def encode_one_loop(*, unrolled, rolled, row_sequence, timings, encoder,
     assert jump_target < 2**Decoder.LOOP_JUMP
     payload.append(encoder.I(OpCode.LOOP, count=rolled, jump=jump_target))
 
-    return local_refreshes * rolled
+    return local_refreshes * (rolled + 1)
 
 def encode_long_loop(*, unrolled, rolled, row_sequence, timings, encoder,
         bank, payload, refresh=False, verbose=True):
@@ -71,6 +71,8 @@ def encode_long_loop(*, unrolled, rolled, row_sequence, timings, encoder,
            loop_count = ceil(rolled) % (count_max + 1)
            if loop_count == 0:
                loop_count = count_max;
+           else:
+               loop_count -= 1
         else:
             loop_count = count_max;
 
