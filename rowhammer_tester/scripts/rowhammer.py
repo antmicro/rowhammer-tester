@@ -8,24 +8,9 @@ from math import ceil
 from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
 from rowhammer_tester.scripts.utils import (
     memfill, memcheck, memwrite, DRAMAddressConverter, litex_server, RemoteClient,
-    get_litedram_settings, get_generated_defs)
+    get_litedram_settings, get_generated_defs, execute_payload, get_expected_execution_cycles)
 
 ################################################################################
-
-def get_expected_execution_cycles(payload):
-    cycles = 0
-    for i, instr in enumerate(payload):
-        cycles += 1
-        if instr.op_code == OpCode.NOOP and instr.timeslice == 0:  # STOP
-            break
-        elif instr.op_code == OpCode.LOOP:
-            # there should be no STOP or LOOP instructions inside loop body
-            body = payload[i - instr.jump:i]
-            cycles += instr.count * sum(ii.timeslice for ii in body)
-        else:
-            # -1 because we've already included 1 cycle for this instruction
-            cycles += instr.timeslice - 1
-    return cycles
 
 # returns the number of refreshes issued
 def encode_one_loop(*, unrolled, rolled, row_sequence, timings, encoder, bank, refresh_op, payload):
@@ -316,21 +301,7 @@ class RowHammer:
             sys_clk_freq     = sys_clk_freq,
         )
 
-        print('\nTransferring the payload ...')
-        memwrite(self.wb, payload, base=self.wb.mems.payload.base)
-
-        def ready():
-            status = self.wb.regs.payload_executor_status.read()
-            return (status & 1) != 0
-
-        print('\nExecuting ...')
-        assert ready()
-        start = time.time()
-        self.wb.regs.payload_executor_start.write(1)
-        while not ready():
-            time.sleep(0.001)
-        elapsed = time.time() - start
-        print('Time taken: {:.3f} ms\n'.format(elapsed * 1e3))
+        execute_payload(self.wb, payload)
 
 ################################################################################
 
