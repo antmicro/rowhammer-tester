@@ -419,12 +419,7 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     return errors
 
 # Inversion_tuple has two elements: divisor and mask
-def setup_inverters(wb, inversion_tuple):
-    divisor, mask = 0, 0
-    if inversion_tuple:
-        divisor, mask = inversion_tuple
-        divisor = int(divisor, 0)
-        mask = int(mask, 0)
+def setup_inverters(wb, divisor, mask):
     assert (divisor & (divisor - 1)) == 0, 'Divisor must be power of 2'
     wb.regs.writer_inverter_divisor_mask.write(divisor - 1)
     wb.regs.reader_inverter_divisor_mask.write(divisor - 1)
@@ -462,6 +457,13 @@ def execute_payload(wb, payload):
         time.sleep(0.001)
     elapsed = time.time() - start
     print('Time taken: {:.3f} ms\n'.format(elapsed * 1e3))
+
+def validate_keys(config_dict, valid_keys_set):
+    for key in config_dict:
+        if not key in valid_keys_set:
+            print("Invalid key: {}".format(key))
+            return False
+        return True
 
 # ###############################################################################
 
