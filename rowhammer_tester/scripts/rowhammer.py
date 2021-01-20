@@ -7,7 +7,8 @@ import argparse
 from rowhammer_tester.scripts.utils import (
     memfill, memcheck, memwrite, DRAMAddressConverter, litex_server, RemoteClient,
     get_litedram_settings, get_generated_defs, execute_payload)
-from rowhammer_tester.scripts.row_list_payload_generator import (generate_payload_from_row_list)
+from rowhammer_tester.scripts.playbook.payload_generators.row_list import (
+    generate_payload_from_row_list)
 
 ################################################################################
 

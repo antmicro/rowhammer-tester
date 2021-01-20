@@ -83,7 +83,12 @@ class HwRowHammer(RowHammer):
         return dict(row_errors)
 
     def run(self, row_pairs, pattern_generator, read_count, row_progress=16, verify_initial=True):
-        setup_inverters(self.wb, self.data_inversion)
+        divisor, mask = 0, 0
+        if self.data_inversion:
+            divisor, mask = self.data_inversion
+            divisor = int(divisor, 0)
+            mask = int(mask, 0)
+        setup_inverters(self.wb, divisor, mask)
 
         print('\nPreparing ...')
         row_pattern = pattern_generator([self.rows[0]])[0]
