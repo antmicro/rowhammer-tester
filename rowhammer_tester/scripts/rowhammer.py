@@ -27,6 +27,71 @@ def get_expected_execution_cycles(payload):
             cycles += instr.timeslice - 1
     return cycles
 
+# returns the number of refreshes issued
+def encode_one_loop(*, unrolled, rolled, row_sequence, timings, encoder,
+        bank, refresh_op, payload, refresh=False, verbose=True):
+    tras = timings.tRAS
+    trp = timings.tRP
+    trefi = timings.tREFI
+    trfc = timings.tRFC
+    local_refreshes = 1
+    payload.append(encoder.I(refresh_op, timeslice=trfc))
+    # Accumulate an extra cycle for the jump at the end to be conservative
+    accum = trfc + 1
+    for idx in range(unrolled):
+        for row in row_sequence:
+            if accum + tras + trp > trefi:
+                payload.append(encoder.I(refresh_op, timeslice=trfc))
+                # Invariant: time between the beginning of two refreshes
+                # is is less than tREFI.
+                accum = trfc
+                local_refreshes += 1
+            accum += tras + trp
+            payload.extend([
+                encoder.I(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=bank, row=row)),
+                encoder.I(OpCode.PRE,  timeslice=trp, address=encoder.address(col=1 << 10)),  # all
+            ])
+    jump_target = 2 * unrolled * len(row_sequence) + local_refreshes
+    assert jump_target < 2**Decoder.LOOP_JUMP
+    payload.append(encoder.I(OpCode.LOOP, count=rolled, jump=jump_target))
+
+    return local_refreshes * (rolled + 1)
+
+def encode_long_loop(*, unrolled, rolled, row_sequence, timings, encoder,
+        bank, payload, refresh=False, verbose=True):
+    refreshes = 0
+    # fill payload so that we have >= desired read_count
+    count_max = 2**Decoder.LOOP_COUNT - 1
+    n_loops = ceil(rolled / (count_max + 1))
+
+    refresh_op = OpCode.REF if refresh else OpCode.NOOP
+
+    for outer_idx in range(n_loops):
+        if outer_idx == 0:
+           loop_count = ceil(rolled) % (count_max + 1)
+           if loop_count == 0:
+               loop_count = count_max;
+           else:
+               loop_count -= 1
+        else:
+            loop_count = count_max;
+
+        refreshes += encode_one_loop(unrolled=unrolled, rolled=loop_count,
+                    row_sequence=row_sequence, timings=timings, encoder=encoder,
+                    bank=bank, refresh_op=refresh_op, payload=payload, refresh=refresh,
+                    verbose=verbose)
+
+    return refreshes
+
+
+def least_common_multiple(x, y):
+    gcd = x
+    rem = y
+    while (rem):
+        gcd, rem = rem, gcd % rem
+
+    return (x*y) // gcd
+
 def generate_row_hammer_payload(*,
         read_count, row_sequence, timings, bankbits, bank, payload_mem_size,
         refresh=False, verbose=True, sys_clk_freq=None):
@@ -41,52 +106,36 @@ def generate_row_hammer_payload(*,
         for t in ['tRAS', 'tRP', 'tREFI', 'tRFC']:
             print('  {} = {}'.format(t, getattr(timings, t)))
 
+    acts_per_interval = (trefi - trfc) // (trp + tras)
+    max_acts_in_loop = (2**Decoder.LOOP_JUMP - 1) // 2
+    repeatable_unit = min(least_common_multiple(acts_per_interval,
+                          len(row_sequence)), max_acts_in_loop)
+    assert repeatable_unit >= len(row_sequence)
+    repetitions = repeatable_unit // len(row_sequence)
+    print( "Repeatable unit: {}".format(repeatable_unit))
+    print( "Repetitions: {}".format(repetitions))
+    read_count_quotient = read_count // repetitions
+    read_count_remainder = read_count % repetitions
+
     # TODO: improve synchronization when connecting/disconnecting memory controller
     payload = [
         encoder.I(OpCode.NOOP, timeslice=30)
     ]
 
-    # fill payload so that we have >= desired read_count
-    count_max = 2**Decoder.LOOP_COUNT - 1
-    n_loops = ceil(read_count / (count_max + 1))
-
-    assert len(row_sequence) * 2 < 2**Decoder.LOOP_JUMP
-
-    refresh_op = OpCode.REF if refresh else OpCode.NOOP
-
-    refreshes = 0
-    for outer_idx in range(n_loops):
-        local_refreshes = 1
-        payload.append(encoder.I(refresh_op, timeslice=trfc))
-        accum = trfc
-        for row in row_sequence:
-            if accum + tras + trp > trefi:
-                payload.append(encoder.I(refresh_op, timeslice=trfc))
-                # Invariant: time between the beginning of two refreshes
-                # is is less than tREFI.
-                accum = trfc
-                local_refreshes += 1
-            accum += tras + trp
-            payload.extend([
-                encoder.I(OpCode.ACT,  timeslice=tras, address=encoder.address(bank=bank, row=row)),
-                encoder.I(OpCode.PRE,  timeslice=trp, address=encoder.address(col=1 << 10)),  # all
-            ])
-        if outer_idx == 0:
-            loop_count = ceil(read_count) % (count_max + 1)
-        else:
-            loop_count = count_max
-        refreshes += local_refreshes * loop_count
-        jump_target = 2*len(row_sequence) + 1
-        payload.append(encoder.I(OpCode.LOOP, count=loop_count, jump=jump_target))
+    refreshes = encode_long_loop(unrolled=repetitions, rolled=read_count_quotient,
+            row_sequence=row_sequence, timings=timings, encoder=encoder, bank=bank, payload=payload,
+           refresh=refresh, verbose=verbose)
+    refreshes += encode_long_loop(unrolled=1, rolled=read_count_remainder,
+            row_sequence=row_sequence, timings=timings, encoder=encoder, bank=bank, payload=payload,
+           refresh=refresh, verbose=verbose)
 
     payload.append(encoder.I(OpCode.NOOP, timeslice=30))  # FIXME: remove when control synchronization is ready
     payload.append(encoder.I(OpCode.NOOP, timeslice=0))  # STOP
 
     if verbose:
-        toggle_count = (count_max + 1) * n_loops
         expected_cycles = get_expected_execution_cycles(payload)
         print('  Payload size = {:5.2f}KB / {:5.2f}KB'.format(4*len(payload)/2**10, payload_mem_size/2**10))
-        count = '{:.3f}M'.format(toggle_count/1e6) if toggle_count > 1e6 else '{:.3f}K'.format(toggle_count/1e3)
+        count = '{:.3f}M'.format(read_count/1e6) if read_count > 1e6 else '{:.3f}K'.format(read_count/1e3)
         print('  Payload per-row toggle count = {}  x{} rows'.format(count, len(row_sequence)))
         print('  Payload refreshes (if enabled) = {}'.format(refreshes))
         time = ''
