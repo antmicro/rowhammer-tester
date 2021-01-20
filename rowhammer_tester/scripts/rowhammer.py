@@ -28,8 +28,7 @@ def get_expected_execution_cycles(payload):
     return cycles
 
 # returns the number of refreshes issued
-def encode_one_loop(*, unrolled, rolled, row_sequence, timings, encoder,
-        bank, refresh_op, payload, refresh=False, verbose=True):
+def encode_one_loop(*, unrolled, rolled, row_sequence, timings, encoder, bank, refresh_op, payload):
     tras = timings.tRAS
     trp = timings.tRP
     trefi = timings.tREFI
@@ -57,14 +56,11 @@ def encode_one_loop(*, unrolled, rolled, row_sequence, timings, encoder,
 
     return local_refreshes * (rolled + 1)
 
-def encode_long_loop(*, unrolled, rolled, row_sequence, timings, encoder,
-        bank, payload, refresh=False, verbose=True):
+def encode_long_loop(*, unrolled, rolled, **kwargs):
     refreshes = 0
     # fill payload so that we have >= desired read_count
     count_max = 2**Decoder.LOOP_COUNT - 1
     n_loops = ceil(rolled / (count_max + 1))
-
-    refresh_op = OpCode.REF if refresh else OpCode.NOOP
 
     for outer_idx in range(n_loops):
         if outer_idx == 0:
@@ -76,10 +72,7 @@ def encode_long_loop(*, unrolled, rolled, row_sequence, timings, encoder,
         else:
             loop_count = count_max;
 
-        refreshes += encode_one_loop(unrolled=unrolled, rolled=loop_count,
-                    row_sequence=row_sequence, timings=timings, encoder=encoder,
-                    bank=bank, refresh_op=refresh_op, payload=payload, refresh=refresh,
-                    verbose=verbose)
+        refreshes += encode_one_loop(unrolled=unrolled, rolled=loop_count, **kwargs)
 
     return refreshes
 
@@ -112,24 +105,28 @@ def generate_row_hammer_payload(*,
                           len(row_sequence)), max_acts_in_loop)
     assert repeatable_unit >= len(row_sequence)
     repetitions = repeatable_unit // len(row_sequence)
-    print( "Repeatable unit: {}".format(repeatable_unit))
-    print( "Repetitions: {}".format(repetitions))
+    print("  Repeatable unit: {}".format(repeatable_unit))
+    print("  Repetitions: {}".format(repetitions))
     read_count_quotient = read_count // repetitions
     read_count_remainder = read_count % repetitions
 
-    # TODO: improve synchronization when connecting/disconnecting memory controller
+    refresh_op = OpCode.REF if refresh else OpCode.NOOP
+
+    # First instruction after mode transition should be a NOOP that waits until tRFC is satisfied
+    # As we include REF as first instruction we actually wait tREFI here
     payload = [
-        encoder.I(OpCode.NOOP, timeslice=30)
+        encoder.I(OpCode.NOOP, timeslice=max(1, trfc-2, trefi-2))
     ]
 
     refreshes = encode_long_loop(unrolled=repetitions, rolled=read_count_quotient,
-            row_sequence=row_sequence, timings=timings, encoder=encoder, bank=bank, payload=payload,
-           refresh=refresh, verbose=verbose)
+            row_sequence=row_sequence, timings=timings, encoder=encoder, bank=bank,
+            refresh_op=refresh_op, payload=payload)
     refreshes += encode_long_loop(unrolled=1, rolled=read_count_remainder,
-            row_sequence=row_sequence, timings=timings, encoder=encoder, bank=bank, payload=payload,
-           refresh=refresh, verbose=verbose)
+            row_sequence=row_sequence, timings=timings, encoder=encoder, bank=bank,
+            refresh_op=refresh_op, payload=payload)
 
-    payload.append(encoder.I(OpCode.NOOP, timeslice=30))  # FIXME: remove when control synchronization is ready
+    # MC refresh timer is reset on mode transition, so issue REF now, this way it will be in sync with MC
+    payload.append(encoder.I(refresh_op,  timeslice=1))
     payload.append(encoder.I(OpCode.NOOP, timeslice=0))  # STOP
 
     if verbose:
@@ -137,7 +134,7 @@ def generate_row_hammer_payload(*,
         print('  Payload size = {:5.2f}KB / {:5.2f}KB'.format(4*len(payload)/2**10, payload_mem_size/2**10))
         count = '{:.3f}M'.format(read_count/1e6) if read_count > 1e6 else '{:.3f}K'.format(read_count/1e3)
         print('  Payload per-row toggle count = {}  x{} rows'.format(count, len(row_sequence)))
-        print('  Payload refreshes (if enabled) = {}'.format(refreshes))
+        print('  Payload refreshes (if enabled) = {} ({})'.format(refreshes, 'enabled' if refresh else 'disabled'))
         time = ''
         if sys_clk_freq is not None:
             time = ' = {:.3f} ms'.format(1/sys_clk_freq * expected_cycles * 1e3)
