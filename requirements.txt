@@ -9,3 +9,4 @@
 -e third_party/litex-boards
 # vexriscv cpu
 git+https://github.com/litex-hub/pythondata-cpu-vexriscv.git
+yapf

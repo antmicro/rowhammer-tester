@@ -20,6 +20,8 @@ PATH := $(PWD)/bin:$(PATH)
 PATH := $(PWD)/third_party/verilator/image/bin:$(PATH)
 export PATH
 
+PYTHON_FILES := $(shell find $(SOURCEDIR) -name '*.py')
+
 ### Main targets ###
 
 all:
@@ -65,6 +67,9 @@ protoc: FORCE
 
 env: venv/bin/activate
 	@env bash --init-file "$(PWD)/venv/bin/activate"
+
+format: FORCE
+	@yapf -i --exclude "third_party/*" $(PYTHON_FILES)
 
 ### Dependencies ###
 
