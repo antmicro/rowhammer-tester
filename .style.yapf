@@ -6,3 +6,4 @@ split_complex_comprehension = True
 split_penalty_comprehension = 2100
 split_before_dot = True
 join_multiple_lines = False
+column_limit = 100
