@@ -12,13 +12,11 @@ from rowhammer_tester.scripts.utils import memdump, memread, memwrite, DRAMAddre
 encoder = Encoder(bankbits=3)
 PAYLOAD = [
     encoder(OpCode.NOOP, timeslice=50),
-
-    encoder(OpCode.ACT,  timeslice=20, address=encoder.address(bank=1, row=100)),
+    encoder(OpCode.ACT, timeslice=20, address=encoder.address(bank=1, row=100)),
     encoder(OpCode.READ, timeslice=20, address=encoder.address(bank=1, col=13)),
     encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=1, col=20)),
-    encoder(OpCode.PRE,  timeslice=20, address=encoder.address(bank=1)),
-
-    encoder(OpCode.ACT,  timeslice=20, address=encoder.address(bank=0, row=100)),
+    encoder(OpCode.PRE, timeslice=20, address=encoder.address(bank=1)),
+    encoder(OpCode.ACT, timeslice=20, address=encoder.address(bank=0, row=100)),
     encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=200)),
     encoder(OpCode.LOOP, count=8 - 1, jump=1),  # to READ col=200
     encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=208)),
@@ -29,21 +27,21 @@ PAYLOAD = [
     encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=248)),
     encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=256)),
     encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=264)),
-    encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=300 | (1 << 10))),  # auto precharge
-
-    encoder(OpCode.ACT,  timeslice=60, address=encoder.address(bank=2, row=150)),
-
-    encoder(OpCode.PRE,  timeslice=20, address=encoder.address(col=1 << 10)),  # all
-    encoder(OpCode.REF,  timeslice=200),
-    encoder(OpCode.REF,  timeslice=200),
-
+    encoder(OpCode.READ, timeslice=30,
+            address=encoder.address(bank=0, col=300 | (1 << 10))),  # auto precharge
+    encoder(OpCode.ACT, timeslice=60, address=encoder.address(bank=2, row=150)),
+    encoder(OpCode.PRE, timeslice=20, address=encoder.address(col=1 << 10)),  # all
+    encoder(OpCode.REF, timeslice=200),
+    encoder(OpCode.REF, timeslice=200),
     encoder(OpCode.NOOP, timeslice=50),
 ]
+
 
 def byte_gen():
     while True:
         for i in range(16):
-            yield 16*i + i  # 0x00, 0x11, 0x22, ...
+            yield 16 * i + i  # 0x00, 0x11, 0x22, ...
+
 
 def word_gen(offset):
     gen = byte_gen()
@@ -58,11 +56,12 @@ def word_gen(offset):
         for _ in range(offset):
             next(gen)
 
+
 def execute(wb):
     depth = wb.mems.payload.size // 4  # bytes to 32-bit instructions
 
     program = [w for w in PAYLOAD]
-    program += [0] * (wb.mems.payload.size//4 - len(program))  # fill with NOOPs
+    program += [0] * (wb.mems.payload.size // 4 - len(program))  # fill with NOOPs
 
     # Write some data to the column we are reading to check that scratchpad gets filled
     converter = DRAMAddressConverter.load()
@@ -85,8 +84,9 @@ def execute(wb):
     print('Finished')
 
     print('\nScratchpad contents:')
-    scratchpad = memread(wb, n=512//4, base=wb.mems.scratchpad.base)
+    scratchpad = memread(wb, n=512 // 4, base=wb.mems.scratchpad.base)
     memdump(scratchpad, base=0)
+
 
 if __name__ == "__main__":
     wb = RemoteClient()

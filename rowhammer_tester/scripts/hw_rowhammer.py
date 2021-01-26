@@ -7,16 +7,18 @@ from math import ceil
 from collections import defaultdict
 
 from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
-from rowhammer_tester.scripts.utils import (hw_memset, hw_memtest, DRAMAddressConverter,
-                                            litex_server, memwrite, RemoteClient)
+from rowhammer_tester.scripts.utils import (
+    hw_memset, hw_memtest, DRAMAddressConverter, litex_server, memwrite, RemoteClient)
 from rowhammer_tester.scripts.rowhammer import RowHammer, main
 
 ################################################################################
 
+
 class HwRowHammer(RowHammer):
     def attack(self, row_tuple, read_count, progress_header=''):
-        addresses = [self.converter.encode_dma(bank=self.bank, col=self.column, row=r)
-                     for r in row_tuple]
+        addresses = [
+            self.converter.encode_dma(bank=self.bank, col=self.column, row=r) for r in row_tuple
+        ]
         row_strw = len(str(2**self.settings.geom.rowbits - 1))
 
         # FIXME: ------------------ move to utils ----------------------------
@@ -44,12 +46,13 @@ class HwRowHammer(RowHammer):
 
         self.wb.regs.reader_start.write(1)
         self.wb.regs.reader_start.write(0)
+
         # FIXME: --------------------------- move to utils ------------------
 
         def progress(count):
             s = '  {}'.format(progress_header + ' ' if progress_header else '')
             s += 'Rows = {}, Count = {:5.2f}M / {:5.2f}M'.format(
-                row_tuple, count/1e6, read_count/1e6, n=row_strw)
+                row_tuple, count / 1e6, read_count / 1e6, n=row_strw)
             print(s, end='  \r')
 
         while True:
@@ -74,7 +77,7 @@ class HwRowHammer(RowHammer):
             addr = self.wb.mems.main_ram.base + e.offset * dma_data_bytes
             bank, row, col = self.converter.decode_bus(addr)
             base_addr = min(self.addresses_per_row(row))
-            row_errors[row].append(((addr - base_addr)//4, e.data, e.expected))
+            row_errors[row].append(((addr - base_addr) // 4, e.data, e.expected))
 
         return dict(row_errors)
 
@@ -134,6 +137,7 @@ class HwRowHammer(RowHammer):
             print()
             self.display_errors(errors)
             return
+
 
 ################################################################################
 

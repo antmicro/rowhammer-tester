@@ -14,6 +14,7 @@ from migen import log2_int
 
 # ###########################################################################
 
+
 def discover_generated_files_dir():
     # Search for defs.csv file that should have been generated in build directory.
     # Assume that we are building in repo root.
@@ -37,6 +38,7 @@ def discover_generated_files_dir():
     sys.path.append(gen_dir)
     return gen_dir
 
+
 GENERATED_DIR = discover_generated_files_dir()
 print('Using generated target files in: {}'.format(os.path.relpath(GENERATED_DIR)))
 
@@ -48,17 +50,21 @@ try:
 except ModuleNotFoundError:
     print('WARNING: sdram_init not loaded')
 
+
 def get_generated_file(name):
     # For getting csr.csv/analyzer.csv
     filename = os.path.join(GENERATED_DIR, name)
     if not os.path.isfile(filename):
-        raise ImportError('Generated file "{}" not found in directory "{}"'.format(name, GENERATED_DIR))
+        raise ImportError(
+            'Generated file "{}" not found in directory "{}"'.format(name, GENERATED_DIR))
     return filename
+
 
 def get_generated_defs():
     with open(get_generated_file('defs.csv'), newline='') as f:
         reader = csv.reader(f)
         return {name: value for name, value in reader}
+
 
 class ReadonlySettings:
     def __init__(self, s):
@@ -70,13 +76,16 @@ class ReadonlySettings:
             return ReadonlySettings(val)
         return val
 
+
 def get_litedram_settings():
     with open(get_generated_file('litedram_settings.json')) as f:
         return ReadonlySettings(json.load(f))
 
+
 def RemoteClient(*args, **kwargs):
     from litex import RemoteClient as _RemoteClient
     return _RemoteClient(csr_csv=get_generated_file('csr.csv'), *args, **kwargs)
+
 
 def litex_server():
     from litex.tools.litex_server import RemoteServer
@@ -87,17 +96,21 @@ def litex_server():
     server.open()
     server.start(4)
 
+
 # ###########################################################################
 
+
 def sdram_software_control(wb):
-    wb.regs.sdram_dfii_control.write(dfii_control_cke|dfii_control_odt|dfii_control_reset_n)
+    wb.regs.sdram_dfii_control.write(dfii_control_cke | dfii_control_odt | dfii_control_reset_n)
     if hasattr(wb.regs, 'ddrphy_en_vtc'):
         wb.regs.ddrphy_en_vtc.write(0)
+
 
 def sdram_hardware_control(wb):
     wb.regs.sdram_dfii_control.write(dfii_control_sel)
     if hasattr(wb.regs, 'ddrphy_en_vtc'):
         wb.regs.ddrphy_en_vtc.write(1)
+
 
 def sdram_init(wb):
     sdram_software_control(wb)
@@ -110,7 +123,8 @@ def sdram_init(wb):
         n = 0
         while True:
             line = f.readline()
-            if not line: break
+            if not line:
+                break
             line = line.strip().replace(' ', '')
             if len(line) and line[0] == '(':
                 if line.find('_control_') > 0:
@@ -131,41 +145,49 @@ def sdram_init(wb):
 
     sdram_hardware_control(wb)
 
+
 # ###########################################################################
+
 
 def compare(val, ref, fmt, nbytes=4):
     assert fmt in ["bin", "hex"]
     if fmt == "hex":
-        print("0x{:0{n}x} {cmp} 0x{:0{n}x}".format(
-            val, ref, n=nbytes*2, cmp="==" if val == ref else "!="))
+        print(
+            "0x{:0{n}x} {cmp} 0x{:0{n}x}".format(
+                val, ref, n=nbytes * 2, cmp="==" if val == ref else "!="))
     if fmt == "bin":
-        print("{:0{n}b} xor {:0{n}b} = {:0{n}b}".format(
-            val, ref, val ^ ref, n=nbytes*8))
+        print("{:0{n}b} xor {:0{n}b} = {:0{n}b}".format(val, ref, val ^ ref, n=nbytes * 8))
+
 
 def memwrite(wb, data, base=0x40000000, burst=0xff):
     for i in range(0, len(data), burst):
-        wb.write(base + 4*i, data[i:i+burst])
+        wb.write(base + 4 * i, data[i:i + burst])
+
 
 def memread(wb, n, base=0x40000000, burst=0xff):
     data = []
     for i in range(0, n, burst):
-        data += wb.read(base + 4*i, min(burst, n - i))
+        data += wb.read(base + 4 * i, min(burst, n - i))
     return data
+
 
 def memfill(wb, n, pattern=0xaaaaaaaa, **kwargs):
     memwrite(wb, [pattern] * n, **kwargs)
+
 
 def memcheck(wb, n, pattern=0xaaaaaaaa, **kwargs):
     data = memread(wb, n, **kwargs)
     errors = [(i, w) for i, w in enumerate(data) if w != pattern]
     return errors
 
+
 def memspeed(wb, n, **kwargs):
     def measure(fun, name):
         start = time.time()
         ret = fun(wb, n, **kwargs)
         elapsed = time.time() - start
-        print('{:5} speed: {:6.2f} KB/s ({:.1f} sec)'.format(name, (n*4)/elapsed / 1e3, elapsed))
+        print(
+            '{:5} speed: {:6.2f} KB/s ({:.1f} sec)'.format(name, (n * 4) / elapsed / 1e3, elapsed))
         return ret
 
     measure(memfill, 'Write')
@@ -173,14 +195,17 @@ def memspeed(wb, n, **kwargs):
     errors = [(i, w) for i, w in enumerate(data) if w != kwargs.get('pattern', 0xaaaaaaaa)]
     assert len(errors) == 0, len(errors)
 
+
 def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
+
 def word2byte(words, word_size=4):
     for w in words:
         for i in range(word_size):
-            yield (w & (0xff << 8*i)) >> 8*i
+            yield (w & (0xff << 8 * i)) >> 8 * i
+
 
 def memdump(data, base=0x40000000, chunk_len=16):
     def tochar(val):
@@ -188,15 +213,26 @@ def memdump(data, base=0x40000000, chunk_len=16):
 
     data_bytes = list(word2byte(data))
     for i, chunk in enumerate(chunks(data_bytes, chunk_len)):
-        b = " ".join("{:2}".format('{:02x}'.format(chunk[i]) if i < len(chunk) else '') for i in range(chunk_len))
+        b = " ".join(
+            "{:2}".format('{:02x}'.format(chunk[i]) if i < len(chunk) else '')
+            for i in range(chunk_len))
         c = "".join(tochar(chunk[i]) if i < len(chunk) else ' ' for i in range(chunk_len))
-        print("0x{addr:08x}:  {bytes}  {chars}".format(addr=base + chunk_len*i, bytes=b, chars=c))
+        print("0x{addr:08x}:  {bytes}  {chars}".format(addr=base + chunk_len * i, bytes=b, chars=c))
+
 
 ################################################################################
 
+
 class DRAMAddressConverter:
-    def __init__(self, *, colbits, rowbits, bankbits, address_align, dram_port_width,
-                 address_mapping='ROW_BANK_COL'):
+    def __init__(
+            self,
+            *,
+            colbits,
+            rowbits,
+            bankbits,
+            address_align,
+            dram_port_width,
+            address_mapping='ROW_BANK_COL'):
         self.colbits = colbits
         self.rowbits = rowbits
         self.bankbits = bankbits
@@ -215,12 +251,12 @@ class DRAMAddressConverter:
             burst_length = burst_lengths[settings.phy.memtype]
         address_align = log2_int(burst_length)
         return cls(
-            colbits         = settings.geom.colbits,
-            rowbits         = settings.geom.rowbits,
-            bankbits        = settings.geom.bankbits,
-            address_align   = address_align,
-            address_mapping = settings.address_mapping,
-            dram_port_width = settings.phy.nphases * settings.phy.dfi_databits,
+            colbits=settings.geom.colbits,
+            rowbits=settings.geom.rowbits,
+            bankbits=settings.geom.bankbits,
+            address_align=address_align,
+            address_mapping=settings.address_mapping,
+            dram_port_width=settings.phy.nphases * settings.phy.dfi_databits,
         )
 
     def _encode(self, bank, row, col):
@@ -233,15 +269,16 @@ class DRAMAddressConverter:
             assert masked == value, "Value larger than value bit-width"
             return masked << offset
 
-        return reduce(or_, [
-            masked(row,  self.rowbits,  self.bankbits + self.colbits),
-            masked(bank, self.bankbits, self.colbits),
-            masked(col,  self.colbits,  0),
-        ])
+        return reduce(
+            or_, [
+                masked(row, self.rowbits, self.bankbits + self.colbits),
+                masked(bank, self.bankbits, self.colbits),
+                masked(col, self.colbits, 0),
+            ])
 
     def _get_bus_shift(self, bus_width):
-        addr_shift = log2_int(self.dram_port_width//bus_width)
-        bus_shift = log2_int(bus_width//8)
+        addr_shift = log2_int(self.dram_port_width // bus_width)
+        bus_shift = log2_int(bus_width // 8)
         shift = addr_shift + bus_shift - self.address_align
         return shift
 
@@ -281,19 +318,21 @@ class DRAMAddressConverter:
     def decode_dma(self, address):
         return self._decode(address << self.address_align)
 
+
 # ######################### HW (accel) memory utils #############################
+
 
 def _progress(current, max, bar_w=40, last=False, name='Progress', opt=None):
     s = '{name}: [{bar:{bw}}] {cur:{n}} / {max:{n}}{opt}'.format(
-        name = name,
-        cur  = current,
-        max  = max,
-        n    = len(str(max)),
-        bar  = '=' * int(current/max * bar_w),
-        bw   = bar_w,
-        opt  = '' if opt is None else ' ({})'.format(opt)
-    )
+        name=name,
+        cur=current,
+        max=max,
+        n=len(str(max)),
+        bar='=' * int(current / max * bar_w),
+        bw=bar_w,
+        opt='' if opt is None else ' ({})'.format(opt))
     print(s + ' ', end='\n' if last else '\r')
+
 
 #
 # wb - remote handle
@@ -307,12 +346,14 @@ def hw_memset(wb, offset, size, patterns, dbg=False):
     nbytes = dma_data_width // 8
 
     assert size % nbytes == 0, 'DMA data width is {} bits'.format(dma_data_width)
-    assert len(patterns) == 1 # FIXME: Support more patterns
+    assert len(patterns) == 1  # FIXME: Support more patterns
 
     pattern = patterns[0] & 0xffffffff
 
     if dbg:
-        print('hw_memset: offset: 0x{:08x}, size: 0x{:08x}, pattern: 0x{:08x}'.format(offset, size, pattern))
+        print(
+            'hw_memset: offset: 0x{:08x}, size: 0x{:08x}, pattern: 0x{:08x}'.format(
+                offset, size, pattern))
 
     assert wb.regs.writer_ready.read() == 1
 
@@ -320,7 +361,7 @@ def hw_memset(wb, offset, size, patterns, dbg=False):
     wb.regs.writer_mem_mask.write(0xffffffff)
 
     # FIXME: Support more patterns
-    wb.write(wb.mems.pattern_data.base, [pattern] * (nbytes//4))  # pattern is 32-bit
+    wb.write(wb.mems.pattern_data.base, [pattern] * (nbytes // 4))  # pattern is 32-bit
     wb.write(wb.mems.pattern_addr.base, offset // nbytes)
     # Unmask just one pattern/offset (will always take data/addr from address 0)
     wb.regs.writer_data_mask.write(0x00000000)
@@ -336,11 +377,12 @@ def hw_memset(wb, offset, size, patterns, dbg=False):
         if wb.regs.writer_ready.read():
             break
         _progress(wb.regs.writer_done.read(), count)
-        time.sleep(10e-3) # 10 ms
+        time.sleep(10e-3)  # 10 ms
     _progress(wb.regs.writer_done.read(), count, last=True)
 
 
 BISTError = namedtuple('BISTError', ['offset', 'data', 'expected'])
+
 
 def hw_memtest(wb, offset, size, patterns, dbg=False):
     # we are limited to multiples of DMA data width
@@ -349,12 +391,14 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     nbytes = dma_data_width // 8
 
     assert size % nbytes == 0, 'DMA data width is {} bits'.format(dma_data_width)
-    assert len(patterns) == 1 # FIXME: Support more patterns
+    assert len(patterns) == 1  # FIXME: Support more patterns
 
     pattern = patterns[0] & 0xffffffff
 
     if dbg:
-        print('hw_memtest: offset: 0x{:08x}, size: 0x{:08x}, pattern: 0x{:08x}'.format(offset, size, pattern))
+        print(
+            'hw_memtest: offset: 0x{:08x}, size: 0x{:08x}, pattern: 0x{:08x}'.format(
+                offset, size, pattern))
 
     # Flush error fifo
     wb.regs.reader_skip_fifo.write(1)
@@ -368,7 +412,7 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     wb.regs.reader_mem_mask.write(0xffffffff)
 
     # FIXME: Support more patterns
-    wb.write(wb.mems.pattern_data.base, [pattern] * (nbytes//4))  # pattern is 32-bit
+    wb.write(wb.mems.pattern_data.base, [pattern] * (nbytes // 4))  # pattern is 32-bit
     wb.write(wb.mems.pattern_addr.base, offset // nbytes)
     # Unmask just one pattern/offset (will always take data/addr from address 0)
     wb.regs.reader_data_mask.write(0x00000000)
@@ -382,16 +426,18 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     errors = []
 
     def progress(last=False):
-        _progress(wb.regs.reader_done.read(), count, last=last, opt='Errors: {}'.format(len(errors)))
+        _progress(
+            wb.regs.reader_done.read(), count, last=last, opt='Errors: {}'.format(len(errors)))
 
     # Read unmatched offset
     def append_errors(wb, err):
         while wb.regs.reader_error_ready.read():
-            err.append(BISTError(
-                offset   = wb.regs.reader_error_offset.read(),
-                data     = wb.regs.reader_error_data.read(),
-                expected = wb.regs.reader_error_expected.read(),
-            ))
+            err.append(
+                BISTError(
+                    offset=wb.regs.reader_error_offset.read(),
+                    data=wb.regs.reader_error_data.read(),
+                    expected=wb.regs.reader_error_expected.read(),
+                ))
             wb.regs.reader_error_continue.write(1)
             progress()
 
@@ -402,7 +448,7 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
         append_errors(wb, errors)
         _progress(wb.regs.reader_done.read(), count)
         progress()
-        time.sleep(10e-3) # !0 ms
+        time.sleep(10e-3)  # !0 ms
     progress(last=True)
 
     # Make sure we read all errors

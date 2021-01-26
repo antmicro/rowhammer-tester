@@ -28,9 +28,7 @@ if __name__ == "__main__":
             print("WARNING: no trigger added!")
 
         analyzer.run(
-            offset = int(args.offset, 0),
-            length = None if args.length is None else int(args.length, 0)
-        )
+            offset=int(args.offset, 0), length=None if args.length is None else int(args.length, 0))
 
         analyzer.wait_done()
         analyzer.upload()

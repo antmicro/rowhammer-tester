@@ -8,28 +8,32 @@ import itertools
 import subprocess
 import statistics
 
+
 def ng(name, regex):
     'Constructs python regex named group'
     return r'(?P<{}>{})'.format(name, regex)
 
+
 class Command:
-    PATTERN = re.compile(''.join([
-        r'\[\s*{time}\s*ps\]',
-        r'\s+{cmd}',
-        r'\s+phase=\s*{phase}',
-        r'(\s+bank=\s*{bank})?',
-        r'(\s+row=\s*{row})?',
-        r'(\s+col=\s*{col})?',
-        r'(\s+apre=\s*{apre})?',
-    ]).format(
-        time  = ng('time', r'\d+'),
-        cmd   = ng('cmd', r'[A-Z]+'),
-        phase = ng('phase', r'\d+'),
-        bank  = ng('bank', r'(\d+|all)'),
-        row   = ng('row', r'\d+'),
-        col   = ng('col', r'\d+'),
-        apre  = ng('apre', r'[01]'),
-    ))
+    PATTERN = re.compile(
+        ''.join(
+            [
+                r'\[\s*{time}\s*ps\]',
+                r'\s+{cmd}',
+                r'\s+phase=\s*{phase}',
+                r'(\s+bank=\s*{bank})?',
+                r'(\s+row=\s*{row})?',
+                r'(\s+col=\s*{col})?',
+                r'(\s+apre=\s*{apre})?',
+            ]).format(
+                time=ng('time', r'\d+'),
+                cmd=ng('cmd', r'[A-Z]+'),
+                phase=ng('phase', r'\d+'),
+                bank=ng('bank', r'(\d+|all)'),
+                row=ng('row', r'\d+'),
+                col=ng('col', r'\d+'),
+                apre=ng('apre', r'[01]'),
+            ))
 
     def __init__(self, *, time, name, phase, bank, row, column, auto_precharge):
         self.time = time
@@ -46,20 +50,22 @@ class Command:
         if not match:
             return None
         return cls(
-            time = int(match['time']),
-            name = match['cmd'],
-            phase = int(match['phase']),
-            bank = int(match['bank']) if match['bank'] != 'all' else 'all',
-            row = int(match['row']) if match['row'] is not None else None,
-            column = int(match['col']) if match['col'] is not None else None,
-            auto_precharge = bool(match['apre']) if match['apre'] is not None else None,
+            time=int(match['time']),
+            name=match['cmd'],
+            phase=int(match['phase']),
+            bank=int(match['bank']) if match['bank'] != 'all' else 'all',
+            row=int(match['row']) if match['row'] is not None else None,
+            column=int(match['col']) if match['col'] is not None else None,
+            auto_precharge=bool(match['apre']) if match['apre'] is not None else None,
         )
+
 
 def parse_line(line):
     match = PATTERN.search(line)
     if not match:
         return None
     groups = match.groupdict()
+
 
 def run(argv, **kwargs):
     commands = []
@@ -71,13 +77,15 @@ def run(argv, **kwargs):
             if cmd is not None:
                 commands.append(cmd)
             if len(commands) % 100 == 0:
-                s = 'Commands: {:6}  Time: {:14} ps'.format(len(commands), commands[-1].time if len(commands) else 0)
-                print(s, end=4*' ' + '\r', flush=True)
+                s = 'Commands: {:6}  Time: {:14} ps'.format(
+                    len(commands), commands[-1].time if len(commands) else 0)
+                print(s, end=4 * ' ' + '\r', flush=True)
     except KeyboardInterrupt:
         print('\nReceived KeyboardInterrupt, killing the simulation ...')
         proc.kill()
 
     return commands
+
 
 def split(is_separator, iterable):
     'Split an iterable using the separator defined by `is_separator`'
@@ -85,11 +93,13 @@ def split(is_separator, iterable):
         if not is_sep:
             yield group
 
+
 def act_counts_between_refs(commands):
     groups = split(lambda cmd: cmd.name == 'REF', commands)
     act_groups = (filter(lambda cmd: cmd.name == 'ACT', g) for g in groups)
     act_counts = (sum(1 for _ in g) for g in act_groups)
     return act_counts
+
 
 def row_toggle_counts_between_refs(commands):
     groups = split(lambda cmd: cmd.name == 'REF', commands)
@@ -104,6 +114,7 @@ def row_toggle_counts_between_refs(commands):
                     last_row = cmd.row
         yield ntoggles
 
+
 def filter_counts(counts, min_len=2):
     # remove short groups (happen when dram just REFreshes periodically with REF+PRE)
     counts = filter(lambda c: c > min_len, counts)
@@ -113,7 +124,9 @@ def filter_counts(counts, min_len=2):
     counts.pop(-1)
     return counts
 
+
 # ##############################################################################
+
 
 def prepare_environ():
     # wrap sudo
@@ -123,6 +136,7 @@ def prepare_environ():
     # set python path
     python_libs = ['migen', 'litex', 'liteeth', 'liteiclink', 'litescope', 'litedram']
     os.environ['PYTHONPATH'] = ':'.join(os.path.join(script_dir, lib) for lib in python_libs)
+
 
 def print_stats(counts):
     counts = filter_counts(counts)
@@ -141,6 +155,7 @@ def print_stats(counts):
     print('ACTs per REF period = {:.3f} M'.format(per_period / 1e6))
     print('ACTs frequency = {:.2f} Mps'.format(freq / 1e6))
     print()
+
 
 if __name__ == "__main__":
     prepare_environ()
