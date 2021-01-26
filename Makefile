@@ -20,7 +20,7 @@ PATH := $(PWD)/bin:$(PATH)
 PATH := $(PWD)/third_party/verilator/image/bin:$(PATH)
 export PATH
 
-PYTHON_FILES := $(shell find $(SOURCEDIR) -name '*.py')
+PYTHON_FILES := $(shell find rowhammer_tester tests -name '*.py')
 
 ### Main targets ###
 
@@ -68,8 +68,13 @@ protoc: FORCE
 env: venv/bin/activate
 	@env bash --init-file "$(PWD)/venv/bin/activate"
 
+# Exclude directoires that use Migen, as it doesn't play well with autoformatting
 format: FORCE
-	@yapf -i --exclude "third_party/*" $(PYTHON_FILES)
+	@yapf -i \
+		--exclude "tests/*" \
+		--exclude "rowhammer_tester/gateware/*" \
+		--exclude "rowhammer_tester/targets/*" \
+		$(PYTHON_FILES)
 
 ### Dependencies ###
 
