@@ -1,0 +1,22 @@
+{
+	"inversion_divisor" : 2,
+	"inversion_mask" : "0b10",
+	"payload_generator" : "RowListPayloadGenerator",
+	"payload_generator_config" : {
+		"row_mapping" : "TypeARowMapping",
+		"row_generator" : "HalfDoubleRowGenerator",
+		"read_count" : 464,
+		"max_iteration" : 10,
+		"verbose" : true,
+		"refresh" : false,
+		"row_generator_config" : {
+			"nr_rows" : 2048,
+			"distance_one" : true,
+			"double_sided" : true,
+			"distance_two" : true,
+			"attack_rows_start" : 0,
+			"max_attack_row_idx" : 34,
+			"decoy_rows_start" : 37
+		}
+	}
+}

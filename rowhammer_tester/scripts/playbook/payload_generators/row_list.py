@@ -4,6 +4,7 @@ from rowhammer_tester.scripts.playbook.lib import generate_payload_from_row_list
 from rowhammer_tester.scripts.utils import validate_keys
 from rowhammer_tester.scripts.playbook.row_generators import RowGenerator
 from rowhammer_tester.scripts.playbook.row_generators.even_rows import EvenRowGenerator
+from rowhammer_tester.scripts.playbook.row_generators.half_double import HalfDoubleRowGenerator
 from rowhammer_tester.scripts.playbook.row_mappings import (
     RowMapping, TrivialRowMapping, TypeARowMapping, TypeBRowMapping)
 
