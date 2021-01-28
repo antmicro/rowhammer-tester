@@ -1,0 +1,27 @@
+name: check-format
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout litex-rowhammer-tester
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          submodules: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.6'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Check format
+        run: |
+          make format
+          test $(git status --porcelain | wc -l) -eq 0 || { git diff; false; }
