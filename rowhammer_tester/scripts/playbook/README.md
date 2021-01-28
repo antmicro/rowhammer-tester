@@ -1,10 +1,10 @@
 # Playbook
 
-*run_config.py* provides a mechanism to configure a variety of rowhammer related workloads that can be executed against the platform.  Each individual workload is represented by a payload generator.  This class generates the payload to send to the platform and processes the results.
+*playbook.py* provides a mechanism to configure a variety of rowhammer related workloads that can be executed against the platform.  Each individual workload is represented by a payload generator.  This class generates the payload to send to the platform and processes the results.
 
 The configuration files are represented as python dictionaries.  See examples provided.
 
-Here are the parameters currently supported by *run_config*:
+Here are the parameters currently supported by *playbook*:
 
 *inversion_divisor* and *inversion_mask*
 
