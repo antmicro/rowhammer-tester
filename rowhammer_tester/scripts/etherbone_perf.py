@@ -7,6 +7,7 @@ import argparse
 
 from rowhammer_tester.scripts.utils import memread, memwrite, RemoteClient
 
+
 def run(wb, rw, n, *, burst, profile=True):
     datas = list(range(n))
 
@@ -31,7 +32,8 @@ def run(wb, rw, n, *, burst, profile=True):
             else:
                 memwrite(wb, datas, burst=burst)
 
-    measure(runner, 4*n)
+    measure(runner, 4 * n)
+
 
 def measure(runner, nbytes):
     start = time.time()

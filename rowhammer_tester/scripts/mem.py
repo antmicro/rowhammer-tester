@@ -10,6 +10,7 @@ from rowhammer_tester.scripts.utils import *
 from rowhammer_tester.scripts.read_level import read_level, Settings
 from rowhammer_tester.scripts.read_level import read_level_hardcoded, write_level_hardcoded
 
+
 # Perform a memory test using a random data pattern and linear addressing
 def memtest(wb, length, *, generator, base=None, verbose=None, burst=255):
     sdram_hardware_control(wb)
@@ -31,6 +32,7 @@ def memtest(wb, length, *, generator, base=None, verbose=None, burst=255):
 
     return errors
 
+
 # ###########################################################################
 
 if __name__ == "__main__":
@@ -38,7 +40,10 @@ if __name__ == "__main__":
     parser.add_argument('--srv', action='store_true', help='Start litex server')
     parser.add_argument('--size', default='0x2000', help='Memtest size')
     parser.add_argument('--memspeed', action='store_true', help='Run memroy speed test')
-    parser.add_argument('--no-cpu-uart', action='store_true', help='Do not print the stdout of CPU during DRAM initialization')
+    parser.add_argument(
+        '--no-cpu-uart',
+        action='store_true',
+        help='Do not print the stdout of CPU during DRAM initialization')
     args = parser.parse_args()
 
     if args.srv:
@@ -81,8 +86,8 @@ if __name__ == "__main__":
     run_memtest('random', rand_generator(42))
 
     if args.memspeed:
-        for n in [0x1000//4, 0x10000//4, 0x100000//4]:
-            print('Size = 0x{:08x}'.format(n*4))
+        for n in [0x1000 // 4, 0x10000 // 4, 0x100000 // 4]:
+            print('Size = 0x{:08x}'.format(n * 4))
             memspeed(wb, n)
         # Example results:
         #  Size = 0x00001000

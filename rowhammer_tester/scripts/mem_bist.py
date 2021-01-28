@@ -22,7 +22,7 @@ if __name__ == "__main__":
     wb = RemoteClient()
     wb.open()
 
-    mem_base  = wb.mems.main_ram.base
+    mem_base = wb.mems.main_ram.base
     mem_range = wb.mems.main_ram.size  # bytes
 
     # we are limited to multiples of DMA data width
@@ -40,7 +40,7 @@ if __name__ == "__main__":
             print('Generated {:d} offsets'.format(i), end='\r')
             offset = rng.randrange(0x0, mem_range - 4)
             offset &= ~0b11  # must be 32-bit aligned
-            if offset//nbytes not in offsets:
+            if offset // nbytes not in offsets:
                 offsets.append(offset // nbytes)
                 if args.dbg:
                     print('dbg: offset: ' + str(offset))
@@ -75,12 +75,15 @@ if __name__ == "__main__":
 
         assert len(errors) == len(offsets)
 
-        for off, err in zip(sorted(offsets), errors): # errors should be already sorted
+        for off, err in zip(sorted(offsets), errors):  # errors should be already sorted
             if args.dbg:
                 print('dbg: 0x{:08x} == 0x{:08x}'.format(off, err.offset))
             assert off == err.offset
 
-        print('Execution time: {:.3f} s ({:.3f} errors / s)'.format(end_time - start_time, len(offsets)/(end_time - start_time)))
+        print(
+            'Execution time: {:.3f} s ({:.3f} errors / s)'.format(
+                end_time - start_time,
+                len(offsets) / (end_time - start_time)))
         print("Test OK!")
 
     elif args.test_memory:
@@ -96,7 +99,9 @@ if __name__ == "__main__":
             if len(errors) > 0:
                 print('!!! Failed pattern: {:08x} !!!'.format(p))
                 for e in errors:
-                    print('Failed: 0x{:08x} == 0x{:08x}'.format(mem_base + e.offset * nbytes, wb.read(mem_base + e.offset * nbytes)))
+                    print(
+                        'Failed: 0x{:08x} == 0x{:08x}'.format(
+                            mem_base + e.offset * nbytes, wb.read(mem_base + e.offset * nbytes)))
                     print('  data     = 0x{:x}'.foramt(e.data))
                     print('  expected = 0x{:x}'.foramt(e.expected))
             else:
