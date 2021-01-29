@@ -12,6 +12,8 @@ from collections import namedtuple
 
 from migen import log2_int
 
+from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
+
 # ###########################################################################
 
 
@@ -461,6 +463,57 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
         print('hw_memtest: errors: {:d}'.format(len(errors)))
 
     return errors
+
+
+# Inversion_tuple has two elements: divisor and mask
+def setup_inverters(wb, divisor, mask):
+    assert (divisor & (divisor - 1)) == 0, 'Divisor must be power of 2'
+    wb.regs.writer_inverter_divisor_mask.write(divisor - 1)
+    wb.regs.reader_inverter_divisor_mask.write(divisor - 1)
+    wb.regs.writer_inverter_selection_mask.write(mask)
+    wb.regs.reader_inverter_selection_mask.write(mask)
+
+
+def get_expected_execution_cycles(payload):
+    cycles = 0
+    for i, instr in enumerate(payload):
+        cycles += 1
+        if instr.op_code == OpCode.NOOP and instr.timeslice == 0:  # STOP
+            break
+        elif instr.op_code == OpCode.LOOP:
+            # there should be no STOP or LOOP instructions inside loop body
+            body = payload[i - instr.jump:i]
+            cycles += instr.count * sum(ii.timeslice for ii in body)
+        else:
+            # -1 because we've already included 1 cycle for this instruction
+            cycles += instr.timeslice - 1
+    return cycles
+
+
+def execute_payload(wb, payload):
+    print('\nTransferring the payload ...')
+    memwrite(wb, payload, base=wb.mems.payload.base)
+
+    def ready():
+        status = wb.regs.payload_executor_status.read()
+        return (status & 1) != 0
+
+    print('\nExecuting ...')
+    assert ready()
+    start = time.time()
+    wb.regs.payload_executor_start.write(1)
+    while not ready():
+        time.sleep(0.001)
+    elapsed = time.time() - start
+    print('Time taken: {:.3f} ms\n'.format(elapsed * 1e3))
+
+
+def validate_keys(config_dict, valid_keys_set):
+    for key in config_dict:
+        if not key in valid_keys_set:
+            print("Invalid key: {}".format(key))
+            return False
+        return True
 
 
 # ###############################################################################
