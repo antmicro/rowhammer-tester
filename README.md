@@ -75,7 +75,7 @@ make test
 ## Usage
 
 The Makefile can be configured using environmental variables to modify the network configuration used and to select the target.
-Currently, only the Arty-A7 (xc7a35t) FPGA board is supported (`TARGET=arty`). It can be run on hardware or in simulation.
+Currently, the Arty-A7 (xc7a35t) FPGA board (`TARGET=arty`) and the ZCU104 board (`TARGET=zcu104`) are supported. It can be run on hardware or in simulation.
 
 ### Arty-A7 board
 
