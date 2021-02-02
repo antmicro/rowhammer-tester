@@ -74,8 +74,13 @@ make test
 
 ## Usage
 
+This tool can be run on real hardware (FPGAs) or in a simulation mode.
+As the Rowhammer vulnerability exploits physical properties of cells in DRAM (draining charges), no bit flips can be observed in simulation mode.
+However, the simulation mode is useful to test command sequences during the development.
+
 The Makefile can be configured using environmental variables to modify the network configuration used and to select the target.
-Currently, only the Arty-A7 (xc7a35t) FPGA board is supported (`TARGET=arty`). It can be run on hardware or in simulation.
+Currently, the Arty-A7 (xc7a35t) FPGA board (`TARGET=arty`) and the ZCU104 board (`TARGET=zcu104`) are both supported.
+Keep in mind that Arty is targeting DDR3, while ZCU is targeting DDR4 (SO-DIMM modules).
 
 ### Arty-A7 board
 
