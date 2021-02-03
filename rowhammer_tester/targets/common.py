@@ -261,17 +261,18 @@ class RowHammerSoC(SoCCore):
             self.logger.info('{}: Length: {}, Data Width: {}-bit'.format(
                 colorer('Scratchpad memory'), colorer(scratchpad_depth), colorer(scratchpad_width)))
 
-            dfi_switch = DFISwitch(
+            self.submodules.dfi_switch = DFISwitch(
                 with_refresh    = self.sdram.controller.settings.with_refresh,
                 dfii            = self.sdram.dfii,
                 refresher_reset = self.sdram.controller.refresher.reset,
             )
-            self.submodules += dfi_switch
+            self.dfi_switch.add_csrs()
+            self.add_csr('dfi_switch')
 
             self.submodules.payload_executor = PayloadExecutor(
                 mem_payload    = payload_mem,
                 mem_scratchpad = scratchpad_mem,
-                dfi_switch     = dfi_switch,
+                dfi_switch     = self.dfi_switch,
                 nranks         = self.sdram.controller.settings.phy.nranks,
                 bankbits       = self.sdram.controller.settings.geom.bankbits,
                 rowbits        = self.sdram.controller.settings.geom.rowbits,

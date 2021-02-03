@@ -278,7 +278,18 @@ class SyncableRefresher(Module):
         self.reset = refresher.reset
         self.cmd = refresher.cmd
 
-class DFISwitch(Module):
+class RefreshCounter(Module):
+    def __init__(self, dfi_phase, width=32):
+        self.counter = Signal(width)
+        self.refresh = Signal()
+
+        ref_cmd = dict(cs_n=0, cas_n=0, ras_n=0, we_n=1)
+        self.comb += self.refresh.eq(reduce(and_,
+            [getattr(dfi_phase, sig) == val for sig, val in ref_cmd.items()]))
+        self.sync += If(self.refresh, self.counter.eq(self.counter + 1))
+
+
+class DFISwitch(Module, AutoCSR):
     # Synchronizes disconnection of the MC to last REF/ZQC command sent by MC
     # Refresher must provide `ce` signal
     def __init__(self, with_refresh, dfii, refresher_reset):
@@ -286,18 +297,16 @@ class DFISwitch(Module):
         self.dfi_ready = Signal()
         self.dfi = dfii.ext_dfi
 
-        # We wait for the last command issues by Refresher (always on phase 0)
-        last_cmd_phase = dfii.slave.phases[0]
-        # FIXME: sometimes ZQCS needs to be sent after refresh, currently it will be missed
-        # last_cmd = dict(cas_n=1, ras_n=1, we_n=0)  # ZQCS
-        last_cmd = dict(cas_n=0, ras_n=0, we_n=1)  # REF
-        is_last_cmd = reduce(and_, [getattr(last_cmd_phase, s) == last_cmd[s] for s in ["cas_n", "ras_n", "we_n"]])
+        # Refresh is issued always on phase 0. Count refresh commands on DFII
+        # master (any refresh issued, both by MC and PayloadExecutor)
+        self.submodules.refresh_counter = RefreshCounter(dfii.master.phases[0])
 
         self.submodules.fsm = fsm = FSM()
         fsm.act("MEMORY-CONTROLLER",
             If(self.wants_dfi,
                 If(with_refresh,
-                    If((last_cmd_phase.cs_n == 0) & is_last_cmd,
+                    # FIXME: sometimes ZQCS needs to be sent after refresh, currently it will be missed
+                    If(self.refresh_counter.refresh,
                         NextState("PAYLOAD-EXECUTION")
                     )
                 ).Else(
@@ -313,6 +322,25 @@ class DFISwitch(Module):
                 refresher_reset.eq(1),
                 NextState("MEMORY-CONTROLLER")
             )
+        )
+
+    def add_csrs(self):
+        self._refresh_count = CSRStatus(len(self.refresh_counter.counter), description=
+            "Count of all refresh commands issued (both by Memory Controller and Payload Executor)."
+            " Value is latched from internal counter on mode trasition: MC -> PE or by writing to"
+            " the `refresh_update` CSR."
+        )
+        self._refresh_update = CSR()
+        self._refresh_update.description = "Force an update of the `refresh_count` CSR."
+
+        # detect mode transition
+        pe_ongoing = self.fsm.ongoing("PAYLOAD-EXECUTION")
+        pe_ongoing_d = Signal()
+        self.sync += pe_ongoing_d.eq(pe_ongoing)
+        mc_to_pe = ~pe_ongoing_d & pe_ongoing
+
+        self.sync += If(mc_to_pe | self._refresh_update.re,
+            self._refresh_count.status.eq(self.refresh_counter.counter),
         )
 
 class PayloadExecutor(Module, AutoCSR, AutoDoc):

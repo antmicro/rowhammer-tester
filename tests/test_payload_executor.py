@@ -575,6 +575,45 @@ class TestPayloadExecutor(unittest.TestCase):
                 self.assertEqual(dut.execution_cycles, 20)
                 self.assertEqual(dut.runtime_cycles, 20 + max(1, refresh_delay) + switch_latency)
 
+    def test_refresh_counter(self):
+        def generator(dut):
+            # wait for some refresh commands to be issued by MC
+            for _ in range(45):
+                yield
+
+            # start execution, this should wait for the next refresh, then latch refresh count
+            yield dut.payload_executor.start.eq(1)
+            yield
+            yield dut.payload_executor.start.eq(0)
+            yield
+
+            while not (yield dut.payload_executor.ready):
+                yield
+
+            # read refresh count CSR twice
+            at_transition = (yield from dut.dfi_switch._refresh_count.read())
+            yield from dut.dfi_switch._refresh_update.write(1)
+            yield
+            forced = (yield from dut.dfi_switch._refresh_count.read())
+            yield
+
+            # refreshes during waiting time, +1 between start.eq(1) and actual transition
+            self.assertEqual(at_transition, 4+1)
+            self.assertEqual(forced, at_transition + 3)  # for payload
+
+        encoder = Encoder(bankbits=3)
+        payload = [
+            encoder.I(OpCode.NOOP, timeslice=2),
+            encoder.I(OpCode.REF,  timeslice=8),
+            encoder.I(OpCode.REF,  timeslice=8),
+            encoder.I(OpCode.REF,  timeslice=8),
+            encoder.I(OpCode.NOOP, timeslice=0),  # STOP
+        ]
+
+        dut = PayloadExecutorDUT(encoder(payload), refresh_delay=10-1)
+        dut.dfi_switch.add_csrs()
+        run_simulation(dut, [generator(dut), *dut.get_generators()])
+
 # Interactive tests --------------------------------------------------------------------------------
 
 def run_payload_executor(dut: PayloadExecutorDUT, *, print_period=1):
