@@ -3,14 +3,14 @@ from rowhammer_tester.scripts.playbook.payload_generators import PayloadGenerato
 from rowhammer_tester.scripts.playbook.payload_generators.row_list import generate_payload_from_row_list
 from rowhammer_tester.scripts.playbook.row_mappings import (
     RowMapping, TrivialRowMapping, TypeARowMapping, TypeBRowMapping)
-from rowhammer_tester.scripts.utils import validate_keys
+from rowhammer_tester.scripts.utils import (validate_keys, DRAMAddressConverter)
 
 
 class HammerTolerancePayloadGenerator(PayloadGenerator):
     _valid_module_keys = set(
         [
             "verbose", "row_mapping", "nr_rows", "read_count_step", "iters_per_row",
-            "max_iteration", "nr_chips"
+            "max_iteration", "nr_chips", "fill_local"
         ])
 
     def initialize(self, config):
@@ -27,6 +27,7 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
         self.read_count_step = self.module_config["read_count_step"]
         self.iters_per_row = self.module_config["iters_per_row"]
         self.nr_chips = self.module_config["nr_chips"]
+        self.fill_local = self.module_config.get("fill_local", False)
 
         def def_value_zero():
             return 0
@@ -73,10 +74,52 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
 
         return bits
 
+    # Returns logical and physical row number for row_idx from the point of view of the
+    # current iteration.
+    def get_row_for_iter(self, row_idx):
+        assert row_idx < 3
+        logical_row_num = ((self.iteration // self.iters_per_row) + row_idx) % (
+            self.nr_rows - row_idx)
+        row_num = self.row_mapping.logical_to_physical(logical_row_num)
+        return logical_row_num, row_num
+
+    def get_range_from_rows(self, wb, settings, row_nums):
+        conv = DRAMAddressConverter.load()
+        min_row = min(row_nums)
+        max_row = max(row_nums) + 1
+        start = conv.encode_bus(bank=0, row=min_row, col=0)
+        if max_row < 2**settings.geom.rowbits:
+            end = conv.encode_bus(bank=0, row=max_row, col=0)
+        else:
+            end = wb.mems.main_ram.base + wb.mems.main_ram.size
+
+        return start - wb.mems.main_ram.base, end - start
+
+    # We'd like to only fill the three rows that we are interested in, but the
+    # DRAM's internal layout might not allow us to do that with a single contiguous operation.
+    # To keep things simple, let's find the span of the three rows and fill that
+    # instead.  The row layouts that we have encountered so far allow us to do this
+    # in a reasonably sized operation.
+    def get_memset_range(self, wb, settings):
+        # Keep the default behaviour the same as it may have subtle consequences
+        # in terms of bit flip counts.
+        if not self.fill_local:
+            return PayloadGenerator.get_memset_range(self, wb, settings)
+        row_nums = []
+        for i in range(3):
+            logical_row_num, row_num = self.get_row_for_iter(i)
+            row_nums.append(row_num)
+        return self.get_range_from_rows(wb, settings, row_nums)
+
+    # This payload generator is only looking at flips in the intended victim row
+    # of a double sided hammer.  Don't bother testing anything else.
+    def get_memtest_range(self, wb, settings):
+        logical_row_num, row_num = self.get_row_for_iter(1)
+        return self.get_range_from_rows(wb, settings, [row_num])
+
     def process_errors(self, settings, row_errors):
         step = ((self.iteration % self.iters_per_row) + 1) * self.read_count_step
-        logical_row_num = (self.iteration // self.iters_per_row + 1) % (self.nr_rows - 1)
-        row_num = self.row_mapping.logical_to_physical(logical_row_num)
+        logical_row_num, row_num = self.get_row_for_iter(1)
 
         self.iteration += 1
 

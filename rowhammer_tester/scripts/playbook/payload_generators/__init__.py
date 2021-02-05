@@ -22,3 +22,9 @@ class PayloadGenerator():
 
     def summarize(self):
         raise NotImplementedError("Summarize experiment results")
+
+    def get_memtest_range(self, wb, settings):
+        return 0x0, wb.mems.main_ram.size
+
+    def get_memset_range(self, wb, settings):
+        return 0x0, wb.mems.main_ram.size

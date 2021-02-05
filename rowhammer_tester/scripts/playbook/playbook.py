@@ -24,11 +24,9 @@ def addresses_per_row(settings, converter, bank, row):
     return _addresses_per_row[row]
 
 
-def check_errors(wb, settings, converter, bank, row_pattern):
+def decode_errors(wb, settings, converter, bank, errors):
     dma_data_width = settings.phy.dfi_databits * settings.phy.nphases
     dma_data_bytes = dma_data_width // 8
-
-    errors = hw_memtest(wb, 0x0, wb.mems.main_ram.size, [row_pattern])
 
     row_errors = defaultdict(list)
     for e in errors:
@@ -64,6 +62,7 @@ def main():
     pg.initialize(config)
     wb = RemoteClient()
     wb.open()
+    settings = get_litedram_settings()
     inversion_divisor = 0
     inversion_mask = 0
     inversion_divisor = config.get("inversion_divisor", 0)
@@ -71,8 +70,8 @@ def main():
     row_pattern = config.get("row_pattern", 0)
     setup_inverters(wb, inversion_divisor, inversion_mask)
     while not pg.done():
-        hw_memset(wb, 0x0, wb.mems.main_ram.size, [row_pattern])
-        settings = get_litedram_settings()
+        offset, size = pg.get_memset_range(wb, settings)
+        hw_memset(wb, offset, size, [row_pattern])
         converter = DRAMAddressConverter.load()
         bank = 0
         sys_clk_freq = float(get_generated_defs()['SYS_CLK_FREQ'])
@@ -83,7 +82,9 @@ def main():
             sys_clk_freq=sys_clk_freq)
 
         execute_payload(wb, payload)
-        row_errors = check_errors(wb, settings, converter, bank, row_pattern)
+        offset, size = pg.get_memtest_range(wb, settings)
+        errors = hw_memtest(wb, offset, size, [row_pattern])
+        row_errors = decode_errors(wb, settings, converter, bank, errors)
         pg.process_errors(settings, row_errors)
 
     pg.summarize()
