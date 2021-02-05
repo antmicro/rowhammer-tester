@@ -1,3 +1,4 @@
+from rowhammer_tester.scripts.playbook.lib import get_range_from_rows
 from rowhammer_tester.scripts.playbook.row_generators import RowGenerator
 from rowhammer_tester.scripts.playbook.row_mappings import (
     RowMapping, TrivialRowMapping, TypeARowMapping, TypeBRowMapping)
@@ -21,3 +22,9 @@ class EvenRowGenerator(RowGenerator):
                 self.row_mapping.logical_to_physical((iteration + 2 * i) % self.max_row))
 
         return row_list
+
+    def get_memory_range(self, wb, settings):
+        row_list = []
+        for row in range(self.max_row):
+            row_list.append(self.row_mapping.logical_to_physical(row))
+        return get_range_from_rows(wb, settings, row_list)

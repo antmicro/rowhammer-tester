@@ -1,9 +1,10 @@
 from collections import defaultdict
 from rowhammer_tester.scripts.playbook.payload_generators import PayloadGenerator
-from rowhammer_tester.scripts.playbook.payload_generators.row_list import generate_payload_from_row_list
+from rowhammer_tester.scripts.playbook.lib import (
+    generate_payload_from_row_list, get_range_from_rows)
 from rowhammer_tester.scripts.playbook.row_mappings import (
     RowMapping, TrivialRowMapping, TypeARowMapping, TypeBRowMapping)
-from rowhammer_tester.scripts.utils import (validate_keys, DRAMAddressConverter)
+from rowhammer_tester.scripts.utils import validate_keys
 
 
 class HammerTolerancePayloadGenerator(PayloadGenerator):
@@ -83,18 +84,6 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
         row_num = self.row_mapping.logical_to_physical(logical_row_num)
         return logical_row_num, row_num
 
-    def get_range_from_rows(self, wb, settings, row_nums):
-        conv = DRAMAddressConverter.load()
-        min_row = min(row_nums)
-        max_row = max(row_nums) + 1
-        start = conv.encode_bus(bank=0, row=min_row, col=0)
-        if max_row < 2**settings.geom.rowbits:
-            end = conv.encode_bus(bank=0, row=max_row, col=0)
-        else:
-            end = wb.mems.main_ram.base + wb.mems.main_ram.size
-
-        return start - wb.mems.main_ram.base, end - start
-
     # We'd like to only fill the three rows that we are interested in, but the
     # DRAM's internal layout might not allow us to do that with a single contiguous operation.
     # To keep things simple, let's find the span of the three rows and fill that
@@ -109,13 +98,13 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
         for i in range(3):
             logical_row_num, row_num = self.get_row_for_iter(i)
             row_nums.append(row_num)
-        return self.get_range_from_rows(wb, settings, row_nums)
+        return get_range_from_rows(wb, settings, row_nums)
 
     # This payload generator is only looking at flips in the intended victim row
     # of a double sided hammer.  Don't bother testing anything else.
     def get_memtest_range(self, wb, settings):
         logical_row_num, row_num = self.get_row_for_iter(1)
-        return self.get_range_from_rows(wb, settings, [row_num])
+        return get_range_from_rows(wb, settings, [row_num])
 
     def process_errors(self, settings, row_errors):
         step = ((self.iteration % self.iters_per_row) + 1) * self.read_count_step
