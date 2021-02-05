@@ -27,7 +27,6 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
         self.read_count_step = self.module_config["read_count_step"]
         self.iters_per_row = self.module_config["iters_per_row"]
         self.nr_chips = self.module_config["nr_chips"]
-        self_read_count = self.read_count_step
 
         def def_value_zero():
             return 0

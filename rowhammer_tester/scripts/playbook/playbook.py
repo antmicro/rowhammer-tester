@@ -10,14 +10,6 @@ from rowhammer_tester.scripts.utils import (
     RemoteClient, setup_inverters, get_litedram_settings, hw_memset, hw_memtest, validate_keys,
     execute_payload, DRAMAddressConverter, get_generated_defs)
 
-
-def get_value_or_default(config, key, default):
-    if key in config.keys():
-        return config[key]
-    else:
-        return default
-
-
 _addresses_per_row = {}
 
 
