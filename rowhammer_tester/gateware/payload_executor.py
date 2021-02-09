@@ -335,9 +335,10 @@ class DFISwitch(Module, AutoCSR):
 
         # detect mode transition
         pe_ongoing = self.fsm.ongoing("PAYLOAD-EXECUTION")
-        pe_ongoing_d = Signal()
-        self.sync += pe_ongoing_d.eq(pe_ongoing)
-        mc_to_pe = ~pe_ongoing_d & pe_ongoing
+        mc_ongoing = self.fsm.ongoing("MEMORY-CONTROLLER")
+        mc_ongoing_d = Signal()
+        self.sync += mc_ongoing_d.eq(mc_ongoing)
+        mc_to_pe = mc_ongoing_d & pe_ongoing
 
         self.sync += If(mc_to_pe | self._refresh_update.re,
             self._refresh_count.status.eq(self.refresh_counter.counter),
