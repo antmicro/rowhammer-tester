@@ -411,6 +411,8 @@ def get_soc_kwargs(args):
 def get_builder_kwargs(args, target_name):
     builder_kwargs = builder_argdict(args)
     builder_kwargs["output_dir"] = os.path.join('build', target_name)
+    if args.docs:
+        builder_kwargs["compile_software"] = False
     return builder_kwargs
 
 
