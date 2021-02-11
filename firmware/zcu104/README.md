@@ -30,7 +30,7 @@ Channel B is used as Linux console if there is a need to login to PS Linux syste
 
 ## Preparing SD card
 
-Please use the pre-built SD card image `zcu104.img`. It has to be loaded to a microSD card.
+Please use the pre-built SD card image `zcu104.img` from [github releases](https://github.com/antmicro/litex-rowhammer-tester/releases/tag/zcu104-v0.1). It has to be loaded to a microSD card.
 To load it to the SD card, insert the card into your PC card slot and find the device name.
 For example it can show up as `/dev/sdb` (`lsblk` command can be useful to check the name).
 Make sure to unmount all partitions on the card (e.g. `sudo umount /dev/sdb1`).
