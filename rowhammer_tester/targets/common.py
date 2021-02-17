@@ -1,6 +1,7 @@
 import os
 import csv
 import json
+import logging
 import argparse
 
 from migen import *
@@ -24,11 +25,13 @@ from litedram.frontend.dma import LiteDRAMDMAReader
 from litedram.init import get_sdram_phy_py_header
 from litedram.phy.model import SDRAMPHYModel
 from litedram.common import PhySettings, GeomSettings, TimingSettings
-import litedram.modules as litedram_modules
 
 from liteeth.phy.model import LiteEthPHYModel
 from liteeth.core import LiteEthUDPIPCore
 from liteeth.frontend.etherbone import LiteEthEtherbone
+
+import litedram.modules as litedram_modules
+import rowhammer_tester.targets.modules as local_modules
 
 from rowhammer_tester.gateware.bist import Reader, Writer, PatternMemory
 from rowhammer_tester.gateware.rowhammer import RowHammerDMA
@@ -356,6 +359,25 @@ def parser_args(parser, *, sys_clk_freq, module):
     builder_args(parser)
     soc_core_args(parser)
 
+
+def get_sdram_module(name):
+    log = logging.getLogger('SoC')
+    upstream = getattr(litedram_modules, name, None)
+    local = getattr(local_modules, name, None)
+    if upstream is None and local is None:
+        raise RuntimeError(f'Could not find module {name}')
+    if upstream is not None and local is not None:
+        log.warning(f'Module {name} defined both in LiteDRAM and in litex-rowhammer-tester!'
+            ' Consider removing the definition in litex-rowhammer-tester.')
+    if local is not None:
+        log.warning(f'Using module {name} defined locally. Should be moved to LiteDRAM.')
+        module = local
+    else:
+        log.info(f'Using module {name}.')
+        module = upstream
+    return module
+
+
 def get_soc_kwargs(args):
     soc_kwargs = soc_core_argdict(args)
     # Set some defaults for SoC - no CPU, memory, etc.
@@ -374,7 +396,7 @@ def get_soc_kwargs(args):
     soc_kwargs.update(dict(
         args             = args,
         sys_clk_freq     = int(float(args.sys_clk_freq)),
-        sdram_module_cls = getattr(litedram_modules, args.module),
+        sdram_module_cls = get_sdram_module(args.module),
         ip_address       = args.ip_address,
         mac_address      = int(args.mac_address, 0),
         udp_port         = int(args.udp_port, 0),
