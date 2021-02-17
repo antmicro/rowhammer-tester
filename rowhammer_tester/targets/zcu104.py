@@ -215,8 +215,8 @@ class SoC(common.RowHammerSoC):
             sys_clk_freq     = self.sys_clk_freq,
             iodelay_clk_freq = 500e6)
 
-    def get_sdram_module(self):
-        return self.sdram_module_cls(self.sys_clk_freq, "1:4")
+    def get_sdram_module(self, speedgrade=None):
+        return self.sdram_module_cls(self.sys_clk_freq, "1:4", speedgrade=speedgrade)
 
     def add_host_bridge(self):
         self.add_uartbone(name="serial", clk_freq=self.sys_clk_freq, baudrate=1e6, cd="uart")

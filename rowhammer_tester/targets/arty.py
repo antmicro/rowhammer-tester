@@ -75,8 +75,8 @@ class SoC(common.RowHammerSoC):
             nphases        = 4,
             sys_clk_freq   = self.sys_clk_freq)
 
-    def get_sdram_module(self):
-        return self.sdram_module_cls(self.sys_clk_freq, "1:4")
+    def get_sdram_module(self, speedgrade=None):
+        return self.sdram_module_cls(self.sys_clk_freq, "1:4", speedgrade=speedgrade)
 
     def add_host_bridge(self):
         self.submodules.ethphy = LiteEthPHYMII(

@@ -79,7 +79,7 @@ class RowHammerSoC(SoCCore):
     def get_ddrphy(self):
         raise NotImplementedError()
 
-    def get_sdram_module(self):
+    def get_sdram_module(self, speedgrade=None):
         raise NotImplementedError()
 
     def add_host_bridge(self):
@@ -87,7 +87,7 @@ class RowHammerSoC(SoCCore):
 
     # Common SoC configuration ---------------------------------------------------------------------
 
-    def __init__(self, *, args, sys_clk_freq, sdram_module_cls,
+    def __init__(self, *, args, sys_clk_freq, sdram_module_cls, sdram_module_speedgrade=None,
             ip_address="192.168.100.50", mac_address=0x10e2d5000001, udp_port=1234, **kwargs):
         self.args = args
         self.sys_clk_freq = sys_clk_freq
@@ -123,7 +123,7 @@ class RowHammerSoC(SoCCore):
         self.add_csr("leds")
 
         # SDRAM PHY --------------------------------------------------------------------------------
-        module = self.get_sdram_module()
+        module = self.get_sdram_module(speedgrade=sdram_module_speedgrade)
 
         if args.sim:
             # Use the hardware platform to retrieve values for simulation
@@ -345,6 +345,7 @@ def parser_args(parser, *, sys_clk_freq, module):
     add_argument("--sim", action="store_true", help="Build and run in simulation mode")
     add_argument("--sys-clk-freq", default=sys_clk_freq, help="System clock frequency")
     add_argument("--module", default=module, help="DRAM module")
+    add_argument("--speedgrade", default=None, help="DRAM module speedgrade (if not specified uses default)")
     add_argument("--no-memory-bist", action="store_true", help="Disable memory BIST module")
     add_argument("--pattern-data-size", default="1024", help="BIST pattern data memory size in bytes")
     add_argument("--no-payload-executor", action="store_true", help="Disable Payload Executor module")
@@ -394,12 +395,13 @@ def get_soc_kwargs(args):
     ))
     # Common arguments to row hammer SoC
     soc_kwargs.update(dict(
-        args             = args,
-        sys_clk_freq     = int(float(args.sys_clk_freq)),
-        sdram_module_cls = get_sdram_module(args.module),
-        ip_address       = args.ip_address,
-        mac_address      = int(args.mac_address, 0),
-        udp_port         = int(args.udp_port, 0),
+        args                    = args,
+        sys_clk_freq            = int(float(args.sys_clk_freq)),
+        sdram_module_cls        = get_sdram_module(args.module),
+        sdram_module_speedgrade = args.speedgrade,
+        ip_address              = args.ip_address,
+        mac_address             = int(args.mac_address, 0),
+        udp_port                = int(args.udp_port, 0),
     ))
     return soc_kwargs
 
