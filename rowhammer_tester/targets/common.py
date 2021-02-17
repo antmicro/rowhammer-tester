@@ -334,9 +334,11 @@ def parser_args(parser, *, sys_clk_freq, module):
 
     parser.formatter_class = CustomArgumentDefaultHelpFormatter
 
+    group = parser.add_argument_group(title="Row Hammer tester")
+
     def add_argument(*args, **kwargs):
         CustomArgumentDefaultHelpFormatter.ARG_NAMES.extend(args)
-        parser.add_argument(*args, **kwargs)
+        group.add_argument(*args, **kwargs)
 
     # Target args
     add_argument("--build", action="store_true", help="Build bitstream")
@@ -345,7 +347,7 @@ def parser_args(parser, *, sys_clk_freq, module):
     add_argument("--sim", action="store_true", help="Build and run in simulation mode")
     add_argument("--sys-clk-freq", default=sys_clk_freq, help="System clock frequency")
     add_argument("--module", default=module, help="DRAM module")
-    add_argument("--speedgrade", default=None, help="DRAM module speedgrade (if not specified uses default)")
+    add_argument("--speedgrade", default=None, help="DRAM module speedgrade, default value depends on module")
     add_argument("--no-memory-bist", action="store_true", help="Disable memory BIST module")
     add_argument("--pattern-data-size", default="1024", help="BIST pattern data memory size in bytes")
     add_argument("--no-payload-executor", action="store_true", help="Disable Payload Executor module")
@@ -357,8 +359,8 @@ def parser_args(parser, *, sys_clk_freq, module):
     add_argument("--bist-inversion-rowbits", default="5", help="Number of row bits used for BIST data inversion feature")
 
     # Litex args
-    builder_args(parser)
-    soc_core_args(parser)
+    builder_args(parser.add_argument_group(title="Builder"))
+    soc_core_args(parser.add_argument_group(title="SoC Core"))
 
 
 def get_sdram_module(name):
