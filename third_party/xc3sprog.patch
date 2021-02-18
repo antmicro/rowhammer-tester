@@ -1,57 +1,13 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3a6455c..2a944e8 100644
+index 96e410d..9a265b2 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -132,7 +132,7 @@ INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+@@ -130,7 +130,7 @@ ADD_CUSTOM_COMMAND(OUTPUT cables.h
  
- add_library(xc3sproglib  STATIC sysfs.cpp sysfscreator.cpp sysfsvoice.cpp ioftdi.cpp 
-                         iofx2.cpp devicedb.cpp jtag.cpp jedecfile.cpp bitfile.cpp 
--                        iomatrixcreator.cpp iomatrixvoice.cpp iowiringpi.cpp
-+						#iomatrixcreator.cpp iomatrixvoice.cpp iowiringpi.cpp
- 			iobase.cpp  progalgxc95x.cpp utilities.cpp
- 			progalgxcf.cpp progalgxcfp.cpp progalgxc3s.cpp
- 			progalgavr.cpp progalgxc2c.cpp  mapfile_xc2c.cpp
-@@ -140,7 +140,7 @@ add_library(xc3sproglib  STATIC sysfs.cpp sysfscreator.cpp sysfsvoice.cpp ioftdi
-                         cabledb.cpp pdioverjtag.cpp xmega_pdi_nvm.cpp
-                         ${CONDITIONAL_FILES} devices.h cables.h)
+ INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
  
--set(LIBS ${LIBS} wiringPiDev wiringPi)
-+#set(LIBS ${LIBS} wiringPiDev wiringPi)
+-option(USE_WIRINGPI "Use WiringPi" ON)
++option(USE_WIRINGPI "Use WiringPi" OFF)
  
- add_executable(xc2c_warp xc2c_warp.cpp)
- target_link_libraries(xc2c_warp xc3sproglib ${CONDITIONAL_LIBS})
-diff --git a/utilities.cpp b/utilities.cpp
-index eabc7e9..32ce44a 100644
---- a/utilities.cpp
-+++ b/utilities.cpp
-@@ -100,18 +100,18 @@ int  getIO( std::auto_ptr<IOBase> *io, struct cable_t * cable, char const *dev,
-       io->get()->setVerbose(verbose);
-       res = io->get()->Init(cable, serial, use_freq);
-   }
--  else if(cable->cabletype == CABLE_MATRIX_CREATOR)
--  {
--      io->reset(new IOMatrixCreator());
--      io->get()->setVerbose(verbose);
--      res = io->get()->Init(cable, serial, use_freq);
--  }
--  else if(cable->cabletype == CABLE_MATRIX_VOICE)
--  {
--      io->reset(new IOMatrixVoice());
--      io->get()->setVerbose(verbose);
--      res = io->get()->Init(cable, serial, use_freq);
--  }
-+  //else if(cable->cabletype == CABLE_MATRIX_CREATOR)
-+  //{
-+  //    io->reset(new IOMatrixCreator());
-+  //    io->get()->setVerbose(verbose);
-+  //    res = io->get()->Init(cable, serial, use_freq);
-+  //}
-+  //else if(cable->cabletype == CABLE_MATRIX_VOICE)
-+  //{
-+  //    io->reset(new IOMatrixVoice());
-+  //    io->get()->setVerbose(verbose);
-+  //    res = io->get()->Init(cable, serial, use_freq);
-+  //}
-   else
-   {
-       fprintf(stderr, "Unknown Cable \"%s\" \n", getCableName(cable->cabletype));
+ if(USE_WIRINGPI)
+     set (CONDITIONAL_FILES ${CONDITIONAL_FILES} "iomatrixcreator.cpp" "iomatrixvoice.cpp" "iowiringpi.cpp")
