@@ -1,10 +1,12 @@
-# Playbook
+
+Playbook
+========
 
 *playbook.py* provides a mechanism to configure a variety of rowhammer related workloads that can be executed against the platform.  Each individual workload is represented by a payload generator.  This class generates the payload to send to the platform and processes the results.
 
 The configuration files are represented as python dictionaries.  See examples provided.
 
-Here are the parameters currently supported by *playbook*:
+Here are the parameters currently supported by *playbook*\ :
 
 *inversion_divisor* and *inversion_mask*
 
@@ -22,10 +24,11 @@ This is the configuration specific to the payload generator
 
 This is the pattern to store to the non-inverted rows.
 
+Available Payload Generators
+----------------------------
 
-## Available Payload Generators
-
-### RowListPayloadGenerator
+RowListPayloadGenerator
+^^^^^^^^^^^^^^^^^^^^^^^
 
 A simple payload generator that can use a RowGenerator class to generate rows, and then generate a payload that hammers that list of rows.  It can also insert refreshes at the appropriate points.  Here are
 the configs that can be used in *payload_generator_config* for this payload generator:
@@ -55,7 +58,8 @@ Should verbose output be generated?
 Enabling this option permits the RowGenerator to limit the filling and checking of data to a smaller range.  Can improve
 performance.
 
-### HammerTolerancePayloadGenerator
+HammerTolerancePayloadGenerator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Payload generator for measuring and characterizing hammer tolerance.  It can provide information about how many rows and bits are susceptible to row hammer.  It can also provide information about where the susceptible bits are located.
 
@@ -71,7 +75,7 @@ When enabled, permits shrinking the filled memory area to just the aggressors an
 
 *row_mapping*
 
-How are the rows in the bank physically arranged?  Three options are available: *TrivialRowMapping*, *TypeARowMapping* and *TypeBRowMapping*.
+How are the rows in the bank physically arranged?  Three options are available: *TrivialRowMapping*\ , *TypeARowMapping* and *TypeBRowMapping*.
 
 *nr_rows*
 
@@ -87,11 +91,13 @@ Number of times the hammer count is incremented for each row.
 
 The results are a series of histograms with the appropriate labels.
 
-## Available Row Generators
+Available Row Generators
+------------------------
 
-### EvenRowGenerator
+EvenRowGenerator
+^^^^^^^^^^^^^^^^
 
-Generates a cluster of even numbered rows.  Uses the row mapping passed down from the PayloadGenerator.  Here are the configs that can be specified in *row_generator_config*:
+Generates a cluster of even numbered rows.  Uses the row mapping passed down from the PayloadGenerator.  Here are the configs that can be specified in *row_generator_config*\ :
 
 *nr_rows*
 
