@@ -3,13 +3,15 @@ import csv
 import json
 import logging
 import argparse
+import git
+import time
 
 from migen import *
 
 from litex.soc import doc
 from litex.soc.cores.led import LedChaser
 from litex.soc.interconnect import wishbone
-from litex.soc.interconnect.csr import AutoCSR, CSRStorage
+from litex.soc.interconnect.csr import AutoCSR, CSRStorage, CSRStatus
 from litex.soc.integration.doc import AutoDoc, ModuleDoc
 from litex.soc.integration.soc import SoCRegion
 from litex.soc.integration.soc_core import soc_core_argdict, soc_core_args, SoCCore, colorer
@@ -107,6 +109,21 @@ class RowHammerSoC(SoCCore):
             ident          = "LiteX Row Hammer Tester SoC on {}".format(self.platform.device),
             ident_version  = True,
             **kwargs)
+
+        # Various build time informations
+        class BuildInfo(Module, AutoCSR, AutoDoc, ModuleDoc):
+            """Build info"""
+            def __init__(self):
+                git_hash = git.Repo('.', search_parent_directories=True).git.rev_parse("HEAD")
+                # Git hash is 40 bytes long
+                self.hash = CSRStatus(40*8, reset=int(git_hash, 16), description="Git revision")
+
+                # We want to save timestamp as minutes since epoch
+                timestamp = time.time() / 60
+                self.stamp = CSRStatus(32, reset=int(timestamp), description="Build timestamp")
+
+        self.submodules.buildinfo = BuildInfo()
+        self.add_csr("buildinfo", csr_id=32)
 
         # CRG --------------------------------------------------------------------------------------
         if not args.sim:
