@@ -110,20 +110,6 @@ class RowHammerSoC(SoCCore):
             ident_version  = True,
             **kwargs)
 
-        # CRG --------------------------------------------------------------------------------------
-        if not args.sim:
-            self.submodules.crg = self.get_crg()
-        else:
-            self.submodules.crg = CRG(self.platform.request('sys_clk'))
-            # Add dynamic simulation trace control, start enabled
-            self.platform.add_debug(self, reset=1)
-
-        # Leds -------------------------------------------------------------------------------------
-        self.submodules.leds = LedChaser(
-            pads         = self.platform.request_all("user_led"),
-            sys_clk_freq = sys_clk_freq)
-        self.add_csr("leds")
-
         # Various build time informations
         class BuildInfo(Module, AutoCSR, AutoDoc, ModuleDoc):
             """Build info"""
@@ -137,7 +123,21 @@ class RowHammerSoC(SoCCore):
                 self.stamp = CSRStatus(32, reset=int(timestamp), description="Build timestamp")
 
         self.submodules.buildinfo = BuildInfo()
-        self.add_csr("buildinfo")
+        self.add_csr("buildinfo", csr_id=32)
+
+        # CRG --------------------------------------------------------------------------------------
+        if not args.sim:
+            self.submodules.crg = self.get_crg()
+        else:
+            self.submodules.crg = CRG(self.platform.request('sys_clk'))
+            # Add dynamic simulation trace control, start enabled
+            self.platform.add_debug(self, reset=1)
+
+        # Leds -------------------------------------------------------------------------------------
+        self.submodules.leds = LedChaser(
+            pads         = self.platform.request_all("user_led"),
+            sys_clk_freq = sys_clk_freq)
+        self.add_csr("leds")
 
         # SDRAM PHY --------------------------------------------------------------------------------
         module = self.get_sdram_module(speedgrade=sdram_module_speedgrade)
