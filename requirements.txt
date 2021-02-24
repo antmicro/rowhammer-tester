@@ -1,3 +1,4 @@
+gitpython
 # use editable mode
 -e .
 -e third_party/migen
