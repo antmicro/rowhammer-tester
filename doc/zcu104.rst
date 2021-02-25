@@ -28,7 +28,7 @@ To use an SD card, configure the switches as follows:
 Preparing SD card
 -----------------
 
-For easiest setup, get the pre-built SD card image ``zcu104.img`` from `github releases <https://github.com/antmicro/litex-rowhammer-tester/releases/tag/zcu104-v0.1>`_. It has to be loaded to the microSD card.
+For easiest setup, get the pre-built SD card image ``zcu104.img`` from `github releases <https://github.com/antmicro/litex-rowhammer-tester/releases/tag/zcu104-v0.2>`_. It has to be loaded to the microSD card.
 To load it to the SD card, insert the card into your PC card slot and find the device name.
 ``lsblk`` can be used to check available devices. Example output can look like:
 
@@ -47,9 +47,9 @@ To load it to the SD card, insert the card into your PC card slot and find the d
 
 In the example output the SD card is ``sdb`` with two partitions ``sdb1`` and ``sdb2``.
 
-..
+.. warning::
 
-   **IMPORTANT:** make sure that you have selected the proper device name or you may damage the hard drive
+   Make sure that you have selected the proper device name or you may damage the hard drive
    on your system! Check the device ``SIZE`` to match the size of your microSD card and compare
    the outputs of the ``lsblk`` command with and without the SD card inserted.
 
@@ -188,10 +188,11 @@ SSH access
 These instructions are optional but can be useful for more convenient updates of the bitstream
 (no need to remove the SD card from the slot on ZCU104).
 
-..
+.. note::
 
-   **NOTE**: SSH on the board is configured to allow passwordless ``root`` access for simplicity but if that
-   poses a security risk, modify ``/etc/ssh/sshd_config`` according to your needs.
+   SSH on the board is configured to allow passwordless ``root`` access for simplicity but if that
+   poses a security risk, modify ``/etc/ssh/sshd_config`` according to your needs
+   and add a password for ``root``.
 
 You can login over SSH using (replace the IP address if you modified board network configuration):
 
