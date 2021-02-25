@@ -104,26 +104,13 @@ class RowHammerSoC(SoCCore):
         else:
             self.platform = SimPlatform()
 
+        githash = git.Repo('.', search_parent_directories=True).git.rev_parse("HEAD")
+
         # SoCCore ----------------------------------------------------------------------------------
         SoCCore.__init__(self, self.platform, sys_clk_freq,
-            ident          = "LiteX Row Hammer Tester SoC on {}".format(self.platform.device),
+            ident          = "LiteX Row Hammer Tester SoC on {}, git: {}".format(self.platform.device, githash),
             ident_version  = True,
             **kwargs)
-
-        # Various build time informations
-        class BuildInfo(Module, AutoCSR, AutoDoc, ModuleDoc):
-            """Build info"""
-            def __init__(self):
-                git_hash = git.Repo('.', search_parent_directories=True).git.rev_parse("HEAD")
-                # Git hash is 40 bytes long
-                self.hash = CSRStatus(40*8, reset=int(git_hash, 16), description="Git revision")
-
-                # We want to save timestamp as minutes since epoch
-                timestamp = time.time() / 60
-                self.stamp = CSRStatus(32, reset=int(timestamp), description="Build timestamp")
-
-        self.submodules.buildinfo = BuildInfo()
-        self.add_csr("buildinfo", csr_id=32)
 
         # CRG --------------------------------------------------------------------------------------
         if not args.sim:
