@@ -118,6 +118,8 @@ the user buttons turn on and off in a circular pattern.
 
 The serial console over USB can be used to further check of the board is working correctly.
 
+.. _zcu104-microusb:
+
 ZCU104 microUSB
 ---------------
 
@@ -176,11 +178,13 @@ Modifying network configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you need to modify the configuration, edit file ``/etc/network/interfaces``.
-The Linux rootfs on the SD card is fairly minimal, so there is only the ``vi`` editor available.
+The Linux rootfs on the SD card is fairly minimal, there are only ``vi`` and ``nano`` editors available.
 You could also just mount the card on your PC and edit the file.
 
 After changing the configuration, reboot the board (type ``reboot`` in the serial console)
 and test if you can ping it with ``ping <NEW_IP_ADDRESS>``.
+
+.. _zcu104-ssh-access:
 
 SSH access
 ----------
@@ -220,6 +224,31 @@ When the boot partition is mounted, you can use ``scp`` to load the new bitstrea
 
 Then use the ``reboot`` command to restart the board.
 
+Accessing Litex BIOS console
+----------------------------
+
+In the design a CPU is instantiated inside the FPGA fabric (in PL). The CPU is loaded with Litex BIOS code
+and is responsible for performing DRAM memory training before the memory can be used.
+
+Depending on the ``--uart-config`` parameter (passed when building the bitstream) the serial console of the Litex BIOS
+can be routed differently. By default it will use UART crossover just as on other boards,
+but it can be connected to PS via PS<->PL fabric by building with ``--uart-config ps``.
+
+When BIOS serial console is routed to PS it will show up as ``/dev/ttyPS1``.
+It can e.g. be accessed using:
+
+.. code-block:: sh
+
+   picocom -b 1000000 /dev/ttyPS1
+
+.. note::
+
+   You most likely want to use the console when logging in via :ref:`zcu104-ssh-access` because opening serial terminal
+   inside another serial terminal (as would happen when using :ref:`zcu104-microusb`) leads to keyboard shortcuts collision.
+
+Because by the time the console is open BIOS most likely already finished memory training,
+it is possible to restart the CPU by issuing ``reboot`` command in the BIOS console.
+To see the list of available commands use the ``help`` command.
 
 Controlling the board
 ---------------------

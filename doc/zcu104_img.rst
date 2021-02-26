@@ -25,6 +25,7 @@ Create a project from the Vivado example project "Base Zynq UltraScale+ MPSoC" f
 Open the PS IP configurator and add the following:
 * PS-PL Interfaces -> AXI HPM0 FPD (32-bit), AXI HPM1 FPD (32-bit)
 * disable Carrier Detect in Memory Interfaces -> SD -> SD 0
+* configure UART1 to be routed through EMIO, with MODEM lines disabled
 
 The following script can be used to generate FSBL, PMU firmware and Device Tree:
 
