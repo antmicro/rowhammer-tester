@@ -10,6 +10,7 @@ from litex.soc.integration.builder import Builder
 from litex.soc.integration.soc_core import colorer
 from litex.soc.cores.clock import USMMCM, USIDELAYCTRL, AsyncResetSynchronizer
 from litex.soc.interconnect import axi, wishbone
+from litex.soc.interconnect.csr import AutoCSR, CSRStatus, CSRStorage, CSRField
 
 from litedram.phy import usddrphy
 
@@ -83,6 +84,7 @@ class ZynqUSPS(Module):
         self.axi_gp_fpd_slaves  = []
         self.axi_gp_lpd_slaves  = []
         self.axi_acp_fpd_slaves  = []
+        self.uarts = set()
 
     def add_axi_gp_fpd_master(self, **kwargs):  # MAXIGP0 - MAXIGP1
         return self._append_axi(attr='axi_gp_fpd_masters', maxn=2, name='MAXIGP{n}', **kwargs)
@@ -160,44 +162,101 @@ class ZynqUSPS(Module):
         })
         return ax
 
+    def add_uart(self, n, tx, rx, dtrn=None, rtsn=None, ctsn=None, dcdn=None, dsrn=None, rin=None):
+        assert n not in self.uarts, f'UART{n} already in use'
+        self.uarts.add(n)
+        wrap = lambda s: s if s is not None else Signal()
+        self.params.update({
+            f'o_EMIOUART{n}DTRN': wrap(dtrn),  # data terminal ready
+            f'o_EMIOUART{n}RTSN': wrap(rtsn),  # request-to-send
+            f'o_EMIOUART{n}TX':   tx,          # TX PS->PL
+            f'i_EMIOUART{n}CTSN': wrap(ctsn),  # clear-to-send
+            f'i_EMIOUART{n}DCDN': wrap(dcdn),  # data carrier detect
+            f'i_EMIOUART{n}DSRN': wrap(dsrn),  # data set ready
+            f'i_EMIOUART{n}RIN':  wrap(rin),   # ring indicator
+            f'i_EMIOUART{n}RX':   rx,          # RX PS<-PL
+        })
+
     def do_finalize(self):
         self.specials += Instance('PS8', **self.params)
 
 class SoC(common.RowHammerSoC):
-    def __init__(self, **kwargs):
+    def __init__(self, uart_config, **kwargs):
+        # RowHammerSoC -----------------------------------------------------------------------------
+        if kwargs['args'].sim:
+            pass  # use options provided by the user
+        elif uart_config == 'ps':
+            kwargs['with_uart'] = False  # Add UART mannualy later to route it through PS
+        elif uart_config == 'crossover':
+            kwargs['uart_name'] = 'crossover'
+        elif uart_config == 'ftdi':
+            kwargs['uart_name'] = 'serial'
+        else:
+            raise ValueError(uart_config)
+
         super().__init__(**kwargs)
 
+        if kwargs['args'].sim:  # no PS in simulation
+            return
+
         # ZynqUS+ PS -------------------------------------------------------------------------------
-        if not self.args.sim:
-            # Add Zynq US+ PS wrapper
-            self.submodules.ps = ZynqUSPS()
+        # Add Zynq US+ PS wrapper
+        self.submodules.ps = ZynqUSPS()
 
-            # Configure PS->PL AXI
-            # AXI(32) -> AXILite(32) -> WishBone(32) -> SoC Interconnect
-            axi_ps = self.ps.add_axi_gp_fpd_master(data_width=32)
+        # UART -------------------------------------------------------------------------------------
+        if uart_config == 'ps':
+            from litex.soc.cores import uart
 
-            axi_lite_ps = axi.AXILiteInterface(data_width=32, address_width=40)
-            self.submodules += axi.AXI2AXILite(axi_ps, axi_lite_ps)
+            ps_uart = uart.UARTPads()
+            self.submodules.uart_phy = uart.UARTPHY(
+                pads     = ps_uart,
+                clk_freq = self.sys_clk_freq,
+                baudrate = 1e6)
+            self.submodules.uart = ResetInserter()(uart.UART(self.uart_phy,
+                tx_fifo_depth = 16,
+                rx_fifo_depth = 16))
 
-            # Use M_AXI_HPM0_FPD base address thaht will fit our whole address space (0x0004_0000_0000)
-            base_address = None
-            for base, size in self.ps.PS_MEMORY_MAP['gp_fpd_master'][0]:
-                if size >= 2**30-1:
-                    base_address = base
-                    break
-            assert base_address is not None
+            self.csr.add("uart_phy", use_loc_if_exists=True)
+            self.csr.add("uart", use_loc_if_exists=True)
+            if hasattr(self.cpu, "interrupt"):
+                self.irq.add("uart", use_loc_if_exists=True)
+            else:
+                self.add_constant("UART_POLLING")
 
-            def chunks(lst, n):
-                for i in range(0, len(lst), n):
-                    yield lst[i:i + n]
+            # cross RX/TX
+            self.ps.add_uart(n=1, tx=ps_uart.rx, rx=ps_uart.tx)
+        elif uart_config == 'crossover':
+            self.add_uartbone(name='serial', clk_freq=self.sys_clk_freq, baudrate=1e6, cd='uart')
+        elif uart_config == 'ftdi':
+            pass
 
-            addr_str = '_'.join(chunks('{:012x}'.format(base_address), 4))
-            self.logger.info("Connecting PS AXI master from PS address {}.".format(colorer('0x' + addr_str)))
+        # PS AXI -----------------------------------------------------------------------------------
+        # Configure PS->PL AXI
+        # AXI(32) -> AXILite(32) -> WishBone(32) -> SoC Interconnect
+        axi_ps = self.ps.add_axi_gp_fpd_master(data_width=32)
 
-            wb_ps = wishbone.Interface(adr_width=40-2)  # AXILite2Wishbone requires the same address widths
-            self.submodules += axi.AXILite2Wishbone(axi_lite_ps, wb_ps, base_address=base_address)
-            # silently ignores address bits above 30
-            self.bus.add_master(name='ps_axi', master=wb_ps)
+        axi_lite_ps = axi.AXILiteInterface(data_width=32, address_width=40)
+        self.submodules += axi.AXI2AXILite(axi_ps, axi_lite_ps)
+
+        # Use M_AXI_HPM0_FPD base address thaht will fit our whole address space (0x0004_0000_0000)
+        base_address = None
+        for base, size in self.ps.PS_MEMORY_MAP['gp_fpd_master'][0]:
+            if size >= 2**30-1:
+                base_address = base
+                break
+        assert base_address is not None
+
+        def chunks(lst, n):
+            for i in range(0, len(lst), n):
+                yield lst[i:i + n]
+
+        addr_str = '_'.join(chunks('{:012x}'.format(base_address), 4))
+        self.logger.info("Connecting PS AXI master from PS address {}.".format(colorer('0x' + addr_str)))
+
+        wb_ps = wishbone.Interface(adr_width=40-2)  # AXILite2Wishbone requires the same address widths
+        self.submodules += axi.AXILite2Wishbone(axi_lite_ps, wb_ps, base_address=base_address)
+        # silently ignores address bits above 30
+        self.bus.add_master(name='ps_axi', master=wb_ps)
 
     def get_platform(self):
         return zcu104.Platform()
@@ -216,19 +275,25 @@ class SoC(common.RowHammerSoC):
         return self.sdram_module_cls(self.sys_clk_freq, "1:4", speedgrade=speedgrade)
 
     def add_host_bridge(self):
-        self.add_uartbone(name="serial", clk_freq=self.sys_clk_freq, baudrate=1e6, cd="uart")
+        pass
 
 # Build --------------------------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(description="LiteX SoC on ZCU104")
 
+    zcu = parser.add_argument_group(title='ZCU104')
+    zcu.add_argument('--uart-config', choices=['crossover', 'ps', 'ftdi'], default='crossover',
+        help='Select how to route BIOS serial (default: crossover). This overwrites --uart-name. '
+        'crossover: reading CSRs via EtherBone; '
+        'ps: shows in PS Linux as /dev/ttyPS1 (8N1, baud: 1e6); '
+        'ftdi: connected from PL to FTDI channel D')
     common.parser_args(parser, sys_clk_freq='125e6', module='MTA4ATF51264HZ')
     vivado_build_args(parser)
     args = parser.parse_args()
 
     soc_kwargs = common.get_soc_kwargs(args)
-    soc = SoC(**soc_kwargs)
+    soc = SoC(uart_config=args.uart_config, **soc_kwargs)
 
     target_name = 'zcu104'
     builder_kwargs = common.get_builder_kwargs(args, target_name=target_name)
