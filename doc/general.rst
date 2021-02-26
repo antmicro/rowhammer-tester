@@ -244,3 +244,25 @@ To make use of BIST modules to fill/check the memory, you can use:
 .. code-block:: sh
 
    python hw_rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh
+
+Accessing LiteX BIOS console
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes it may happen that memory initialization fails when running the ``mem.py`` script.
+This is most likely when using boards that allow to swap memory modules, such as ZCU104.
+
+Memory initialization procedure is peformed by the CPU instantiated inside FPGA fabric.
+The CPU runs the LiteX BIOS.
+In case of memory training failure it may be helpful to access the LiteX BIOS console.
+To do so use the following script (with ``litex_server`` running):
+
+.. code-block:: sh
+
+   python bios_console.py
+
+If the script cannot find a serial terminal emulator program on the host system it will fall back
+to ``litex_term`` which is shipped with LiteX. It is however advised to install ``picocom``/``minicom``
+as ``litex_term`` has worse performance.
+
+In the BIOS console use the ``help`` command to get information about other available commands.
+To re-run memory initialization and training type ``reboot``.
