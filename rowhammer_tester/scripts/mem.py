@@ -59,6 +59,7 @@ if __name__ == "__main__":
                 r = wb.regs.uart_xover_rxtx.read()
                 if not args.no_cpu_uart:
                     sys.stdout.write(chr(r))
+                    sys.stdout.flush()
     else:
         while wb.regs.ddrctrl_init_done.read() != 1:
             time.sleep(0.001)
