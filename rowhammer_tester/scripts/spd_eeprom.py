@@ -37,15 +37,23 @@ def read_spd(console, spd_addr, init_commands=None):
 
 
 def parse_hexdump(string):
-    last_addr = -1
+    prev_addr = -1
+    found = False
     for line in string.split('\n'):
-        if line.strip().startswith('0x'):
-            tokens = line.strip().split()
-            addr = int(tokens[0], 16)
-            assert addr > last_addr
-            for byte in tokens[1:17]:
-                yield int(byte, 16)
-            last_addr = addr
+        # whole memory dump will be a single block of following lines
+        # find it and stop when another line is found
+        if not found and not line.strip().startswith('0x'):
+            continue
+        found = True
+        if not line.strip().startswith('0x'):
+            break
+
+        tokens = line.strip().split()
+        addr = int(tokens[0], 16)
+        assert addr > prev_addr
+        for byte in tokens[1:17]:
+            yield int(byte, 16)
+        prev_addr = addr
 
 
 def dump_object(obj, show_hidden=False, header=True):
