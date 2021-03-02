@@ -83,17 +83,20 @@ tools like `direnv <https://github.com/direnv/direnv>`_ can be used. A sample ``
 
 All other commands assume that you run Python from the virtual environment with ``vivado`` in your ``PATH``.
 
-Gateware documentation
-----------------------
+Local documentation build
+-------------------------
 
-The gateware documentation was auto-generated from source files.
-To build the gateware documentation manually, use:
+The gateware part of the documentation is auto-generated from source files.
+Other files are static and located in ``doc/`` directory.
+To build the documentation enter:
 
 .. code-block:: sh
 
-   make doc
+   source venv/bin/activate
+   pip install -r requirements.txt
+   python -m sphinx doc build/documentation
 
-The documentation will be located in ``build/documentation/html/index.html``.
+The documentation will be located in ``build/documentation/index.html``.
 
 Tests
 -----
