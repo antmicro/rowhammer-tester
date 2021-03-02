@@ -1,29 +1,29 @@
 Playbook
 ========
 
-`Playbook directory <https://github.com/antmicro/litex-rowhammer-tester/tree/master/rowhammer_tester/scripts/playbook>`_ contains a group of Python classes and scripts designed to ease the process of writing various rowhammer related tests. These tests can be executed against the hardware platform.
+The `Playbook directory <https://github.com/antmicro/litex-rowhammer-tester/tree/master/rowhammer_tester/scripts/playbook>`_ contains a group of Python classes and scripts designed to simplify the process of writing various rowhammer-related tests. These tests can be executed against a hardware platform.
 
 Payload
 -------
 
-Tests are generated as ``payload`` data. After generation, this data is transferred to a memory area in device reserved for this purpose - called ``payload memory``. Payload consists of instruction list that can be interpreted by ``payload executor`` module in hardware. Payload executor translates these instructions into DRAM commands. Payload executor connects directly to the DRAM PHY, bypassing DRAM controller as explained in :ref:`architecture`.
+Tests are generated as ``payload`` data. After generation, this data is transferred to a memory area in the device reserved for this purpose called ``payload memory``. The payload contains an instruction list that can be interpreted by the``payload executor`` module in hardware. The payload executor translates these instructions into DRAM commands. The payload executor connects directly to the DRAM PHY, bypassing DRAM controller, as explained in :ref:`architecture`.
 
 Changing payload memory size
 ****************************
 
-Payload memory size can be changed. Of course it can't exceed memory available on a hardware platform used.
-Currently payload memory size is defined in `common.py <https://github.com/antmicro/litex-rowhammer-tester/blob/master/rowhammer_tester/targets/common.py>`_, as an argument to LiteX:
+Payload memory size can be changed. Of course it can't exceed the memory available on the hardware platform used.
+Currently, the payload memory size is defined in `common.py <https://github.com/antmicro/litex-rowhammer-tester/blob/master/rowhammer_tester/targets/common.py>`_, as an argument to LiteX:
 
 .. code-block:: python
 
   add_argument("--payload-size", default="1024", help="Payload memory size in bytes")
 
-Examples shown in this chapter don't require any changes. When writing your own :ref:`configurations` you may need to change the default value.
+The examples shown in this chapter don't require any changes. When writing your own :ref:`configurations`, you may need to change the default value.
 
 Row mapping
 -----------
 
-When dealing with DRAM modules the physical layout of memory rows in hardware can be different then logical numbers assigned to them. The nature of rowhammer attack is that only physically adjacent rows are affected by `aggresor row`. To deal with the problem of disparity between physical location and logical enumeration we implement different mapping strategies:
+In the case of DRAM modules, the physical layout of the memory rows in hardware can be different from the logical numbers assigned to them. The nature of rowhammer attack is that only the physically adjacent rows are affected by the `aggresor row`. To deal with the problem of disparity between physical location and logical enumeration, we various mapping strategies can be implemented:
 
 * ``TrivialRowMapping`` - logical address is the same as physical one
 * ``TypeARowMapping`` - more complex mapping method, reverse-engineered as a part of `this research <https://download.vusec.net/papers/hammertime_raid18.pdf>`_
@@ -33,7 +33,7 @@ Row Generator class
 -------------------
 
 Row Generator class is responsible for creating a list of row numbers used in a rowhammer attack.
-Currently only one instance of this class is available.
+Currently, only one instance of this class is available.
 
 EvenRowGenerator
 ****************
@@ -43,24 +43,24 @@ Generates a list of even numbered rows. Uses the row mapping specified by :ref:`
 * ``nr_rows`` - number of rows to be generated
 * ``max_row`` - maximal number to be used. The chosen numbers will be *modulo max_row*
 
-Payload Generator class
+Payload generator class
 -----------------------
 
-Payload generator's purpose is to prepare a payload, and process the test outcome. It is a class that can be re-used in different tests :ref:`configurations`.
+The purpose of the gayload generator is to prepare a payload and process the test outcome. It is a class that can be re-used in different tests :ref:`configurations`.
 Payload generators are located in `payload_generators directory <https://github.com/antmicro/litex-rowhammer-tester/tree/master/rowhammer_tester/scripts/playbook/payload_generators>`_
 
-Available Payload Generators
+Available gayload generators
 ****************************
 
 Row mapping and row generator settings are combined into a payload generator class.
-Currently only two payload generators are available.
+Currently, only two payload generators are available.
 
 RowListPayloadGenerator
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-A simple payload generator that can use a RowGenerator class to generate rows, and then generate a payload that hammers that list of rows
+RowListPayloadGenerator is a simple payload generator that can use a RowGenerator class to generate rows, and then generate a payload that hammers that list of rows
 (``hammering`` is a term used to describe multiple read operations on the same row).
-It can also issue refresh commands to DRAM module.
+It can also issue refresh commands to the DRAM module.
 Here are the configs that can be used in *payload_generator_config* for this payload generator:
 
 * ``row_mapping`` - this is the :ref:`row mapping` used
@@ -73,7 +73,7 @@ Here are the configs that can be used in *payload_generator_config* for this pay
 
 Example :ref:`configurations` for this test were provided as ``configs/example_row_list_*.cfg`` files.
 Some of them require a significant amount o memory declared as `payload memory`.
-To execute a minimalistic example from within litex-rowhammer-tester repo enter:
+To execute a minimalistic example from within litex-rowhammer-tester repo, enter:
 
 .. code-block:: console
 
@@ -112,8 +112,8 @@ Expected output:
 HammerTolerancePayloadGenerator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Payload generator for measuring and characterizing rowhammer tolerance.
-It can provide information about how many rows and bits are susceptible to rowhammer.
+HammerTolerancePayloadGenerator is a payload generator for measuring and characterizing rowhammer tolerance.
+It can provide information about how many rows and bits are susceptible to the rowhammer attack.
 It can also provide information about where the susceptible bits are located.
 
 A series of double-sided hammers against the available group of victim rows is performed.
@@ -135,7 +135,7 @@ The results are a series of histograms with appropriate labeling.
 
 Example :ref:`configurations` for this test were provided as ``configs/example_hammer_*.cfg`` files.
 Some of them require a significant amount o memory declared as `payload memory`.
-To execute a minimalistic example from within litex-rowhammer-tester repo enter:
+To execute a minimalistic example from within litex-rowhammer-tester repo, enter:
 
 .. code-block:: console
 
@@ -215,8 +215,8 @@ Two parameters are used to specify which rows are to be inverted:
 
 An example. ``inversion_divisor = 8``, ``inversion_mask = 0b10010010`` (bits 1, 4 and 7 are "on").
 We iterate through all row numbers 0,1,2,3,4,...,8,9,10,...
-First a modulo ``inversion_divisor`` operation is performed on a row number. In our case it's ``mod 8``.
-Next we check if bit in ``inversion_mask`` on position corresponding to our row number (after modulo) is "on" or "off".
+First, a modulo ``inversion_divisor`` operation is performed on a row number. In our case it's ``mod 8``.
+Next, we check if bit in ``inversion_mask`` in the position corresponding to our row number (after modulo) is "on" or "off".
 If it's "on", this whole row will be inverted. The results for our example are shown in a table below.
 
 .. list-table:: Inversion example
