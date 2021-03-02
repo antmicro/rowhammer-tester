@@ -2,6 +2,7 @@
 
 import os
 import sys
+import math
 import time
 import argparse
 
@@ -78,7 +79,7 @@ if __name__ == "__main__":
     read.add_argument('--srv', action='store_true', help='Start litex server in background')
     show.add_argument('input_file', help='File with SPD data')
     read.add_argument(
-        '--mem-timeout', default=20, type=int, help='Time to wait for memory initialization')
+        '--mem-timeout', default=25, type=int, help='Time to wait for memory initialization')
     show.add_argument('clk_freq', help='DRAM controller clock frequency')
     args = parser.parse_args()
 
@@ -92,15 +93,18 @@ if __name__ == "__main__":
             raise NotImplementedError('SPD commands not available for target: {}'.format(target))
         spd_addr, init_commands = SPD_COMMANDS[target]
 
+        print('Reading SPD EEPROM ...')
         console = pexpect.spawn('python bios_console.py -t litex_term', cwd=SCRIPT_DIR, timeout=6)
         wb = RemoteClient()
         wb.open()
         if not wb.regs.ddrctrl_init_done.read():
             print('Wating for CPU to finish memory training ...')
-            for _ in range(int(args.mem_timeout / 0.2)):
-                time.sleep(0.2)
-                print('.', end='', flush=True)
+            for i in range(args.mem_timeout):
+                time.sleep(1)
+                print('{:3} s'.format(args.mem_timeout - i - 1), end=' \r', flush=True)
+                # print('.', end='', flush=True)
                 if wb.regs.ddrctrl_init_done.read():
+                    print('Ready    ', end=' \r', flush=True)
                     break
             print()
             time.sleep(2)
@@ -112,7 +116,8 @@ if __name__ == "__main__":
         with open(args.output_file, 'wb') as f:
             f.write(bytes(spd_data))
 
-    if args.cmd == 'show':
+        print('SPD saved to file: {}'.format(args.output_file))
+    elif args.cmd == 'show':
         with open(args.input_file, 'rb') as f:
             spd_data = f.read()
 
@@ -124,3 +129,5 @@ if __name__ == "__main__":
         dump_object(module.speedgrade_timings['default'])
         dump_object(module.geom_settings)
         dump_object(module.timing_settings)
+    else:
+        parser.print_usage()
