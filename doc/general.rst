@@ -162,6 +162,8 @@ communication with the simulated device:
 
 TIP: Typing ``make ARGS="--sim"`` will cause LiteX to generate only intermediate files and stop right after that.
 
+.. _controlling-the-board:
+
 Controlling the board
 ^^^^^^^^^^^^^^^^^^^^^
 
