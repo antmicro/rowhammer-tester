@@ -1,12 +1,17 @@
-Development
-===========
-
-.. _adding-new-dram-modules:
-
-Adding new DRAM modules
------------------------
+DRAM modules
+============
 
 When building one of the targets in `rowhammer_tester/targets <https://github.com/antmicro/litex-rowhammer-tester/tree/master/rowhammer_tester/targets>`_, a custom DRAM module can be specified using the ``--module`` argument. To find the default modules for each target, check the output of ``--help``.
+
+.. note::
+
+   Specifying different DRAM module makes most sense on boards that allow to easily replace the DRAM module,
+   such as on ZCU104. On other boards it would be necessary to desolder the DRAM chip and solder a new one.
+
+.. _adding-new-modules:
+
+Adding new modules
+------------------
 
 `LiteDRAM <https://github.com/enjoy-digital/litedram>`_ controller provides out-of-the-box support for many DRAM modules.
 Supported modules can be found in `litedram/modules.py <https://github.com/enjoy-digital/litedram/blob/master/litedram/modules.py>`_.
@@ -69,4 +74,4 @@ Adding module configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 After verifying that given module configuration stored in SPD works correctly it can be used to define module in Python.
-To do that use the output of ``spd_eeprom.py show`` to add a new module as described in :ref:`adding-new-dram-modules`
+To do that use the output of ``spd_eeprom.py show`` to add a new module as described in :ref:`adding-new-modules`
