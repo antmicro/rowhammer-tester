@@ -3,6 +3,8 @@ General usage guide
 
 The aim of this project is to provide a platform for testing `DRAM vulnerability to Rowhammer attacks <https://users.ece.cmu.edu/~yoonguk/papers/kim-isca14.pdf>`_.
 
+.. _architecture:
+
 Architecture
 ------------
 
