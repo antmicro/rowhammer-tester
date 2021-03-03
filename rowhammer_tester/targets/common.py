@@ -32,6 +32,7 @@ from liteeth.phy.model import LiteEthPHYModel
 from liteeth.core import LiteEthUDPIPCore
 from liteeth.frontend.etherbone import LiteEthEtherbone
 
+from litedram.modules import SDRAMModule
 import litedram.modules as litedram_modules
 import rowhammer_tester.targets.modules as local_modules
 
@@ -81,7 +82,7 @@ class RowHammerSoC(SoCCore):
     def get_ddrphy(self):
         raise NotImplementedError()
 
-    def get_sdram_module(self, speedgrade=None):
+    def get_sdram_ratio(self):
         raise NotImplementedError()
 
     def add_host_bridge(self):
@@ -89,11 +90,11 @@ class RowHammerSoC(SoCCore):
 
     # Common SoC configuration ---------------------------------------------------------------------
 
-    def __init__(self, *, args, sys_clk_freq, sdram_module_cls, sdram_module_speedgrade=None,
+    def __init__(self, *, args, sys_clk_freq,
+            sdram_module_cls, sdram_module_speedgrade=None, sdram_module_spd_file=None,
             ip_address="192.168.100.50", mac_address=0x10e2d5000001, udp_port=1234, **kwargs):
         self.args = args
         self.sys_clk_freq = sys_clk_freq
-        self.sdram_module_cls = sdram_module_cls
         self.ip_address = ip_address
         self.mac_address = mac_address
         self.udp_port = udp_port
@@ -127,7 +128,16 @@ class RowHammerSoC(SoCCore):
         self.add_csr("leds")
 
         # SDRAM PHY --------------------------------------------------------------------------------
-        module = self.get_sdram_module(speedgrade=sdram_module_speedgrade)
+        if sdram_module_spd_file is not None:
+            self.logger.info('Using DRAM module {} data: {}'.format(colorer('SPD'), sdram_module_spd_file))
+            with open(sdram_module_spd_file, 'rb') as f:
+                spd_data = f.read()
+            module = SDRAMModule.from_spd_data(spd_data, self.sys_clk_freq)
+        else:
+            ratio = self.get_sdram_ratio()
+            self.logger.info('Using DRAM module {} ratio {}'.format(
+                colorer(sdram_module_cls.__name__), colorer(ratio)))
+            module = sdram_module_cls(self.sys_clk_freq, ratio, speedgrade=sdram_module_speedgrade)
 
         if args.sim:
             # Use the hardware platform to retrieve values for simulation
@@ -169,6 +179,8 @@ class RowHammerSoC(SoCCore):
         controller_settings.with_refresh = self.controller_settings.refresh.storage
         controller_settings.refresh_cls = SyncableRefresher
 
+        assert self.ddrphy.settings.memtype == module.memtype, \
+            'Wrong DRAM module type: {} vs {}'.format(self.ddrphy.settings.memtype, module.memtype)
         self.add_sdram("sdram",
             phy                     = self.ddrphy,
             module                  = module,
@@ -351,6 +363,7 @@ def parser_args(parser, *, sys_clk_freq, module):
     add_argument("--sim", action="store_true", help="Build and run in simulation mode")
     add_argument("--sys-clk-freq", default=sys_clk_freq, help="System clock frequency")
     add_argument("--module", default=module, help="DRAM module")
+    add_argument("--from-spd", required=False, help="Use DRAM module data from given file. Overwrites --module")
     add_argument("--speedgrade", default=None, help="DRAM module speedgrade, default value depends on module")
     add_argument("--no-memory-bist", action="store_true", help="Disable memory BIST module")
     add_argument("--pattern-data-size", default="1024", help="BIST pattern data memory size in bytes")
@@ -380,7 +393,6 @@ def get_sdram_module(name):
         log.warning(f'Using module {name} defined locally. Should be moved to LiteDRAM.')
         module = local
     else:
-        log.info(f'Using module {name}.')
         module = upstream
     return module
 
@@ -400,11 +412,13 @@ def get_soc_kwargs(args):
         integrated_main_ram_size = 0,
     ))
     # Common arguments to row hammer SoC
+    module = get_sdram_module(args.module) if args.from_spd is None else None
     soc_kwargs.update(dict(
         args                    = args,
         sys_clk_freq            = int(float(args.sys_clk_freq)),
-        sdram_module_cls        = get_sdram_module(args.module),
+        sdram_module_cls        = module,
         sdram_module_speedgrade = args.speedgrade,
+        sdram_module_spd_file   = args.from_spd,
         ip_address              = args.ip_address,
         mac_address             = int(args.mac_address, 0),
         udp_port                = int(args.udp_port, 0),

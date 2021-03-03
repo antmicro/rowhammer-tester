@@ -9,7 +9,7 @@ Welcome to LiteX Row Hammer Tester!
    zcu104.rst
    zcu104_img.rst
    playbook.rst
-   development.rst
+   dram_modules.rst
 
 .. toctree::
    :maxdepth: 2

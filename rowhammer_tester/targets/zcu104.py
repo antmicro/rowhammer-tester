@@ -10,6 +10,7 @@ from litex.soc.integration.builder import Builder
 from litex.soc.integration.soc_core import colorer
 from litex.soc.cores.clock import USMMCM, USIDELAYCTRL, AsyncResetSynchronizer
 from litex.soc.interconnect import axi, wishbone
+from litex.soc.cores.bitbang import I2CMaster
 
 from litedram.phy import usddrphy
 
@@ -165,39 +166,48 @@ class ZynqUSPS(Module):
 
 class SoC(common.RowHammerSoC):
     def __init__(self, **kwargs):
+        min_rom = 0x9000
+        if kwargs["integrated_rom_size"] < min_rom:
+            kwargs["integrated_rom_size"] = min_rom
+
         super().__init__(**kwargs)
 
+        if self.args.sim:
+            return
+
+        # SPD EEPROM I2C ---------------------------------------------------------------------------
+        self.submodules.i2c = I2CMaster(self.platform.request("i2c"))
+        self.add_csr("i2c")
+
         # ZynqUS+ PS -------------------------------------------------------------------------------
-        if not self.args.sim:
-            # Add Zynq US+ PS wrapper
-            self.submodules.ps = ZynqUSPS()
+        self.submodules.ps = ZynqUSPS()
 
-            # Configure PS->PL AXI
-            # AXI(32) -> AXILite(32) -> WishBone(32) -> SoC Interconnect
-            axi_ps = self.ps.add_axi_gp_fpd_master(data_width=32)
+        # Configure PS->PL AXI
+        # AXI(32) -> AXILite(32) -> WishBone(32) -> SoC Interconnect
+        axi_ps = self.ps.add_axi_gp_fpd_master(data_width=32)
 
-            axi_lite_ps = axi.AXILiteInterface(data_width=32, address_width=40)
-            self.submodules += axi.AXI2AXILite(axi_ps, axi_lite_ps)
+        axi_lite_ps = axi.AXILiteInterface(data_width=32, address_width=40)
+        self.submodules += axi.AXI2AXILite(axi_ps, axi_lite_ps)
 
-            # Use M_AXI_HPM0_FPD base address thaht will fit our whole address space (0x0004_0000_0000)
-            base_address = None
-            for base, size in self.ps.PS_MEMORY_MAP['gp_fpd_master'][0]:
-                if size >= 2**30-1:
-                    base_address = base
-                    break
-            assert base_address is not None
+        # Use M_AXI_HPM0_FPD base address thaht will fit our whole address space (0x0004_0000_0000)
+        base_address = None
+        for base, size in self.ps.PS_MEMORY_MAP['gp_fpd_master'][0]:
+            if size >= 2**30-1:
+                base_address = base
+                break
+        assert base_address is not None
 
-            def chunks(lst, n):
-                for i in range(0, len(lst), n):
-                    yield lst[i:i + n]
+        def chunks(lst, n):
+            for i in range(0, len(lst), n):
+                yield lst[i:i + n]
 
-            addr_str = '_'.join(chunks('{:012x}'.format(base_address), 4))
-            self.logger.info("Connecting PS AXI master from PS address {}.".format(colorer('0x' + addr_str)))
+        addr_str = '_'.join(chunks('{:012x}'.format(base_address), 4))
+        self.logger.info("Connecting PS AXI master from PS address {}.".format(colorer('0x' + addr_str)))
 
-            wb_ps = wishbone.Interface(adr_width=40-2)  # AXILite2Wishbone requires the same address widths
-            self.submodules += axi.AXILite2Wishbone(axi_lite_ps, wb_ps, base_address=base_address)
-            # silently ignores address bits above 30
-            self.bus.add_master(name='ps_axi', master=wb_ps)
+        wb_ps = wishbone.Interface(adr_width=40-2)  # AXILite2Wishbone requires the same address widths
+        self.submodules += axi.AXILite2Wishbone(axi_lite_ps, wb_ps, base_address=base_address)
+        # silently ignores address bits above 30
+        self.bus.add_master(name='ps_axi', master=wb_ps)
 
     def get_platform(self):
         return zcu104.Platform()
@@ -212,8 +222,8 @@ class SoC(common.RowHammerSoC):
             sys_clk_freq     = self.sys_clk_freq,
             iodelay_clk_freq = 500e6)
 
-    def get_sdram_module(self, speedgrade=None):
-        return self.sdram_module_cls(self.sys_clk_freq, "1:4", speedgrade=speedgrade)
+    def get_sdram_ratio(self):
+        return "1:4"
 
     def add_host_bridge(self):
         self.add_uartbone(name="serial", clk_freq=self.sys_clk_freq, baudrate=1e6, cd="uart")
