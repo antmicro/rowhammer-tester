@@ -299,7 +299,7 @@ def main(row_hammer_cls):
     )
 
     if args.hammer_only:
-        row_hammer.attack(*args.hammer_only, read_count=args.read_count)
+        row_hammer.attack(args.hammer_only, read_count=args.read_count)
     else:
         rng = random.Random(42)
 
