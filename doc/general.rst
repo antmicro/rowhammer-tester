@@ -1,7 +1,7 @@
 General usage guide
 ===================
 
-The aim of this project is to provide a platform for testing `DRAM vulnerability to Rowhammer attacks <https://users.ece.cmu.edu/~yoonguk/papers/kim-isca14.pdf>`_.
+The aim of this project is to provide a platform for testing `DRAM vulnerability to rowhammer attacks <https://users.ece.cmu.edu/~yoonguk/papers/kim-isca14.pdf>`_.
 
 .. _architecture:
 
@@ -83,17 +83,20 @@ tools like `direnv <https://github.com/direnv/direnv>`_ can be used. A sample ``
 
 All other commands assume that you run Python from the virtual environment with ``vivado`` in your ``PATH``.
 
-Gateware documentation
-----------------------
+Local documentation build
+-------------------------
 
-The gateware documentation was auto-generated from source files.
-To build the gateware documentation manually, use:
+The gateware part of the documentation is auto-generated from source files.
+Other files are static and are located in ``doc/`` directory.
+To build the documentation, enter:
 
 .. code-block:: sh
 
-   make doc
+   source venv/bin/activate
+   pip install -r requirements.txt
+   python -m sphinx doc build/documentation
 
-The documentation will be located in ``build/documentation/html/index.html``.
+The documentation will be located in ``build/documentation/index.html``.
 
 Tests
 -----
@@ -108,7 +111,7 @@ Usage
 -----
 
 This tool can be run on real hardware (FPGAs) or in a simulation mode.
-As the Rowhammer vulnerability exploits physical properties of cells in DRAM (draining charges), no bit flips can be observed in simulation mode.
+As the rowhammer attack exploits physical properties of cells in DRAM (draining charges), no bit flips can be observed in simulation mode.
 However, the simulation mode is useful to test command sequences during the development.
 
 The Makefile can be configured using environmental variables to modify the network configuration used and to select the target.
@@ -155,7 +158,7 @@ communication with the simulated device:
       ifconfig litex-sim 192.168.100.1/24 up
 
 #.
-   (Optionally) allow network traffic on this interface:
+   Optionally allow network traffic on this interface:
 
    .. code-block:: sh
 
@@ -189,22 +192,45 @@ For example, to use the ``leds.py`` script, run the following:
    cd rowhammer_tester/scripts/
    python leds.py  # stop with Ctrl-C
 
-Some scripts are simple and do not take command line arguments, others will provide help via ``SCRIPT.PY --help``.
 
-Examples
-~~~~~~~~
+Provided scripts
+^^^^^^^^^^^^^^^^
 
-Simple scripts:
+Some of the scripts are simple and do not take command line arguments, others will provide help via ``SCRIPT.PY --help`` or ``SCRIPT.PY -h``.
+Some of the scripts accept ``--srv`` option.
+With this option enabled, a program will start it's own instance of ``litex_server`` (the user doesn't need to run ``make srv`` from :ref:`controlling the board`)
 
+leds.py
+~~~~~~~
 
-* ``leds.py`` - Turns the LEDs on Arty-A7 board on, off, and on again
-* ``dump_regs.py`` - Dumps the values of all CSRs
+Displays a simple "bouncing" animation using the LEDs on Arty-A7 board, with the light moving from side to side.
 
+``-t TIME_MS`` or ``--time-ms TIME_MS`` option can be used to adjust LED switching interval.
+
+version.py
+~~~~~~~~~~
+
+Prints the data stored in the LiteX identification memory:
+
+* hardware platform identifier
+* source code git hash
+* build date
+
+Example output:
+
+.. code-block:: sh
+
+   (venv) 
+   LiteX Row Hammer Tester SoC on xc7a35ticsg324-1L, git: 7c22b0c5a22f2aa1b1ad0f134cda9c4d280c1ad5 2021-03-02 06:39:07
+
+dump_regs.py
+~~~~~~~~~~~~
+
+Dumps values of all CSRs.
 Example output of ``dump_regs.py``:
 
-.. code-block::
+.. code-block:: sh
 
-   Using generated target files in: ../../build/arty
    0x82000000: 0x00000000 ctrl_reset
    0x82000004: 0x12345678 ctrl_scratch
    0x82000008: 0x00000000 ctrl_bus_errors
@@ -218,55 +244,257 @@ Example output of ``dump_regs.py``:
 .. note::
 
    Note that ctrl_scratch value is 0x12345678. This is the reset value of this register.
-   If you get other value than 0x12345678, this may indicate a problem.
+   If you are getting a different, this may indicate a problem.
 
-Before the DRAM memory can be used, the initialization and leveling must be performed. To do this run:
+mem.py
+~~~~~~
 
-.. code-block:: sh
+Before the DRAM memory can be used, the initialization and leveling must be performed. The ``mem.py`` script serves this purpose.
 
-   python mem.py
-
-.. note::
-
-   When using a simulation target, running the read leveling will fail. To avoid it, use ``python mem.py --no-init``
-
-
-To perform a Rowhammer attack sequence, use the ``rowhammer.py`` script (see ``--help``\ ), e.g:
+Expected output:
 
 .. code-block:: sh
 
-   python rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh
+   (venv) $ python mem.py
+   (LiteX output)
+   --========== Initialization ============--
+   Initializing SDRAM @0x40000000...
+   Switching SDRAM to software control.
+   Read leveling:
+     m0, b0: |11111111111110000000000000000000| delays: 06+-06
+     m0, b1: |00000000000000111111111111111000| delays: 21+-08
+     m0, b2: |00000000000000000000000000000011| delays: 31+-01
+     m0, b3: |00000000000000000000000000000000| delays: -
+     m0, b4: |00000000000000000000000000000000| delays: -
+     m0, b5: |00000000000000000000000000000000| delays: -
+     m0, b6: |00000000000000000000000000000000| delays: -
+     m0, b7: |00000000000000000000000000000000| delays: -
+     best: m0, b01 delays: 21+-07
+     m1, b0: |11111111111111000000000000000000| delays: 07+-07
+     m1, b1: |00000000000000111111111111111000| delays: 22+-08
+     m1, b2: |00000000000000000000000000000001| delays: 31+-00
+     m1, b3: |00000000000000000000000000000000| delays: -
+     m1, b4: |00000000000000000000000000000000| delays: -
+     m1, b5: |00000000000000000000000000000000| delays: -
+     m1, b6: |00000000000000000000000000000000| delays: -
+     m1, b7: |00000000000000000000000000000000| delays: -
+     best: m1, b01 delays: 22+-08
+   Switching SDRAM to hardware control.
+   Memtest at 0x40000000 (2MiB)...
+     Write: 0x40000000-0x40200000 2MiB
+      Read: 0x40000000-0x40200000 2MiB
+   Memtest OK
+   Memspeed at 0x40000000 (2MiB)...
+     Write speed: 12MiB/s
+     === Initialization succeeded. ===
+   Proceeding ...
+   
+   Memtest (basic)
+   OK
+   
+   Memtest (random)
+   OK
 
-To generate a plot (requires ``pip install -r requirements-dev.txt``\ ), you can use:
+rowhammer.py & hw_rowhammer.py
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Runs a rowhammer attack against a DRAM module.
+For the complete list of modifiers, see ``--help``.
+
+Different attack modes can be specified:
+
+* ``sequential`` - list of attacked rows is a sequence from ``start-row`` to ``start-row + nrows``. For example, all rows from 10 to 90.
+* ``const`` - two rows specified with the ``const-rows-pair`` parameter will be attacked
+* ``random`` - random two rows from between ``start-row`` and ``start-row + nrows`` will be attacked
+
+User can choose a pattern that memory will be initially filled with:
+
+* ``all_0`` - all bits set to 0
+* ``all_1`` - all bits set to 1
+* ``01_in_row`` - alternating 0's and 1's in a row (``0xaaaaaaaa`` in hex)
+* ``01_per_row`` - all 0's in odd-numbered rows, all 1's in even rows
+* ``rand_per_row`` - random values for all rows
+
+There are also two versions of a rowhammer script:
+* ``rowhammer.py`` - this one uses Processing System to fill/check the memory
+* ``hw_rowhammer.py`` - BIST blocks will be used to fill/check the memory
+
+BIST blocks are faster and are the intended way of running Row Hammer Tester.
+
+.. warning:: Remember to initialize memory beforehand as explained in :ref:`mem.py`.
+
+Example:
 
 .. code-block:: sh
 
-   python rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh --plot
+   (venv) $ python hw_rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh
+   Preparing ...
+   WARNING: only single word patterns supported, using: 0xaaaaaaaa
+   Filling memory with data ...
+   Progress: [========================================] 16777216 / 16777216
+   Verifying written memory ...
+   Progress: [========================================] 16777216 / 16777216 (Errors: 0)
+   OK
+   Disabling refresh ...
+   Running row hammer attacks ...
+   read_count: 10000000
+     Iter 0 / 1 Rows = (54, 133), Count = 10.00M / 10.00M
+   Reenabling refresh ...
+   Verifying attacked memory ...
+   Progress: [========================================] 16777216 / 16777216 (Errors: 30)
+   Bit-flips for row    53: 5
+   Bit-flips for row    55: 11
+   Bit-flips for row   132: 12
+   Bit-flips for row   134: 3
 
-To make use of BIST modules to fill/check the memory, you can use:
-
-.. code-block:: sh
-
-   python hw_rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh
-
-Accessing LiteX BIOS console
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bios_console.py
+~~~~~~~~~~~~~~~
 
 Sometimes it may happen that memory initialization fails when running the ``mem.py`` script.
-This is most likely when using boards that allow to swap memory modules, such as ZCU104.
+This is most likely due to using boards that allow to swap memory modules, such as ZCU104.
 
-Memory initialization procedure is peformed by the CPU instantiated inside FPGA fabric.
+Memory initialization procedure is peformed by the CPU instantiated inside the FPGA fabric.
 The CPU runs the LiteX BIOS.
 In case of memory training failure it may be helpful to access the LiteX BIOS console.
-To do so use the following script (with ``litex_server`` running):
 
-.. code-block:: sh
-
-   python bios_console.py
-
-If the script cannot find a serial terminal emulator program on the host system it will fall back
+If the script cannot find a serial terminal emulator program on the host system, it will fall back
 to ``litex_term`` which is shipped with LiteX. It is however advised to install ``picocom``/``minicom``
 as ``litex_term`` has worse performance.
 
 In the BIOS console use the ``help`` command to get information about other available commands.
 To re-run memory initialization and training type ``reboot``.
+
+.. note:: To close picocom/minicom enter CTRL+A+X key combination.
+
+Example:
+
+.. code-block:: sh
+
+   (venv) $ python bios_console.py 
+   LiteX Crossover UART created: /dev/pts/4
+   Using serial backend: auto
+   picocom v3.1
+   
+   port is        : /dev/pts/4
+   flowcontrol    : none
+   baudrate is    : 1000000
+   parity is      : none
+   databits are   : 8
+   stopbits are   : 1
+   escape is      : C-a
+   local echo is  : no
+   noinit is      : no
+   noreset is     : no
+   hangup is      : no
+   nolock is      : no
+   send_cmd is    : sz -vv
+   receive_cmd is : rz -vv -E
+   imap is        : 
+   omap is        : 
+   emap is        : crcrlf,delbs,
+   logfile is     : none
+   initstring     : none
+   exit_after is  : not set
+   exit is        : no
+   
+   Type [C-a] [C-h] to see available commands
+   Terminal ready
+   ad speed: 9MiB/s
+   
+   --============== Boot ==================--
+   Booting from serial...
+   Press Q or ESC to abort boot completely.
+   sL5DdSMmkekro
+                Timeout
+   No boot medium found
+   
+   --============= Console ================--
+   
+   litex> 
+
+mem_bist.py
+~~~~~~~~~~~
+
+A script written to test BIST block functionality. Two tests are available:
+
+* ``test-modules`` - memory is initialized and then a series of errors is introduced (on purpose).
+  Then BIST is used to check the content of the memory. If the number of errors detected is equal to the number
+  of errors introduced, the test is passed.
+* ``test-memory`` - simple test that writes a pattern in the memory, reads it, and checks if the content is correct.
+  Both write and read operations are done via BIST.
+
+etherbone_perf.py
+~~~~~~~~~~~~~~~~~
+
+Benchmarks EtherBone bridge performance.
+Mandatory arguments:
+
+* ``{memread, memwrite}`` - transfer type
+* ``n`` - total number of 32-bit words transferred
+* ``--burst BURST`` - number of 32-bit words in a single read/write
+
+Example output:
+
+.. code-block:: sh
+
+   (venv) $ python etherbone_perf.py --burst 32 memread 1024
+   1024
+   Elapsed = 0.036 sec
+   Size    = 4.000 KB
+   Speed   = 111.298 KBps
+
+analyzer.py
+~~~~~~~~~~~
+
+This script utilizes the Litescope functionality to gather debug information about
+signals in the LiteX system. In-depth Litescope documentation `is here <https://github.com/enjoy-digital/litex/wiki/Use-LiteScope-To-Debug-A-SoC>`_.
+
+As you can see in Litescope documentation, Litescope analyzer needs to be instantiated in your design. Example design with analyzer added was provided as ``arty_litescope`` TARGET.
+As the name implies it can be run using Arty board. You can use ``rowhammer_tester/targets/arty_litescope.py`` as a reference for your own Litescope-enabled targets.
+
+To build ``arty_litescope`` example and upload it to device, in root directory run:
+
+.. code-block:: sh
+
+   export TARGET=arty_litescope
+   make build
+   make upload
+
+``analyzer.csv`` file will be created in root directory.
+We need to copy it to target's build dir before using ``analyzer.py``.
+
+.. code-block:: sh
+
+   cp analyzer.csv build/arty_litescope/
+
+Then start litex-server with:
+
+.. code-block:: sh
+
+   make srv
+
+And execute analyzer script in a separate shell:
+
+.. code-block:: sh
+
+   export TARGET=arty_litescope
+   python rowhammer_tester/scripts/analyzer.py
+
+Results will be stored in ``dump.vcd`` file and can be viewed with gtkwave:
+
+.. code-block:: sh
+
+   gtkwave dump.vcd
+
+utils.py
+~~~~~~~~
+
+Contains useful functions that are used by other scripts. Not to be executed on its own.
+Some of the implemented features:
+
+* wrapper functions for memory operations
+* DRAM address convertion
+* payload execution
+* helper functions for accessing configuration files
+* prettified console output
+

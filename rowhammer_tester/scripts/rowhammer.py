@@ -299,7 +299,7 @@ def main(row_hammer_cls):
     )
 
     if args.hammer_only:
-        row_hammer.attack(*args.hammer_only, read_count=args.read_count)
+        row_hammer.attack(args.hammer_only, read_count=args.read_count)
     else:
         rng = random.Random(42)
 
@@ -316,7 +316,7 @@ def main(row_hammer_cls):
 
         pattern = {
             'all_0': lambda rows: patterns_const(rows, 0x00000000),
-            'all_ones': lambda rows: patterns_const(rows, 0xffffffff),
+            'all_1': lambda rows: patterns_const(rows, 0xffffffff),
             '01_in_row': lambda rows: patterns_const(rows, 0xaaaaaaaa),
             '01_per_row': patterns_alternating_per_row,
             'rand_per_row': patterns_random_per_row,
