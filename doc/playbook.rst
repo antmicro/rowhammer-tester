@@ -46,10 +46,10 @@ Generates a list of even numbered rows. Uses the row mapping specified by :ref:`
 Payload generator class
 -----------------------
 
-The purpose of the gayload generator is to prepare a payload and process the test outcome. It is a class that can be re-used in different tests :ref:`configurations`.
+The purpose of the payload generator is to prepare a payload and process the test outcome. It is a class that can be re-used in different tests :ref:`configurations`.
 Payload generators are located in `payload_generators directory <https://github.com/antmicro/litex-rowhammer-tester/tree/master/rowhammer_tester/scripts/playbook/payload_generators>`_
 
-Available gayload generators
+Available payload generators
 ****************************
 
 Row mapping and row generator settings are combined into a payload generator class.
