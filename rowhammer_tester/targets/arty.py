@@ -87,7 +87,8 @@ class SoC(common.RowHammerSoC):
             phy         = self.ethphy,
             ip_address  = self.ip_address,
             mac_address = self.mac_address,
-            udp_port    = self.udp_port)
+            udp_port    = self.udp_port,
+            buffer_depth=256)
 
 # Build --------------------------------------------------------------------------------------------
 
