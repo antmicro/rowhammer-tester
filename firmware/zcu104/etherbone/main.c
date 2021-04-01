@@ -24,14 +24,26 @@ uint32_t pl_mem_read(void *_pl_mem, uint32_t addr) {
     return value;
 }
 
+int etherbone_noerror_callback(struct etherbone_memory_handlers *mem,
+        uint8_t *buf, size_t buf_size, size_t recv_len)
+{
+    int res = etherbone_callback(mem, buf, buf_size, recv_len);
+    return res < 0 ? 0 : res;
+}
+
 int run_server(struct pl_mmap *pl_mem) {
     struct etherbone_memory_handlers mem = {
         .arg = pl_mem,
         .write = &pl_mem_write,
         .read = &pl_mem_read,
     };
-    return udp_server_run(&mem, (udp_server_callback) &etherbone_callback,
-            cmdline_args.udp_port, cmdline_args.server_buf_size);
+    udp_server_callback callback;
+    if (cmdline_args.etherbone_abort) {
+        callback = (udp_server_callback) &etherbone_callback;
+    } else {
+        callback = (udp_server_callback) &etherbone_noerror_callback;
+    }
+    return udp_server_run(&mem, callback, cmdline_args.udp_port, cmdline_args.server_buf_size);
 }
 
 int main(int argc, char *argv[])

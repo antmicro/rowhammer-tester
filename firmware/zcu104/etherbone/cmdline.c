@@ -5,6 +5,7 @@ struct args cmdline_args = {
     .pl_mem_size     = 0x100000000,
     .udp_port        = 1234,
     .server_buf_size = 4096,
+    .etherbone_abort = false,
 };
 
 #define PARSE_ARG(store, name) do {               \
@@ -24,6 +25,14 @@ struct args cmdline_args = {
         }                                         \
     } while (0);
 
+#define PARSE_BOOLEAN_ARG(store, name) do {       \
+        if (strcmp(argv[i], name) == 0) {         \
+            store = true;                         \
+            found = 1;                            \
+            continue;                             \
+        }                                         \
+    } while (0);
+
 void parse_args(int argc, char *argv[]) {
     // help message
     for (int i = 1; i < argc; ++i) {
@@ -36,6 +45,7 @@ void parse_args(int argc, char *argv[]) {
                 "  --pl-mem-size      Size of the PL memory area (default: 0x%012lx)\n"
                 "  --udp-port         UDP port to use (default: %d)\n"
                 "  --server-buf-size  Size of internal server buffer (default: %lu)\n"
+                "  --etherbone-abort  Abort on EtherBone packet errors (default: false)\n"
                 ;
             printf(usage, argv[0],
                     cmdline_args.pl_mem_base,
@@ -55,6 +65,7 @@ void parse_args(int argc, char *argv[]) {
         PARSE_ARG(cmdline_args.pl_mem_size,     "--pl-mem-size");
         PARSE_ARG(cmdline_args.udp_port,        "--udp-port");
         PARSE_ARG(cmdline_args.server_buf_size, "--server-buf-size");
+        PARSE_BOOLEAN_ARG(cmdline_args.etherbone_abort, "--etherbone-abort");
         if (found == 0) {
             printf("Error: wrong argument: %s\n", argv[i]);
             exit(1);
