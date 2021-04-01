@@ -64,7 +64,7 @@ class SoC(common.RowHammerSoC):
         # self.add_csr("analyzer")
 
     def get_platform(self):
-        return arty.Platform(toolchain=self.toolchain)
+        return arty.Platform()
 
     def get_crg(self):
         return CRG(self.platform, self.sys_clk_freq)
