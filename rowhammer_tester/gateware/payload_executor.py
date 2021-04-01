@@ -301,12 +301,17 @@ class DFISwitch(Module, AutoCSR):
         # master (any refresh issued, both by MC and PayloadExecutor)
         self.submodules.refresh_counter = RefreshCounter(dfii.master.phases[0])
 
+        # If non-zero, we must wait until exactly that refresh count
+        # Refresh counter is updated 1 cycle after refresh, so add +1 in the test
+        self.at_refresh = Signal.like(self.refresh_counter.counter, reset=0)
+        refresh_matches = (self.at_refresh == 0) | (self.at_refresh == self.refresh_counter.counter + 1)
+
         self.submodules.fsm = fsm = FSM()
         fsm.act("MEMORY-CONTROLLER",
             If(self.wants_dfi,
                 If(with_refresh,
                     # FIXME: sometimes ZQCS needs to be sent after refresh, currently it will be missed
-                    If(self.refresh_counter.refresh,
+                    If(self.refresh_counter.refresh & refresh_matches,
                         NextState("PAYLOAD-EXECUTION")
                     )
                 ).Else(
@@ -330,8 +335,14 @@ class DFISwitch(Module, AutoCSR):
             " Value is latched from internal counter on mode trasition: MC -> PE or by writing to"
             " the `refresh_update` CSR."
         )
+        self._at_refresh = CSRStorage(len(self.at_refresh), reset=0, description=
+            "If set to a value different than 0 the mode transition MC -> PE will be peformed only"
+            " when the value of this register matches the current refresh commands count."
+        )
         self._refresh_update = CSR()
         self._refresh_update.description = "Force an update of the `refresh_count` CSR."
+
+        self.comb += self.at_refresh.eq(self._at_refresh.storage)
 
         # detect mode transition
         pe_ongoing = self.fsm.ongoing("PAYLOAD-EXECUTION")

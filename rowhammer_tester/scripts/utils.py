@@ -498,14 +498,52 @@ def execute_payload(wb, payload):
         status = wb.regs.payload_executor_status.read()
         return (status & 1) != 0
 
+    # if refresh is enabled we will consider tracking progress of dfi_switch_at_refresh
+    refresh_enabled = hasattr(
+        wb.regs, 'controller_settings_refresh') and wb.regs.controller_settings_refresh.read()
+
+    def check_refresh_at(force=False):
+        at = wb.regs.dfi_switch_at_refresh.read()
+        # if at_refresh is not zero, then dfi switch will be blocked until refresh count is reached
+        if at != 0:
+            wb.regs.dfi_switch_refresh_update.write(1)
+            now = wb.regs.dfi_switch_refresh_count.read()
+            if force or at >= now:
+                print('\rWaiting for refresh, remaining {:10} ...'.format(at - now), end=' ')
+            if at < now:
+                return True
+        return False
+
     print('\nExecuting ...')
     assert ready()
+
     start = time.time()
+    start_transition = None
     wb.regs.payload_executor_start.write(1)
+
+    transitioned = False
+    first = True
+
     while not ready():
+        if refresh_enabled:
+            # show progress of waiting for transition at concrete refresh command
+            prev = transitioned
+            transitioned = check_refresh_at()
+            if not prev and transitioned:
+                start_transition = time.time()
+                check_refresh_at(force=True)
+                print('Transition registered')
+                if first:
+                    print(
+                        'WARNING: possibly switching refresh number set to value smaller than current count'
+                    )
         time.sleep(0.001)
-    elapsed = time.time() - start
-    print('Time taken: {:.3f} ms\n'.format(elapsed * 1e3))
+        first = False
+
+    finished = time.time()
+    print('\nTotal elapsed time: {:.3f} ms'.format((finished - start) * 1e3))
+    if start_transition is not None:
+        print('Registered execution time: {:.3f} ms\n'.format((finished - start_transition) * 1e3))
 
 
 def validate_keys(config_dict, valid_keys_set):

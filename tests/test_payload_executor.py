@@ -614,6 +614,37 @@ class TestPayloadExecutor(unittest.TestCase):
         dut.dfi_switch.add_csrs()
         run_simulation(dut, [generator(dut), *dut.get_generators()])
 
+    def test_switch_at_refresh(self):
+        def generator(dut, switch_at):
+            yield from dut.dfi_switch._at_refresh.write(switch_at)
+            self.assertEqual((yield dut.dfi_switch.refresh_counter.counter), 0)
+
+            # start execution, this should wait for the next refresh, then latch refresh count
+            yield dut.payload_executor.start.eq(1)
+            yield
+            yield dut.payload_executor.start.eq(0)
+            yield
+
+            while not (yield dut.payload_executor.ready):
+                yield
+
+            # +1 for payload
+            self.assertEqual((yield dut.dfi_switch.refresh_counter.counter), switch_at + 1)
+
+        encoder = Encoder(bankbits=3)
+        payload = [
+            encoder.I(OpCode.NOOP, timeslice=10),
+            encoder.I(OpCode.REF,  timeslice=8),
+            encoder.I(OpCode.NOOP, timeslice=10),
+            encoder.I(OpCode.NOOP, timeslice=0),  # STOP
+        ]
+
+        for switch_at in [5, 7, 10]:
+            with self.subTest(switch_at=switch_at):
+                dut = PayloadExecutorDUT(encoder(payload), refresh_delay=10-1)
+                dut.dfi_switch.add_csrs()
+                run_simulation(dut, [generator(dut, switch_at), *dut.get_generators()])
+
 # Interactive tests --------------------------------------------------------------------------------
 
 def run_payload_executor(dut: PayloadExecutorDUT, *, print_period=1):
