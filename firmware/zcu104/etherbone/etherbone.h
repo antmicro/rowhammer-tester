@@ -8,7 +8,8 @@
 
 #include "debug.h"
 
-#define ETHERBONE_HEADER_LENGTH 12
+#define ETHERBONE_HEADER_LENGTH 8
+#define ETHERBONE_RECORD_HEADER_LENGTH 4
 
 struct etherbone_record {
     union {
@@ -38,13 +39,13 @@ struct etherbone_record_header {
 
 struct etherbone_packet {
     uint16_t magic;
-    uint16_t version: 4;
-    uint16_t _reserved: 1;
-    uint16_t nr: 1;
-    uint16_t pr: 1;
-    uint16_t pf: 1;
-    uint16_t addr_size: 4;
-    uint16_t port_size: 4;
+    uint8_t pf: 1;
+    uint8_t pr: 1;
+    uint8_t nr: 1;
+    uint8_t _reserved: 1;
+    uint8_t version: 4;
+    uint8_t port_size: 4;
+    uint8_t addr_size: 4;
     uint32_t _padding;
 
     struct etherbone_record_header record_hdr;

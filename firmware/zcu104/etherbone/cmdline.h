@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 
 struct args {
@@ -11,6 +12,7 @@ struct args {
     size_t pl_mem_size;
     int udp_port;
     size_t server_buf_size;
+    bool etherbone_abort;
 };
 
 extern struct args cmdline_args;

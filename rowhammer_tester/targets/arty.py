@@ -4,7 +4,7 @@ import argparse
 
 from migen import *
 
-from litex.boards.platforms import arty
+from litex_boards.platforms import arty
 from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 from litex.soc.integration.builder import Builder
 from litex.soc.cores.clock import S7PLL, S7IDELAYCTRL
@@ -64,7 +64,7 @@ class SoC(common.RowHammerSoC):
         # self.add_csr("analyzer")
 
     def get_platform(self):
-        return arty.Platform(toolchain=self.toolchain)
+        return arty.Platform()
 
     def get_crg(self):
         return CRG(self.platform, self.sys_clk_freq)
@@ -87,7 +87,8 @@ class SoC(common.RowHammerSoC):
             phy         = self.ethphy,
             ip_address  = self.ip_address,
             mac_address = self.mac_address,
-            udp_port    = self.udp_port)
+            udp_port    = self.udp_port,
+            buffer_depth=256)
 
 # Build --------------------------------------------------------------------------------------------
 

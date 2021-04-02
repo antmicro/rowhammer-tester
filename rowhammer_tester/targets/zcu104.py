@@ -3,12 +3,13 @@
 import argparse
 
 from migen import *
+from migen.genlib.resetsync import AsyncResetSynchronizer
 
 from litex_boards.platforms import zcu104
 from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 from litex.soc.integration.builder import Builder
 from litex.soc.integration.soc_core import colorer
-from litex.soc.cores.clock import USMMCM, USIDELAYCTRL, AsyncResetSynchronizer
+from litex.soc.cores.clock import USMMCM, USIDELAYCTRL
 from litex.soc.interconnect import axi, wishbone
 from litex.soc.cores.bitbang import I2CMaster
 

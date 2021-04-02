@@ -4,6 +4,8 @@
 
 #define DUMP(packet) dbg_memdumpf(packet, sizeof(struct etherbone_packet), "/tmp/packet.bin")
 
+static int etherbone_check_header(struct etherbone_packet *req_packet);
+static int etherbone_probe_response(struct etherbone_packet *resp_packet);
 static int etherbone_process_packet(struct etherbone_memory_handlers *mem,
         struct etherbone_packet *req_packet, struct etherbone_packet *resp_packet);
 
@@ -35,11 +37,15 @@ int etherbone_callback(struct etherbone_memory_handlers *mem,
     }
 
     size_t packet_len = ETHERBONE_HEADER_LENGTH;
-    if (packet->record_hdr.wcount) {
-        packet_len += (1 + packet->record_hdr.wcount) * 4;
-    }
-    if (packet->record_hdr.rcount) {
-        packet_len += (1 + packet->record_hdr.rcount) * 4;
+    if (packet->pf == 0) {
+        // non-probe request requests include record header and record data
+        packet_len += ETHERBONE_RECORD_HEADER_LENGTH;
+        if (packet->record_hdr.wcount) {
+            packet_len += (1 + packet->record_hdr.wcount) * 4;
+        }
+        if (packet->record_hdr.rcount) {
+            packet_len += (1 + packet->record_hdr.rcount) * 4;
+        }
     }
 
     if (bytes_available < packet_len) {
@@ -69,13 +75,16 @@ int etherbone_callback(struct etherbone_memory_handlers *mem,
     return response_len;
 }
 
-
-int etherbone_process_packet(struct etherbone_memory_handlers *mem,
-        struct etherbone_packet *req_packet, struct etherbone_packet *resp_packet)
+int etherbone_check_header(struct etherbone_packet *req_packet)
 {
-    // check that the packet is ok
+    // check that the packet header is ok
     if(ntohs(req_packet->magic) != 0x4e6f) {
         fprintf(stderr, "Wrong magic: 0x%04x\n", ntohs(req_packet->magic));
+        DUMP(req_packet);
+        return -1;
+    }
+    if(req_packet->version != 1) {
+        fprintf(stderr, "Wrong version: %d\n", req_packet->version);
         DUMP(req_packet);
         return -1;
     }
@@ -88,6 +97,32 @@ int etherbone_process_packet(struct etherbone_memory_handlers *mem,
         fprintf(stderr, "Wrong port_size: %d\n", req_packet->port_size);
         DUMP(req_packet);
         return -1;
+    }
+    return 0;
+}
+
+int etherbone_probe_response(struct etherbone_packet *resp_packet)
+{
+    resp_packet->magic = htons(0x4e6f);
+    resp_packet->version = 1;
+    resp_packet->nr = 1;
+    resp_packet->pr = 1;
+    resp_packet->pf = 0;
+    resp_packet->addr_size = 4; // 32 bits
+    resp_packet->port_size = 4; // 32 bits
+    return 8;  // always 8 bytes
+}
+
+int etherbone_process_packet(struct etherbone_memory_handlers *mem,
+        struct etherbone_packet *req_packet, struct etherbone_packet *resp_packet)
+{
+    if (etherbone_check_header(req_packet) != 0) {
+        return -1;
+    }
+
+    // for probe requests we just send response
+    if (req_packet->pf == 1) {
+        return etherbone_probe_response(resp_packet);
     }
 
     uint32_t rcount = req_packet->record_hdr.rcount;
