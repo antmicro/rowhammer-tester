@@ -8,6 +8,7 @@ Welcome to LiteX Row Hammer Tester!
    arty.rst
    zcu104.rst
    zcu104_img.rst
+   lpddr4_tb.rst
    playbook.rst
    dram_modules.rst
 
