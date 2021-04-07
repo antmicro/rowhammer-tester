@@ -17,6 +17,7 @@ def human_size(num):
 
 
 def measure(runner, nbytes):
+    print('Running measurement ...')
     start = time.time()
     runner()
     elapsed = time.time() - start
@@ -48,7 +49,6 @@ def run_etherbone(wb, is_write, n, *, burst, profile=True):
                 memwrite(wb, datas, burst=burst)
             else:
                 x = len(memread(wb, n, burst=burst))
-                print(x)
 
     measure(runner, 4 * n)
 
@@ -60,8 +60,10 @@ def run_bist(wb, is_write, pattern):
         if is_write:
             hw_memset(wb, 0, n, pattern)
         else:
-            # TODO: disable error FIFO, currently must run hw_memset first
-            _errors = hw_memtest(wb, 0, n, pattern)
+            hw_memtest(wb, 0, n, pattern)
+    if not is_write:
+        print('Filling memory before reading measurements ...')
+        hw_memset(wb, 0, n, pattern)
     measure(runner, n)
 
 
