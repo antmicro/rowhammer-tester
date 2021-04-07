@@ -55,9 +55,6 @@ class SoC(common.RowHammerSoC):
     def get_sdram_ratio(self):
         return "1:8"
 
-    def get_sdram_module(self, speedgrade=None):
-        return self.sdram_module_cls(self.sys_clk_freq, "1:8", speedgrade=speedgrade)
-
     def add_host_bridge(self):
         self.submodules.ethphy = LiteEthS7PHYRGMII(
             clock_pads = self.platform.request("eth_clocks"),
