@@ -8,7 +8,12 @@ The following instructions explain how to set up the board.
 Board configuration
 -------------------
 
-Connect the board USB and Ethernet cables to your computer and configure the network. The board's IP address will be ``192.168.100.50`` (so you could e.g. use ``192.168.100.2/24``\ ). The ``IP_ADDRESS`` environment variable can be used to modify the board's address.
+First insert the LPDDDR4 DRAM module into the socket and make sure that jumpers are set in correct positions:
+
+* VDDQ (J10) should be set in position 1V1
+* MODE2 should be set in position FLASH
+
+Then connect the board USB and Ethernet cables to your computer and configure the network. The board's IP address will be ``192.168.100.50`` (so you could e.g. use ``192.168.100.2/24``\ ). The ``IP_ADDRESS`` environment variable can be used to modify the board's address.
 Next, generate the FPGA bitstream:
 
 .. code-block:: sh
