@@ -9,7 +9,7 @@ from rowhammer_tester.scripts.utils import memread, memwrite, hw_memset, hw_memt
 
 
 def human_size(num):
-    for prefix in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+    for prefix in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
         if abs(num) < 1024.0:
             return (num, prefix)
         num /= 1024.0
@@ -27,6 +27,7 @@ def measure(runner, nbytes):
     print('Size    = {:.3f} {}B'.format(*human_size(nbytes)))
     print('Speed   = {:.3f} {}Bps'.format(*human_size(bytes_per_sec)))
 
+
 def run_etherbone(wb, is_write, n, *, burst, profile=True):
     datas = list(range(n))
 
@@ -38,7 +39,7 @@ def run_etherbone(wb, is_write, n, *, burst, profile=True):
     fname = 'tmp/profiling/{}_0x{:x}_b{}.profile'.format(is_write, n, burst)
     command = {
         False: 'memread(wb, n, burst=burst)',
-        True:  'memwrite(wb, datas, burst=burst)',
+        True: 'memwrite(wb, datas, burst=burst)',
     }[is_write]
 
     def runner():
@@ -56,11 +57,13 @@ def run_etherbone(wb, is_write, n, *, burst, profile=True):
 def run_bist(wb, is_write, pattern):
     n = wb.mems.main_ram.size
     pattern = [pattern]
+
     def runner():
         if is_write:
             hw_memset(wb, 0, n, pattern)
         else:
             hw_memtest(wb, 0, n, pattern)
+
     if not is_write:
         print('Filling memory before reading measurements ...')
         hw_memset(wb, 0, n, pattern)
