@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import time
 import cProfile
 
@@ -28,7 +29,7 @@ def measure(runner, nbytes):
     print('Speed   = {:.3f} {}Bps'.format(*human_size(bytes_per_sec)))
 
 
-def run_etherbone(wb, is_write, n, *, burst, profile=True):
+def run_etherbone(wb, is_write, n, *, burst, profile, profile_dir='profiling'):
     datas = list(range(n))
 
     ctx = locals()
@@ -36,7 +37,8 @@ def run_etherbone(wb, is_write, n, *, burst, profile=True):
     ctx['memread'] = memread
     ctx['memwrite'] = memwrite
 
-    fname = 'tmp/profiling/{}_0x{:x}_b{}.profile'.format(is_write, n, burst)
+    fname = '{}/{}_0x{:x}_b{}.profile'.format(profile_dir, 'wr' if is_write else 'rd', n, burst)
+    os.makedirs(os.path.dirname(fname), exist_ok=True)
     command = {
         False: 'memread(wb, n, burst=burst)',
         True: 'memwrite(wb, datas, burst=burst)',
@@ -52,6 +54,9 @@ def run_etherbone(wb, is_write, n, *, burst, profile=True):
                 x = len(memread(wb, n, burst=burst))
 
     measure(runner, 4 * n)
+
+    if profile:
+        print('Profiling results saved to: {}'.format(fname))
 
 
 def run_bist(wb, is_write, pattern):
