@@ -220,7 +220,7 @@ Example output:
 
 .. code-block:: sh
 
-   (venv) 
+   (venv)
    LiteX Row Hammer Tester SoC on xc7a35ticsg324-1L, git: 7c22b0c5a22f2aa1b1ad0f134cda9c4d280c1ad5 2021-03-02 06:39:07
 
 dump_regs.py
@@ -288,10 +288,10 @@ Expected output:
      Write speed: 12MiB/s
      === Initialization succeeded. ===
    Proceeding ...
-   
+
    Memtest (basic)
    OK
-   
+
    Memtest (random)
    OK
 
@@ -370,11 +370,11 @@ Example:
 
 .. code-block:: sh
 
-   (venv) $ python bios_console.py 
+   (venv) $ python bios_console.py
    LiteX Crossover UART created: /dev/pts/4
    Using serial backend: auto
    picocom v3.1
-   
+
    port is        : /dev/pts/4
    flowcontrol    : none
    baudrate is    : 1000000
@@ -389,28 +389,28 @@ Example:
    nolock is      : no
    send_cmd is    : sz -vv
    receive_cmd is : rz -vv -E
-   imap is        : 
-   omap is        : 
+   imap is        :
+   omap is        :
    emap is        : crcrlf,delbs,
    logfile is     : none
    initstring     : none
    exit_after is  : not set
    exit is        : no
-   
+
    Type [C-a] [C-h] to see available commands
    Terminal ready
    ad speed: 9MiB/s
-   
+
    --============== Boot ==================--
    Booting from serial...
    Press Q or ESC to abort boot completely.
    sL5DdSMmkekro
                 Timeout
    No boot medium found
-   
+
    --============= Console ================--
-   
-   litex> 
+
+   litex>
 
 mem_bist.py
 ~~~~~~~~~~~
@@ -423,25 +423,35 @@ A script written to test BIST block functionality. Two tests are available:
 * ``test-memory`` - simple test that writes a pattern in the memory, reads it, and checks if the content is correct.
   Both write and read operations are done via BIST.
 
-etherbone_perf.py
+benchmark.py
 ~~~~~~~~~~~~~~~~~
 
-Benchmarks EtherBone bridge performance.
-Mandatory arguments:
+Benchmarks memory access performance. There are two subcommands available:
 
-* ``{memread, memwrite}`` - transfer type
-* ``n`` - total number of 32-bit words transferred
-* ``--burst BURST`` - number of 32-bit words in a single read/write
+* ``etherbone`` - measure performance of the EtherBone bridge
+* ``bist`` - measure performance of DMA DRAM access using the BIST modules
 
 Example output:
 
 .. code-block:: sh
 
-   (venv) $ python etherbone_perf.py --burst 32 memread 1024
-   1024
-   Elapsed = 0.036 sec
-   Size    = 4.000 KB
-   Speed   = 111.298 KBps
+   (venv) $  python benchmark.py etherbone read 0x10000 --burst 255
+   Using generated target files in: build/lpddr4_test_board
+   Running measurement ...
+   Elapsed = 4.189 sec
+   Size    = 256.000 KiB
+   Speed   = 61.114 KiBps
+
+   (venv) $  python benchmark.py bist read
+   Using generated target files in: build/lpddr4_test_board
+   Filling memory before reading measurements ...
+   Progress: [========================================] 16777216 / 16777216
+   Running measurement ...
+   Progress: [========================================] 16777216 / 16777216 (Errors: 0)
+   Elapsed = 1.591 sec
+   Size    = 512.000 MiB
+   Speed   = 321.797 MiBps
+
 
 analyzer.py
 ~~~~~~~~~~~
