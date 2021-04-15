@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import math
 import argparse
 
 from migen import *
@@ -57,8 +58,10 @@ class SoC(common.RowHammerSoC):
 
     def add_host_bridge(self):
         self.submodules.ethphy = LiteEthS7PHYRGMII(
-            clock_pads = self.platform.request("eth_clocks"),
-            pads       = self.platform.request("eth"))
+            clock_pads      = self.platform.request("eth_clocks"),
+            pads            = self.platform.request("eth"),
+            hw_reset_cycles = math.ceil(float(self.args.eth_reset_time) * self.sys_clk_freq),
+        )
         self.add_etherbone(
             phy          = self.ethphy,
             ip_address   = self.ip_address,
@@ -70,6 +73,7 @@ class SoC(common.RowHammerSoC):
 
 def main():
     parser = argparse.ArgumentParser(description="LiteX SoC on LPDDR4 Test Board")
+    parser.add_argument("--eth-reset-time", default="10e-3", help="Duration of Ethernet PHY reset")
 
     common.parser_args(parser, sys_clk_freq='50e6', module='MT53E256M16D1')
     vivado_build_args(parser)
