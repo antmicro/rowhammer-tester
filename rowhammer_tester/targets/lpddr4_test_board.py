@@ -61,6 +61,7 @@ class SoC(common.RowHammerSoC):
             clock_pads      = self.platform.request("eth_clocks"),
             pads            = self.platform.request("eth"),
             hw_reset_cycles = math.ceil(float(self.args.eth_reset_time) * self.sys_clk_freq),
+            rx_delay        = 0.8e-9,
         )
         self.add_etherbone(
             phy          = self.ethphy,
