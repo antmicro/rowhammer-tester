@@ -11,7 +11,7 @@ from rowhammer_tester.scripts.utils import RemoteClient, get_generated_file
 if __name__ == "__main__":
     args = parse_args()
 
-    signals = get_signals(get_generated_file("analyzer.csv"))
+    signals = get_signals(get_generated_file("analyzer.csv"), "0")
     if args.list:
         for signal in signals:
             print(signal)
