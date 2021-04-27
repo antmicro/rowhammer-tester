@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import math
-import argparse
 
 from migen import *
 
@@ -73,11 +72,14 @@ class SoC(common.RowHammerSoC):
 # Build --------------------------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="LiteX SoC on LPDDR4 Test Board")
-    parser.add_argument("--eth-reset-time", default="10e-3", help="Duration of Ethernet PHY reset")
-
-    common.parser_args(parser, sys_clk_freq='50e6', module='MT53E256M16D1')
-    vivado_build_args(parser)
+    parser = common.ArgumentParser(
+        description  = "LiteX SoC on LPDDR4 Test Board",
+        sys_clk_freq = '50e6',
+        module       = 'MT53E256M16D1'
+    )
+    g = parser.add_argument_group(title="LPDDR4 Test Board")
+    parser.add(g, "--eth-reset-time", default="10e-3", help="Duration of Ethernet PHY reset")
+    vivado_build_args(g)
     args = parser.parse_args()
 
     soc_kwargs = common.get_soc_kwargs(args)

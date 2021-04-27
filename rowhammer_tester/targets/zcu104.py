@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import argparse
-
 from migen import *
 from migen.genlib.resetsync import AsyncResetSynchronizer
 
@@ -232,10 +230,13 @@ class SoC(common.RowHammerSoC):
 # Build --------------------------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="LiteX SoC on ZCU104")
-
-    common.parser_args(parser, sys_clk_freq='125e6', module='MTA4ATF51264HZ')
-    vivado_build_args(parser)
+    parser = common.ArgumentParser(
+        description  = "LiteX SoC on ZCU104",
+        sys_clk_freq = '125e6',
+        module       = 'MTA4ATF51264HZ'
+    )
+    g = parser.add_argument_group(title="ZCU104")
+    vivado_build_args(g)
     args = parser.parse_args()
 
     soc_kwargs = common.get_soc_kwargs(args)

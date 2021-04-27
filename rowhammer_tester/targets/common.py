@@ -328,58 +328,71 @@ class RowHammerSoC(SoCCore):
 
 # Build --------------------------------------------------------------------------------------------
 
-def parser_args(parser, *, sys_clk_freq, module):
-    # Print defaults only for the arguments added here, as Litex has defaults embedded in help messages
-    class CustomArgumentDefaultHelpFormatter(argparse.HelpFormatter):
-        ARG_NAMES = []
+class ArgumentParser(argparse.ArgumentParser):
+    def __init__(self, *, sys_clk_freq, module, **kwargs):
+        self._sys_clk_freq = sys_clk_freq
+        self._module = module
+        self._finalized = False
 
-        def add_default(self, action):  # logic from argparse.ArgumentDefaultsHelpFormatter
-            help = action.help
-            if '%(default)' not in action.help:
-                if action.default is not argparse.SUPPRESS:
-                    defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
-                    if action.option_strings or action.nargs in defaulting_nargs:
-                        help += ' (default: %(default)s)'
-            return help
+        super().__init__(**kwargs)
 
-        def _get_help_string(self, action):
-            for s in action.option_strings:
-                if s in self.ARG_NAMES:
-                    return self.add_default(action)
-            return action.help
+        # Print defaults only for the arguments added here, as Litex has defaults embedded in help messages
+        class CustomArgumentDefaultHelpFormatter(argparse.HelpFormatter):
+            ARG_NAMES = []
 
-    parser.formatter_class = CustomArgumentDefaultHelpFormatter
+            def add_default(self, action):  # logic from argparse.ArgumentDefaultsHelpFormatter
+                help = action.help
+                if '%(default)' not in action.help:
+                    if action.default is not argparse.SUPPRESS:
+                        defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
+                        if action.option_strings or action.nargs in defaulting_nargs:
+                            help += ' (default: %(default)s)'
+                return help
 
-    def add_argument(group, *args, **kwargs):
-        CustomArgumentDefaultHelpFormatter.ARG_NAMES.extend(args)
+            def _get_help_string(self, action):
+                for s in action.option_strings:
+                    if s in self.ARG_NAMES:
+                        return self.add_default(action)
+                return action.help
+
+        self.formatter_class = CustomArgumentDefaultHelpFormatter
+
+    def add(self, group, *args, **kwargs):
+        self.formatter_class.ARG_NAMES.extend(args)
         group.add_argument(*args, **kwargs)
 
-    # Actions
-    g = parser.add_argument_group(title="Actions")
-    add_argument(g, "--build", action="store_true", help="Build bitstream")
-    add_argument(g, "--load",  action="store_true", help="Load bitstream")
-    add_argument(g, "--docs",  action="store_true", help="Generate documentation")
-    add_argument(g, "--sim", action="store_true", help="Build and run in simulation mode")
+    def parse_args(self, *args, **kwargs):
+        if not self._finalized:
+            self._add_common(sys_clk_freq=self._sys_clk_freq, module=self._module)
+        return super().parse_args(*args, **kwargs)
 
-    # Target args
-    g = parser.add_argument_group(title="Row Hammer tester")
-    add_argument(g, "--sys-clk-freq", default=sys_clk_freq, help="System clock frequency")
-    add_argument(g, "--module", default=module, help="DRAM module")
-    add_argument(g, "--from-spd", required=False, help="Use DRAM module data from given file. Overwrites --module")
-    add_argument(g, "--speedgrade", default=None, help="DRAM module speedgrade, default value depends on module")
-    add_argument(g, "--no-memory-bist", action="store_true", help="Disable memory BIST module")
-    add_argument(g, "--pattern-data-size", default="1024", help="BIST pattern data memory size in bytes")
-    add_argument(g, "--no-payload-executor", action="store_true", help="Disable Payload Executor module")
-    add_argument(g, "--payload-size", default="1024", help="Payload memory size in bytes")
-    add_argument(g, "--scratchpad-size", default="1024", help="Scratchpad memory size in bytes")
-    add_argument(g, "--ip-address", default="192.168.100.50", help="Use given IP address")
-    add_argument(g, "--mac-address", default="0x10e2d5000001", help="Use given MAC address")
-    add_argument(g, "--udp-port", default="1234", help="Use given UDP port")
-    add_argument(g, "--bist-inversion-rowbits", default="5", help="Number of row bits used for BIST data inversion feature")
+    def _add_common(self, *, sys_clk_freq, module):
+        # Actions
+        g = self.add_argument_group(title="Actions")
+        self.add(g, "--build", action="store_true", help="Build bitstream")
+        self.add(g, "--load",  action="store_true", help="Load bitstream")
+        self.add(g, "--docs",  action="store_true", help="Generate documentation")
+        self.add(g, "--sim", action="store_true", help="Build and run in simulation mode")
 
-    # Litex args
-    builder_args(parser.add_argument_group(title="Builder"))
-    soc_core_args(parser.add_argument_group(title="SoC Core"))
+        # Target args
+        g = self.add_argument_group(title="Row Hammer tester")
+        self.add(g, "--sys-clk-freq", default=sys_clk_freq, help="System clock frequency")
+        self.add(g, "--module", default=module, help="DRAM module")
+        self.add(g, "--from-spd", required=False, help="Use DRAM module data from given file. Overwrites --module")
+        self.add(g, "--speedgrade", default=None, help="DRAM module speedgrade, default value depends on module")
+        self.add(g, "--no-memory-bist", action="store_true", help="Disable memory BIST module")
+        self.add(g, "--pattern-data-size", default="1024", help="BIST pattern data memory size in bytes")
+        self.add(g, "--no-payload-executor", action="store_true", help="Disable Payload Executor module")
+        self.add(g, "--payload-size", default="1024", help="Payload memory size in bytes")
+        self.add(g, "--scratchpad-size", default="1024", help="Scratchpad memory size in bytes")
+        self.add(g, "--ip-address", default="192.168.100.50", help="Use given IP address")
+        self.add(g, "--mac-address", default="0x10e2d5000001", help="Use given MAC address")
+        self.add(g, "--udp-port", default="1234", help="Use given UDP port")
+        self.add(g, "--bist-inversion-rowbits", default="5", help="Number of row bits used for BIST data inversion feature")
+
+        # Litex args
+        builder_args(self.add_argument_group(title="Builder"))
+        soc_core_args(self.add_argument_group(title="SoC Core"))
 
 
 def get_sdram_module(name):

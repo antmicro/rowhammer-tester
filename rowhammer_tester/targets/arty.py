@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import argparse
-
 from migen import *
 
 from litex_boards.platforms import arty
@@ -93,12 +91,15 @@ class SoC(common.RowHammerSoC):
 # Build --------------------------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="LiteX SoC on Arty A7")
-    parser.add_argument("--toolchain", default="vivado", choices=['vivado', 'symbiflow'],
-                        help="Gateware toolchain to use (default=vivado)")
-
-    common.parser_args(parser, sys_clk_freq='100e6', module='MT41K128M16')
-    vivado_build_args(parser)
+    parser = common.ArgumentParser(
+        description  = "LiteX SoC on Arty A7",
+        sys_clk_freq = '100e6',
+        module       = 'MT41K128M16',
+    )
+    g = parser.add_argument_group(title="Arty A7")
+    parser.add(g, "--toolchain", default="vivado", choices=['vivado', 'symbiflow'],
+        help="Gateware toolchain to use (default=vivado)")
+    vivado_build_args(g)
     args = parser.parse_args()
 
     soc_kwargs = common.get_soc_kwargs(args)
