@@ -37,19 +37,19 @@ class CRG(Module):
 # SoC ----------------------------------------------------------------------------------------------
 
 class SoC(common.RowHammerSoC):
-    def __init__(self, iodelay_clk_freq=200e6, **kwargs):
-        self.iodelay_clk_freq = iodelay_clk_freq
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def get_platform(self):
         return antmicro_lpddr4_test_board.Platform()
 
     def get_crg(self):
-        return CRG(self.platform, self.sys_clk_freq, iodelay_clk_freq=self.iodelay_clk_freq)
+        return CRG(self.platform, self.sys_clk_freq,
+            iodelay_clk_freq=float(self.args.iodelay_clk_freq))
 
     def get_ddrphy(self):
         return lpddr4.K7LPDDR4PHY(self.platform.request("lpddr4"),
-            iodelay_clk_freq = self.iodelay_clk_freq,
+            iodelay_clk_freq = float(self.args.iodelay_clk_freq),
             sys_clk_freq     = self.sys_clk_freq)
 
     def get_sdram_ratio(self):
@@ -57,10 +57,11 @@ class SoC(common.RowHammerSoC):
 
     def add_host_bridge(self):
         self.submodules.ethphy = LiteEthS7PHYRGMII(
-            clock_pads      = self.platform.request("eth_clocks"),
-            pads            = self.platform.request("eth"),
-            hw_reset_cycles = math.ceil(float(self.args.eth_reset_time) * self.sys_clk_freq),
-            rx_delay        = 0.8e-9,
+            clock_pads       = self.platform.request("eth_clocks"),
+            pads             = self.platform.request("eth"),
+            hw_reset_cycles  = math.ceil(float(self.args.eth_reset_time) * self.sys_clk_freq),
+            rx_delay         = 0.8e-9,
+            iodelay_clk_freq = float(self.args.iodelay_clk_freq),
         )
         self.add_etherbone(
             phy          = self.ethphy,
@@ -79,6 +80,7 @@ def main():
     )
     g = parser.add_argument_group(title="LPDDR4 Test Board")
     parser.add(g, "--eth-reset-time", default="10e-3", help="Duration of Ethernet PHY reset")
+    parser.add(g, "--iodelay-clk-freq", default="200e6", help="IODELAY clock frequency")
     vivado_build_args(g)
     args = parser.parse_args()
 
