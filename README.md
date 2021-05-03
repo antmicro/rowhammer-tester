@@ -1,5 +1,7 @@
 # LiteX Row Hammer Tester
 
+Copyright (c) 2020-2021 [Antmicro](https://www.antmicro.com)
+
 The aim of this project is to provide a platform for testing the [DRAM "Row Hammer" vulnerability](https://users.ece.cmu.edu/~yoonguk/papers/kim-isca14.pdf).
 
 The repository includes:
