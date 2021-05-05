@@ -371,6 +371,7 @@ class ArgumentParser(argparse.ArgumentParser):
         g = self.add_argument_group(title="Actions")
         self.add(g, "--build", action="store_true", help="Build bitstream")
         self.add(g, "--load",  action="store_true", help="Load bitstream")
+        self.add(g, "--flash",  action="store_true", help="Flash bitstream")
         self.add(g, "--docs",  action="store_true", help="Generate documentation")
         self.add(g, "--sim", action="store_true", help="Build and run in simulation mode")
 
@@ -512,3 +513,8 @@ def run(args, builder, build_kwargs, target_name):
     if args.load:
         prog = builder.soc.platform.create_programmer()
         prog.load_bitstream(os.path.join(builder.gateware_dir, builder.soc.build_name + ".bit"))
+
+    if args.flash:
+        prog = builder.soc.platform.create_programmer()
+        prog.flash(0, os.path.join(builder.gateware_dir, builder.soc.build_name + ".bin"))
+

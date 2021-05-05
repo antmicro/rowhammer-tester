@@ -37,3 +37,12 @@ The results will be located in: ``build/lpddr4_test_board/gateware/antmicro_lpdd
 .. note::
 
    By typing ``make`` (without ``build``\ ) LiteX will generate build files without invoking Vivado.
+
+To save bitstream in flash memory, use:
+
+.. code-block:: sh
+
+   export TARGET=lpddr4_test_board
+   make flash
+
+To load bitstream from flash memory press PROG_B1 button on LPDDR4 Test Board. MODE2 jumper must be in FLASH position.
