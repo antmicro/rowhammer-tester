@@ -37,7 +37,7 @@ To install the dependencies on Ubuntu 18.04 LTS, run:
 
 .. code-block:: sh
 
-   apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel protobuf-compiler gcc-riscv64-linux-gnu openocd
+   apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel protobuf-compiler gcc-riscv64-linux-gnu
 
 .. note::
 
@@ -49,7 +49,18 @@ To install the dependencies on Ubuntu 18.04 LTS, run:
 
    ``gcc-9-base`` package installation solves the problem.
 
-Then run:
+To flash QSPI flash module on LPDDR4 Test Board you'll need a patched version of ``openocd`` program. To install it, run:
+
+.. code-block:: sh
+
+   git clone https://github.com/antmicro/openocd.git -b add-jtagspi-command
+   cd openocd
+   ./bootstrap
+   ./configure --enable-ftdi
+   make -j `nproc`
+   sudo make install
+
+Then clone rowhammer-tester repository with:
 
 .. code-block:: sh
 
