@@ -46,6 +46,18 @@ else
 	python rowhammer_tester/targets/$(TARGET).py --load $(TARGET_ARGS)
 endif
 
+flash: FORCE
+ifeq ($(TARGET),zcu104)
+	@echo "For ZCU104 please copy the file build/zcu104/gateware/zcu104.bit to the boot partition on microSD card"
+	@exit 1
+else
+	python rowhammer_tester/targets/$(TARGET).py --flash $(TARGET_ARGS)
+ifeq ($(TARGET),lpddr4_test_board)
+	# Enable Quad mode in spi flash module
+	openocd -f prog/openocd_xc7_ft4232.cfg -c "init; jtagspi_init 0 prog/bscan_spi_xc7k70t.bit; jtagspi write_cmd 1 512 16 0; exit"
+endif
+endif
+
 srv: FORCE
 	litex_server --udp --udp-ip $(IP_ADDRESS) --udp-port $(UDP_PORT)
 

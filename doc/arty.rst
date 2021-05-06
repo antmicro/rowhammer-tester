@@ -31,3 +31,12 @@ The results will be located in: ``build/arty/gateware/arty.bit``. To upload it, 
 .. note::
 
    By typing ``make`` (without ``build``\ ) LiteX will generate build files without invoking Vivado.
+
+To save bitstream in flash memory, use:
+
+.. code-block:: sh
+
+   export TARGET=arty
+   make flash
+
+Bitstream will be loaded from flash memory upon device power-on or after a PROG button press.
