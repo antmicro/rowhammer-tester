@@ -20,7 +20,9 @@ from rowhammer_tester.targets import common
 # CRG ----------------------------------------------------------------------------------------------
 
 class CRG(Module):
-    def __init__(self, platform, sys_clk_freq):
+    IODELAYCTRL_REFCLK_RANGE = (300e6, 800e6)  # according to Zynq US+ MPSoC datasheet
+
+    def __init__(self, platform, sys_clk_freq, iodelay_clk_freq):
         self.rst = Signal()
         self.clock_domains.cd_sys    = ClockDomain()
         self.clock_domains.cd_sys4x  = ClockDomain(reset_less=True)
@@ -34,7 +36,7 @@ class CRG(Module):
         self.comb += pll.reset.eq(self.rst)
         pll.register_clkin(platform.request("clk125"), 125e6)
         pll.create_clkout(self.cd_pll4x, sys_clk_freq*4, buf=None, with_reset=False)
-        pll.create_clkout(self.cd_idelay, 500e6, with_reset=False)
+        pll.create_clkout(self.cd_idelay, iodelay_clk_freq, with_reset=False)
         pll.create_clkout(self.cd_uart, sys_clk_freq, with_reset=False)
 
         self.specials += [
@@ -46,7 +48,21 @@ class CRG(Module):
             AsyncResetSynchronizer(self.cd_idelay, ~pll.locked),
         ]
 
+        fmin, fmax = self.IODELAYCTRL_REFCLK_RANGE
+        assert fmin <= iodelay_clk_freq <= fmax, \
+            f"IDELAYCTRL refclk must be in range ({fmin/1e6}, {fmax/1e6}) MHz, got {iodelay_clk_freq/1e6} MHz"
         self.submodules.idelayctrl = USIDELAYCTRL(cd_ref=self.cd_idelay, cd_sys=self.cd_sys)
+
+    @classmethod
+    def find_iodelay_clk_freq(cls, sys_clk_freq):
+        # try to find IODELAYCTRL refclk as a multiple of sysclk so that a PLL config almost always is found
+        fmin, fmax = cls.IODELAYCTRL_REFCLK_RANGE
+        mul = 4
+        while sys_clk_freq * mul < fmin:
+            mul *= 2
+        while sys_clk_freq * mul > fmax and mul >= 1:
+            mul //= 2
+        return sys_clk_freq * mul
 
 # SoC ----------------------------------------------------------------------------------------------
 
@@ -212,20 +228,29 @@ class SoC(common.RowHammerSoC):
         return zcu104.Platform()
 
     def get_crg(self):
-        return CRG(self.platform, self.sys_clk_freq)
+        return CRG(self.platform, self.sys_clk_freq, iodelay_clk_freq=self.iodelay_clk_freq)
 
     def get_ddrphy(self):
         return usddrphy.USPDDRPHY(
             pads             = self.platform.request("ddram"),
             memtype          = "DDR4",
             sys_clk_freq     = self.sys_clk_freq,
-            iodelay_clk_freq = 500e6)
+            iodelay_clk_freq = self.iodelay_clk_freq)
 
     def get_sdram_ratio(self):
         return "1:4"
 
     def add_host_bridge(self):
         self.add_uartbone(name="serial", clk_freq=self.sys_clk_freq, baudrate=1e6, cd="uart")
+
+    @property
+    def iodelay_clk_freq(self):
+        if not hasattr(self, '_iodelay_clk_freq'):
+            if self.args.iodelay_clk_freq is None:
+                self._iodelay_clk_freq = CRG.find_iodelay_clk_freq(float(self.args.sys_clk_freq))
+            else:
+                self._iodelay_clk_freq = self.args.iodelay_clk_freq
+        return self._iodelay_clk_freq
 
 # Build --------------------------------------------------------------------------------------------
 
@@ -236,6 +261,7 @@ def main():
         module       = 'MTA4ATF51264HZ'
     )
     g = parser.add_argument_group(title="ZCU104")
+    g.add_argument("--iodelay-clk-freq", type=float, help="Use given exact IODELAYCTRL reference clock frequency")
     vivado_build_args(g)
     args = parser.parse_args()
 
