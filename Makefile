@@ -18,6 +18,10 @@ PATH := $(PWD)/venv/bin:$(PATH)
 # other binaries
 PATH := $(PWD)/bin:$(PATH)
 PATH := $(PWD)/third_party/verilator/image/bin:$(PATH)
+# As `python third_party/litex/litex_setup.py` would download to `./..` (litex_setup.py avoids .gitignore), so
+# `cd third_party && python litex/litex_setup.py` should be used instead, and the toolchain will then go to:
+# `third_party/riscv64-*`.
+PATH := $(PWD)/third_party/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-ubuntu14/bin:$(PATH)
 export PATH
 
 PYTHON_FILES := $(shell find rowhammer_tester tests -name '*.py')
