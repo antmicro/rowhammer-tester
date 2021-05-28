@@ -37,7 +37,7 @@ To install the dependencies on Ubuntu 18.04 LTS, run:
 
 .. code-block:: sh
 
-   apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel protobuf-compiler gcc-riscv64-linux-gnu
+   apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel protobuf-compiler
 
 .. note::
 
@@ -48,6 +48,9 @@ To install the dependencies on Ubuntu 18.04 LTS, run:
       libc6-dev : Breaks: libgcc-9-dev (< 9.3.0-5~) but 9.2.1-19 is to be installed
 
    ``gcc-9-base`` package installation solves the problem.
+
+OpenOCD
+^^^^^^^
 
 To flash QSPI flash module on LPDDR4 Test Board you'll need a patched version of ``openocd`` program. To install it, run:
 
@@ -60,7 +63,10 @@ To flash QSPI flash module on LPDDR4 Test Board you'll need a patched version of
    make -j `nproc`
    sudo make install
 
-Then clone rowhammer-tester repository with:
+Row-hammer tester
+^^^^^^^^^^^^^^^^^
+
+Now clone the ``litex-rowhammer-tester`` repository and install the rest of the required dependecies:
 
 .. code-block:: sh
 
@@ -68,14 +74,16 @@ Then clone rowhammer-tester repository with:
    cd litex-rowhammer-tester
    make deps
 
-The last command will download and build all the dependencies and will set up a `Python virtual environment <https://docs.python.org/3/library/venv.html>`_ under the ``./venv`` directory with all the required packages installed.
+The last command will download and build all the dependencies (inlcuding a RISC-V GCC toolchain)
+and will set up a `Python virtual environment <https://docs.python.org/3/library/venv.html>`_ under
+the ``./venv`` directory with all the required packages installed.
 
 The virtual environment allows you to use Python without installing the packages system-wide.
 To enter the environment, you have to run ``source venv/bin/activate`` in each new shell.
 You can also use the provided ``make env`` target, which will start a new Bash shell with the virtualenv already sourced.
 You can install packages inside the virtual environment by entering the environment and then using ``pip``.
 
-..
+.. note::
 
    Some options to the scripts may require additional Python dependencies. To install them run ``pip install -r requirements-dev.txt`` inside the virtual environment.
 

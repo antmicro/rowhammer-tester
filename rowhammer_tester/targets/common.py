@@ -111,6 +111,7 @@ class RowHammerSoC(SoCCore):
         SoCCore.__init__(self, self.platform, sys_clk_freq,
             ident          = "LiteX Row Hammer Tester SoC on {}, git: {}".format(self.platform.device, githash),
             ident_version  = True,
+            integrated_rom_mode = 'rw' if args.rw_bios_mem else 'r',
             **kwargs)
 
         # CRG --------------------------------------------------------------------------------------
@@ -371,6 +372,7 @@ class ArgumentParser(argparse.ArgumentParser):
         g = self.add_argument_group(title="Actions")
         self.add(g, "--build", action="store_true", help="Build bitstream")
         self.add(g, "--load",  action="store_true", help="Load bitstream")
+        self.add(g, "--load-bios", action="store_true", help="(debug) Reload BIOS (requires writable BIOS memory)")
         self.add(g, "--flash",  action="store_true", help="Flash bitstream")
         self.add(g, "--docs",  action="store_true", help="Generate documentation")
         self.add(g, "--sim", action="store_true", help="Build and run in simulation mode")
@@ -378,6 +380,7 @@ class ArgumentParser(argparse.ArgumentParser):
         # Target args
         g = self.add_argument_group(title="Row Hammer tester")
         self.add(g, "--sys-clk-freq", default=sys_clk_freq, help="System clock frequency")
+        self.add(g, "--rw-bios-mem", action="store_true", help="(debug) Make BIOS memory writable")
         self.add(g, "--module", default=module, help="DRAM module")
         self.add(g, "--from-spd", required=False, help="Use DRAM module data from given file. Overwrites --module")
         self.add(g, "--speedgrade", default=None, help="DRAM module speedgrade, default value depends on module")
@@ -513,6 +516,29 @@ def run(args, builder, build_kwargs, target_name):
     if args.load:
         prog = builder.soc.platform.create_programmer()
         prog.load_bitstream(os.path.join(builder.gateware_dir, builder.soc.build_name + ".bit"))
+
+    if args.load_bios:
+        assert args.rw_bios_mem, 'BIOS memory must be writible'
+
+        from rowhammer_tester.scripts.utils import RemoteClient, memwrite
+        wb = RemoteClient()
+        wb.open()
+
+        from litex.soc.integration.common import get_mem_data
+        bios_bin = os.path.join(builder.software_dir, "bios", "bios.bin")
+        rom_data = get_mem_data(bios_bin, "little")
+        print(f"Loading BIOS from: {bios_bin} starting at 0x{wb.mems.rom.base:08x} ...")
+
+        print('Stopping CPU')
+        wb.regs.ctrl_reset.write(0b10)  # cpu_rst
+
+        memwrite(wb, rom_data, base=wb.mems.rom.base)
+        wb.read(wb.mems.rom.base)
+
+        print('Rebooting CPU')
+        wb.regs.ctrl_reset.write(0)
+
+        wb.close()
 
     if args.flash:
         prog = builder.soc.platform.create_programmer()

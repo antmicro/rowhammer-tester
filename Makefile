@@ -18,6 +18,7 @@ PATH := $(PWD)/venv/bin:$(PATH)
 # other binaries
 PATH := $(PWD)/bin:$(PATH)
 PATH := $(PWD)/third_party/verilator/image/bin:$(PATH)
+PATH := $(PWD)/third_party/riscv64-unknown-elf-gcc/bin:$(PATH)
 export PATH
 
 PYTHON_FILES := $(shell find rowhammer_tester tests -name '*.py')
@@ -95,6 +96,7 @@ deps:: # Intentionally skipping --recursive as not needed (but doesn't break any
 	(make --no-print-directory -C . \
 		third_party/verilator/image/bin/verilator \
 		third_party/xc3sprog/xc3sprog \
+		third_party/riscv64-unknown-elf-gcc \
 		python-deps)
 
 python-deps: venv/bin/activate  # installs python dependencies inside virtual environment
@@ -102,6 +104,13 @@ python-deps: venv/bin/activate  # installs python dependencies inside virtual en
 
 venv/bin/activate:  # creates virtual environment if it does not exist
 	python3 -m venv venv
+
+# `litex_setup.py` will avoid downloading to directories with .gitignore, so we install in third_party/
+third_party/riscv64-unknown-elf-gcc:
+	cd third_party/ && python litex/litex_setup.py gcc dev
+	find third_party/ -name 'riscv64-unknown-elf-gcc*' -type d \
+		-exec mv {} third_party/riscv64-unknown-elf-gcc \; \
+		-quit
 
 third_party/verilator/image/bin/verilator: third_party/verilator/configure.ac
 	(cd third_party/verilator && autoconf && \
