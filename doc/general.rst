@@ -63,46 +63,20 @@ To flash QSPI flash module on LPDDR4 Test Board you'll need a patched version of
    make -j `nproc`
    sudo make install
 
-Cloning litex-rowhammer-tester
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Row-hammer tester
+^^^^^^^^^^^^^^^^^
 
-Now clone the litex-rowhammer-tester repository and change your working directory to the repository (commands
-in the following sections assume that thay you run them from the ``litex-rowhammer-tester`` directory).
+Now clone the ``litex-rowhammer-tester`` repository and install the rest of the required dependecies:
 
 .. code-block:: sh
 
    git clone --recursive https://github.com/antmicro/litex-rowhammer-tester.git
    cd litex-rowhammer-tester
-
-RISC-V GCC toolchain
-^^^^^^^^^^^^^^^^^^^^
-
-To build firmware for the CPU instantiated in the FPGA you will also need a RISC-V GCC toolchain. On some systems
-(e.g. Ubuntu 20.04) the ``gcc-riscv64-unknown-elf`` package may be already available and can be installed using
-the system package manager (e.g. ``sudo apt install gcc-riscv64-unknown-elf``) and you can continue to the next
-section.
-If it is not available for your distribution, then the toolchain can be installed using the following command:
-
-.. code-block:: sh
-
-   cd third_party
-   python litex/litex_setup.py gcc dev
-   cd ..
-
-The toolchain will be installed inside the ``litex-rowhammer-tester`` directory.
-The installer will inform you that you must include the path to the RISC-V toolchain in you ``PATH`` environmental variable.
-You will not have to do this as long as you always build bitstream using the provided ``Makefile``.
-
-litex-rowhammer-tester dependencies
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Now install the reset of the dependencies:
-
-.. code-block:: sh
-
    make deps
 
-The last command will download and build all the dependencies and will set up a `Python virtual environment <https://docs.python.org/3/library/venv.html>`_ under the ``./venv`` directory with all the required packages installed.
+The last command will download and build all the dependencies (inlcuding a RISC-V GCC toolchain)
+and will set up a `Python virtual environment <https://docs.python.org/3/library/venv.html>`_ under
+the ``./venv`` directory with all the required packages installed.
 
 The virtual environment allows you to use Python without installing the packages system-wide.
 To enter the environment, you have to run ``source venv/bin/activate`` in each new shell.
