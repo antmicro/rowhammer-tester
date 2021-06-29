@@ -43,8 +43,9 @@ class CRG(Module):
 # SoC ----------------------------------------------------------------------------------------------
 
 class SoC(common.RowHammerSoC):
-    def __init__(self, toolchain='vivado', **kwargs):
+    def __init__(self, variant="a7-35", toolchain='vivado', **kwargs):
         self.toolchain = toolchain
+        self.variant = variant
         super().__init__(**kwargs)
 
         # # Analyzer ---------------------------------------------------------------------------------
@@ -62,7 +63,7 @@ class SoC(common.RowHammerSoC):
         # self.add_csr("analyzer")
 
     def get_platform(self):
-        return arty.Platform()
+        return arty.Platform(variant=self.variant, toolchain=self.toolchain)
 
     def get_crg(self):
         return CRG(self.platform, self.sys_clk_freq)
@@ -98,12 +99,13 @@ def main():
     )
     g = parser.add_argument_group(title="Arty A7")
     parser.add(g, "--toolchain", default="vivado", choices=['vivado', 'symbiflow'],
-        help="Gateware toolchain to use (default=vivado)")
+        help="Gateware toolchain to use")
+    parser.add(g, "--variant", default="a7-35", choices=['a7-35', 'a7-100'], help="FPGA variant")
     vivado_build_args(g)
     args = parser.parse_args()
 
     soc_kwargs = common.get_soc_kwargs(args)
-    soc = SoC(toolchain=args.toolchain, **soc_kwargs)
+    soc = SoC(variant=args.variant, toolchain=args.toolchain, **soc_kwargs)
 
     target_name = 'arty'
     builder_kwargs = common.get_builder_kwargs(args, target_name=target_name)
