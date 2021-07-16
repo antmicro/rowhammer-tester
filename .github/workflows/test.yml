@@ -6,6 +6,11 @@ jobs:
   build:
     runs-on: ubuntu-18.04
     steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          access_token: ${{ github.token }}    
+    
       - name: Checkout litex-rowhammer-tester
         uses: actions/checkout@v2
         with:
