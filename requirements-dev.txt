@@ -1,4 +1,5 @@
 ipython
 ipdb
 matplotlib
+numpy
 pyqt5

@@ -113,7 +113,19 @@ class RowHammer:
                 for addr, value, expected in e)
             for e in row_errors.values())
 
+    @staticmethod
+    def bitflip_list(val, exp):
+        expr = f'{val ^ exp:#0{len(bin(exp))}b}'
+        return [i for i, c in enumerate(expr[2:]) if c == '1']
+
     def display_errors(self, row_errors):
+
+        COLS = 2**self.settings.geom.colbits
+        ROWS = 2**self.settings.geom.rowbits
+
+        if self.plot:
+            mem = [[[] for i in range(COLS)] for j in range(ROWS)]
+
         for row in row_errors:
             if len(row_errors[row]) > 0:
                 print(
@@ -123,22 +135,19 @@ class RowHammer:
                             self.bitflips(value, expected)
                             for addr, value, expected in row_errors[row]),
                         n=len(str(2**self.settings.geom.rowbits - 1))))
-            if self.verbose:
-                for i, word, expected in row_errors[row]:
-                    base_addr = min(self.addresses_per_row(row))
-                    addr = base_addr + 4 * i
-                    bank, _row, col = self.converter.decode_bus(addr)
+            for i, word, expected in row_errors[row]:
+                base_addr = min(self.addresses_per_row(row))
+                addr = base_addr + 4 * i
+                bank, _row, col = self.converter.decode_bus(addr)
+                if self.plot:
+                    mem[_row][col] = self.bitflip_list(word, expected)
+                if self.verbose:
                     print(
-                        "Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(addr, word, _row, col))
+                        "Error: 0x{:08x}: 0x{:08x} != 0x{:08x} 0x{:08x} (row={}, col={})".format(
+                            addr, word, expected, word ^ expected, _row, col))
 
         if self.plot:
-            from matplotlib import pyplot as plt
-            row_err_counts = [len(row_errors.get(row, [])) for row in self.rows]
-            plt.bar(self.rows, row_err_counts, width=1)
-            plt.grid(True)
-            plt.xlabel('Row')
-            plt.ylabel('Errors')
-            plt.show()
+            plot(mem)
 
     def run(self, row_pairs, pattern_generator, read_count, row_progress=16, verify_initial=False):
         # TODO: need to invert data when writing/reading, make sure Python integer inversion works correctly
@@ -209,6 +218,48 @@ class RowHammer:
 
 
 ################################################################################
+
+
+def plot(data, step=32, col_labels=8):
+    from matplotlib import pyplot as plt
+    import numpy as np
+
+    rows = len(data)
+    cols = len(data[0])
+
+    row_vals = []
+    col_vals = []
+
+    for row in range(rows):
+        for col in range(cols):
+            for i in range(len(data[row][col])):
+                row_vals.append(row)
+                col_vals.append(col)
+
+    rows = max(row_vals) - min(row_vals)
+    col_bins = cols // step
+
+    bins = [
+        range(0, cols + 1, int(cols / col_bins)),
+        np.arange(min(row_vals) - 0.5,
+                  max(row_vals) + 1, 1)
+    ]
+
+    h, _, _, _ = plt.hist2d(
+        col_vals, row_vals, bins=bins, range=[[0, cols], [min(row_vals),
+                                                          max(row_vals)]])
+
+    plt.xlabel('Column')
+    plt.xticks(range(0, cols + 1, int(cols / col_labels)))
+
+    plt.ylabel('Row')
+    plt.yticks(range(min(row_vals), max(row_vals) + 1, 1))
+
+    bounds = np.arange(-.5, int(np.amax(h) + 1.5), 1)
+    ticks = range(0, int(np.amax(h) + 2), 1)
+    plt.colorbar(ticks=ticks, boundaries=bounds)
+
+    plt.show()
 
 
 def patterns_const(rows, value):
