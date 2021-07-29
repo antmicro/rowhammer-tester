@@ -103,7 +103,7 @@ class HwRowHammer(RowHammer):
                 print('OK')
             else:
                 print()
-                self.display_errors(errors)
+                self.display_errors(errors, row_pairs)
                 return
 
         if self.no_refresh:
@@ -132,7 +132,7 @@ class HwRowHammer(RowHammer):
             print('OK')
         else:
             print()
-            self.display_errors(errors)
+            self.display_errors(errors, row_pairs)
             return
 
 

@@ -118,7 +118,7 @@ class RowHammer:
         expr = f'{val ^ exp:#0{len(bin(exp))}b}'
         return [i for i, c in enumerate(expr[2:]) if c == '1']
 
-    def display_errors(self, row_errors):
+    def display_errors(self, row_errors, target_rows=None):
 
         COLS = 2**self.settings.geom.colbits
         ROWS = 2**self.settings.geom.rowbits
@@ -147,7 +147,7 @@ class RowHammer:
                             addr, word, expected, word ^ expected, _row, col))
 
         if self.plot:
-            plot(mem)
+            plot(mem, target_rows=target_rows)
 
     def run(self, row_pairs, pattern_generator, read_count, row_progress=16, verify_initial=False):
         # TODO: need to invert data when writing/reading, make sure Python integer inversion works correctly
@@ -173,7 +173,7 @@ class RowHammer:
                 print('OK')
             else:
                 print()
-                self.display_errors(errors)
+                self.display_errors(errors, row_pairs)
                 return
 
         if self.no_refresh:
@@ -198,7 +198,7 @@ class RowHammer:
             print('OK')
         else:
             print()
-            self.display_errors(errors)
+            self.display_errors(errors, row_pairs)
             return
 
     def payload_executor_attack(self, read_count, row_tuple):
@@ -220,7 +220,113 @@ class RowHammer:
 ################################################################################
 
 
-def plot(data, step=32, col_labels=8):
+def _export_vis_config(entries, output_file='sdbv.config.json'):
+    import json
+
+    e = list()
+
+    for name, path in entries:
+        e.append({'name': name, 'url': path})
+
+    config = {'dataFilesList': e}
+
+    with open(output_file, 'w') as f:
+        json.dump(config, f)
+
+
+def _export_vis_metadata(
+        first_row, last_row, cols, data_file='output.data.json', output_file='output.json'):
+    import datetime
+    import json
+
+    meta = {
+        'buildDate': datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+        'grids': {
+            'rowhammer': {
+                'name': 'Rowhammer',
+                'colsRange': cols - 1,
+                'rowsRange': [first_row, last_row],
+                'cells': {
+                    'fieldOrder':
+                    ['col', 'row', 'width', 'type', 'name', 'fullName', 'description'],
+                    'fieldTemplates': {
+                        'color': '{get(COLORS, type)}'
+                    },
+                    'templateConsts': {
+                        'COLORS': {
+                            'OK': 19,
+                            'FLIP': 1,
+                            'TGT': 3
+                        }
+                    },
+                    'data': {
+                        '@import': data_file
+                    }
+                }
+            }
+        }
+    }
+
+    with open(output_file, 'w') as f:
+        json.dump(meta, f)
+
+
+def _export_vis(data, step, target_rows=None, output_dir='vis', output_name='output'):
+    from pathlib import Path
+    import numpy as np
+    import json
+
+    out = Path(output_dir).resolve()
+    out.mkdir(parents=True, exist_ok=True)
+
+    data_file = str(out / (output_name + '.data.json'))
+    meta_file = str(out / (output_name + '.json'))
+    conf_file = str(out / 'sdbv.config.json')
+
+    rows = len(data)
+    cols = len(data[0])
+
+    vis_data = list()
+
+    first_row = None
+    last_row = None
+
+    for i in range(rows):
+        if max([len(data[i][j]) for j in range(cols)]) == 0:
+            continue
+        else:
+            last_row = i
+            if first_row is None:
+                first_row = i
+            for j in range(0, cols, step):
+                flips_list = data[i][j:j + step]
+                flips = int(sum([len(f) for f in flips_list]))
+                t = 'FLIP' if flips > 0 else 'OK'
+
+                desc = ['# Bits affected']
+
+                for col, ent in enumerate(flips_list):
+                    if len(ent):
+                        desc.append({f'Column {j+col}': f'{ent}'})
+
+                vis_data.append(
+                    [
+                        int(j / step), i, 1, t, f'{flips}' if flips > 0 else 'OK',
+                        f'Columns {j} to {j+step-1}', desc
+                    ])
+
+    _export_vis_metadata(first_row, last_row, cols // step, output_name + '.data.json', meta_file)
+    _export_vis_config([('Rowhammer', output_name + '.json')], conf_file)
+
+    for row_tuple in target_rows:
+        for row in row_tuple:
+            vis_data.append([0, row, cols // step, 'TGT', 'Target', 'Target row', []])
+
+    with open(data_file, 'w') as f:
+        json.dump(vis_data, f)
+
+
+def plot(data, step=32, col_labels=8, target_rows=None):
     from matplotlib import pyplot as plt
     import numpy as np
 
@@ -258,6 +364,8 @@ def plot(data, step=32, col_labels=8):
     bounds = np.arange(-.5, int(np.amax(h) + 1.5), 1)
     ticks = range(0, int(np.amax(h) + 2), 1)
     plt.colorbar(ticks=ticks, boundaries=bounds)
+
+    _export_vis(data, step, target_rows)
 
     plt.show()
 
