@@ -96,8 +96,9 @@ deps:: # Intentionally skipping --recursive as not needed (but doesn't break any
 	(make --no-print-directory -C . \
 		third_party/verilator/image/bin/verilator \
 		third_party/xc3sprog/xc3sprog \
+		python-deps \
 		third_party/riscv64-unknown-elf-gcc \
-		python-deps)
+	)
 
 python-deps: venv/bin/activate  # installs python dependencies inside virtual environment
 	pip install -r requirements.txt

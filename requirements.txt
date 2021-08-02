@@ -15,3 +15,4 @@ gitpython
 git+https://github.com/litex-hub/pythondata-cpu-vexriscv.git
 pexpect
 yapf
+wheel

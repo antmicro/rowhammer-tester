@@ -1,0 +1,5 @@
+sphinx
+sphinx_tabs
+sphinx-jinja
+git+https://github.com/antmicro/sphinx_antmicro_theme
+sphinx-autobuild

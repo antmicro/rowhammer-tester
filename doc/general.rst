@@ -37,7 +37,7 @@ To install the dependencies on Ubuntu 18.04 LTS, run:
 
 .. code-block:: sh
 
-   apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel protobuf-compiler
+   apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel protobuf-compiler libcairo2
 
 .. note::
 
@@ -112,10 +112,16 @@ To build the documentation, enter:
 .. code-block:: sh
 
    source venv/bin/activate
-   pip install -r requirements.txt
-   python -m sphinx doc build/documentation
+   pip install -r requirements.txt -r requirements-doc.txt
+   python -m sphinx -b html doc build/documentation/html
 
 The documentation will be located in ``build/documentation/index.html``.
+
+.. note::
+
+   For easier development one can use `sphinx-autobuild <https://pypi.org/project/sphinx-autobuild>`_
+   using command ``sphinx-autobuild -b html doc build/documentation/html --re-ignore 'doc/build/.*'``.
+   The documentation can be then viewed in a browser at ``http://127.0.0.1:8000``.
 
 Tests
 -----
