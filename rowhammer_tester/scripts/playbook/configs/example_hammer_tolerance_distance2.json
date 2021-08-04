@@ -1,0 +1,20 @@
+{
+	"inversion_divisor" : 4,
+	"inversion_mask" : "0b0101",
+	"payload_generator" : "HammerTolerancePayloadGenerator",
+	"payload_generator_config" : {
+		"row_mapping" : "TypeARowMapping",
+		"verbose" : true,
+		"fill_local" : true,
+		# If we want 32 victims, we need 36 aggressors
+		"nr_rows" : 36,
+		"nr_chips" : 4,
+		"max_iteration" : 192,
+		"read_count_step" : 500000,
+		"iters_per_row" : 6,
+		"distance" : 2,
+		"baseline" : true,
+		"first_dummy_row" : 38,
+		"initial_read_count" : 2000000
+	}
+}

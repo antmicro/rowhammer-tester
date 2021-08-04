@@ -16,3 +16,6 @@ class RowGenerator:
 
     def get_memory_range(self, wb, settings):
         return 0x0, wb.mems.main_ram.size
+
+    def update_param(self, param, value):
+        raise NotImplementedError("Update any updatable configuration parameters")

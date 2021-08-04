@@ -1,0 +1,19 @@
+{
+	"inversion_divisor" : 2,
+	"inversion_mask" : "0b10",
+	"payload_generator" : "HalfDoubleAnalysisPayloadGenerator",
+	"payload_generator_config" : {
+		"row_mapping" : "TypeARowMapping",
+		"verbose" : true,
+		"attack_rows_start" : 0,
+		# If we want 32 victims, we need 36 aggressors
+		"max_attack_row_idx" : 36,
+		"decoy_rows_start" : 36,
+		"initial_dilution" : 116,
+		"dilution_multiplier" : 2,
+		"max_dilution" : 59392,
+		# 64ms
+		"max_total_read_count" : 950272,
+		"read_count_steps" : 16
+	}
+}

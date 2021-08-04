@@ -43,6 +43,19 @@ Generates a list of even numbered rows. Uses the row mapping specified by :ref:`
 * ``nr_rows`` - number of rows to be generated
 * ``max_row`` - maximal number to be used. The chosen numbers will be *modulo max_row*
 
+HalfDoubleRowGenerator
+**********************
+
+Generates a list of rows for a  `Half-Double <https://github.com/google/hammer-kit/blob/main/20210525_half_double.pdf>`_ attack.  The list will repeat rows to create weight difference between attacks at different distances.  Used by ``HalfDoubleAnalysisPayloadGenerator``.
+
+*  ``nr_rows`` - number of rows in the attack pattern.
+*  ``distance_one`` - does the attack have a distance one component?
+*  ``double_sided`` - is the attack double-sided?
+*  ``distance_two`` - does the attack have a distance two component?
+*  ``attack_rows_start`` - the index of the first attack row.
+*  ``max_attack_row_idx`` - the position of the last attack row relative to ``attack_rows_start``.
+*  ``decoy_rows_start`` - the index of the first decoy row.  There are 3 decoy rows that are used as placebos in various situations: to hammer away from the victim but to keep the number of hammers and timing constant.
+
 Payload generator class
 -----------------------
 
@@ -129,6 +142,10 @@ Here are the parameters that can be specified in *payload_generator_config* for 
   Victim rows will be 2 times fewer than this number. For example, to perform hammering for 32 victim rows, use 34 as the parameter value
 * ``read_count_step`` - this is how much to increment the hammer count between multiple tests for the same row.
   This is the number of hammers on single side (total number of hammers on both sides is 2x this value)
+*  ``initial_read_count`` - hammer count for the first test for a given row.  Defaults to ``read_count_step`` if unspecified.
+*  ``distance``  - distance between aggressors and victim.  Defaults to 1.
+*  ``baseline``  - when enabled, a retention effect baseline is collected by hammering distant rows for the same amount of time that the aggressors would be hammered.
+*  ``first_dummy_row`` - location of the first of two dummy rows used for baselining.
 * ``iters_per_row`` - number of times the hammer count is incremented for each row
 
 The results are a series of histograms with appropriate labeling.
@@ -168,6 +185,35 @@ Expected output:
   
   Progress: [============                            ]  323 / 1024 (Errors: 320) 
   ...
+
+HalfDoubleAnalysisPayloadGenerator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Half-Double <https://github.com/google/hammer-kit/blob/main/20210525_half_double.pdf>`_ is a Rowhammer phenomenon where accesses to both distance-one and distance-two neighbours of a victim row are used to generate bit flips.  This payload generator allows us to characterize the Half-Double effect on a memory part.
+
+For each candidate victim row, the analysis starts out with the maximum number of hammers and minimum dilution level.  Then, we proceed as follows:
+
+    1.  Dilution is increased until pure distance-one attacks stop working.
+    2.  Verify that pure distance-two attack doesn't work.
+    3.  Increase dilution level and record the number of bit flips in the victim until either the bit flips stop or maximum dilution level is reached.
+    4.  Once maximum dilution level is reached or bit flips stop, reduce hammer count by step and reset dilution to initial level and retry step 3.  Repeat until the lowest hammer count is reached.
+
+Note: the hammer count changes on a linear scale and dilution changes on an exponential scale.
+
+Results are presented as a table of values with columns representing hammer count and the rows representing dilution levels.  See Tables 2 and 3 in the Half-Double white paper as examples.
+
+
+*  ``max_total_read_count`` - maximum number of hammers issued to any given row during an iteration.
+*  ``read_count_steps`` - the amount to decrement the number of hammers for each iteration of the outer loop.
+*  ``initial_dilution`` - initial value for dilution.  Dilution resets to this value at the beginning of the inner loop.
+*  ``dilution_multiplier`` - dilution is multiplied by this value for each iteration of the inner loop.
+*  ``verbose`` - generates more output.
+*  ``row_mapping`` - specifies the style in which the rows are mapped on the chip.
+*  ``attack_rows_start`` - starting row number for rows actually used to attack the victim.
+*  ``max_attack_row_idx`` - index measured from ``attack_rows_start`` for the last attack row.
+*  ``decoy_rows_start`` - the position of the first decoy row. There are three decoy rows.  They are used as placebos during pure distance one portions of the experiment to make the number of hammers and their timing comparable.
+*  ``max_dilution`` - maximum value for dilution.
+*  ``fill_local`` - only reinitialize affected rows between experiments, as an optimization.
 
 Configurations
 --------------
