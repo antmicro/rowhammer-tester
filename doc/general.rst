@@ -367,6 +367,35 @@ Example:
    Bit-flips for row   132: 12
    Bit-flips for row   134: 3
 
+
+**Plotting**
+
+The scripts can also generate a plot that shows the bit-flip locations. To generate the plot pass the ``--plot`` argument.
+
+.. note::
+
+   To use this feature make sure to install additional Python dependencies using ``pip install -r requirements-dev.txt`` when inside the virtual environment.
+
+Additionally there is support for integrating with the `SymbiFlow Database Visualizer <https://github.com/antmicro/symbiflow-database-visualizer>`_.
+To use it first clone and build the visualizer with:
+
+.. code-block:: sh
+
+   git clone https://github.com/antmicro/symbiflow-database-visualizer
+   cd symbiflow-database-visualizer
+   npm run build
+
+Next run ``rowhammer.py`` or ``hw_rowhammer.py`` with the ``--plot`` argument, which will generate JSON files in ``vis/`` directory.
+Then copy the files from ``vis`` to ``symbiflow-database-visualizer/dist/production/`` and start a HTTP server in the ``production`` directory:
+
+.. code-block:: sh
+
+   cp vis/* symbiflow-database-visualizer/dist/production/
+   cd symbiflow-database-visualizer/dist/production/
+   python -m http.server 8080
+
+Then open the address ``http://0.0.0.0:8080/`` in your browser to view the visualization.
+
 bios_console.py
 ~~~~~~~~~~~~~~~
 
