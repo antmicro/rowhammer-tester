@@ -335,8 +335,9 @@ User can choose a pattern that memory will be initially filled with:
 * ``rand_per_row`` - random values for all rows
 
 There are also two versions of a rowhammer script:
-* ``rowhammer.py`` - this one uses Processing System to fill/check the memory
-* ``hw_rowhammer.py`` - BIST blocks will be used to fill/check the memory
+
+* ``rowhammer.py`` - this one uses regular memory access via EtherBone to fill/check the memory (slower)
+* ``hw_rowhammer.py`` - BIST blocks will be used to fill/check the memory (much faster, but with some limitations regarding fill pattern)
 
 BIST blocks are faster and are the intended way of running Row Hammer Tester.
 
