@@ -1,4 +1,4 @@
-# LiteX Row Hammer Tester
+# LiteX Rowhammer Tester
 
 Copyright (c) 2020-2021 [Antmicro](https://www.antmicro.com)
 
@@ -8,7 +8,7 @@ The repository includes:
 
 * `rowhammer_tester/` - Core part of the project, a Python module including:
 
-  * gateware for Row Hammer Tester platform
+  * gateware for Rowhammer Tester platform
   * userspace scripts used for running tests
 * `doc/` - Sphinx-based documentation for the project
 * `.github/` - Directory with CI configuration
