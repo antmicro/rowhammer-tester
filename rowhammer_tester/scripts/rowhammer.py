@@ -47,14 +47,14 @@ class RowHammer:
         return self._addresses_per_row[row]
 
     def attack(self, row_tuple, read_count, progress_header=''):
-        # Make sure that the row hammer module is in reset state
+        # Make sure that the Rowhammer module is in reset state
         self.wb.regs.rowhammer_enabled.write(0)
         self.wb.regs.rowhammer_count.read()  # clears the value
 
-        # Configure the row hammer attacker
+        # Configure the Rowhammer attacker
         assert len(
             row_tuple
-        ) == 2, 'Use BIST modules/Payload Executor to row hammer different number of rows than 2'
+        ) == 2, 'Use BIST modules/Payload Executor to hammer different number of rows than 2'
         addresses = [
             self.converter.encode_dma(bank=self.bank, col=self.column, row=r) for r in row_tuple
         ]
@@ -171,7 +171,7 @@ class RowHammer:
             print('\nDisabling refresh ...')
             self.wb.regs.controller_settings_refresh.write(0)
 
-        print('\nRunning row hammer attacks ...')
+        print('\nRunning Rowhammer attacks ...')
         for i, row_tuple in enumerate(row_pairs):
             s = 'Iter {:{n}} / {:{n}}'.format(i, len(row_pairs), n=len(str(len(row_pairs))))
             if self.payload_executor:
@@ -236,7 +236,7 @@ def main(row_hammer_cls):
         type=float,
         default=10e6,
         help='How many reads to perform for single address pair')
-    parser.add_argument('--hammer-only', nargs=2, type=int, help='Run only the row hammer attack')
+    parser.add_argument('--hammer-only', nargs=2, type=int, help='Run only the Rowhammer attack')
     parser.add_argument(
         '--no-refresh', action='store_true', help='Disable refresh commands during the attacks')
     parser.add_argument(

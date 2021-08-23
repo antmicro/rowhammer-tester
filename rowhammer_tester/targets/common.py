@@ -430,7 +430,7 @@ def get_soc_kwargs(args):
         integrated_sram_size     = 0x2000,
         integrated_main_ram_size = 0,
     ))
-    # Common arguments to row hammer SoC
+    # Common arguments to Rowhammer SoC
     module = get_sdram_module(args.module) if args.from_spd is None else None
     soc_kwargs.update(dict(
         args                    = args,

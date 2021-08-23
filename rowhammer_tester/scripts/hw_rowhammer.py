@@ -110,7 +110,7 @@ class HwRowHammer(RowHammer):
             print('\nDisabling refresh ...')
             self.wb.regs.controller_settings_refresh.write(0)
 
-        print('\nRunning row hammer attacks ...')
+        print('\nRunning Rowhammer attacks ...')
         for i, row_tuple in enumerate(row_pairs):
             s = 'Iter {:{n}} / {:{n}}'.format(i, len(row_pairs), n=len(str(len(row_pairs))))
             if self.payload_executor:
