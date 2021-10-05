@@ -1,7 +1,7 @@
 [submodule "litedram"]
 	path = third_party/litedram
 	url = https://github.com/antmicro/litedram.git
-	branch = lpddr4-rebased
+	branch = lpddr5-rebased
 [submodule "liteeth"]
 	path = third_party/liteeth
 	url = https://github.com/enjoy-digital/liteeth.git
