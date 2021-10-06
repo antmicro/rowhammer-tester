@@ -13,6 +13,11 @@ gitpython
 -e third_party/litepcie
 # vexriscv cpu
 git+https://github.com/litex-hub/pythondata-cpu-vexriscv.git
+# litex software data
+git+https://github.com/litex-hub/pythondata-software-picolibc.git
+
+# PyPi packages
+meson
 pexpect
 yapf
 wheel
