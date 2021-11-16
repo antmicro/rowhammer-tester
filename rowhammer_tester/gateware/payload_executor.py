@@ -74,8 +74,8 @@ class Decoder(Module):
     # TODO: Load widths from .proto file
     INSTRUCTION    = 32
     OP_CODE        = 3
-    TIMESLICE      = 8
-    ADDRESS        = 21
+    TIMESLICE      = 6
+    ADDRESS        = 23
     TIMESLICE_NOOP = TIMESLICE + ADDRESS
     LOOP_COUNT     = 12
     LOOP_JUMP      = 17
@@ -85,7 +85,7 @@ class Decoder(Module):
         assert self.OP_CODE + self.TIMESLICE_NOOP == self.INSTRUCTION
         assert self.OP_CODE + self.TIMESLICE + self.ADDRESS == self.INSTRUCTION
         assert self.OP_CODE + self.LOOP_COUNT + self.LOOP_JUMP == self.INSTRUCTION
-        assert rankbits + bankbits + max(rowbits, colbits) <= self.ADDRESS
+        assert rankbits + bankbits + max(rowbits, colbits) <= self.ADDRESS, (rankbits + bankbits + max(rowbits, colbits), self.ADDRESS)
 
         self.op_code = Signal(self.OP_CODE)
         # DFI-mappable instructions
