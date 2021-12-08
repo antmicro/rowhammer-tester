@@ -19,6 +19,7 @@ PATH := $(PWD)/venv/bin:$(PATH)
 PATH := $(PWD)/bin:$(PATH)
 PATH := $(PWD)/third_party/verilator/image/bin:$(PATH)
 PATH := $(PWD)/third_party/riscv64-unknown-elf-gcc/bin:$(PATH)
+PATH := $(PWD)/third_party/symbiflow/xc7/install/bin:$(PATH)
 export PATH
 
 PYTHON_FILES := $(shell find rowhammer_tester tests -name '*.py')
@@ -98,7 +99,13 @@ deps:: # Intentionally skipping --recursive as not needed (but doesn't break any
 		third_party/xc3sprog/xc3sprog \
 		python-deps \
 		third_party/riscv64-unknown-elf-gcc \
+		third_party/symbiflow/xc7/install/bin/symbiflow_synth \
 	)
+
+third_party/symbiflow/xc7/install/bin/symbiflow_synth:
+	mkdir -p third_party/symbiflow/xc7/install
+	wget -qO- https://storage.googleapis.com/symbiflow-arch-defs/artifacts/prod/foss-fpga-tools/symbiflow-arch-defs/continuous/install/459/20211116-000105/symbiflow-arch-defs-install-ef6fff3c.tar.xz | tar -xJC third_party/symbiflow/xc7/install
+	wget -qO- https://storage.googleapis.com/symbiflow-arch-defs/artifacts/prod/foss-fpga-tools/symbiflow-arch-defs/continuous/install/459/20211116-000105/symbiflow-arch-defs-xc7a50t_test-ef6fff3c.tar.xz | tar -xJC third_party/symbiflow/xc7/install
 
 python-deps: venv/bin/activate  # installs python dependencies inside virtual environment
 	pip install -r requirements.txt
