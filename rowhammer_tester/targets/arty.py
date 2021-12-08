@@ -110,7 +110,7 @@ def main():
     target_name = 'arty'
     builder_kwargs = common.get_builder_kwargs(args, target_name=target_name)
     builder = Builder(soc, **builder_kwargs)
-    build_kwargs = vivado_build_argdict(args) if not args.sim else {}
+    build_kwargs = vivado_build_argdict(args) if (not args.sim and not (args.toolchain=="symbiflow")) else {}
 
     common.run(args, builder, build_kwargs, target_name=target_name)
 
