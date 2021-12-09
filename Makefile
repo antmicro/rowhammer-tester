@@ -14,7 +14,7 @@ TARGET_ARGS := $(NET_ARGS) $(ARGS)
 # Update PATH to activate the Python venv and include all required binaries
 # Adding vnev/bin to PATH forces usage of the Python binary from venv,
 # which is roughly equivalent to `source venv/bin/activate`
-PATH := $(PWD)/venv/bin:$(PATH)
+PATH := $(PATH):$(PWD)/venv/bin
 # other binaries
 PATH := $(PWD)/bin:$(PATH)
 PATH := $(PWD)/third_party/verilator/image/bin:$(PATH)

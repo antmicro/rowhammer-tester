@@ -33,25 +33,30 @@ jobs:
           sudo apt-get install -y libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel
           make deps
 
-      - name: Check targets
-        run: |
-          make TARGET=arty
-          make TARGET=zcu104
-          make TARGET=lpddr4_test_board
-          make TARGET=arty ARGS="--sim"
-
-      - name: Run tests
-        run: make test
-
       - name: Install conda
         run: |
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O conda_installer.sh
           bash conda_installer.sh -u -b -p ./conda_env
           source ./conda_env/etc/profile.d/conda.sh
           conda env create -f ./.github/scripts/environment.yml
+          source ./conda_env/bin/activate xc7
+          pip install -r requirements.txt
+
+      - name: Check targets
+        run: |
+          source ./conda_env/bin/activate xc7
+          make TARGET=arty
+          make TARGET=zcu104
+          make TARGET=lpddr4_test_board
+          make TARGET=arty ARGS="--sim"
+
+      - name: Run tests
+        run: |
+          source ./conda_env/bin/activate xc7
+          make test
+
 
       - name: Build target
         run: |
           source ./conda_env/bin/activate xc7
-          pip install -r requirements.txt
           make TARGET=arty ARGS="--toolchain symbiflow" build
