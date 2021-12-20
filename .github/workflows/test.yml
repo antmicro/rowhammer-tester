@@ -55,8 +55,13 @@ jobs:
           source ./conda_env/bin/activate xc7
           make test
 
-
       - name: Build target
         run: |
           source ./conda_env/bin/activate xc7
           make TARGET=arty ARGS="--toolchain symbiflow" build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: digilent_arty_bitstream
+          path: build/arty/gateware/digilent_arty.bit
