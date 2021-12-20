@@ -3,7 +3,7 @@ TARGET 	    ?= arty
 IP_ADDRESS  ?= 192.168.100.50
 MAC_ADDRESS ?= 0x10e2d5000001
 UDP_PORT    ?= 1234
-
+SYMBIFLOW_URL_PREFIX := https://storage.googleapis.com/symbiflow-arch-defs/artifacts/prod/foss-fpga-tools/symbiflow-arch-defs/continuous/install
 # # #
 
 # Gateware args
@@ -104,8 +104,8 @@ deps:: # Intentionally skipping --recursive as not needed (but doesn't break any
 
 third_party/symbiflow/xc7/install/bin/symbiflow_synth:
 	mkdir -p third_party/symbiflow/xc7/install
-	wget -qO- https://storage.googleapis.com/symbiflow-arch-defs/artifacts/prod/foss-fpga-tools/symbiflow-arch-defs/continuous/install/459/20211116-000105/symbiflow-arch-defs-install-ef6fff3c.tar.xz | tar -xJC third_party/symbiflow/xc7/install
-	wget -qO- https://storage.googleapis.com/symbiflow-arch-defs/artifacts/prod/foss-fpga-tools/symbiflow-arch-defs/continuous/install/459/20211116-000105/symbiflow-arch-defs-xc7a50t_test-ef6fff3c.tar.xz | tar -xJC third_party/symbiflow/xc7/install
+	wget -qO- $(SYMBIFLOW_URL_PREFIX)/495/20211220-000100/symbiflow-arch-defs-install-fd88318b.tar.xz | tar -xJC third_party/symbiflow/xc7/install
+	wget -qO- $(SYMBIFLOW_URL_PREFIX)/495/20211220-000100/symbiflow-arch-defs-xc7a50t_test-fd88318b.tar.xz | tar -xJC third_party/symbiflow/xc7/install
 
 python-deps: venv/bin/activate  # installs python dependencies inside virtual environment
 	pip install -r requirements.txt
