@@ -16,6 +16,7 @@ class RowMapping:
 
 
 class TrivialRowMapping(RowMapping):
+
     def logical_to_physical(self, logical):
         return logical
 
@@ -24,6 +25,7 @@ class TrivialRowMapping(RowMapping):
 
 
 class TypeARowMapping(RowMapping):
+
     def logical_to_physical(self, logical):
         bit3 = (logical & 8) >> 3
         return logical ^ (bit3 << 1) ^ (bit3 << 2)
@@ -34,6 +36,7 @@ class TypeARowMapping(RowMapping):
 
 
 class TypeBRowMapping(RowMapping):
+
     def logical_to_physical(self, logical):
         return logical * 2
 

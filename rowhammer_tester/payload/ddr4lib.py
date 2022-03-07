@@ -52,6 +52,7 @@ def VerifyInstr(ip: int, instr: Instr) -> bool:
 
 
 class Rank:
+
     def __init__(self, timing: Timing):
         self.parameters = {
             Opcode.ACT: {
@@ -108,6 +109,7 @@ class Rank:
 
 
 class BankGroup:
+
     def __init__(self, timing: Timing):
         self.parameters = {
             Opcode.RD: {
@@ -141,6 +143,7 @@ class BankGroup:
 
 
 class Bank:
+
     def __init__(self, timing: Timing):
         self.parameters = {
             Opcode.RD: {

@@ -13,6 +13,7 @@ from rowhammer_tester.scripts.playbook.lib import (generate_payload_from_row_lis
 
 
 class RowHammer:
+
     def __init__(
             self,
             wb,

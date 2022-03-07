@@ -15,6 +15,7 @@ class DRAM(Enum):
 
 
 class State:
+
     def __init__(self, dramlib):
         self.ip = 0  # Instruction pointer
         self.tick = 0  # Elapsed cycles

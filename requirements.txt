@@ -19,5 +19,5 @@ git+https://github.com/litex-hub/pythondata-software-picolibc.git
 # PyPi packages
 meson
 pexpect
-yapf
+yapf == 0.32.0
 wheel

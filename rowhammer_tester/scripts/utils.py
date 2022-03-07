@@ -69,6 +69,7 @@ def get_generated_defs():
 
 
 class ReadonlySettings:
+
     def __init__(self, s):
         self._settings = s
 
@@ -184,6 +185,7 @@ def memcheck(wb, n, pattern=0xaaaaaaaa, **kwargs):
 
 
 def memspeed(wb, n, **kwargs):
+
     def measure(fun, name):
         start = time.time()
         ret = fun(wb, n, **kwargs)
@@ -210,6 +212,7 @@ def word2byte(words, word_size=4):
 
 
 def memdump(data, base=0x40000000, chunk_len=16):
+
     def tochar(val):
         return chr(val) if 0x20 <= val <= 0x7e else '.'
 
@@ -226,6 +229,7 @@ def memdump(data, base=0x40000000, chunk_len=16):
 
 
 class DRAMAddressConverter:
+
     def __init__(
             self,
             *,
@@ -298,6 +302,7 @@ class DRAMAddressConverter:
         return address >> self.address_align
 
     def _decode(self, address):
+
         def extract(value, width, offset):
             mask = 2**width - 1
             return (value & (mask << offset)) >> offset

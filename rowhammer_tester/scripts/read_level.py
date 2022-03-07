@@ -86,6 +86,7 @@ def get_byte(i, data):
 
 
 class Settings:
+
     def __init__(self, nmodules, bitslips, delays, nphases, wrphase, rdphase):
         # Defined by:
         # `#define SDRAM_PHY_MODULES` in sdram_phy.h
