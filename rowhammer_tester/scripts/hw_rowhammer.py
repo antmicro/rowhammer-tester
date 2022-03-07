@@ -16,6 +16,7 @@ from rowhammer_tester.scripts.rowhammer import RowHammer, main
 
 
 class HwRowHammer(RowHammer):
+
     def attack(self, row_tuple, read_count, progress_header=''):
         addresses = [
             self.converter.encode_dma(bank=self.bank, col=self.column, row=r) for r in row_tuple

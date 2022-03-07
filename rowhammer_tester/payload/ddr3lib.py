@@ -48,6 +48,7 @@ def VerifyInstr(ip: int, instr: Instr) -> bool:
 
 
 class Rank:
+
     def __init__(self, timing: Timing):
         self.parameters = {
             Opcode.RD: {
@@ -104,6 +105,7 @@ class Rank:
 
 
 class Bank:
+
     def __init__(self, timing: Timing):
         self.parameters = {
             Opcode.RD: {
