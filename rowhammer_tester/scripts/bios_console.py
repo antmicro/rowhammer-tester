@@ -69,7 +69,7 @@ if __name__ == "__main__":
     if term == 'litex_term':
         # installed with latex so no additional dependencies, but it is slow
         term = LiteXTerm(
-            serial_boot=False, kernel_image=None, kernel_address=None, json_images=None)
+            serial_boot=False, kernel_image=None, kernel_address=None, json_images=None, safe=True)
         term.open(tty, baudrate)
         term.console.configure()
         term.start()
