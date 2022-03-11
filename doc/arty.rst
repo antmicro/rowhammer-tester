@@ -26,7 +26,7 @@ Next, generate the FPGA bitstream:
    This will by default target Arty A7 with the XC7A35TICSG324-1L FPGA. To build for XC7A100TCSG324-1,
    use ``make build TARGET_ARGS="--variant a7-100"``
 
-The results will be located in: ``build/arty/gateware/arty.bit``. To upload it, use:
+The results will be located in: ``build/arty/gateware/digilent_arty.bit``. To upload it, use:
 
 .. code-block:: sh
 
