@@ -9,7 +9,7 @@ from litex.soc.integration.builder import Builder
 from litex.soc.cores.clock import S7PLL, S7IDELAYCTRL
 
 from litex_boards.platforms import antmicro_datacenter_ddr4_test_board
-from litedram.phy import k7ddrphy
+from litedram.phy import a7ddrphy
 from liteeth.phy import LiteEthS7PHYRGMII
 
 from rowhammer_tester.targets import common
@@ -21,6 +21,7 @@ class CRG(Module):
         self.clock_domains.cd_sys    = ClockDomain()
         self.clock_domains.cd_sys2x  = ClockDomain(reset_less=True)
         self.clock_domains.cd_sys4x  = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys4x_dqs = ClockDomain(reset_less=True)
         self.clock_domains.cd_idelay = ClockDomain()
 
         # # #
@@ -30,6 +31,7 @@ class CRG(Module):
         pll.create_clkout(self.cd_sys,    sys_clk_freq)
         pll.create_clkout(self.cd_sys2x,  2 * sys_clk_freq)
         pll.create_clkout(self.cd_sys4x,  4 * sys_clk_freq)
+        pll.create_clkout(self.cd_sys4x_dqs, 4 * sys_clk_freq, phase=90)
         pll.create_clkout(self.cd_idelay, iodelay_clk_freq)
 
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_idelay)
@@ -48,7 +50,7 @@ class SoC(common.RowHammerSoC):
             iodelay_clk_freq=float(self.args.iodelay_clk_freq))
 
     def get_ddrphy(self):
-        return k7ddrphy.K7DDRPHY(self.platform.request("ddr4"),
+        return a7ddrphy.A7DDRPHY(self.platform.request("ddr4"),
             iodelay_clk_freq = float(self.args.iodelay_clk_freq),
             sys_clk_freq     = self.sys_clk_freq,
             memtype          = "DDR4",
