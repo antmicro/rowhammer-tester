@@ -110,7 +110,6 @@ class RowHammerSoC(SoCCore):
         # SoCCore ----------------------------------------------------------------------------------
         SoCCore.__init__(self, self.platform, sys_clk_freq,
             ident          = "LiteX Row Hammer Tester SoC on {}, git: {}".format(self.platform.device, githash),
-            ident_version  = True,
             integrated_rom_mode = 'rw' if args.rw_bios_mem else 'r',
             **kwargs)
 
