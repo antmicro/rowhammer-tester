@@ -79,7 +79,7 @@ class SoC(common.RowHammerSoC):
 def main():
     parser = common.ArgumentParser(
         description  = "LiteX SoC on DDR4 Datacenter Test Board",
-        sys_clk_freq = '50e6',
+        sys_clk_freq = '100e6',
         module       = 'MTA18ASF2G72PZ'
     )
     g = parser.add_argument_group(title="DDR4 Datacenter Test Board")
