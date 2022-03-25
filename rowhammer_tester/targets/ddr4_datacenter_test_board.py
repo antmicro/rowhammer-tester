@@ -51,10 +51,11 @@ class SoC(common.RowHammerSoC):
 
     def get_ddrphy(self):
         return a7ddrphy.A7DDRPHY(self.platform.request("ddr4"),
-            iodelay_clk_freq = float(self.args.iodelay_clk_freq),
-            sys_clk_freq     = self.sys_clk_freq,
-            memtype          = "DDR4",
-            is_rdimm         = True)
+            write_latency_calibration = True,
+            iodelay_clk_freq          = float(self.args.iodelay_clk_freq),
+            sys_clk_freq              = self.sys_clk_freq,
+            memtype                   = "DDR4",
+            is_rdimm                  = True)
 
     def get_sdram_ratio(self):
         return "1:4"
