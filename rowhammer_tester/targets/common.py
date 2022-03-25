@@ -186,7 +186,7 @@ class RowHammerSoC(SoCCore):
             module                  = module,
             origin                  = self.mem_map["main_ram"],
             size                    = kwargs.get("max_sdram_size", 0x40000000),
-            l2_cache_size           = 0,
+            l2_cache_size           = 256,
             controller_settings     = controller_settings
         )
 
