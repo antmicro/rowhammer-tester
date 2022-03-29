@@ -15,6 +15,7 @@ gitpython
 git+https://github.com/litex-hub/pythondata-cpu-vexriscv.git
 # litex software data
 git+https://github.com/litex-hub/pythondata-software-picolibc.git
+git+https://github.com/litex-hub/pythondata-software-compiler_rt.git
 
 # PyPi packages
 meson
