@@ -14,4 +14,5 @@ git+https://github.com/antmicro/sphinx_antmicro_theme.git@master
 -e third_party/litex-boards
 # vexriscv cpu
 git+https://github.com/litex-hub/pythondata-cpu-vexriscv.git
+git+https://github.com/litex-hub/pythondata-software-compiler_rt.git
 yapf
