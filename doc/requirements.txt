@@ -4,13 +4,4 @@ sphinx-tabs==1.3.0
 jinja2<3.1.0
 git+https://github.com/antmicro/sphinx_antmicro_theme.git@master
 -e .
--e third_party/migen
--e third_party/litex
--e third_party/litedram
--e third_party/liteeth
--e third_party/liteiclink
--e third_party/litescope
--e third_party/litex-boards
-# vexriscv cpu
-git+https://github.com/litex-hub/pythondata-cpu-vexriscv.git
 yapf
