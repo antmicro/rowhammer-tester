@@ -63,8 +63,7 @@ srv: FORCE
 	litex_server --udp --udp-ip $(IP_ADDRESS) --udp-port $(UDP_PORT)
 
 doc: FORCE
-	python rowhammer_tester/targets/$(TARGET).py --docs $(TARGET_ARGS)
-	python -m sphinx -b html build/documentation build/documentation/html
+	python -m sphinx -b html doc build/documentation/html
 
 test: FORCE
 	python -m unittest -v
