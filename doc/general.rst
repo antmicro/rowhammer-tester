@@ -83,10 +83,6 @@ To enter the environment, you have to run ``source venv/bin/activate`` in each n
 You can also use the provided ``make env`` target, which will start a new Bash shell with the virtualenv already sourced.
 You can install packages inside the virtual environment by entering the environment and then using ``pip``.
 
-.. note::
-
-   Some options to the scripts may require additional Python dependencies. To install them run ``pip install -r requirements-dev.txt`` inside the virtual environment.
-
 
 To build the bitstream you will also need to have Vivado installed and the ``vivado`` command available in your ``PATH``.
 To configure Vivado in the current shell, you need to ``source /PATH/TO/Vivado/VERSION/settings64.sh``.
@@ -112,7 +108,7 @@ To build the documentation, enter:
 .. code-block:: sh
 
    source venv/bin/activate
-   pip install -r requirements.txt -r requirements-doc.txt
+   pip install -r requirements.txt
    python -m sphinx -b html doc build/documentation/html
 
 The documentation will be located in ``build/documentation/index.html``.
