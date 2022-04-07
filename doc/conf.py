@@ -48,7 +48,6 @@ copyright = authors + u', 2021'
 # ones.
 extensions = [
     'sphinx_tabs.tabs',
-    'sphinxcontrib.jinja',
     'sphinx_antmicro_theme',
     'sphinx.ext.autosectionlabel',
     'sphinxcontrib.wavedrom',
