@@ -1,5 +1,5 @@
 Data Center DRAM Tester
-=============
+=======================
 
 .. image:: ddr4_datacenter_dram_tester.jpg
 
