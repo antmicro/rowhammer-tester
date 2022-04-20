@@ -6,6 +6,7 @@ from migen import *
 
 from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 from litex.soc.integration.builder import Builder
+from litex.soc.cores.bitbang import I2CMaster
 from litex.soc.cores.clock import S7PLL, S7IDELAYCTRL
 
 from litex_boards.platforms import antmicro_datacenter_ddr4_test_board
@@ -41,6 +42,10 @@ class CRG(Module):
 class SoC(common.RowHammerSoC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        # SPD EEPROM I2C ---------------------------------------------------------------------------
+        self.submodules.i2c = I2CMaster(self.platform.request("i2c"))
+        self.add_csr("i2c")
 
     def get_platform(self):
         return antmicro_datacenter_ddr4_test_board.Platform()
