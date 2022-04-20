@@ -18,11 +18,12 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
 SPD_COMMANDS = {
     # on ZCU104 first configure the I2C switch to select DDR4 SPD EEPROM, which than has base address 0b001
     'zcu104': (1, ['i2c_write 0x74 0x80']),
+    'ddr4_datacenter_test_board': (0, None),
 }
 
 
 def read_spd(console, spd_addr, init_commands=None):
-    assert 0 < spd_addr < 0b111, 'SPD EEPROM max address is 0b111 (defined by A0, A1, A2 pins)'
+    assert 0 <= spd_addr < 0b111, 'SPD EEPROM max address is 0b111 (defined by A0, A1, A2 pins)'
     prompt = '^.*litex[^>]*> '  # '92;1mlitex\x1b[0m> '
     console.sendline()
     console.expect(prompt)
