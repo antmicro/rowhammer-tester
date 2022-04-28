@@ -35,7 +35,7 @@ class RowHammer:
 
     @property
     def rows(self):
-        return list(range(self.rows_start, self.nrows))
+        return list(range(self.rows_start, self.rows_start + self.nrows))
 
     def addresses_per_row(self, row):
         # Calculate the addresses lazily and cache them

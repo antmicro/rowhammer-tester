@@ -92,7 +92,7 @@ class HwRowHammer(RowHammer):
         setup_inverters(self.wb, divisor, mask)
 
         print('\nPreparing ...')
-        row_pattern = pattern_generator([self.rows[0]])[0]
+        row_pattern = list(pattern_generator([self.rows[0]]))[0]
         print('WARNING: only single word patterns supported, using: 0x{:08x}'.format(row_pattern))
         print('\nFilling memory with data ...')
         hw_memset(self.wb, 0x0, self.wb.mems.main_ram.size, [row_pattern])
