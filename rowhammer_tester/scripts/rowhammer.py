@@ -33,6 +33,8 @@ class RowHammer:
             setattr(self, name, val)
         self.converter = DRAMAddressConverter.load()
         self._addresses_per_row = {}
+        self.bitflip_found = False
+        self.prompt_stop_test = True
 
     @property
     def rows(self):
@@ -189,9 +191,11 @@ class RowHammer:
         errors = self.check_errors(row_patterns, row_progress=row_progress)
         if self.errors_count(errors) == 0:
             print('OK')
+            self.bitflip_found = False
         else:
             print()
             self.display_errors(errors)
+            self.bitflip_found = True
             return
 
     def payload_executor_attack(self, read_count, row_tuple):
@@ -312,7 +316,8 @@ def main(row_hammer_cls):
     if not count: count = 10e6
     count_stop = count if not args.read_count_range else args.read_count_range[1]
     count_step = 1 if not args.read_count_range else args.read_count_range[2]
-    while (count <= count_stop):
+    test_end = False
+    while (count <= count_stop) and not test_end:
         if args.hammer_only:
             row_hammer.attack(args.hammer_only, read_count=count)
         else:
@@ -340,6 +345,15 @@ def main(row_hammer_cls):
             row_hammer.run(row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
 
             count += count_step
+
+            if row_hammer.bitflip_found and row_hammer.prompt_stop_test and (count <= count_stop):
+                usr_txt = input("\nBit-flips occured. Do you want to continue testing? [Y/n]. Choose [y!] to continue and not to be asked again.\n")
+                if usr_txt == 'n':
+                    print("Exiting")
+                    test_end = True
+                elif 'y!' in usr_txt:
+                    row_hammer.prompt_stop_test = False
+                    print("The choice will be remembered")
 
     wb.close()
 
