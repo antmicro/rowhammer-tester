@@ -104,7 +104,7 @@ class HwRowHammer(RowHammer):
                 print('OK')
             else:
                 print()
-                self.display_errors(errors)
+                self.display_errors(errors, read_count)
                 return
 
         if self.no_refresh:
@@ -134,7 +134,7 @@ class HwRowHammer(RowHammer):
             self.bitflip_found = False
         else:
             print()
-            self.display_errors(errors)
+            self.display_errors(errors, read_count)
             self.bitflip_found = True
             return
 

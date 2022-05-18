@@ -4,6 +4,7 @@ import sys
 import time
 import random
 import argparse
+import json
 
 from rowhammer_tester.scripts.utils import (
     memfill, memcheck, memwrite, DRAMAddressConverter, litex_server, RemoteClient,
@@ -35,6 +36,8 @@ class RowHammer:
         self._addresses_per_row = {}
         self.bitflip_found = False
         self.prompt_stop_test = True
+        self.do_error_summary = True
+        self.err_summary = {}
 
     @property
     def rows(self):
@@ -117,23 +120,32 @@ class RowHammer:
                 for addr, value, expected in e)
             for e in row_errors.values())
 
-    def display_errors(self, row_errors):
+    def display_errors(self, row_errors, read_count):
+        err_dict = {}
         for row in row_errors:
+            cols = []
             if len(row_errors[row]) > 0:
+                flips = sum(
+                            self.bitflips(value, expected)
+                            for addr, value, expected in row_errors[row])
                 print(
                     "Bit-flips for row {:{n}}: {}".format(
                         row,
-                        sum(
-                            self.bitflips(value, expected)
-                            for addr, value, expected in row_errors[row]),
+                        flips,
                         n=len(str(2**self.settings.geom.rowbits - 1))))
-            if self.verbose:
+            if self.verbose or self.do_error_summary:
                 for i, word, expected in row_errors[row]:
                     base_addr = min(self.addresses_per_row(row))
                     addr = base_addr + 4 * i
                     bank, _row, col = self.converter.decode_bus(addr)
-                    print(
-                        "Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(addr, word, _row, col))
+                    if self.verbose:
+                        print(
+                            "Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(addr, word, _row, col))
+                    cols.append(col)
+            if self.do_error_summary:
+                err_dict["{}".format(row)] = {'row_num': _row, 'col_num': cols, 'bitflips': flips}
+        if self.do_error_summary:
+            self.err_summary["{}".format(read_count)] = err_dict
 
         if self.plot:
             from matplotlib import pyplot as plt
@@ -168,7 +180,7 @@ class RowHammer:
                 print('OK')
             else:
                 print()
-                self.display_errors(errors)
+                self.display_errors(errors, read_count)
                 return
 
         if self.no_refresh:
@@ -194,7 +206,7 @@ class RowHammer:
             self.bitflip_found = False
         else:
             print()
-            self.display_errors(errors)
+            self.display_errors(errors, read_count)
             self.bitflip_found = True
             return
 
@@ -354,6 +366,10 @@ def main(row_hammer_cls):
                 elif 'y!' in usr_txt:
                     row_hammer.prompt_stop_test = False
                     print("The choice will be remembered")
+
+    if len(row_hammer.err_summary):
+        with open("error_summary_{}.json".format(time.time()), "w") as write_file:
+            json.dump(row_hammer.err_summary, write_file, indent=4)
 
     wb.close()
 
