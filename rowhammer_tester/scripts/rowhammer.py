@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import time
 import random
 import argparse
@@ -235,8 +236,12 @@ def main(row_hammer_cls):
     parser.add_argument(
         '--read_count',
         type=float,
-        default=10e6,
         help='How many reads to perform for single address pair')
+    parser.add_argument(
+        '--read_count_range',
+        type=float,
+        nargs=3,
+        help='Range of how many reads to perform for single address pair in a set of tests, given as [start] [stop] [step]')
     parser.add_argument('--hammer-only', nargs=2, type=int, help='Run only the Rowhammer attack')
     parser.add_argument(
         '--no-refresh', action='store_true', help='Disable refresh commands during the attacks')
@@ -271,6 +276,10 @@ def main(row_hammer_cls):
         "--data-inversion", nargs=2, help='Invert pattern data for victim rows (divisor, mask)')
     args = parser.parse_args()
 
+    if args.read_count and args.read_count_range:
+        print("--read_count and --read_count_range are mutually exclusive - choose one or another.")
+        sys.exit(2)
+
     if args.experiment_no == 1:
         args.nrows = 512
         args.read_count = 15e6
@@ -299,31 +308,38 @@ def main(row_hammer_cls):
         data_inversion=args.data_inversion,
     )
 
-    if args.hammer_only:
-        row_hammer.attack(args.hammer_only, read_count=args.read_count)
-    else:
-        rng = random.Random(42)
+    count = args.read_count if not args.read_count_range else args.read_count_range[0]
+    if not count: count = 10e6
+    count_stop = count if not args.read_count_range else args.read_count_range[1]
+    count_step = 1 if not args.read_count_range else args.read_count_range[2]
+    while (count <= count_stop):
+        if args.hammer_only:
+            row_hammer.attack(args.hammer_only, read_count=count)
+        else:
+            rng = random.Random(42)
 
-        def rand_row():
-            return rng.randint(args.start_row, args.start_row + args.nrows)
+            def rand_row():
+                return rng.randint(args.start_row, args.start_row + args.nrows)
 
-        assert not (
-            args.row_pairs == 'const' and not args.const_rows_pair), 'Specify --const-rows-pair'
-        row_pairs = {
-            'sequential': [(0 + args.start_row, i + args.start_row) for i in range(args.nrows)],
-            'const': [tuple(args.const_rows_pair) if args.const_rows_pair else ()],
-            'random': [(rand_row(), rand_row()) for i in range(args.nrows)],
-        }[args.row_pairs]
+            assert not (
+                args.row_pairs == 'const' and not args.const_rows_pair), 'Specify --const-rows-pair'
+            row_pairs = {
+                'sequential': [(0 + args.start_row, i + args.start_row) for i in range(args.nrows)],
+                'const': [tuple(args.const_rows_pair) if args.const_rows_pair else ()],
+                'random': [(rand_row(), rand_row()) for i in range(args.nrows)],
+            }[args.row_pairs]
 
-        pattern = {
-            'all_0': lambda rows: patterns_const(rows, 0x00000000),
-            'all_1': lambda rows: patterns_const(rows, 0xffffffff),
-            '01_in_row': lambda rows: patterns_const(rows, 0xaaaaaaaa),
-            '01_per_row': patterns_alternating_per_row,
-            'rand_per_row': patterns_random_per_row,
-        }[args.pattern]
+            pattern = {
+                'all_0': lambda rows: patterns_const(rows, 0x00000000),
+                'all_1': lambda rows: patterns_const(rows, 0xffffffff),
+                '01_in_row': lambda rows: patterns_const(rows, 0xaaaaaaaa),
+                '01_per_row': patterns_alternating_per_row,
+                'rand_per_row': patterns_random_per_row,
+            }[args.pattern]
 
-        row_hammer.run(row_pairs=row_pairs, read_count=args.read_count, pattern_generator=pattern)
+            row_hammer.run(row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
+
+            count += count_step
 
     wb.close()
 
