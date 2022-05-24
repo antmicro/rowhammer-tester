@@ -35,7 +35,6 @@ class RowHammer:
         self.converter = DRAMAddressConverter.load()
         self._addresses_per_row = {}
         self.bitflip_found = False
-        self.prompt_stop_test = True
         self.do_error_summary = True
         self.err_summary = {}
 
@@ -288,6 +287,11 @@ def main(row_hammer_cls):
         "--experiment-no", type=int, default=0, help='Run preconfigured experiment #no')
     parser.add_argument(
         "--data-inversion", nargs=2, help='Invert pattern data for victim rows (divisor, mask)')
+    parser.add_argument(
+        "--exit-on-bit-flip",
+        action="store_true",
+        help='Exit tests as soon as bitflip is found',
+    )
     args = parser.parse_args()
 
     if args.read_count and args.read_count_range:
@@ -351,22 +355,12 @@ def main(row_hammer_cls):
         count = args.read_count if not args.read_count_range else args.read_count_range[0]
         count_stop = count if not args.read_count_range else args.read_count_range[1]
         count_step = 1 if not args.read_count_range else args.read_count_range[2]
-        test_end = False
-        while (count <= count_stop) and not test_end:
+
+        while count <= count_stop:
             row_hammer.run(row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
-
             count += count_step
-
-            if row_hammer.bitflip_found and row_hammer.prompt_stop_test and (count <= count_stop):
-                usr_txt = input(
-                    "\nBit-flips occured. Do you want to continue testing? [Y/n]. Choose [y!] to continue and not to be asked again.\n"
-                )
-                if usr_txt == 'n':
-                    print("Exiting")
-                    test_end = True
-                elif 'y!' in usr_txt:
-                    row_hammer.prompt_stop_test = False
-                    print("The choice will be remembered")
+            if row_hammer.bitflip_found and args.exit_on_bit_flip:
+                break
 
     if len(row_hammer.err_summary):
         with open("error_summary_{}.json".format(time.time()), "w") as write_file:
