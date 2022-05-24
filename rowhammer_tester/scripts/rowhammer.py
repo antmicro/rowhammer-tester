@@ -324,36 +324,37 @@ def main(row_hammer_cls):
         data_inversion=args.data_inversion,
     )
 
-    count = args.read_count if not args.read_count_range else args.read_count_range[0]
-    if not count: count = 10e6
-    count_stop = count if not args.read_count_range else args.read_count_range[1]
-    count_step = 1 if not args.read_count_range else args.read_count_range[2]
-    test_end = False
-    while (count <= count_stop) and not test_end:
-        if args.hammer_only:
-            row_hammer.attack(args.hammer_only, read_count=count)
-        else:
-            rng = random.Random(42)
+    count = args.read_count if args.read_count else 10e6
 
-            def rand_row():
-                return rng.randint(args.start_row, args.start_row + args.nrows)
+    if args.hammer_only:
+        row_hammer.attack(args.hammer_only, read_count=count)
+    else:
+        rng = random.Random(42)
 
-            assert not (
-                args.row_pairs == 'const' and not args.const_rows_pair), 'Specify --const-rows-pair'
-            row_pairs = {
-                'sequential': [(0 + args.start_row, i + args.start_row) for i in range(args.nrows)],
-                'const': [tuple(args.const_rows_pair) if args.const_rows_pair else ()],
-                'random': [(rand_row(), rand_row()) for i in range(args.nrows)],
-            }[args.row_pairs]
+        def rand_row():
+            return rng.randint(args.start_row, args.start_row + args.nrows)
 
-            pattern = {
-                'all_0': lambda rows: patterns_const(rows, 0x00000000),
-                'all_1': lambda rows: patterns_const(rows, 0xffffffff),
-                '01_in_row': lambda rows: patterns_const(rows, 0xaaaaaaaa),
-                '01_per_row': patterns_alternating_per_row,
-                'rand_per_row': patterns_random_per_row,
-            }[args.pattern]
+        assert not (
+            args.row_pairs == 'const' and not args.const_rows_pair), 'Specify --const-rows-pair'
+        row_pairs = {
+            'sequential': [(0 + args.start_row, i + args.start_row) for i in range(args.nrows)],
+            'const': [tuple(args.const_rows_pair) if args.const_rows_pair else ()],
+            'random': [(rand_row(), rand_row()) for i in range(args.nrows)],
+        }[args.row_pairs]
 
+        pattern = {
+            'all_0': lambda rows: patterns_const(rows, 0x00000000),
+            'all_1': lambda rows: patterns_const(rows, 0xffffffff),
+            '01_in_row': lambda rows: patterns_const(rows, 0xaaaaaaaa),
+            '01_per_row': patterns_alternating_per_row,
+            'rand_per_row': patterns_random_per_row,
+        }[args.pattern]
+
+        count = args.read_count if not args.read_count_range else args.read_count_range[0]
+        count_stop = count if not args.read_count_range else args.read_count_range[1]
+        count_step = 1 if not args.read_count_range else args.read_count_range[2]
+        test_end = False
+        while (count <= count_stop) and not test_end:
             row_hammer.run(row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
 
             count += count_step
