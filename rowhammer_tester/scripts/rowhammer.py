@@ -126,13 +126,10 @@ class RowHammer:
             cols = []
             if len(row_errors[row]) > 0:
                 flips = sum(
-                            self.bitflips(value, expected)
-                            for addr, value, expected in row_errors[row])
+                    self.bitflips(value, expected) for addr, value, expected in row_errors[row])
                 print(
                     "Bit-flips for row {:{n}}: {}".format(
-                        row,
-                        flips,
-                        n=len(str(2**self.settings.geom.rowbits - 1))))
+                        row, flips, n=len(str(2**self.settings.geom.rowbits - 1))))
             if self.verbose or self.do_error_summary:
                 for i, word, expected in row_errors[row]:
                     base_addr = min(self.addresses_per_row(row))
@@ -140,7 +137,8 @@ class RowHammer:
                     bank, _row, col = self.converter.decode_bus(addr)
                     if self.verbose:
                         print(
-                            "Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(addr, word, _row, col))
+                            "Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(
+                                addr, word, _row, col))
                     cols.append(col)
             if self.do_error_summary:
                 err_dict["{}".format(row)] = {'row_num': _row, 'col_num': cols, 'bitflips': flips}
@@ -250,14 +248,14 @@ def main(row_hammer_cls):
     parser.add_argument(
         '--start-row', type=int, default=0, help='Starting row (range = (start, start+nrows))')
     parser.add_argument(
-        '--read_count',
-        type=float,
-        help='How many reads to perform for single address pair')
+        '--read_count', type=float, help='How many reads to perform for single address pair')
     parser.add_argument(
         '--read_count_range',
         type=float,
         nargs=3,
-        help='Range of how many reads to perform for single address pair in a set of tests, given as [start] [stop] [step]')
+        help=
+        'Range of how many reads to perform for single address pair in a set of tests, given as [start] [stop] [step]'
+    )
     parser.add_argument('--hammer-only', nargs=2, type=int, help='Run only the Rowhammer attack')
     parser.add_argument(
         '--no-refresh', action='store_true', help='Disable refresh commands during the attacks')
@@ -360,7 +358,9 @@ def main(row_hammer_cls):
             count += count_step
 
             if row_hammer.bitflip_found and row_hammer.prompt_stop_test and (count <= count_stop):
-                usr_txt = input("\nBit-flips occured. Do you want to continue testing? [Y/n]. Choose [y!] to continue and not to be asked again.\n")
+                usr_txt = input(
+                    "\nBit-flips occured. Do you want to continue testing? [Y/n]. Choose [y!] to continue and not to be asked again.\n"
+                )
                 if usr_txt == 'n':
                     print("Exiting")
                     test_end = True
