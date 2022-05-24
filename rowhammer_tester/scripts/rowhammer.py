@@ -6,6 +6,7 @@ import random
 import argparse
 import json
 
+from pathlib import Path
 from rowhammer_tester.scripts.utils import (
     memfill, memcheck, memwrite, DRAMAddressConverter, litex_server, RemoteClient,
     get_litedram_settings, get_generated_defs, execute_payload)
@@ -35,7 +36,7 @@ class RowHammer:
         self.converter = DRAMAddressConverter.load()
         self._addresses_per_row = {}
         self.bitflip_found = False
-        self.do_error_summary = True
+        self.log_directory = None
         self.err_summary = {}
 
     @property
@@ -129,7 +130,7 @@ class RowHammer:
                 print(
                     "Bit-flips for row {:{n}}: {}".format(
                         row, flips, n=len(str(2**self.settings.geom.rowbits - 1))))
-            if self.verbose or self.do_error_summary:
+            if self.verbose or self.log_directory:
                 for i, word, expected in row_errors[row]:
                     base_addr = min(self.addresses_per_row(row))
                     addr = base_addr + 4 * i
@@ -139,9 +140,9 @@ class RowHammer:
                             "Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(
                                 addr, word, _row, col))
                     cols.append(col)
-            if self.do_error_summary:
+            if self.log_directory:
                 err_dict["{}".format(row)] = {'row_num': _row, 'col_num': cols, 'bitflips': flips}
-        if self.do_error_summary:
+        if self.log_directory:
             self.err_summary["{}".format(read_count)] = err_dict
 
         if self.plot:
@@ -292,6 +293,11 @@ def main(row_hammer_cls):
         action="store_true",
         help='Exit tests as soon as bitflip is found',
     )
+    parser.add_argument(
+        "--log-dir",
+        help=
+        "Directory for output files. If not given, the output files (e.g. error summary) won't be written"
+    )
     args = parser.parse_args()
 
     if args.read_count and args.read_count_range:
@@ -325,6 +331,11 @@ def main(row_hammer_cls):
         payload_executor=args.payload_executor,
         data_inversion=args.data_inversion,
     )
+
+    log_dir = Path(args.log_dir)
+    if not log_dir.is_dir():
+        log_dir.mkdir(parents=True)
+    row_hammer.log_directory = args.log_dir
 
     count = args.read_count if args.read_count else 10e6
 
@@ -363,7 +374,8 @@ def main(row_hammer_cls):
                 break
 
     if len(row_hammer.err_summary):
-        with open("error_summary_{}.json".format(time.time()), "w") as write_file:
+        with open("{}/error_summary_{}.json".format(row_hammer.log_directory, time.time()),
+                  "w") as write_file:
             json.dump(row_hammer.err_summary, write_file, indent=4)
 
     wb.close()
