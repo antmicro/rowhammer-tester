@@ -336,7 +336,7 @@ def main(row_hammer_cls):
         log_dir = Path(args.log_dir)
         if not log_dir.is_dir():
             log_dir.mkdir(parents=True)
-    row_hammer.log_directory = args.log_dir
+        row_hammer.log_directory = args.log_dir
 
     count = args.read_count if args.read_count else 10e6
 
