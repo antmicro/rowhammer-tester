@@ -205,7 +205,7 @@ class RowHammer:
             self.bitflip_found = False
         else:
             print()
-            self.display_errors(errors, read_count, self.log_directory)
+            self.display_errors(errors, read_count, bool(self.log_directory))
             self.bitflip_found = True
             return
 
