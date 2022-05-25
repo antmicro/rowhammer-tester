@@ -134,9 +134,9 @@ class HwRowHammer(RowHammer):
             self.bitflip_found = False
         else:
             print()
-            self.display_errors(errors, read_count)
+            errors_in_rows = self.display_errors(errors, read_count, True)
             self.bitflip_found = True
-            return
+            return errors_in_rows
 
 
 ################################################################################
