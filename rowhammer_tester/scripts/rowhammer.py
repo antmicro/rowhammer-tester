@@ -120,7 +120,7 @@ class RowHammer:
                 for addr, value, expected in e)
             for e in row_errors.values())
 
-    def display_errors(self, row_errors, read_count):
+    def display_errors(self, row_errors, read_count, do_error_summary=False):
         err_dict = {}
         for row in row_errors:
             cols = []
@@ -130,7 +130,7 @@ class RowHammer:
                 print(
                     "Bit-flips for row {:{n}}: {}".format(
                         row, flips, n=len(str(2**self.settings.geom.rowbits - 1))))
-            if self.verbose or self.log_directory:
+            if self.verbose or do_error_summary:
                 for i, word, expected in row_errors[row]:
                     base_addr = min(self.addresses_per_row(row))
                     addr = base_addr + 4 * i
@@ -140,10 +140,8 @@ class RowHammer:
                             "Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(
                                 addr, word, _row, col))
                     cols.append(col)
-            if self.log_directory:
-                err_dict["{}".format(row)] = {'row_num': _row, 'col_num': cols, 'bitflips': flips}
-        if self.log_directory:
-            self.err_summary["{}".format(read_count)] = err_dict
+            if do_error_summary:
+                err_dict["{}".format(row)] = {'row': _row, 'col': cols, 'bitflips': flips}
 
         if self.plot:
             from matplotlib import pyplot as plt
@@ -153,6 +151,9 @@ class RowHammer:
             plt.xlabel('Row')
             plt.ylabel('Errors')
             plt.show()
+
+        if do_error_summary:
+            return err_dict
 
     def run(self, row_pairs, pattern_generator, read_count, row_progress=16, verify_initial=False):
         # TODO: need to invert data when writing/reading, make sure Python integer inversion works correctly
@@ -204,7 +205,7 @@ class RowHammer:
             self.bitflip_found = False
         else:
             print()
-            self.display_errors(errors, read_count)
+            self.display_errors(errors, read_count, bool(self.log_directory))
             self.bitflip_found = True
             return
 
@@ -267,7 +268,6 @@ def main(row_hammer_cls):
     parser.add_argument(
         '--row-pairs',
         choices=['sequential', 'const', 'random'],
-        default='sequential',
         help='How the rows for subsequent attacks are selected')
     parser.add_argument(
         '--const-rows-pair',
@@ -275,6 +275,16 @@ def main(row_hammer_cls):
         nargs='+',
         required=False,
         help='When using --row-pairs constant')
+    parser.add_argument(
+        '--all-rows',
+        action='store_true',
+        help='Run whole test sequence on all rows. Optionally, set --row-jump and --start-row')
+    parser.add_argument(
+        '--row-jump',
+        type=int,
+        default=1,
+        required=False,
+        help='Jump between rows when using --all-rows')
     parser.add_argument(
         '--plot', action='store_true',
         help='Plot errors distribution')  # requiers matplotlib and pyqt5 packages
@@ -302,6 +312,9 @@ def main(row_hammer_cls):
 
     if args.read_count and args.read_count_range:
         print("--read_count and --read_count_range are mutually exclusive - choose one or another.")
+        sys.exit(2)
+    if args.all_rows and args.row_pairs:
+        print("--all-rows and --row-pairs are mutually exclusive - choose one or another.")
         sys.exit(2)
 
     if args.experiment_no == 1:
@@ -350,11 +363,12 @@ def main(row_hammer_cls):
 
         assert not (
             args.row_pairs == 'const' and not args.const_rows_pair), 'Specify --const-rows-pair'
-        row_pairs = {
-            'sequential': [(0 + args.start_row, i + args.start_row) for i in range(args.nrows)],
-            'const': [tuple(args.const_rows_pair) if args.const_rows_pair else ()],
-            'random': [(rand_row(), rand_row()) for i in range(args.nrows)],
-        }[args.row_pairs]
+        if args.row_pairs:
+            row_pairs = {
+                'sequential': [(0 + args.start_row, i + args.start_row) for i in range(args.nrows)],
+                'const': [tuple(args.const_rows_pair) if args.const_rows_pair else ()],
+                'random': [(rand_row(), rand_row()) for i in range(args.nrows)],
+            }[args.row_pairs]
 
         pattern = {
             'all_0': lambda rows: patterns_const(rows, 0x00000000),
@@ -364,17 +378,51 @@ def main(row_hammer_cls):
             'rand_per_row': patterns_random_per_row,
         }[args.pattern]
 
-        count = args.read_count if not args.read_count_range else args.read_count_range[0]
+        if args.read_count_range:
+            count = args.read_count_range[0]
+        elif args.read_count:
+            count = args.read_count
         count_stop = count if not args.read_count_range else args.read_count_range[1]
         count_step = 1 if not args.read_count_range else args.read_count_range[2]
-
+        """
+        ROW_PAIR_DISTANCE is a distance between the rows that are paired for mapping multiple pairs in the whole row range.
+        It is set to 2 to take the closet possible rows for the hammer attack, for example (0,2), (3,5), (12,14).
+        """
+        ROW_PAIR_DISTANCE = 2
         while count <= count_stop:
-            row_hammer.run(row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
+            row_hammer.err_summary["{}".format(count)] = {"read_count": count}
+            if args.all_rows:
+                for i in range(args.start_row, args.nrows - ROW_PAIR_DISTANCE, args.row_jump):
+                    row_pairs = [(0 + i, 0 + i + ROW_PAIR_DISTANCE)]
+                    err_in_rows = row_hammer.run(
+                        row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
+                    row_hammer.err_summary["{}".format(count)]["pair_{}_{}".format(
+                        row_pairs[0][0], row_pairs[0][1])] = {
+                            "hammer_row_1": row_pairs[0][0],
+                            "hammer_row_2": row_pairs[0][1],
+                            "errors_in_rows": err_in_rows
+                        }
+            else:
+                err_in_rows = row_hammer.run(
+                    row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
+                if args.row_pairs == 'const':
+                    row_hammer.err_summary["{}".format(count)]["pair_{}_{}".format(
+                        row_pairs[0][0], row_pairs[0][1])] = {
+                            "hammer_row_1": row_pairs[0][0],
+                            "hammer_row_2": row_pairs[0][1],
+                            "errors_in_rows": err_in_rows
+                        }
+                else:
+                    row_hammer.err_summary["{}".format(count)]["sequential_attacks"] = {
+                        "row_pairs": row_pairs,
+                        "errors_in_rows": err_in_rows
+                    }
+
             count += count_step
             if row_hammer.bitflip_found and args.exit_on_bit_flip:
                 break
 
-    if len(row_hammer.err_summary):
+    if row_hammer.log_directory:
         with open("{}/error_summary_{}.json".format(row_hammer.log_directory, time.time()),
                   "w") as write_file:
             json.dump(row_hammer.err_summary, write_file, indent=4)
