@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
+import sys
 import time
 import random
 import argparse
+import json
 
+from pathlib import Path
 from rowhammer_tester.scripts.utils import (
     memfill, memcheck, memwrite, DRAMAddressConverter, litex_server, RemoteClient,
     get_litedram_settings, get_generated_defs, execute_payload)
@@ -32,6 +35,9 @@ class RowHammer:
             setattr(self, name, val)
         self.converter = DRAMAddressConverter.load()
         self._addresses_per_row = {}
+        self.bitflip_found = False
+        self.log_directory = None
+        self.err_summary = {}
 
     @property
     def rows(self):
@@ -114,23 +120,30 @@ class RowHammer:
                 for addr, value, expected in e)
             for e in row_errors.values())
 
-    def display_errors(self, row_errors):
+    def display_errors(self, row_errors, read_count):
+        err_dict = {}
         for row in row_errors:
+            cols = []
             if len(row_errors[row]) > 0:
+                flips = sum(
+                    self.bitflips(value, expected) for addr, value, expected in row_errors[row])
                 print(
                     "Bit-flips for row {:{n}}: {}".format(
-                        row,
-                        sum(
-                            self.bitflips(value, expected)
-                            for addr, value, expected in row_errors[row]),
-                        n=len(str(2**self.settings.geom.rowbits - 1))))
-            if self.verbose:
+                        row, flips, n=len(str(2**self.settings.geom.rowbits - 1))))
+            if self.verbose or self.log_directory:
                 for i, word, expected in row_errors[row]:
                     base_addr = min(self.addresses_per_row(row))
                     addr = base_addr + 4 * i
                     bank, _row, col = self.converter.decode_bus(addr)
-                    print(
-                        "Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(addr, word, _row, col))
+                    if self.verbose:
+                        print(
+                            "Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(
+                                addr, word, _row, col))
+                    cols.append(col)
+            if self.log_directory:
+                err_dict["{}".format(row)] = {'row_num': _row, 'col_num': cols, 'bitflips': flips}
+        if self.log_directory:
+            self.err_summary["{}".format(read_count)] = err_dict
 
         if self.plot:
             from matplotlib import pyplot as plt
@@ -165,7 +178,7 @@ class RowHammer:
                 print('OK')
             else:
                 print()
-                self.display_errors(errors)
+                self.display_errors(errors, read_count)
                 return
 
         if self.no_refresh:
@@ -188,9 +201,11 @@ class RowHammer:
         errors = self.check_errors(row_patterns, row_progress=row_progress)
         if self.errors_count(errors) == 0:
             print('OK')
+            self.bitflip_found = False
         else:
             print()
-            self.display_errors(errors)
+            self.display_errors(errors, read_count)
+            self.bitflip_found = True
             return
 
     def payload_executor_attack(self, read_count, row_tuple):
@@ -233,10 +248,14 @@ def main(row_hammer_cls):
     parser.add_argument(
         '--start-row', type=int, default=0, help='Starting row (range = (start, start+nrows))')
     parser.add_argument(
-        '--read_count',
+        '--read_count', type=float, help='How many reads to perform for single address pair')
+    parser.add_argument(
+        '--read_count_range',
         type=float,
-        default=10e6,
-        help='How many reads to perform for single address pair')
+        nargs=3,
+        help=
+        'Range of how many reads to perform for single address pair in a set of tests, given as [start] [stop] [step]'
+    )
     parser.add_argument('--hammer-only', nargs=2, type=int, help='Run only the Rowhammer attack')
     parser.add_argument(
         '--no-refresh', action='store_true', help='Disable refresh commands during the attacks')
@@ -269,7 +288,21 @@ def main(row_hammer_cls):
         "--experiment-no", type=int, default=0, help='Run preconfigured experiment #no')
     parser.add_argument(
         "--data-inversion", nargs=2, help='Invert pattern data for victim rows (divisor, mask)')
+    parser.add_argument(
+        "--exit-on-bit-flip",
+        action="store_true",
+        help='Exit tests as soon as bitflip is found',
+    )
+    parser.add_argument(
+        "--log-dir",
+        help=
+        "Directory for output files. If not given, the output files (e.g. error summary) won't be written"
+    )
     args = parser.parse_args()
+
+    if args.read_count and args.read_count_range:
+        print("--read_count and --read_count_range are mutually exclusive - choose one or another.")
+        sys.exit(2)
 
     if args.experiment_no == 1:
         args.nrows = 512
@@ -299,8 +332,16 @@ def main(row_hammer_cls):
         data_inversion=args.data_inversion,
     )
 
+    if args.log_dir:
+        log_dir = Path(args.log_dir)
+        if not log_dir.is_dir():
+            log_dir.mkdir(parents=True)
+        row_hammer.log_directory = args.log_dir
+
+    count = args.read_count if args.read_count else 10e6
+
     if args.hammer_only:
-        row_hammer.attack(args.hammer_only, read_count=args.read_count)
+        row_hammer.attack(args.hammer_only, read_count=count)
     else:
         rng = random.Random(42)
 
@@ -323,7 +364,20 @@ def main(row_hammer_cls):
             'rand_per_row': patterns_random_per_row,
         }[args.pattern]
 
-        row_hammer.run(row_pairs=row_pairs, read_count=args.read_count, pattern_generator=pattern)
+        count = args.read_count if not args.read_count_range else args.read_count_range[0]
+        count_stop = count if not args.read_count_range else args.read_count_range[1]
+        count_step = 1 if not args.read_count_range else args.read_count_range[2]
+
+        while count <= count_stop:
+            row_hammer.run(row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
+            count += count_step
+            if row_hammer.bitflip_found and args.exit_on_bit_flip:
+                break
+
+    if len(row_hammer.err_summary):
+        with open("{}/error_summary_{}.json".format(row_hammer.log_directory, time.time()),
+                  "w") as write_file:
+            json.dump(row_hammer.err_summary, write_file, indent=4)
 
     wb.close()
 
