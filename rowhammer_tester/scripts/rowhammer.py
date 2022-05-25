@@ -384,13 +384,16 @@ def main(row_hammer_cls):
             count = args.read_count
         count_stop = count if not args.read_count_range else args.read_count_range[1]
         count_step = 1 if not args.read_count_range else args.read_count_range[2]
-
-        row_pair_distance = 2
+        """
+        ROW_PAIR_DISTANCE is a distance between the rows that are paired for mapping multiple pairs in the whole row range.
+        It is set to 2 to take the closet possible rows for the hammer attack, for example (0,2), (3,5), (12,14).
+        """
+        ROW_PAIR_DISTANCE = 2
         while count <= count_stop:
             row_hammer.err_summary["{}".format(count)] = {"read_count": count}
             if args.all_rows:
-                for i in range(args.start_row, args.nrows - row_pair_distance, args.row_jump):
-                    row_pairs = [(0 + i, 0 + i + row_pair_distance)]
+                for i in range(args.start_row, args.nrows - ROW_PAIR_DISTANCE, args.row_jump):
+                    row_pairs = [(0 + i, 0 + i + ROW_PAIR_DISTANCE)]
                     err_in_rows = row_hammer.run(
                         row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
                     row_hammer.err_summary["{}".format(count)]["pair_{}_{}".format(
