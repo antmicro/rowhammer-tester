@@ -320,6 +320,7 @@ rowhammer.py & hw_rowhammer.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Runs a rowhammer attack against a DRAM module.
+Can be used for measuring cell retention or row mapping.
 For the complete list of modifiers, see ``--help``.
 
 Different attack modes can be specified:
@@ -344,7 +345,7 @@ BIST blocks are faster and are the intended way of running Row Hammer Tester.
 
 .. warning:: Remember to initialize memory beforehand as explained in :ref:`mem.py`.
 
-Example:
+**Row Hammer**:
 
 .. code-block:: sh
 
@@ -367,6 +368,65 @@ Example:
    Bit-flips for row    55: 11
    Bit-flips for row   132: 12
    Bit-flips for row   134: 3
+
+**Row mapping**:
+
+Map row pairs from row 3 (``--start-row``) to row 59 (``--nrows``) where the next pair is 5 rows away (``--row-jump``) from the previous one:
+
+.. code-block:: sh
+
+  (venv) $ python hw_rowhammer.py --nrows 60 --pattern 01_in_row --all-rows --start-row 3 --row-jump 5 --no-refresh --read_count 10e4
+
+Map row pairs from row 3 to to row 59 without a distance between subsequent pairs (no ``--row-jump``), which means that rows pairs are incremented by 1:
+
+.. code-block:: sh
+
+  (venv) $ python hw_rowhammer.py --nrows 60 --pattern 01_in_row --all-rows --start-row 3 --no-refresh --read_count 10e4
+
+Map all row pairs (from 0 to nrows - 1):
+
+.. code-block:: sh
+
+  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --all-rows --no-refresh --read_count 10e4
+
+Map all row pairs (from 0 to nrows - 1) and save the error summary in JSON format to the ``test`` directory:
+
+.. code-block:: sh
+
+  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --all-rows --no-refresh --read_count 10e4 --log_dir ./test
+
+**Cell retention measurement**:
+
+Perform set of tests for different read count values in a given range for one row pair (50, 100):
+
+.. code-block:: sh
+
+  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count 10e4 10e5 20e4
+
+Perform set of tests for different read count values in a given range for one row pair (50, 100) and stop the test execution as soon as a bitflip is found:
+
+.. code-block:: sh
+
+  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count 10e4 10e5 20e4 --exit-on-bit-flip
+
+Perform set of tests for different read count values in a given range for one row pair (50, 100) and save the error summary in JSON format to the ``test`` directory:
+
+.. code-block:: sh
+
+  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count 10e4 10e5 20e4 --log_dir ./test
+
+Perform set of tests for different read count values in a given range for a sequence of attacks for different pairs, where the first row of a pair is 40 and the second one is a row of a number from range (40, nrows - 1):
+
+.. code-block:: sh
+
+  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --row-pairs sequential --start-row 40 --no-refresh --read_count 10e4 10e5 20e4
+
+Map all row pairs (from 0 to nrows - 1) and perform a set of tests for different read count values, starting from 10e4 and ending at 10e5 with a step of 20e4 (``--read_count_range [start stop step]``):
+
+.. code-block:: sh
+
+  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --all-rows --no-refresh --read_count 10e4 10e5 20e4
+
 
 bios_console.py
 ~~~~~~~~~~~~~~~
