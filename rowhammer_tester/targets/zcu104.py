@@ -3,7 +3,7 @@
 from migen import *
 from migen.genlib.resetsync import AsyncResetSynchronizer
 
-from litex_boards.platforms import xilinx_zcu104 as zcu104
+from litex_boards.platforms import xilinx_zcu104
 from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 from litex.soc.integration.builder import Builder
 from litex.soc.integration.soc_core import colorer
@@ -225,7 +225,7 @@ class SoC(common.RowHammerSoC):
         self.bus.add_master(name='ps_axi', master=wb_ps)
 
     def get_platform(self):
-        return zcu104.Platform()
+        return xilinx_zcu104.Platform()
 
     def get_crg(self):
         return CRG(self.platform, self.sys_clk_freq, iodelay_clk_freq=self.iodelay_clk_freq)
