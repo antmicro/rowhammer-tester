@@ -24,6 +24,7 @@ yapf == 0.32.0
 wheel
 pyvcd
 matplotlib
+ninja
 
 # Documentation
 sphinx
