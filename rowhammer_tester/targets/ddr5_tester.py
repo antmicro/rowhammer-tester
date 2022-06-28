@@ -81,7 +81,7 @@ def main():
     parser = common.ArgumentParser(
         description  = "LiteX SoC on DDR5 Tester Board",
         sys_clk_freq = '50e6',
-        module       = 'MT60B2G8HB48B'
+        module       = 'M329R8GA0BB0'
     )
     g = parser.add_argument_group(title="DDR5 Tester Board")
     parser.add(g, "--eth-reset-time", default="10e-3", help="Duration of Ethernet PHY reset")
