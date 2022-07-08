@@ -22,6 +22,7 @@ meson
 pexpect
 yapf == 0.32.0
 wheel
+pyvcd
 
 # Documentation
 sphinx
