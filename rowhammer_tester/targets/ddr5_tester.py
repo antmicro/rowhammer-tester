@@ -58,7 +58,7 @@ class SoC(common.RowHammerSoC):
             sys_clk_freq              = self.sys_clk_freq)
 
     def get_sdram_ratio(self):
-        return "1:8"
+        return "1:4"
 
     def add_host_bridge(self):
         self.submodules.ethphy = LiteEthS7PHYRGMII(
