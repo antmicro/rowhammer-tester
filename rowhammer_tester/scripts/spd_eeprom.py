@@ -19,21 +19,45 @@ SPD_COMMANDS = {
     # on ZCU104 first configure the I2C switch to select DDR4 SPD EEPROM, which than has base address 0b001
     'zcu104': (1, ['i2c_write 0x74 0x80']),
     'ddr4_datacenter_test_board': (0, None),
+    'ddr5_tester': (0, None, True),
 }
 
 
-def read_spd(console, spd_addr, init_commands=None):
+def read_spd(console, spd_addr, init_commands=None, ddr5=False):
     assert 0 <= spd_addr < 0b111, 'SPD EEPROM max address is 0b111 (defined by A0, A1, A2 pins)'
     prompt = '^.*litex[^>]*> '  # '92;1mlitex\x1b[0m> '
     console.sendline()
     console.expect(prompt)
-    for cmd in init_commands or []:
-        console.sendline(cmd)
+    if ddr5:
+
+        def add_page_to_address(dump):
+            ret = []
+            for line in dump.splitlines():
+                if line.strip().startswith('0x'):
+                    line = list(line)
+                    line[7] = f'{page:x}'
+                    modified_line = ''.join(line)
+                    ret.append(modified_line)
+            return '\n'.join(ret)
+
+        spd_data = ''
+        for page in range(8):
+            print(f"Reading page {page}")
+            console.sendline(f'i2c_write 0x50 0x0b {page:x}')
+            console.expect(prompt)
+            console.sendline('i2c_read 0x50 0x80 128')
+            console.expect('Memory dump:')
+            console.expect(prompt)
+            modified_dump = add_page_to_address(console.after.decode())
+            spd_data += '\n' + modified_dump
+    else:
+        for cmd in init_commands or []:
+            console.sendline(cmd)
+            console.expect(prompt)
+        console.sendline('sdram_spd {}'.format(spd_addr))
+        console.expect('Memory dump:')
         console.expect(prompt)
-    console.sendline('sdram_spd {}'.format(spd_addr))
-    console.expect('Memory dump:')
-    console.expect(prompt)
-    spd_data = console.after.decode()
+        spd_data = console.after.decode()
     return spd_data
 
 
@@ -100,7 +124,6 @@ if __name__ == "__main__":
         target = defs['TARGET']
         if target not in SPD_COMMANDS:
             raise NotImplementedError('SPD commands not available for target: {}'.format(target))
-        spd_addr, init_commands = SPD_COMMANDS[target]
 
         print('Reading SPD EEPROM ...')
         console = pexpect.spawn('python bios_console.py -t litex_term', cwd=SCRIPT_DIR, timeout=6)
@@ -120,7 +143,7 @@ if __name__ == "__main__":
             time.sleep(2)
         wb.close()
 
-        output = read_spd(console, spd_addr, init_commands)
+        output = read_spd(console, *SPD_COMMANDS[target])
         spd_data = list(parse_hexdump(output))
 
         with open(args.output_file, 'wb') as f:
