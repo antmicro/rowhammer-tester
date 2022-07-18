@@ -6,7 +6,7 @@ jobs:
   check:
     runs-on: ubuntu-18.04
     steps:
-      - name: Checkout litex-rowhammer-tester
+      - name: Checkout rowhammer-tester
         uses: actions/checkout@v2
         with:
           persist-credentials: false

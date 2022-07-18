@@ -11,7 +11,7 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-      - name: Checkout litex-rowhammer-tester
+      - name: Checkout rowhammer-tester
         uses: actions/checkout@v2
         with:
           persist-credentials: false

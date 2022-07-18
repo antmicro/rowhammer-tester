@@ -1,7 +1,7 @@
 DRAM modules
 ============
 
-When building one of the targets in `rowhammer_tester/targets <https://github.com/antmicro/litex-rowhammer-tester/tree/master/rowhammer_tester/targets>`_, a custom DRAM module can be specified using the ``--module`` argument. To find the default modules for each target, check the output of ``--help``.
+When building one of the targets in `rowhammer_tester/targets <https://github.com/antmicro/rowhammer-tester/tree/master/rowhammer_tester/targets>`_, a custom DRAM module can be specified using the ``--module`` argument. To find the default modules for each target, check the output of ``--help``.
 
 .. note::
 
@@ -17,7 +17,7 @@ Adding new modules
 Supported modules can be found in `litedram/modules.py <https://github.com/enjoy-digital/litedram/blob/master/litedram/modules.py>`_.
 If a module is not listed there, you can add a new definition.
 
-To make developement more convenient, modules can be added in litex-rowhammer-tester repository directly in file `rowhammer_tester/targets/modules.py <https://github.com/antmicro/litex-rowhammer-tester/blob/master/rowhammer_tester/targets/modules.py>`_. These definitions will be used before definitions in LiteDRAM.
+To make developement more convenient, modules can be added in rowhammer-tester repository directly in file `rowhammer_tester/targets/modules.py <https://github.com/antmicro/rowhammer-tester/blob/master/rowhammer_tester/targets/modules.py>`_. These definitions will be used before definitions in LiteDRAM.
 
 .. note::
 

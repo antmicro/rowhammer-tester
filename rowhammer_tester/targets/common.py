@@ -405,8 +405,8 @@ def get_sdram_module(name):
     if upstream is None and local is None:
         raise RuntimeError(f'Could not find module {name}')
     if upstream is not None and local is not None:
-        log.warning(f'Module {name} defined both in LiteDRAM and in litex-rowhammer-tester!'
-            ' Consider removing the definition in litex-rowhammer-tester.')
+        log.warning(f'Module {name} defined both in LiteDRAM and in rowhammer-tester!'
+            ' Consider removing the definition in rowhammer-tester.')
     if local is not None:
         log.warning(f'Using module {name} defined locally. Should be moved to LiteDRAM.')
         module = local

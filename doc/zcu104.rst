@@ -28,7 +28,7 @@ To use an SD card, configure the switches as follows:
 Preparing SD card
 -----------------
 
-For easiest setup, get the pre-built SD card image ``zcu104.img`` from `github releases <https://github.com/antmicro/litex-rowhammer-tester/releases/tag/zcu104-v0.2>`_. It has to be loaded to the microSD card.
+For easiest setup, get the pre-built SD card image ``zcu104.img`` from `github releases <https://github.com/antmicro/rowhammer-tester/releases/tag/zcu104-v0.2>`_. It has to be loaded to the microSD card.
 To load it to the SD card, insert the card into your PC card slot and find the device name.
 ``lsblk`` can be used to check available devices. Example output can look like:
 
@@ -159,7 +159,7 @@ Connect the ZCU104 board to your local network (or directly to a PC) using an Et
 
 The board uses a static IP address. By default it will be ``192.168.100.50``.
 If it does not conflict with your local network configuration you can skip this section.
-(the default configuration can be found `here <https://github.com/antmicro/litex-rowhammer-tester/blob/master/firmware/zcu104/buildroot/rootfs_overlay/etc/network/interfaces>`_\ ).
+(the default configuration can be found `here <https://github.com/antmicro/rowhammer-tester/blob/master/firmware/zcu104/buildroot/rootfs_overlay/etc/network/interfaces>`_\ ).
 
 To verify connectivity, use ``ping 192.168.100.50``.
 You should see data being transmitted, e.g.
