@@ -414,8 +414,6 @@ def main(row_hammer_cls):
             log_dir.mkdir(parents=True)
         row_hammer.log_directory = args.log_dir
 
-    count = args.read_count if args.read_count else 10e6
-
     rng = random.Random(42)
 
     def rand_row():
@@ -440,11 +438,12 @@ def main(row_hammer_cls):
     }[args.pattern]
 
     if args.read_count_range:
-        count = args.read_count_range[0]
-    elif args.read_count:
-        count = args.read_count
-    count_stop = count if not args.read_count_range else args.read_count_range[1]
-    count_step = 1 if not args.read_count_range else args.read_count_range[2]
+        count, count_stop, count_step = map(int, args.read_count_range)
+    else:
+        count = int(args.read_count or 10e6)
+        count_stop = count
+        count_step = 1
+
     """
     ROW_PAIR_DISTANCE is a distance between the rows that are paired for mapping multiple pairs in the whole row range.
     It is set to 2 to take the closet possible rows for the hammer attack, for example (0,2), (3,5), (12,14).
