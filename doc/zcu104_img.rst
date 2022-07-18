@@ -157,7 +157,7 @@ Then prepare configuration using external sources and build everything:
 
 .. code-block:: sh
 
-   make BR2_EXTERNAL=/PATH/TO/REPO/litex-rowhammer-tester/firmware/zcu104/buildroot zynqmp_zcu104_defconfig
+   make BR2_EXTERNAL=/PATH/TO/REPO/rowhammer-tester/firmware/zcu104/buildroot zynqmp_zcu104_defconfig
    make -j`nproc`
 
 Flashing SD card
@@ -193,7 +193,7 @@ Mount the boot partition and copy the boot files and kernel image created earlie
 .. code-block:: sh
 
    cp boot.bin /MOUNT/POINT/BOOT/
-   cp /PATH/TO/litex-rowhammer-tester/build/zcu104/gateware/zcu104.bit /MOUNT/POINT/BOOT/
+   cp /PATH/TO/rowhammer-tester/build/zcu104/gateware/zcu104.bit /MOUNT/POINT/BOOT/
    cp /PATH/TO/linux-xlnx/arch/arm64/boot/Image /MOUNT/POINT/BOOT/
    cp /PATH/TO/linux-xlnx/arch/arm64/boot/dts/xilinx/zynqmp-zcu104-revA.dtb /MOUNT/POINT/BOOT/system.dtb
 

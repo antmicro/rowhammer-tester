@@ -66,12 +66,12 @@ To flash QSPI flash module on LPDDR4 Test Board you'll need a patched version of
 Row-hammer tester
 ^^^^^^^^^^^^^^^^^
 
-Now clone the ``litex-rowhammer-tester`` repository and install the rest of the required dependecies:
+Now clone the ``rowhammer-tester`` repository and install the rest of the required dependecies:
 
 .. code-block:: sh
 
-   git clone --recursive https://github.com/antmicro/litex-rowhammer-tester.git
-   cd litex-rowhammer-tester
+   git clone --recursive https://github.com/antmicro/rowhammer-tester.git
+   cd rowhammer-tester
    make deps
 
 The last command will download and build all the dependencies (inlcuding a RISC-V GCC toolchain)
