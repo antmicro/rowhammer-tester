@@ -337,7 +337,7 @@ def main(row_hammer_cls):
     parser.add_argument(
         '--const-rows-pair',
         type=int,
-        nargs='+',
+        nargs=2,
         required=False,
         help='When using --row-pairs constant')
     parser.add_argument(
