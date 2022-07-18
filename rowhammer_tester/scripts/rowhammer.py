@@ -376,11 +376,10 @@ def main(row_hammer_cls):
     args = parser.parse_args()
 
     if args.read_count and args.read_count_range:
-        print("--read_count and --read_count_range are mutually exclusive - choose one or another.")
-        sys.exit(2)
+        parser.error(
+            "--read_count and --read_count_range are mutually exclusive - choose one or another.")
     if args.all_rows and args.row_pairs:
-        print("--all-rows and --row-pairs are mutually exclusive - choose one or another.")
-        sys.exit(2)
+        parser.error("--all-rows and --row-pairs are mutually exclusive - choose one or another.")
 
     if args.experiment_no == 1:
         args.nrows = 512
@@ -426,8 +425,9 @@ def main(row_hammer_cls):
         def rand_row():
             return rng.randint(args.start_row, args.start_row + args.nrows)
 
-        assert not (
-            args.row_pairs == 'const' and not args.const_rows_pair), 'Specify --const-rows-pair'
+        if args.row_pairs == 'const' and not args.const_rows_pair:
+            parser.error('Using --row-pairs=const requires specifying --const-rows-pair.')
+
         if args.row_pairs:
             row_pairs = {
                 'sequential': [(0 + args.start_row, i + args.start_row) for i in range(args.nrows)],
