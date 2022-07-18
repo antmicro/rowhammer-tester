@@ -261,11 +261,12 @@ class RowHammer:
         if self.errors_count(errors) == 0:
             print('OK')
             self.bitflip_found = False
+            return {}
         else:
             print()
-            self.display_errors(errors, read_count, bool(self.log_directory))
+            errors_in_rows = self.display_errors(errors, read_count, bool(self.log_directory))
             self.bitflip_found = True
-            return
+            return errors_in_rows
 
     def payload_executor_attack(self, read_count, row_tuple):
         """
