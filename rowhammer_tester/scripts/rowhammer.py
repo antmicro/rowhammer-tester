@@ -438,10 +438,10 @@ def main(row_hammer_cls):
     }[args.pattern]
 
     if args.read_count_range:
-        count, count_stop, count_step = map(int, args.read_count_range)
+        count_start, count_stop, count_step = map(int, args.read_count_range)
     else:
-        count = int(args.read_count or 10e6)
-        count_stop = count
+        count_start = int(args.read_count or 10e6)
+        count_stop = count_start
         count_step = 1
 
     """
@@ -449,7 +449,7 @@ def main(row_hammer_cls):
     It is set to 2 to take the closet possible rows for the hammer attack, for example (0,2), (3,5), (12,14).
     """
     ROW_PAIR_DISTANCE = 2
-    while count <= count_stop:
+    for count in range(count_start, count_stop + 1, count_step):
         row_hammer.err_summary[str(count)] = {"read_count": count}
         if args.hammer_only:
             row_hammer.attack(args.hammer_only, read_count=count)
@@ -480,7 +480,6 @@ def main(row_hammer_cls):
                     "errors_in_rows": err_in_rows
                 }
 
-        count += count_step
         if row_hammer.bitflip_found and args.exit_on_bit_flip:
             break
 
