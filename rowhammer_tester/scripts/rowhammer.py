@@ -388,16 +388,35 @@ def main(row_hammer_cls):
         args.const_rows_pair = 88, 99
         args.no_refresh = True
 
-    if args.row_pairs == 'sequential':
+    if args.hammer_only:
+        row_pairs = [tuple(args.hammer_only)]
+    elif args.all_rows:
+        # ROW_PAIR_DISTANCE is a distance between the rows that are paired for mapping multiple
+        # pairs in the whole row range. It is set to 2 to take the closet possible rows for
+        # the hammer attack, for example (0,2), (3,5), (12,14).
+        ROW_PAIR_DISTANCE = 2
+
+        row_pairs = [
+            (i, i + ROW_PAIR_DISTANCE) for i in range(
+                args.start_row,
+                args.nrows - ROW_PAIR_DISTANCE,
+                args.row_jump,
+            )
+        ]
+    elif args.row_pairs == 'sequential':
         if args.nrows <= 0:
             parser.error('Using --row-pairs=sequential requires specifying --nrows larger than 0')
         print(
             f"First row of hammered pair will be {args.start_row},",
             f"second row will be from range [{args.start_row}, {args.start_row + args.nrows})",
         )
+
+        row_pairs = [(args.start_row, args.start_row + i) for i in range(args.nrows)]
     elif args.row_pairs == 'const':
         if not args.const_rows_pair:
             parser.error('Using --row-pairs=const requires specifying --const-rows-pair')
+
+        row_pairs = [tuple(args.const_rows_pair)]
     elif args.row_pairs == 'random':
         if args.nrows <= 0:
             parser.error('Using --row-pairs=random requires specifying --nrows larger than 0')
@@ -407,6 +426,15 @@ def main(row_hammer_cls):
                 f"\nRight now the only row number that would be generated is {args.start_row}!",
             )
         print(f"\nGenerating row numbers from range [{args.start_row}, {args.start_row + args.nrows})")
+
+        rng = random.Random(42)
+
+        def rand_row():
+            return rng.randint(args.start_row, args.start_row + args.nrows)
+
+        row_pairs = [(rand_row(), rand_row()) for i in range(args.nrows)]
+    else:
+        parser.error("No operation specified")
 
     if args.srv:
         litex_server()
@@ -434,18 +462,6 @@ def main(row_hammer_cls):
             log_dir.mkdir(parents=True)
         row_hammer.log_directory = args.log_dir
 
-    rng = random.Random(42)
-
-    def rand_row():
-        return rng.randint(args.start_row, args.start_row + args.nrows)
-
-    if args.row_pairs:
-        row_pairs = {
-            'sequential': [(0 + args.start_row, i + args.start_row) for i in range(args.nrows)],
-            'const': [tuple(args.const_rows_pair) if args.const_rows_pair else ()],
-            'random': [(rand_row(), rand_row()) for i in range(args.nrows)],
-        }[args.row_pairs]
-
     pattern = {
         'all_0': lambda rows: patterns_const(rows, 0x00000000),
         'all_1': lambda rows: patterns_const(rows, 0xffffffff),
@@ -461,18 +477,13 @@ def main(row_hammer_cls):
         count_stop = count_start
         count_step = 1
 
-    """
-    ROW_PAIR_DISTANCE is a distance between the rows that are paired for mapping multiple pairs in the whole row range.
-    It is set to 2 to take the closet possible rows for the hammer attack, for example (0,2), (3,5), (12,14).
-    """
-    ROW_PAIR_DISTANCE = 2
     for count in range(count_start, count_stop + 1, count_step):
         row_hammer.err_summary[str(count)] = {"read_count": count}
         if args.hammer_only:
-            row_hammer.attack(args.hammer_only, read_count=count)
+            pair = row_pairs[0]
+            row_hammer.attack(pair, read_count=count)
         elif args.all_rows:
-            for i in range(args.start_row, args.nrows - ROW_PAIR_DISTANCE, args.row_jump):
-                pair = (i, i + ROW_PAIR_DISTANCE)
+            for pair in row_pairs:
                 err_in_rows = row_hammer.run(
                     row_pairs=[pair], read_count=count, pattern_generator=pattern)
 
