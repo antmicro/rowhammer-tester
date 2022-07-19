@@ -91,8 +91,9 @@ class HwRowHammer(RowHammer):
             mask = int(mask, 0)
         setup_inverters(self.wb, divisor, mask)
 
+        assert len(row_pairs) > 0, "No pairs to hammer"
         print('\nPreparing ...')
-        row_pattern = list(pattern_generator([self.rows[0]]))[0]
+        row_pattern = list(pattern_generator([row_pairs[0][0]]).values())[0]
         print('WARNING: only single word patterns supported, using: 0x{:08x}'.format(row_pattern))
         print('\nFilling memory with data ...')
         hw_memset(self.wb, 0x0, self.wb.mems.main_ram.size, [row_pattern])
