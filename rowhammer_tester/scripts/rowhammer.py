@@ -283,6 +283,7 @@ class RowHammer:
             payload_mem_size=self.wb.mems.payload.size,
             refresh=not self.no_refresh,
             sys_clk_freq=sys_clk_freq,
+            verbose=self.verbose,
         )
 
         execute_payload(self.wb, payload)
