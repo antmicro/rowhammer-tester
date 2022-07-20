@@ -144,6 +144,10 @@ def generate_payload_from_row_list(
             time = ' = {:.3f} ms'.format(1 / sys_clk_freq * expected_cycles * 1e3)
         print('  Expected execution time = {} cycles'.format(expected_cycles) + time)
 
+        for instruction in payload:
+            op, *args = map(lambda p: p[1], instruction._parts)
+            print(op, *map(hex, args), sep="\t")
+
     assert len(payload) <= payload_mem_size // 4, (len(payload), payload_mem_size)
 
     return encoder(payload)
