@@ -16,6 +16,12 @@ from rowhammer_tester.scripts.playbook.lib import (generate_payload_from_row_lis
 
 
 class RowHammer:
+    """
+    Base class for running rowhammer attacks.
+    It uses wishbone bridge connection to write patterns to the memory.
+
+    Other classes can inherit from this class to change attack method.
+    """
 
     def __init__(
             self,
@@ -41,9 +47,15 @@ class RowHammer:
 
     @property
     def rows(self):
+        """
+        Read only list of rows to attack.
+        """
+
         return list(range(self.rows_start, self.rows_start + self.nrows))
 
     def addresses_per_row(self, row):
+        """Returns a list of column addresses for a given row"""
+
         # Calculate the addresses lazily and cache them
         if row not in self._addresses_per_row:
             addresses = [
@@ -54,6 +66,16 @@ class RowHammer:
         return self._addresses_per_row[row]
 
     def attack(self, row_tuple, read_count, progress_header=''):
+        """
+        Performs the actual attack.
+        Uses *rowhammer*tester/gateware/rowhammer.py* underneath to perform reads via the DMA.
+
+        ``row_tuple`` is a pair of rows to be hammered (attacked row is between them)
+        ``row_count`` is divided between hammered rows, so specifying ``read_count = 2e5`` means,
+        that each row will be hammered ``1e5`` times
+        """
+        # FIXME: describe what progress_header does
+
         # Make sure that the Rowhammer module is in reset state
         self.wb.regs.rowhammer_enabled.write(0)
         self.wb.regs.rowhammer_count.read()  # clears the value
@@ -77,6 +99,7 @@ class RowHammer:
                 row_tuple, count / 1e6, read_count / 1e6, n=row_strw)
             print(s, end='  \r')
 
+        # Wait for hammering to finish
         while True:
             count = self.wb.regs.rowhammer_count.read()
             progress(count)
@@ -88,6 +111,16 @@ class RowHammer:
         print()
 
     def row_access_iterator(self, burst=16):
+        """
+        Generates a sequence of tuples of three:
+
+        0. row number
+        1. number of 32-bit words in a row
+        2. address of first word in a row
+
+        Sequence is generated only for rows in ``self.rows`` list, so rows to attack.
+        """
+
         for row in self.rows:
             addresses = self.addresses_per_row(row)
             n = (max(addresses) - min(addresses)) // 4
@@ -95,6 +128,12 @@ class RowHammer:
             yield row, n, base_addr
 
     def check_errors(self, row_patterns, row_progress=16):
+        """
+        Checks errors in rows from ``self.rows`` list.
+        This means, that if any row had bitflips, but wasn't a target,
+        there would be no error checks for it.
+        """
+
         row_errors = {}
         for row, n, base in self.row_access_iterator():
             errors = memcheck(self.wb, n, pattern=row_patterns[row], base=base, burst=255)
@@ -104,23 +143,33 @@ class RowHammer:
         return row_errors
 
     def errors_count(self, row_errors):
+        """Counts number of rows with bitflips."""
+
         return sum(1 if len(e) > 0 else 0 for e in row_errors.values())
 
     @staticmethod
     def bitcount(x):
+        """Counts set bits in ``x``."""
+
         return bin(x).count('1')  # seems faster than operations on integers
 
     @classmethod
     def bitflips(cls, val, ref):
+        """Counts differing bits between ``val`` and ``ref``."""
+
         return cls.bitcount(val ^ ref)
 
     def errors_bitcount(self, row_errors):
+        """Counts number of differing bits in rows from ``row_errors``."""
+
         return sum(
             sum(self.bitflips(value, expected)
                 for addr, value, expected in e)
             for e in row_errors.values())
 
     def display_errors(self, row_errors, read_count, do_error_summary=False):
+        # FIXME: add docstring
+
         err_dict = {}
         for row in row_errors:
             cols = []
@@ -156,6 +205,15 @@ class RowHammer:
             return err_dict
 
     def run(self, row_pairs, pattern_generator, read_count, row_progress=16, verify_initial=False):
+        """
+        Main part of the script.
+        First fills the memory with specified patterns, then optionally checks its integrity.
+        It disables refreshes if requested.
+        Next it executes the attack, one row pair at a time.
+        If refreshes were disabled, it reenables them.
+        It checks for errors, and if any were found, displays them.
+        """
+
         # TODO: need to invert data when writing/reading, make sure Python integer inversion works correctly
         if self.data_inversion:
             raise NotImplementedError('Currently only HW rowhammer supports data inversion')
@@ -210,6 +268,10 @@ class RowHammer:
             return
 
     def payload_executor_attack(self, read_count, row_tuple):
+        """
+        Performs the attack using payload executor
+        """
+
         sys_clk_freq = float(get_generated_defs()['SYS_CLK_FREQ'])
         payload = generate_payload_from_row_list(
             read_count=read_count,
@@ -229,14 +291,17 @@ class RowHammer:
 
 
 def patterns_const(rows, value):
+    """Same pattern for each row."""
     return {row: value for row in rows}
 
 
 def patterns_alternating_per_row(rows):
+    """Even rows all 1's, odd rows all 0's."""
     return {row: 0xffffffff if row % 2 == 0 else 0x00000000 for row in rows}
 
 
 def patterns_random_per_row(rows, seed=42):
+    """Random pattern per row."""
     rng = random.Random(seed)
     return {row: rng.randint(0, 2**32 - 1) for row in rows}
 
