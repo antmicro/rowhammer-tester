@@ -396,6 +396,12 @@ Map all row pairs (from 0 to nrows - 1) and save the error summary in JSON forma
 
   (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --all-rows --no-refresh --read_count 10e4 --log_dir ./test
 
+Map only one row (42 in this case) and save the error summary in JSON format to the ``test`` directory:
+
+.. code-block:: sh
+
+  (venv) $ python hw_rowhammer.py --pattern all_1 --row-pairs const --const-rows-pair 42 42 --no-refresh --read_count 10e4 --log_dir ./test
+
 **Cell retention measurement**:
 
 Perform set of tests for different read count values in a given range for one row pair (50, 100):
