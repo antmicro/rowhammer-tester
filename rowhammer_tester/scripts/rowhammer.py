@@ -388,8 +388,25 @@ def main(row_hammer_cls):
         args.const_rows_pair = 88, 99
         args.no_refresh = True
 
-    if args.row_pairs == 'const' and not args.const_rows_pair:
-        parser.error('Using --row-pairs=const requires specifying --const-rows-pair.')
+    if args.row_pairs == 'sequential':
+        if args.nrows <= 0:
+            parser.error('Using --row-pairs=sequential requires specifying --nrows larger than 0')
+        print(
+            f"First row of hammered pair will be {args.start_row},",
+            f"second row will be from range [{args.start_row}, {args.start_row + args.nrows})",
+        )
+    elif args.row_pairs == 'const':
+        if not args.const_rows_pair:
+            parser.error('Using --row-pairs=const requires specifying --const-rows-pair')
+    elif args.row_pairs == 'random':
+        if args.nrows <= 0:
+            parser.error('Using --row-pairs=random requires specifying --nrows larger than 0')
+        elif args.row_pairs == 'random' and args.nrows == 1:
+            print(
+                "\nWARNING: row numbers are generated from range [start-row, start-row + nrows)",
+                f"\nRight now the only row number that would be generated is {args.start_row}!",
+            )
+        print(f"\nGenerating row numbers from range [{args.start_row}, {args.start_row + args.nrows})")
 
     if args.srv:
         litex_server()
