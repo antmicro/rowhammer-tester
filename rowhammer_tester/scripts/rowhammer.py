@@ -314,16 +314,16 @@ def main(row_hammer_cls):
     parser.add_argument('--column', type=int, default=512, help='Column to read from')
     parser.add_argument(
         '--start-row', type=int, default=0, help='Starting row (range = (start, start+nrows))')
-    parser.add_argument(
+    read_count_group = parser.add_mutually_exclusive_group()
+    read_count_group.add_argument(
         '--read_count', type=float, help='How many reads to perform for single address pair')
-    parser.add_argument(
+    read_count_group.add_argument(
         '--read_count_range',
         type=float,
         nargs=3,
         help=
         'Range of how many reads to perform for single address pair in a set of tests, given as [start] [stop] [step]'
     )
-    parser.add_argument('--hammer-only', nargs=2, type=int, help='Run only the Rowhammer attack')
     parser.add_argument(
         '--no-refresh', action='store_true', help='Disable refresh commands during the attacks')
     parser.add_argument(
@@ -331,7 +331,10 @@ def main(row_hammer_cls):
         default='01_per_row',
         choices=['all_0', 'all_1', '01_in_row', '01_per_row', 'rand_per_row'],
         help='Pattern written to DRAM before running attacks')
-    parser.add_argument(
+    row_selector_group = parser.add_mutually_exclusive_group()
+    row_selector_group.add_argument(
+        '--hammer-only', nargs=2, type=int, help='Run only the Rowhammer attack')
+    row_selector_group.add_argument(
         '--row-pairs',
         choices=['sequential', 'const', 'random'],
         help='How the rows for subsequent attacks are selected')
@@ -341,7 +344,7 @@ def main(row_hammer_cls):
         nargs=2,
         required=False,
         help='When using --row-pairs constant')
-    parser.add_argument(
+    row_selector_group.add_argument(
         '--all-rows',
         action='store_true',
         help='Run whole test sequence on all rows. Optionally, set --row-jump and --start-row')
@@ -375,12 +378,6 @@ def main(row_hammer_cls):
         "Directory for output files. If not given, the output files (e.g. error summary) won't be written"
     )
     args = parser.parse_args()
-
-    if args.read_count and args.read_count_range:
-        parser.error(
-            "--read_count and --read_count_range are mutually exclusive - choose one or another.")
-    if args.all_rows and args.row_pairs:
-        parser.error("--all-rows and --row-pairs are mutually exclusive - choose one or another.")
 
     if args.experiment_no == 1:
         args.nrows = 512
