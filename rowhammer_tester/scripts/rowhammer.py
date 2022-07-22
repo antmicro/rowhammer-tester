@@ -388,6 +388,9 @@ def main(row_hammer_cls):
         args.const_rows_pair = 88, 99
         args.no_refresh = True
 
+    if args.row_pairs == 'const' and not args.const_rows_pair:
+        parser.error('Using --row-pairs=const requires specifying --const-rows-pair.')
+
     if args.srv:
         litex_server()
 
@@ -418,9 +421,6 @@ def main(row_hammer_cls):
 
     def rand_row():
         return rng.randint(args.start_row, args.start_row + args.nrows)
-
-    if args.row_pairs == 'const' and not args.const_rows_pair:
-        parser.error('Using --row-pairs=const requires specifying --const-rows-pair.')
 
     if args.row_pairs:
         row_pairs = {
