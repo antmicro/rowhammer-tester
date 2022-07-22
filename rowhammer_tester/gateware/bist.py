@@ -10,7 +10,8 @@ from litedram.frontend.dma import LiteDRAMDMAReader, LiteDRAMDMAWriter
 
 
 class PatternMemory(Module):
-    """Memory for storing access pattern
+    """
+    Memory for storing access pattern
 
     It consists of two separate memories: `data` and `addr`, each of `mem_depth`,
     but with different word widths. BIST modules read corresponding pairs (`data`,
@@ -48,7 +49,8 @@ class AddressSelector(Module):
 
 
 class RowDataInverter(Module, AutoCSR):
-    """Inverts data for given range of row bits
+    """
+    Inverts data for given range of row bits
 
     Specify small range, e.g. rowbits=5, keep in mind that
     AddressSelector has to construct one-hot encoded signal
@@ -86,19 +88,19 @@ class RowDataInverter(Module, AutoCSR):
 
 class BISTModule(Module):
     """
-Provides RAM to store access pattern: `mem_addr` and `mem_data`.
-The pattern address space can be limited using the `data_mask`.
+    Provides access to RAM to store access pattern: `mem_addr` and `mem_data`.
+    The pattern address space can be limited using the `data_mask`.
 
-For example, having `mem_adr` filled with `[ 0x04, 0x02, 0x03, ... ]`
-and `mem_data` filled with `[ 0xff, 0xaa, 0x55, ... ]` and setting
-`data_mask = 0b01`, the pattern [(address, data), ...] written will be:
-`[(0x04, 0xff), (0x02, 0xaa), (0x04, 0xff), ...]` (wraps due to masking).
+    For example, having `mem_adr` filled with `[ 0x04, 0x02, 0x03, ... ]`
+    and `mem_data` filled with `[ 0xff, 0xaa, 0x55, ... ]` and setting
+    `data_mask = 0b01`, the pattern [(address, data), ...] written will be:
+    `[(0x04, 0xff), (0x02, 0xaa), (0x04, 0xff), ...]` (wraps due to masking).
 
-DRAM memory range that is being accessed can be configured using `mem_mask`.
+    DRAM memory range that is being accessed can be configured using `mem_mask`.
 
-To use this module, make sure that `ready` is 1, then write the desired
-number of transfers to `count`. Writing to the `start` CSR will initialize
-the operation. When the operation is ongoing `ready` will be 0.
+    To use this module, make sure that `ready` is 1, then write the desired
+    number of transfers to `count`. Writing to the `start` CSR will initialize
+    the operation. When the operation is ongoing `ready` will be 0.
     """
     def __init__(self, pattern_mem):
         self.start = Signal()
@@ -230,7 +232,7 @@ the `error_ready` CSR is 1. Then use the CSRs `error_offset`,
 transfer. To continue reading, write 1 to `error_continue` CSR.
 Setting `skip_fifo` to 1 will disable this behaviour entirely.
 
-The final nubmer of errors can be read from `error_count`.
+The final number of errors can be read from `error_count`.
 NOTE: This value represents the number of erroneous *DMA transfers*.
 
 The current progress can be read from the `done` CSR.

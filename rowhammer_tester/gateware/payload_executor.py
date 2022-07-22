@@ -43,7 +43,7 @@ class Decoder(Module):
 
     NOOP with a TIMESLICE of 0 is a special case which is interpreted as
     STOP instruction. When this instruction is encountered execution gets
-    finished imediatelly.
+    finished immediately.
 
     **NOTE:** TIMESLICE is the number of cycles the instruction will take. This
     means that instructions other than NOOP that use TIMESLICE=0 are illegal
@@ -132,7 +132,7 @@ class Encoder:
         self.bankbits = bankbits
 
     class I:
-        """Instuction specification without encoding the value yet"""
+        """Instruction specification without encoding the value yet"""
         def __init__(self, op_code, **kwargs):
             self.op_code = op_code
             for k, v in kwargs.items():

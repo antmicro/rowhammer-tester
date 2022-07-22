@@ -66,12 +66,12 @@ To flash QSPI flash module on LPDDR4 Test Board you'll need a patched version of
 Row-hammer tester
 ^^^^^^^^^^^^^^^^^
 
-Now clone the ``litex-rowhammer-tester`` repository and install the rest of the required dependecies:
+Now clone the ``rowhammer-tester`` repository and install the rest of the required dependecies:
 
 .. code-block:: sh
 
-   git clone --recursive https://github.com/antmicro/litex-rowhammer-tester.git
-   cd litex-rowhammer-tester
+   git clone --recursive https://github.com/antmicro/rowhammer-tester.git
+   cd rowhammer-tester
    make deps
 
 The last command will download and build all the dependencies (inlcuding a RISC-V GCC toolchain)
@@ -338,6 +338,7 @@ User can choose a pattern that memory will be initially filled with:
 * ``rand_per_row`` - random values for all rows
 
 There are also two versions of a rowhammer script:
+
 * ``rowhammer.py`` - this one uses Processing System to fill/check the memory
 * ``hw_rowhammer.py`` - BIST blocks will be used to fill/check the memory
 
@@ -395,37 +396,43 @@ Map all row pairs (from 0 to nrows - 1) and save the error summary in JSON forma
 
   (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --all-rows --no-refresh --read_count 10e4 --log_dir ./test
 
+Map only one row (42 in this case) and save the error summary in JSON format to the ``test`` directory:
+
+.. code-block:: sh
+
+  (venv) $ python hw_rowhammer.py --pattern all_1 --row-pairs const --const-rows-pair 42 42 --no-refresh --read_count 10e4 --log_dir ./test
+
 **Cell retention measurement**:
 
 Perform set of tests for different read count values in a given range for one row pair (50, 100):
 
 .. code-block:: sh
 
-  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count 10e4 10e5 20e4
+  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count_range 10e4 10e5 20e4
 
 Perform set of tests for different read count values in a given range for one row pair (50, 100) and stop the test execution as soon as a bitflip is found:
 
 .. code-block:: sh
 
-  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count 10e4 10e5 20e4 --exit-on-bit-flip
+  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count_range 10e4 10e5 20e4 --exit-on-bit-flip
 
 Perform set of tests for different read count values in a given range for one row pair (50, 100) and save the error summary in JSON format to the ``test`` directory:
 
 .. code-block:: sh
 
-  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count 10e4 10e5 20e4 --log_dir ./test
+  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count_range 10e4 10e5 20e4 --log_dir ./test
 
 Perform set of tests for different read count values in a given range for a sequence of attacks for different pairs, where the first row of a pair is 40 and the second one is a row of a number from range (40, nrows - 1):
 
 .. code-block:: sh
 
-  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --row-pairs sequential --start-row 40 --no-refresh --read_count 10e4 10e5 20e4
+  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --row-pairs sequential --start-row 40 --no-refresh --read_count_range 10e4 10e5 20e4
 
 Map all row pairs (from 0 to nrows - 1) and perform a set of tests for different read count values, starting from 10e4 and ending at 10e5 with a step of 20e4 (``--read_count_range [start stop step]``):
 
 .. code-block:: sh
 
-  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --all-rows --no-refresh --read_count 10e4 10e5 20e4
+  (venv) $ python hw_rowhammer.py --nrows 512 --pattern 01_in_row --all-rows --no-refresh --read_count_range 10e4 10e5 20e4
 
 
 bios_console.py

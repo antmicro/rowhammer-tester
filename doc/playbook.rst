@@ -1,18 +1,18 @@
 Playbook
 ========
 
-The `Playbook directory <https://github.com/antmicro/litex-rowhammer-tester/tree/master/rowhammer_tester/scripts/playbook>`_ contains a group of Python classes and scripts designed to simplify the process of writing various rowhammer-related tests. These tests can be executed against a hardware platform.
+The `Playbook directory <https://github.com/antmicro/rowhammer-tester/tree/master/rowhammer_tester/scripts/playbook>`_ contains a group of Python classes and scripts designed to simplify the process of writing various rowhammer-related tests. These tests can be executed against a hardware platform.
 
 Payload
 -------
 
-Tests are generated as ``payload`` data. After generation, this data is transferred to a memory area in the device reserved for this purpose called ``payload memory``. The payload contains an instruction list that can be interpreted by the``payload executor`` module in hardware. The payload executor translates these instructions into DRAM commands. The payload executor connects directly to the DRAM PHY, bypassing DRAM controller, as explained in :ref:`architecture`.
+Tests are generated as ``payload`` data. After generation, this data is transferred to a memory area in the device reserved for this purpose called ``payload memory``. The payload contains an instruction list that can be interpreted by the ``payload executor`` module in hardware. The payload executor translates these instructions into DRAM commands. The payload executor connects directly to the DRAM PHY, bypassing DRAM controller, as explained in :ref:`architecture`.
 
 Changing payload memory size
 ****************************
 
 Payload memory size can be changed. Of course it can't exceed the memory available on the hardware platform used.
-Currently, the payload memory size is defined in `common.py <https://github.com/antmicro/litex-rowhammer-tester/blob/master/rowhammer_tester/targets/common.py>`_, as an argument to LiteX:
+Currently, the payload memory size is defined in `common.py <https://github.com/antmicro/rowhammer-tester/blob/master/rowhammer_tester/targets/common.py>`_, as an argument to LiteX:
 
 .. code-block:: python
 
@@ -60,7 +60,7 @@ Payload generator class
 -----------------------
 
 The purpose of the payload generator is to prepare a payload and process the test outcome. It is a class that can be re-used in different tests :ref:`configurations`.
-Payload generators are located in `payload_generators directory <https://github.com/antmicro/litex-rowhammer-tester/tree/master/rowhammer_tester/scripts/playbook/payload_generators>`_
+Payload generators are located in `payload_generators directory <https://github.com/antmicro/rowhammer-tester/tree/master/rowhammer_tester/scripts/playbook/payload_generators>`_
 
 Available payload generators
 ****************************
@@ -86,7 +86,7 @@ Here are the configs that can be used in *payload_generator_config* for this pay
 
 Example :ref:`configurations` for this test were provided as ``configs/example_row_list_*.cfg`` files.
 Some of them require a significant amount o memory declared as `payload memory`.
-To execute a minimalistic example from within litex-rowhammer-tester repo, enter:
+To execute a minimalistic example from within rowhammer-tester repo, enter:
 
 .. code-block:: console
 
@@ -152,7 +152,7 @@ The results are a series of histograms with appropriate labeling.
 
 Example :ref:`configurations` for this test were provided as ``configs/example_hammer_*.cfg`` files.
 Some of them require a significant amount o memory declared as `payload memory`.
-To execute a minimalistic example from within litex-rowhammer-tester repo, enter:
+To execute a minimalistic example from within rowhammer-tester repo, enter:
 
 .. code-block:: console
 
