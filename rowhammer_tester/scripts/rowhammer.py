@@ -456,30 +456,30 @@ def main(row_hammer_cls):
         """
         ROW_PAIR_DISTANCE = 2
         while count <= count_stop:
-            row_hammer.err_summary["{}".format(count)] = {"read_count": count}
+            row_hammer.err_summary[str(count)] = {"read_count": count}
             if args.all_rows:
                 for i in range(args.start_row, args.nrows - ROW_PAIR_DISTANCE, args.row_jump):
-                    row_pairs = [(0 + i, 0 + i + ROW_PAIR_DISTANCE)]
+                    pair = (i, i + ROW_PAIR_DISTANCE)
                     err_in_rows = row_hammer.run(
-                        row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
-                    row_hammer.err_summary["{}".format(count)]["pair_{}_{}".format(
-                        row_pairs[0][0], row_pairs[0][1])] = {
-                            "hammer_row_1": row_pairs[0][0],
-                            "hammer_row_2": row_pairs[0][1],
-                            "errors_in_rows": err_in_rows
-                        }
+                        row_pairs=[pair], read_count=count, pattern_generator=pattern)
+
+                    row_hammer.err_summary[str(count)]["pair_{}_{}".format(*pair)] = {
+                        "hammer_row_1": pair[0],
+                        "hammer_row_2": pair[1],
+                        "errors_in_rows": err_in_rows
+                    }
             else:
                 err_in_rows = row_hammer.run(
                     row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
                 if args.row_pairs == 'const':
-                    row_hammer.err_summary["{}".format(count)]["pair_{}_{}".format(
-                        row_pairs[0][0], row_pairs[0][1])] = {
-                            "hammer_row_1": row_pairs[0][0],
-                            "hammer_row_2": row_pairs[0][1],
-                            "errors_in_rows": err_in_rows
-                        }
+                    pair = row_pairs[0]
+                    row_hammer.err_summary[str(count)]["pair_{}_{}".format(*pair)] = {
+                        "hammer_row_1": pair[0],
+                        "hammer_row_2": pair[1],
+                        "errors_in_rows": err_in_rows
+                    }
                 else:
-                    row_hammer.err_summary["{}".format(count)]["sequential_attacks"] = {
+                    row_hammer.err_summary[str(count)]["sequential_attacks"] = {
                         "row_pairs": row_pairs,
                         "errors_in_rows": err_in_rows
                     }
