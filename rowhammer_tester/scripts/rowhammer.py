@@ -481,7 +481,10 @@ def main(row_hammer_cls):
         row_hammer.err_summary[str(count)] = {"read_count": count}
         if args.hammer_only:
             pair = row_pairs[0]
-            row_hammer.attack(pair, read_count=count)
+            if args.payload_executor:
+                row_hammer.payload_executor_attack(read_count=count, row_tuple=pair)
+            else:
+                row_hammer.attack(row_tuple=pair, read_count=count)
         elif args.all_rows:
             for pair in row_pairs:
                 err_in_rows = row_hammer.run(
