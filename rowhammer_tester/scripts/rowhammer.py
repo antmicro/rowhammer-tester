@@ -349,6 +349,8 @@ def main(row_hammer_cls):
         '--all-rows',
         action='store_true',
         help='Run whole test sequence on all rows. Optionally, set --row-jump and --start-row')
+    parser.add_argument('--row-pair-distance', type=int, default=2, required=False,
+            help='Distance between hammered rows in each generated pair')
     parser.add_argument(
         '--row-jump',
         type=int,
@@ -391,15 +393,13 @@ def main(row_hammer_cls):
     if args.hammer_only:
         row_pairs = [tuple(args.hammer_only)]
     elif args.all_rows:
-        # ROW_PAIR_DISTANCE is a distance between the rows that are paired for mapping multiple
-        # pairs in the whole row range. It is set to 2 to take the closet possible rows for
-        # the hammer attack, for example (0,2), (3,5), (12,14).
-        ROW_PAIR_DISTANCE = 2
+        if args.row_pair_distance < 0:
+            parser.error("Row distance can't be negative")
 
         row_pairs = [
-            (i, i + ROW_PAIR_DISTANCE) for i in range(
+            (i, i + args.row_pair_distance) for i in range(
                 args.start_row,
-                args.nrows - ROW_PAIR_DISTANCE,
+                args.nrows - args.row_pair_distance,
                 args.row_jump,
             )
         ]
