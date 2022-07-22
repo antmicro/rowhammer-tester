@@ -415,75 +415,74 @@ def main(row_hammer_cls):
 
     count = args.read_count if args.read_count else 10e6
 
-    if args.hammer_only:
-        row_hammer.attack(args.hammer_only, read_count=count)
-    else:
-        rng = random.Random(42)
+    rng = random.Random(42)
 
-        def rand_row():
-            return rng.randint(args.start_row, args.start_row + args.nrows)
+    def rand_row():
+        return rng.randint(args.start_row, args.start_row + args.nrows)
 
-        if args.row_pairs == 'const' and not args.const_rows_pair:
-            parser.error('Using --row-pairs=const requires specifying --const-rows-pair.')
+    if args.row_pairs == 'const' and not args.const_rows_pair:
+        parser.error('Using --row-pairs=const requires specifying --const-rows-pair.')
 
-        if args.row_pairs:
-            row_pairs = {
-                'sequential': [(0 + args.start_row, i + args.start_row) for i in range(args.nrows)],
-                'const': [tuple(args.const_rows_pair) if args.const_rows_pair else ()],
-                'random': [(rand_row(), rand_row()) for i in range(args.nrows)],
-            }[args.row_pairs]
+    if args.row_pairs:
+        row_pairs = {
+            'sequential': [(0 + args.start_row, i + args.start_row) for i in range(args.nrows)],
+            'const': [tuple(args.const_rows_pair) if args.const_rows_pair else ()],
+            'random': [(rand_row(), rand_row()) for i in range(args.nrows)],
+        }[args.row_pairs]
 
-        pattern = {
-            'all_0': lambda rows: patterns_const(rows, 0x00000000),
-            'all_1': lambda rows: patterns_const(rows, 0xffffffff),
-            '01_in_row': lambda rows: patterns_const(rows, 0xaaaaaaaa),
-            '01_per_row': patterns_alternating_per_row,
-            'rand_per_row': patterns_random_per_row,
-        }[args.pattern]
+    pattern = {
+        'all_0': lambda rows: patterns_const(rows, 0x00000000),
+        'all_1': lambda rows: patterns_const(rows, 0xffffffff),
+        '01_in_row': lambda rows: patterns_const(rows, 0xaaaaaaaa),
+        '01_per_row': patterns_alternating_per_row,
+        'rand_per_row': patterns_random_per_row,
+    }[args.pattern]
 
-        if args.read_count_range:
-            count = args.read_count_range[0]
-        elif args.read_count:
-            count = args.read_count
-        count_stop = count if not args.read_count_range else args.read_count_range[1]
-        count_step = 1 if not args.read_count_range else args.read_count_range[2]
-        """
-        ROW_PAIR_DISTANCE is a distance between the rows that are paired for mapping multiple pairs in the whole row range.
-        It is set to 2 to take the closet possible rows for the hammer attack, for example (0,2), (3,5), (12,14).
-        """
-        ROW_PAIR_DISTANCE = 2
-        while count <= count_stop:
-            row_hammer.err_summary[str(count)] = {"read_count": count}
-            if args.all_rows:
-                for i in range(args.start_row, args.nrows - ROW_PAIR_DISTANCE, args.row_jump):
-                    pair = (i, i + ROW_PAIR_DISTANCE)
-                    err_in_rows = row_hammer.run(
-                        row_pairs=[pair], read_count=count, pattern_generator=pattern)
-
-                    row_hammer.err_summary[str(count)]["pair_{}_{}".format(*pair)] = {
-                        "hammer_row_1": pair[0],
-                        "hammer_row_2": pair[1],
-                        "errors_in_rows": err_in_rows
-                    }
-            else:
+    if args.read_count_range:
+        count = args.read_count_range[0]
+    elif args.read_count:
+        count = args.read_count
+    count_stop = count if not args.read_count_range else args.read_count_range[1]
+    count_step = 1 if not args.read_count_range else args.read_count_range[2]
+    """
+    ROW_PAIR_DISTANCE is a distance between the rows that are paired for mapping multiple pairs in the whole row range.
+    It is set to 2 to take the closet possible rows for the hammer attack, for example (0,2), (3,5), (12,14).
+    """
+    ROW_PAIR_DISTANCE = 2
+    while count <= count_stop:
+        row_hammer.err_summary[str(count)] = {"read_count": count}
+        if args.hammer_only:
+            row_hammer.attack(args.hammer_only, read_count=count)
+        elif args.all_rows:
+            for i in range(args.start_row, args.nrows - ROW_PAIR_DISTANCE, args.row_jump):
+                pair = (i, i + ROW_PAIR_DISTANCE)
                 err_in_rows = row_hammer.run(
-                    row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
-                if args.row_pairs == 'const':
-                    pair = row_pairs[0]
-                    row_hammer.err_summary[str(count)]["pair_{}_{}".format(*pair)] = {
-                        "hammer_row_1": pair[0],
-                        "hammer_row_2": pair[1],
-                        "errors_in_rows": err_in_rows
-                    }
-                else:
-                    row_hammer.err_summary[str(count)]["sequential_attacks"] = {
-                        "row_pairs": row_pairs,
-                        "errors_in_rows": err_in_rows
-                    }
+                    row_pairs=[pair], read_count=count, pattern_generator=pattern)
 
-            count += count_step
-            if row_hammer.bitflip_found and args.exit_on_bit_flip:
-                break
+                row_hammer.err_summary[str(count)]["pair_{}_{}".format(*pair)] = {
+                    "hammer_row_1": pair[0],
+                    "hammer_row_2": pair[1],
+                    "errors_in_rows": err_in_rows
+                }
+        else:
+            err_in_rows = row_hammer.run(
+                row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
+            if args.row_pairs == 'const':
+                pair = row_pairs[0]
+                row_hammer.err_summary[str(count)]["pair_{}_{}".format(*pair)] = {
+                    "hammer_row_1": pair[0],
+                    "hammer_row_2": pair[1],
+                    "errors_in_rows": err_in_rows
+                }
+            else:
+                row_hammer.err_summary[str(count)]["sequential_attacks"] = {
+                    "row_pairs": row_pairs,
+                    "errors_in_rows": err_in_rows
+                }
+
+        count += count_step
+        if row_hammer.bitflip_found and args.exit_on_bit_flip:
+            break
 
     if row_hammer.log_directory:
         with open("{}/error_summary_{}.json".format(row_hammer.log_directory, time.time()),
