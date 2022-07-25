@@ -37,7 +37,7 @@ import sphinx_antmicro_theme
 
 # -- Project information -----------------------------------------------------
 
-project = u'LiteX Row Hammer Tester'
+project = u'Row Hammer Tester'
 authors = u'Antmicro'
 copyright = authors + u', 2021'
 
