@@ -1,4 +1,4 @@
-# LiteX Rowhammer Tester
+# Rowhammer Tester
 
 Copyright (c) 2020-2022 [Antmicro](https://www.antmicro.com)
 
@@ -13,4 +13,4 @@ The repository includes:
 * `doc/` - Sphinx-based documentation for the project
 * `.github/` - Directory with CI configuration
 
-Full documentation is available [on Read The Docs](https://litex-rowhammer-tester.readthedocs.io/en/latest/).
+Full documentation is available [on Read The Docs](https://rowhammer-tester.readthedocs.io/en/latest/).

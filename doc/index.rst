@@ -1,4 +1,4 @@
-Welcome to LiteX Row Hammer Tester!
+Welcome to Row Hammer Tester!
 ===================================
 
 .. toctree::

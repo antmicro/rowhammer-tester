@@ -245,7 +245,7 @@ class RowHammer:
             self.wb.regs.controller_settings_refresh.write(0)
 
         print('\nRunning Rowhammer attacks ...')
-        for i, row_tuple in enumerate(row_pairs):
+        for i, row_tuple in enumerate(row_pairs, start=1):
             s = 'Iter {:{n}} / {:{n}}'.format(i, len(row_pairs), n=len(str(len(row_pairs))))
             if self.payload_executor:
                 self.payload_executor_attack(read_count=read_count, row_tuple=row_tuple)
@@ -283,6 +283,7 @@ class RowHammer:
             payload_mem_size=self.wb.mems.payload.size,
             refresh=not self.no_refresh,
             sys_clk_freq=sys_clk_freq,
+            verbose=self.verbose,
         )
 
         execute_payload(self.wb, payload)
@@ -314,16 +315,16 @@ def main(row_hammer_cls):
     parser.add_argument('--column', type=int, default=512, help='Column to read from')
     parser.add_argument(
         '--start-row', type=int, default=0, help='Starting row (range = (start, start+nrows))')
-    parser.add_argument(
+    read_count_group = parser.add_mutually_exclusive_group()
+    read_count_group.add_argument(
         '--read_count', type=float, help='How many reads to perform for single address pair')
-    parser.add_argument(
+    read_count_group.add_argument(
         '--read_count_range',
         type=float,
         nargs=3,
         help=
         'Range of how many reads to perform for single address pair in a set of tests, given as [start] [stop] [step]'
     )
-    parser.add_argument('--hammer-only', nargs=2, type=int, help='Run only the Rowhammer attack')
     parser.add_argument(
         '--no-refresh', action='store_true', help='Disable refresh commands during the attacks')
     parser.add_argument(
@@ -331,7 +332,10 @@ def main(row_hammer_cls):
         default='01_per_row',
         choices=['all_0', 'all_1', '01_in_row', '01_per_row', 'rand_per_row'],
         help='Pattern written to DRAM before running attacks')
-    parser.add_argument(
+    row_selector_group = parser.add_mutually_exclusive_group()
+    row_selector_group.add_argument(
+        '--hammer-only', nargs=2, type=int, help='Run only the Rowhammer attack')
+    row_selector_group.add_argument(
         '--row-pairs',
         choices=['sequential', 'const', 'random'],
         help='How the rows for subsequent attacks are selected')
@@ -341,10 +345,16 @@ def main(row_hammer_cls):
         nargs=2,
         required=False,
         help='When using --row-pairs constant')
-    parser.add_argument(
+    row_selector_group.add_argument(
         '--all-rows',
         action='store_true',
         help='Run whole test sequence on all rows. Optionally, set --row-jump and --start-row')
+    parser.add_argument(
+        '--row-pair-distance',
+        type=int,
+        default=2,
+        required=False,
+        help='Distance between hammered rows in each generated pair')
     parser.add_argument(
         '--row-jump',
         type=int,
@@ -376,12 +386,6 @@ def main(row_hammer_cls):
     )
     args = parser.parse_args()
 
-    if args.read_count and args.read_count_range:
-        parser.error(
-            "--read_count and --read_count_range are mutually exclusive - choose one or another.")
-    if args.all_rows and args.row_pairs:
-        parser.error("--all-rows and --row-pairs are mutually exclusive - choose one or another.")
-
     if args.experiment_no == 1:
         args.nrows = 512
         args.read_count = 15e6
@@ -389,6 +393,54 @@ def main(row_hammer_cls):
         args.row_pairs = 'const'
         args.const_rows_pair = 88, 99
         args.no_refresh = True
+
+    if args.hammer_only:
+        row_pairs = [tuple(args.hammer_only)]
+    elif args.all_rows:
+        if args.row_pair_distance < 0:
+            parser.error("Row distance can't be negative")
+
+        row_pairs = [
+            (i, i + args.row_pair_distance) for i in range(
+                args.start_row,
+                args.nrows - args.row_pair_distance,
+                args.row_jump,
+            )
+        ]
+    elif args.row_pairs == 'sequential':
+        if args.nrows <= 0:
+            parser.error('Using --row-pairs=sequential requires specifying --nrows larger than 0')
+        print(
+            f"First row of hammered pair will be {args.start_row},",
+            f"second row will be from range [{args.start_row}, {args.start_row + args.nrows})",
+        )
+
+        row_pairs = [(args.start_row, args.start_row + i) for i in range(args.nrows)]
+    elif args.row_pairs == 'const':
+        if not args.const_rows_pair:
+            parser.error('Using --row-pairs=const requires specifying --const-rows-pair')
+
+        row_pairs = [tuple(args.const_rows_pair)]
+    elif args.row_pairs == 'random':
+        if args.nrows <= 0:
+            parser.error('Using --row-pairs=random requires specifying --nrows larger than 0')
+        elif args.row_pairs == 'random' and args.nrows == 1:
+            print(
+                "\nWARNING: row numbers are generated from range [start-row, start-row + nrows)",
+                f"\nRight now the only row number that would be generated is {args.start_row}!",
+            )
+        print(
+            f"\nGenerating row numbers from range [{args.start_row}, {args.start_row + args.nrows})"
+        )
+
+        rng = random.Random(42)
+
+        def rand_row():
+            return rng.randint(args.start_row, args.start_row + args.nrows)
+
+        row_pairs = [(rand_row(), rand_row()) for i in range(args.nrows)]
+    else:
+        parser.error("No operation specified")
 
     if args.srv:
         litex_server()
@@ -416,77 +468,57 @@ def main(row_hammer_cls):
             log_dir.mkdir(parents=True)
         row_hammer.log_directory = args.log_dir
 
-    count = args.read_count if args.read_count else 10e6
+    pattern = {
+        'all_0': lambda rows: patterns_const(rows, 0x00000000),
+        'all_1': lambda rows: patterns_const(rows, 0xffffffff),
+        '01_in_row': lambda rows: patterns_const(rows, 0xaaaaaaaa),
+        '01_per_row': patterns_alternating_per_row,
+        'rand_per_row': patterns_random_per_row,
+    }[args.pattern]
 
-    if args.hammer_only:
-        row_hammer.attack(args.hammer_only, read_count=count)
+    if args.read_count_range:
+        count_start, count_stop, count_step = map(int, args.read_count_range)
     else:
-        rng = random.Random(42)
+        count_start = int(args.read_count or 10e6)
+        count_stop = count_start
+        count_step = 1
 
-        def rand_row():
-            return rng.randint(args.start_row, args.start_row + args.nrows)
-
-        if args.row_pairs == 'const' and not args.const_rows_pair:
-            parser.error('Using --row-pairs=const requires specifying --const-rows-pair.')
-
-        if args.row_pairs:
-            row_pairs = {
-                'sequential': [(0 + args.start_row, i + args.start_row) for i in range(args.nrows)],
-                'const': [tuple(args.const_rows_pair) if args.const_rows_pair else ()],
-                'random': [(rand_row(), rand_row()) for i in range(args.nrows)],
-            }[args.row_pairs]
-
-        pattern = {
-            'all_0': lambda rows: patterns_const(rows, 0x00000000),
-            'all_1': lambda rows: patterns_const(rows, 0xffffffff),
-            '01_in_row': lambda rows: patterns_const(rows, 0xaaaaaaaa),
-            '01_per_row': patterns_alternating_per_row,
-            'rand_per_row': patterns_random_per_row,
-        }[args.pattern]
-
-        if args.read_count_range:
-            count = args.read_count_range[0]
-        elif args.read_count:
-            count = args.read_count
-        count_stop = count if not args.read_count_range else args.read_count_range[1]
-        count_step = 1 if not args.read_count_range else args.read_count_range[2]
-        """
-        ROW_PAIR_DISTANCE is a distance between the rows that are paired for mapping multiple pairs in the whole row range.
-        It is set to 2 to take the closet possible rows for the hammer attack, for example (0,2), (3,5), (12,14).
-        """
-        ROW_PAIR_DISTANCE = 2
-        while count <= count_stop:
-            row_hammer.err_summary["{}".format(count)] = {"read_count": count}
-            if args.all_rows:
-                for i in range(args.start_row, args.nrows - ROW_PAIR_DISTANCE, args.row_jump):
-                    row_pairs = [(0 + i, 0 + i + ROW_PAIR_DISTANCE)]
-                    err_in_rows = row_hammer.run(
-                        row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
-                    row_hammer.err_summary["{}".format(count)]["pair_{}_{}".format(
-                        row_pairs[0][0], row_pairs[0][1])] = {
-                            "hammer_row_1": row_pairs[0][0],
-                            "hammer_row_2": row_pairs[0][1],
-                            "errors_in_rows": err_in_rows
-                        }
+    for count in range(count_start, count_stop + 1, count_step):
+        row_hammer.err_summary[str(count)] = {"read_count": count}
+        if args.hammer_only:
+            pair = row_pairs[0]
+            if args.payload_executor:
+                row_hammer.payload_executor_attack(read_count=count, row_tuple=pair)
             else:
+                row_hammer.attack(row_tuple=pair, read_count=count)
+        elif args.all_rows:
+            for pair in row_pairs:
                 err_in_rows = row_hammer.run(
-                    row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
-                if args.row_pairs == 'const':
-                    row_hammer.err_summary["{}".format(count)]["pair_{}_{}".format(
-                        row_pairs[0][0], row_pairs[0][1])] = {
-                            "hammer_row_1": row_pairs[0][0],
-                            "hammer_row_2": row_pairs[0][1],
-                            "errors_in_rows": err_in_rows
-                        }
-                else:
-                    row_hammer.err_summary["{}".format(count)]["sequential_attacks"] = {
-                        "row_pairs": row_pairs,
-                        "errors_in_rows": err_in_rows
-                    }
+                    row_pairs=[pair], read_count=count, pattern_generator=pattern)
 
-            count += count_step
-            if row_hammer.bitflip_found and args.exit_on_bit_flip:
-                break
+                row_hammer.err_summary[str(count)]["pair_{}_{}".format(*pair)] = {
+                    "hammer_row_1": pair[0],
+                    "hammer_row_2": pair[1],
+                    "errors_in_rows": err_in_rows
+                }
+        else:
+            err_in_rows = row_hammer.run(
+                row_pairs=row_pairs, read_count=count, pattern_generator=pattern)
+            if args.row_pairs == 'const':
+                pair = row_pairs[0]
+                row_hammer.err_summary[str(count)]["pair_{}_{}".format(*pair)] = {
+                    "hammer_row_1": pair[0],
+                    "hammer_row_2": pair[1],
+                    "errors_in_rows": err_in_rows
+                }
+            else:
+                row_hammer.err_summary[str(count)]["sequential_attacks"] = {
+                    "row_pairs": row_pairs,
+                    "errors_in_rows": err_in_rows
+                }
+
+        if row_hammer.bitflip_found and args.exit_on_bit_flip:
+            break
 
     if row_hammer.log_directory:
         with open("{}/error_summary_{}.json".format(row_hammer.log_directory, time.time()),

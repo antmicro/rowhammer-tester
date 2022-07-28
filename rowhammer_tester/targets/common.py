@@ -109,7 +109,7 @@ class RowHammerSoC(SoCCore):
 
         # SoCCore ----------------------------------------------------------------------------------
         SoCCore.__init__(self, self.platform, sys_clk_freq,
-            ident          = "LiteX Row Hammer Tester SoC on {}, git: {}".format(self.platform.device, githash),
+            ident          = "Row Hammer Tester SoC on {}, git: {}".format(self.platform.device, githash),
             integrated_rom_mode = 'rw' if args.rw_bios_mem else 'r',
             **kwargs)
 
@@ -509,7 +509,7 @@ def run(args, builder, build_kwargs, target_name):
     if args.docs:
         doc.generate_docs(builder.soc,
             base_dir     = "build/documentation",
-            project_name = "LiteX Row Hammer Tester",
+            project_name = "Row Hammer Tester",
             author       = "Antmicro")
 
     if args.load:

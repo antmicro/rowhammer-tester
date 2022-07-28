@@ -6,7 +6,7 @@ from setuptools import find_packages
 
 setup(
     name="rowhammer_tester",
-    description="LiteX Row Hammer Tester",
+    description="Row Hammer Tester",
     author="Antmicro",
     python_requires="~=3.6",
     install_requires=[
