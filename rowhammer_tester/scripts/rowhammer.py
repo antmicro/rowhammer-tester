@@ -349,8 +349,12 @@ def main(row_hammer_cls):
         '--all-rows',
         action='store_true',
         help='Run whole test sequence on all rows. Optionally, set --row-jump and --start-row')
-    parser.add_argument('--row-pair-distance', type=int, default=2, required=False,
-            help='Distance between hammered rows in each generated pair')
+    parser.add_argument(
+        '--row-pair-distance',
+        type=int,
+        default=2,
+        required=False,
+        help='Distance between hammered rows in each generated pair')
     parser.add_argument(
         '--row-jump',
         type=int,
@@ -425,7 +429,9 @@ def main(row_hammer_cls):
                 "\nWARNING: row numbers are generated from range [start-row, start-row + nrows)",
                 f"\nRight now the only row number that would be generated is {args.start_row}!",
             )
-        print(f"\nGenerating row numbers from range [{args.start_row}, {args.start_row + args.nrows})")
+        print(
+            f"\nGenerating row numbers from range [{args.start_row}, {args.start_row + args.nrows})"
+        )
 
         rng = random.Random(42)
 
