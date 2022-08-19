@@ -34,7 +34,6 @@ class RowHammer:
             rows_start=0,
             no_refresh=False,
             verbose=False,
-            plot=False,
             payload_executor=False,
             data_inversion=False):
         for name, val in locals().items():
@@ -200,15 +199,6 @@ class RowHammer:
             if do_error_summary:
                 err_dict["{}".format(row)] = {'row': _row, 'col': cols, 'bitflips': flips}
 
-        if self.plot:
-            from matplotlib import pyplot as plt
-            row_err_counts = [len(row_errors.get(row, [])) for row in self.rows]
-            plt.bar(self.rows, row_err_counts, width=1)
-            plt.grid(True)
-            plt.xlabel('Row')
-            plt.ylabel('Errors')
-            plt.show()
-
         if do_error_summary:
             return err_dict
 
@@ -370,9 +360,6 @@ def main(row_hammer_cls):
         required=False,
         help='Jump between rows when using --all-rows')
     parser.add_argument(
-        '--plot', action='store_true',
-        help='Plot errors distribution')  # requiers matplotlib and pyqt5 packages
-    parser.add_argument(
         '--payload-executor',
         action='store_true',
         help='Do the attack using Payload Executor (1st row only)')
@@ -464,7 +451,6 @@ def main(row_hammer_cls):
         bank=args.bank,
         rows_start=args.start_row,
         verbose=args.verbose,
-        plot=args.plot,
         no_refresh=args.no_refresh,
         payload_executor=args.payload_executor,
         data_inversion=args.data_inversion,
