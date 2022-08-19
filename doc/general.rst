@@ -433,6 +433,32 @@ You can control number of displayed columns with ``--plot-columns``.
 For example if your module has 1024 columns and you provide ``--plot-columns 16``, then DRAM columns will be displayed in groups of 64.
 
 
+logs2vis.py
+~~~~~~~~~~~
+
+Similarly to ``logs2plot.py``, you can generate visualization using `F4PGA Database Visualizer <https://github.com/chipsalliance/f4pga-database-visualizer>`_.
+
+To view results using DB Visualizer you need to:
+
+Clone and build the visualizer with: ::
+
+    git clone https://github.com/chipsalliance/f4pga-database-visualizer
+    cd f4pga-database-visualizer
+    npm run build
+
+Run ``rowhammer.py`` or ``hw_rowhammer.py`` with ``--log-dir log_directory``
+
+Generate JSON files for the visualizer: ::
+
+  python3 logs2vis.py log_directory/your_error_summary.json vis_directory
+
+Copy generated JSON files from ``vis_directory`` to ``/path/to/f4pga-database-visualizer/dist/production/``
+
+Start a simple HTTP server inside the production directory: ::
+
+  python -m http.server 8080
+
+
 Other scripts
 ^^^^^^^^^^^^^
 
