@@ -113,12 +113,12 @@ Expected output:
     Payload per-row toggle count = 0.010K  x10 rows
     Payload refreshes (if enabled) = 10 (disabled)
     Expected execution time = 1903 cycles = 0.019 ms
-  
+
   Transferring the payload ...
-  
+
   Executing ...
   Time taken: 0.738 ms
-  
+
   Progress: [==                                      ]  3338 / 65536 (Errors: 1287)
   ...
 
@@ -165,7 +165,7 @@ Expected output:
 
 .. code-block:: console
 
-  Progress: [========================================] 3072 / 3072 
+  Progress: [========================================] 3072 / 3072
   Generating payload:
     tRAS = 5
     tRP = 3
@@ -177,13 +177,13 @@ Expected output:
     Payload per-row toggle count = 0.010K  x2 rows
     Payload refreshes (if enabled) = 10 (disabled)
     Expected execution time = 1263 cycles = 0.013 ms
-  
+
   Transferring the payload ...
-  
+
   Executing ...
   Time taken: 0.647 ms
-  
-  Progress: [============                            ]  323 / 1024 (Errors: 320) 
+
+  Progress: [============                            ]  323 / 1024 (Errors: 320)
   ...
 
 HalfDoubleAnalysisPayloadGenerator
