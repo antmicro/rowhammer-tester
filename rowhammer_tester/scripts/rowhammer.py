@@ -167,12 +167,19 @@ class RowHammer:
                 for addr, value, expected in e)
             for e in row_errors.values())
 
+    @staticmethod
+    def bitflip_list(val, exp):
+        # FIXME: add docstring
+
+        expr = f'{val ^ exp:#0{len(bin(exp))}b}'
+        return [i for i, c in enumerate(expr[2:]) if c == '1']
+
     def display_errors(self, row_errors, read_count, do_error_summary=False):
         # FIXME: add docstring
 
         err_dict = {}
         for row in row_errors:
-            cols = []
+            cols = {}
             if len(row_errors[row]) > 0:
                 flips = sum(
                     self.bitflips(value, expected) for addr, value, expected in row_errors[row])
@@ -188,7 +195,8 @@ class RowHammer:
                         print(
                             "Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(
                                 addr, word, _row, col))
-                    cols.append(col)
+                    bitflips = self.bitflip_list(word, expected)
+                    cols[col] = bitflips
             if do_error_summary:
                 err_dict["{}".format(row)] = {'row': _row, 'col': cols, 'bitflips': flips}
 
