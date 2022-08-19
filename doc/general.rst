@@ -413,6 +413,26 @@ Perform set of tests for different read count values in a given range for a sequ
   (venv) $ python hw_rowhammer.py --pattern 01_in_row --row-pairs sequential --start-row 40 --nrows 512 --no-refresh --read_count_range 10e4 10e5 20e4
 
 
+logs2plot.py
+~~~~~~~~~~~
+
+There is an option to plot a graph showing distribution of bitflips across rows and columns from generated logs.
+For example one can generate graphs by calling: ::
+
+  (venv) $ python logs2plot.py your_error_summary.json
+
+For every attack there will be one graph.
+So if you attacked two row pairs ``(A, B)``, ``(C, D)`` with two different read counts each ``(X, Y)``, for a total of 4 attacks, there will be 4 plots generated:
+
+* read count: ``X`` and pair: ``(A, B)``
+* read count: ``X`` and pair: ``(C, D)``
+* read count: ``Y`` and pair: ``(A, B)``
+* read count: ``Y`` and pair: ``(C, D)``
+
+You can control number of displayed columns with ``--plot-columns``.
+For example if your module has 1024 columns and you provide ``--plot-columns 16``, then DRAM columns will be displayed in groups of 64.
+
+
 Other scripts
 ^^^^^^^^^^^^^
 
