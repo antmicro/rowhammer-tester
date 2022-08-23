@@ -459,6 +459,27 @@ Start a simple HTTP server inside the production directory: ::
   python -m http.server 8080
 
 
+logs2dq.py
+~~~~~~~~~~~
+
+This script allows you to visualize bitflips and group them per DQ pad.
+Pads themselves are grouped using colors to differentiate modules.
+Using this script you can visualize and check which module is failing the most.
+
+By default it shows you mean bitflips across all attacks with standard deviation.
+
+First run ``rowhammer.py`` or ``hw_rowhammer.py`` with ``--log-dir log_directory``
+
+Then run: ::
+
+  python3 logs2dq.py log_directory/your_error_summary.json
+
+You can also pass optional arguments:
+
+* ``--dq DQ`` - how many pads are connected to one module
+* ``--per-attack`` - allows you to also view DQ groupings for each attacked pair of rows
+
+
 Other scripts
 ^^^^^^^^^^^^^
 
