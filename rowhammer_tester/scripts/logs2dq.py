@@ -66,12 +66,18 @@ if __name__ == "__main__":
         if "read_count" in attack_set_results:
             attack_set_results.pop("read_count")
 
-        # pair hammering level
-        for pair, attack_results in attack_set_results.items():
+        # single attack level
+        for attack, attack_results in attack_set_results.items():
             dq_counters = count_bitflips_per_dq(attack_results)
             if args.per_attack:
-                hammered_rows = (attack_results["hammer_row_1"], attack_results["hammer_row_2"])
-                plot(dq_counters, title=f"Hammered rows {hammered_rows}")
+                if attack.startswith("pair"):
+                    hammered_rows = (attack_results["hammer_row_1"], attack_results["hammer_row_2"])
+                    title = f"Hammered rows: {hammered_rows}"
+                elif attack.startswith("sequential"):
+                    start_row = attack_results["row_pairs"][0][1]
+                    end_row = attack_results["row_pairs"][-1][1]
+                    title = f"Sequential attack on rows from {start_row} to {end_row}"
+                plot(dq_counters, title=title)
             all_dq_counters = np.append(all_dq_counters, [dq_counters], axis=0)
 
     all_mean = all_dq_counters.mean(axis=0)

@@ -71,15 +71,16 @@ def get_vis_data(data: dict, rows: int, cols: int, col_step: int = 32) -> tuple[
                     desc,
                 ])
 
-    for row in (data["hammer_row_1"], data["hammer_row_2"]):
-        # hammered row could have been at one of the ends
-        if row < first_row:
-            first_row = row
-        if row > last_row:
-            last_row = row
+    if "hammer_row_1" in data and "hammer_row_2" in data:
+        for row in (data["hammer_row_1"], data["hammer_row_2"]):
+            # hammered row could have been at one of the ends
+            if row < first_row:
+                first_row = row
+            if row > last_row:
+                last_row = row
 
-        # add "TGT" cells for rows that were hammered
-        vis_data.append([0, row, cols // col_step, "TGT", "Target", "Target row", []])
+            # add "TGT" cells for rows that were hammered
+            vis_data.append([0, row, cols // col_step, "TGT", "Target", "Target row", []])
 
     return vis_data, first_row, last_row
 

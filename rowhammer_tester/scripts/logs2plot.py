@@ -17,7 +17,7 @@ import numpy as np
 from rowhammer_tester.scripts.utils import get_generated_file
 
 
-def plot(data: dict, _rows: int, cols: int, col_step=32):
+def plot(data: dict, _rows: int, cols: int, col_step=32, title=""):
     affected_rows_count = len(data["errors_in_rows"])
 
     # row_labels correspond to actual row numbers, but row_vals
@@ -59,9 +59,7 @@ def plot(data: dict, _rows: int, cols: int, col_step=32):
     ticks_step = max(1, int(max_errors // 20))
     plt.colorbar(ticks=range(0, max_errors + 1, ticks_step))
 
-    hammered_rows = (data["hammer_row_1"], data["hammer_row_2"])
-    plt.title(f"Hammered rows {hammered_rows}")
-
+    plt.title(title)
     plt.show()
 
 
@@ -90,11 +88,20 @@ if __name__ == "__main__":
         if "read_count" in attack_set_results:
             attack_set_results.pop("read_count")
 
-        # pair hammering level
-        for pair, attack_results in attack_set_results.items():
+        # single attack level
+        for attack, attack_results in attack_set_results.items():
+            if attack.startswith("pair"):
+                hammered_rows = (attack_results["hammer_row_1"], attack_results["hammer_row_2"])
+                title = f"Hammered rows: {hammered_rows}"
+            elif attack.startswith("sequential"):
+                start_row = attack_results["row_pairs"][0][1]
+                end_row = attack_results["row_pairs"][-1][1]
+                title = f"Sequential attack on rows from {start_row} to {end_row}"
+
             plot(
                 attack_results,
                 ROWS,
                 COLS,
                 COLS // args.plot_columns,
+                title=title,
             )
