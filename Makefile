@@ -112,6 +112,7 @@ deps:: # Intentionally skipping --recursive as not needed (but doesn't break any
 	(make --no-print-directory -C . \
 		venv/bin/verilator \
 		venv/bin/openFPGALoader \
+		venv/bin/openocd \
 		python-deps \
 		third_party/riscv64-unknown-elf-gcc \
 	)
@@ -139,3 +140,10 @@ venv/bin/openFPGALoader: third_party/openFPGALoader/CMakeLists.txt
 	cd third_party/openFPGALoader && cmake . -DCMAKE_INSTALL_PREFIX=$(PWD)/venv
 	cd third_party/openFPGALoader && cmake --build . -j`nproc`
 	cd third_party/openFPGALoader && cmake --install .
+
+# required for flashing LPDDR4 board
+venv/bin/openocd: third_party/openocd/bootstrap
+	cd third_party/openocd && ./bootstrap
+	cd third_party/openocd && ./configure --enable-ftdi --prefix=$(PWD)/venv
+	make -C third_party/openocd -j`nproc`
+	make -C third_party/openocd install
