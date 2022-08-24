@@ -35,3 +35,6 @@
 [submodule "third_party/openFPGALoader"]
 	path = third_party/openFPGALoader
 	url = https://github.com/antmicro/openFPGALoader.git
+[submodule "third_party/openocd"]
+	path = third_party/openocd
+	url = https://github.com/antmicro/openocd.git
