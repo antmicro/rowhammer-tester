@@ -111,6 +111,7 @@ deps:: # Intentionally skipping --recursive as not needed (but doesn't break any
 	git submodule update --init
 	(make --no-print-directory -C . \
 		venv/bin/verilator \
+		venv/bin/openFPGALoader \
 		python-deps \
 		third_party/riscv64-unknown-elf-gcc \
 	)
@@ -134,3 +135,7 @@ venv/bin/verilator: third_party/verilator/configure.ac
 	make -C third_party/verilator -j`nproc`
 	make -C third_party/verilator install
 
+venv/bin/openFPGALoader: third_party/openFPGALoader/CMakeLists.txt
+	cd third_party/openFPGALoader && cmake . -DCMAKE_INSTALL_PREFIX=$(PWD)/venv
+	cd third_party/openFPGALoader && cmake --build . -j`nproc`
+	cd third_party/openFPGALoader && cmake --install .
