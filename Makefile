@@ -17,7 +17,6 @@ TARGET_ARGS := $(NET_ARGS) $(ARGS)
 PATH := $(PWD)/venv/bin:$(PATH)
 # other binaries
 PATH := $(PWD)/bin:$(PATH)
-PATH := $(PWD)/third_party/verilator/image/bin:$(PATH)
 PATH := $(PWD)/third_party/riscv64-unknown-elf-gcc/bin:$(PATH)
 export PATH
 
@@ -93,7 +92,7 @@ format: FORCE
 deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)
 	git submodule update --init
 	(make --no-print-directory -C . \
-		third_party/verilator/image/bin/verilator \
+		venv/bin/verilator \
 		python-deps \
 		third_party/riscv64-unknown-elf-gcc \
 	)
@@ -111,8 +110,9 @@ third_party/riscv64-unknown-elf-gcc:
 		-exec mv {} third_party/riscv64-unknown-elf-gcc \; \
 		-quit
 
-third_party/verilator/image/bin/verilator: third_party/verilator/configure.ac
-	(cd third_party/verilator && autoconf && \
-		./configure --prefix=$(PWD)/third_party/verilator/image && \
-		make -j`nproc` && make install) && touch $@
+venv/bin/verilator: third_party/verilator/configure.ac
+	cd third_party/verilator && autoconf
+	cd third_party/verilator && ./configure --prefix=$(PWD)/venv
+	make -C third_party/verilator -j`nproc`
+	make -C third_party/verilator install
 
