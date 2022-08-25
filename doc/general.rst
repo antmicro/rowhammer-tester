@@ -223,8 +223,8 @@ For the complete list of modifiers, see ``--help``.
 
 There are also two versions of a rowhammer script:
 
-* ``rowhammer.py`` - this one uses Processing System to fill/check the memory
-* ``hw_rowhammer.py`` - BIST blocks will be used to fill/check the memory
+* ``rowhammer.py`` - this one uses regular memory access via EtherBone to fill/check the memory (slower)
+* ``hw_rowhammer.py`` - BIST blocks will be used to fill/check the memory (much faster, but with some limitations regarding fill pattern)
 
 BIST blocks are faster and are the intended way of running Row Hammer Tester.
 
@@ -411,6 +411,73 @@ Perform set of tests for different read count values in a given range for one ro
 Perform set of tests for different read count values in a given range for a sequence of attacks for different pairs, where the first row of a pair is 40 and the second one is a row of a number from range (40, nrows - 1): ::
 
   (venv) $ python hw_rowhammer.py --pattern 01_in_row --row-pairs sequential --start-row 40 --nrows 512 --no-refresh --read_count_range 10e4 10e5 20e4
+
+
+logs2plot.py
+~~~~~~~~~~~
+
+There is an option to plot a graph showing distribution of bitflips across rows and columns from generated logs.
+For example one can generate graphs by calling: ::
+
+  (venv) $ python logs2plot.py your_error_summary.json
+
+For every attack there will be one graph.
+So if you attacked two row pairs ``(A, B)``, ``(C, D)`` with two different read counts each ``(X, Y)``, for a total of 4 attacks, there will be 4 plots generated:
+
+* read count: ``X`` and pair: ``(A, B)``
+* read count: ``X`` and pair: ``(C, D)``
+* read count: ``Y`` and pair: ``(A, B)``
+* read count: ``Y`` and pair: ``(C, D)``
+
+You can control number of displayed columns with ``--plot-columns``.
+For example if your module has 1024 columns and you provide ``--plot-columns 16``, then DRAM columns will be displayed in groups of 64.
+
+
+logs2vis.py
+~~~~~~~~~~~
+
+Similarly to ``logs2plot.py``, you can generate visualization using `F4PGA Database Visualizer <https://github.com/chipsalliance/f4pga-database-visualizer>`_.
+
+To view results using DB Visualizer you need to:
+
+Clone and build the visualizer with: ::
+
+    git clone https://github.com/chipsalliance/f4pga-database-visualizer
+    cd f4pga-database-visualizer
+    npm run build
+
+Run ``rowhammer.py`` or ``hw_rowhammer.py`` with ``--log-dir log_directory``
+
+Generate JSON files for the visualizer: ::
+
+  python3 logs2vis.py log_directory/your_error_summary.json vis_directory
+
+Copy generated JSON files from ``vis_directory`` to ``/path/to/f4pga-database-visualizer/dist/production/``
+
+Start a simple HTTP server inside the production directory: ::
+
+  python -m http.server 8080
+
+
+logs2dq.py
+~~~~~~~~~~~
+
+This script allows you to visualize bitflips and group them per DQ pad.
+Pads themselves are grouped using colors to differentiate modules.
+Using this script you can visualize and check which module is failing the most.
+
+By default it shows you mean bitflips across all attacks with standard deviation.
+
+First run ``rowhammer.py`` or ``hw_rowhammer.py`` with ``--log-dir log_directory``
+
+Then run: ::
+
+  python3 logs2dq.py log_directory/your_error_summary.json
+
+You can also pass optional arguments:
+
+* ``--dq DQ`` - how many pads are connected to one module
+* ``--per-attack`` - allows you to also view DQ groupings for each attacked pair of rows
 
 
 Other scripts

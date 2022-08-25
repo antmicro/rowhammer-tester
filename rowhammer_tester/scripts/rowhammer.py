@@ -34,7 +34,6 @@ class RowHammer:
             rows_start=0,
             no_refresh=False,
             verbose=False,
-            plot=False,
             payload_executor=False,
             data_inversion=False):
         for name, val in locals().items():
@@ -167,12 +166,19 @@ class RowHammer:
                 for addr, value, expected in e)
             for e in row_errors.values())
 
+    @staticmethod
+    def bitflip_list(val, exp):
+        # FIXME: add docstring
+
+        expr = f'{val ^ exp:#0{len(bin(exp))}b}'
+        return [i for i, c in enumerate(expr[2:]) if c == '1']
+
     def display_errors(self, row_errors, read_count, do_error_summary=False):
         # FIXME: add docstring
 
         err_dict = {}
         for row in row_errors:
-            cols = []
+            cols = {}
             if len(row_errors[row]) > 0:
                 flips = sum(
                     self.bitflips(value, expected) for addr, value, expected in row_errors[row])
@@ -188,18 +194,10 @@ class RowHammer:
                         print(
                             "Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(
                                 addr, word, _row, col))
-                    cols.append(col)
+                    bitflips = self.bitflip_list(word, expected)
+                    cols[col] = bitflips
             if do_error_summary:
                 err_dict["{}".format(row)] = {'row': _row, 'col': cols, 'bitflips': flips}
-
-        if self.plot:
-            from matplotlib import pyplot as plt
-            row_err_counts = [len(row_errors.get(row, [])) for row in self.rows]
-            plt.bar(self.rows, row_err_counts, width=1)
-            plt.grid(True)
-            plt.xlabel('Row')
-            plt.ylabel('Errors')
-            plt.show()
 
         if do_error_summary:
             return err_dict
@@ -362,9 +360,6 @@ def main(row_hammer_cls):
         required=False,
         help='Jump between rows when using --all-rows')
     parser.add_argument(
-        '--plot', action='store_true',
-        help='Plot errors distribution')  # requiers matplotlib and pyqt5 packages
-    parser.add_argument(
         '--payload-executor',
         action='store_true',
         help='Do the attack using Payload Executor (1st row only)')
@@ -456,7 +451,6 @@ def main(row_hammer_cls):
         bank=args.bank,
         rows_start=args.start_row,
         verbose=args.verbose,
-        plot=args.plot,
         no_refresh=args.no_refresh,
         payload_executor=args.payload_executor,
         data_inversion=args.data_inversion,
