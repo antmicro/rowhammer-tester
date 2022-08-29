@@ -16,7 +16,12 @@ DQ_PADS = 64
 DQ_RATIO = 4
 
 
-def plot(values: np.ndarray, stderror: np.ndarray = None, title=""):
+def plot(
+    values: np.ndarray,
+    stderror: np.ndarray = None,
+    title: str = "",
+    log_scale: bool = False,
+):
     """Show plot with DQ pads grouped per module"""
     modules = int(DQ_PADS / DQ_RATIO)
 
@@ -28,6 +33,9 @@ def plot(values: np.ndarray, stderror: np.ndarray = None, title=""):
         start, end = DQ_RATIO * m, DQ_RATIO * (m + 1)
         yerr = stderror[start:end] if stderror is not None else stderror
         plt.bar(range(start, end), values[start:end], yerr=yerr)
+
+    if log_scale:
+        plt.yscale("log")
 
     plt.title(title)
 
@@ -50,6 +58,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("log_file", help="file with log output")
     parser.add_argument("--per-attack", action="store_true", help="show plot for each attack")
+    parser.add_argument("--log-scale", action="store_true", help="use logarithmic sale for Y axis")
     parser.add_argument("--dq", default=4, type=int, help="DQ to DQS ratio")
     args = parser.parse_args()
 
@@ -77,9 +86,9 @@ if __name__ == "__main__":
                     start_row = attack_results["row_pairs"][0][1]
                     end_row = attack_results["row_pairs"][-1][1]
                     title = f"Sequential attack on rows from {start_row} to {end_row}"
-                plot(dq_counters, title=title)
+                plot(dq_counters, title=title, log_scale=args.log_scale)
             all_dq_counters = np.append(all_dq_counters, [dq_counters], axis=0)
 
     all_mean = all_dq_counters.mean(axis=0)
     all_stdev = all_dq_counters.std(axis=0)
-    plot(all_mean, all_stdev, "Mean bitflips across all attacks")
+    plot(all_mean, all_stdev, "Mean bitflips across all attacks", log_scale=args.log_scale)
