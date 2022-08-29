@@ -31,8 +31,17 @@ def plot(
 
     for m in range(modules):
         start, end = DQ_RATIO * m, DQ_RATIO * (m + 1)
-        yerr = stderror[start:end] if stderror is not None else stderror
-        plt.bar(range(start, end), values[start:end], yerr=yerr)
+        x = range(start, end)
+        y = values[start:end]
+
+        if stderror is not None:
+            std = stderror[start:end]
+            lower_std = [a - 1e-9 if a < b else b for a, b in zip(y, std)]
+            yerr = (lower_std, std)
+        else:
+            yerr = None
+
+        plt.bar(x, y, yerr=yerr)
 
     if log_scale:
         plt.yscale("log")
