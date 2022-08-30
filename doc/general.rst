@@ -49,6 +49,14 @@ To install the dependencies on Ubuntu 18.04 LTS, run:
 
    ``gcc-9-base`` package installation solves the problem.
 
+.. note::
+   
+   On Ubuntu 22.04 LTS the following dependencies may also be required:
+
+   .. code-block:: sh
+      
+      apt install libtool libusb-1.0-0-dev pkg-config
+
 OpenOCD
 ^^^^^^^
 

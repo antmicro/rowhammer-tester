@@ -102,8 +102,8 @@ if __name__ == "__main__":
                     print(
                         'Failed: 0x{:08x} == 0x{:08x}'.format(
                             mem_base + e.offset * nbytes, wb.read(mem_base + e.offset * nbytes)))
-                    print('  data     = 0x{:x}'.foramt(e.data))
-                    print('  expected = 0x{:x}'.foramt(e.expected))
+                    print('  data     = 0x{:x}'.format(e.data))
+                    print('  expected = 0x{:x}'.format(e.expected))
             else:
                 print("Test pattern OK!")
 
