@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-This script generates plots from rowhammer attack logs using matplotlib
-Each attack is a separate plot
+This script generates plots from rowhammer attack logs using matplotlib.
+Depending on chosen mode, it will generate one or many separate plots.
 """
 
 import os
@@ -17,7 +17,7 @@ import numpy as np
 from rowhammer_tester.scripts.utils import get_generated_file
 
 
-def plot(data: dict, _rows: int, cols: int, col_step=32, title=""):
+def plot_single_attack(data: dict, _rows: int, cols: int, col_step=32, title=""):
     affected_rows_count = len(data["errors_in_rows"])
 
     # row_labels correspond to actual row numbers, but row_vals
@@ -63,11 +63,92 @@ def plot(data: dict, _rows: int, cols: int, col_step=32, title=""):
     plt.show()
 
 
+def plot_aggressors_vs_victims(data: dict, annotate: str):
+    aggressors: list[int] = []
+    victims: list[int] = []
+    bitflips: list[int] = []
+
+    # Agressors (a) with victims (v) and bitflips (b) packed into tuple (a, v, b)
+    avb_packed: list[tuple(int, int, int)] = []
+
+    # Put aggressors and its victims into lists for hist2d
+    for aggressor, victim in data.items():
+        # Each victim must have its corresponding aggressor
+        for v in victim:
+            # From json file - v[1] is a single victim row hierarchy
+            bitflip_amount = v[1]["bitflips"]
+            row_number = v[1]["row"]
+
+            victims.append(row_number)
+            aggressors.append(aggressor)
+            bitflips.append(bitflip_amount)
+
+            # Pack data for annotation
+            avb_packed.append((aggressors[-1], victims[-1], bitflip_amount))
+
+    min_victim = min(sorted(victims))
+    max_victim = max(sorted(victims))
+    min_aggressor = min(sorted(aggressors))
+    max_aggressor = max(sorted(aggressors))
+
+    bins = [max_victim - min_victim + 1, max_aggressor - min_aggressor + 1]
+    hist_range = [[min_victim, max_victim + 1], [min_aggressor, max_aggressor + 1]]
+
+    # Custom color map with white color for 0
+    custom_cmap = colors.ListedColormap(["white", *cm.get_cmap("viridis").colors])
+
+    _, ax = plt.subplots()
+    h, _, _, qm = ax.hist2d(
+        victims,
+        aggressors,
+        bins=bins,
+        range=hist_range,
+        weights=bitflips,
+        cmap=custom_cmap,
+    )
+
+    # Do not annotate by default since it slows down a plot and it makes it hard
+    # to read without zooming in
+    if annotate == "bitflips":
+        for a, v, b in avb_packed:
+            ax.text(
+                v + 0.5, a + 0.5, f"{b}", color="w", ha="center", va="center", fontweight="bold")
+
+    ax.set_xlabel('Victim')
+    ax.set_xticks(range(min_victim, max_victim + 1))
+
+    ax.set_ylabel('Aggressor')
+    ax.set_yticks(range(min_aggressor, max_aggressor + 1))
+
+    # Limit number of colorbar ticks
+    # if left unchanged they can be floats, which looks bad
+    max_errors = int(h.max())
+    ticks_step = max(1, int(max_errors // 20))
+
+    ax.grid(visible=True, which="both", color="gray", alpha=0.2, linestyle="-")
+
+    plt.colorbar(qm, ticks=range(0, max_errors + 1, ticks_step))
+    plt.title(
+        f"Aggressors ({min_aggressor}, {max_aggressor}) vs victims ({min_victim}, {max_victim})")
+
+    plt.show()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("log_file", help="file with log output")
     parser.add_argument(
         "--plot-columns", type=int, default=32, help="how many columns to show in resulting grid")
+    parser.add_argument(
+        "--aggressors-vs-victims",
+        action="store_true",
+        help="Plot agressors against their victims.")
+    parser.add_argument(
+        "--annotate",
+        type=str,
+        default="color",
+        choices=["color", "bitflips"],
+        help="Annotate heat map with number of bitflips or just a color (default: color).")
     # TODO: add option to save plots to files without showing GUI
     args = parser.parse_args()
 
@@ -82,13 +163,13 @@ if __name__ == "__main__":
     with log_file.open() as fd:
         log_data = json.load(fd)
 
-    # read_count / read_count_range level
-    for read_count, attack_set_results in log_data.items():
-        # remove read_count as it's only interrupting here
+    for _, attack_set_results in log_data.items():
+        aggressors_vs_victims = {}
+        # Remove read_count as it's only disturbing here
         if "read_count" in attack_set_results:
             attack_set_results.pop("read_count")
 
-        # single attack level
+        # Single attack hierarchy
         for attack, attack_results in attack_set_results.items():
             if attack.startswith("pair"):
                 hammered_rows = (attack_results["hammer_row_1"], attack_results["hammer_row_2"])
@@ -98,10 +179,36 @@ if __name__ == "__main__":
                 end_row = attack_results["row_pairs"][-1][1]
                 title = f"Sequential attack on rows from {start_row} to {end_row}"
 
-            plot(
-                attack_results,
-                ROWS,
-                COLS,
-                COLS // args.plot_columns,
-                title=title,
-            )
+                if args.aggressors_vs_victims:
+                    print(
+                        "ERROR: Sequential attacks are not hammering a single row. Unable to compare aggressors against victims."
+                    )
+                    exit()
+
+            # Collect all attack data into one dict if we plot aggressors vs victims
+            if args.aggressors_vs_victims:
+                # We don't need anything but victim rows hierarchy to generate plot
+                victim_rows = []
+                for row in attack_results["errors_in_rows"].items():
+                    victim_rows.append(row)
+
+                hammered_row = hammered_rows[0]
+                aggressors_vs_victims[hammered_row] = victim_rows
+
+                if hammered_rows[0] != hammered_rows[1]:
+                    print(
+                        "ERROR: Attacks are not hammering single rows. Unable to plot aggressors "
+                        "against their victims. Use `--row-pair-distance 0` to target single row at once."
+                    )
+                    exit()
+            # Otherwise plot single attack immediately
+            else:
+                plot_single_attack(
+                    attack_results,
+                    ROWS,
+                    COLS,
+                    COLS // args.plot_columns,
+                    title=title,
+                )
+        if args.aggressors_vs_victims:
+            plot_aggressors_vs_victims(aggressors_vs_victims, args.annotate)

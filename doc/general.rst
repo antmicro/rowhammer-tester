@@ -422,23 +422,36 @@ Perform set of tests for different read count values in a given range for a sequ
 
 
 logs2plot.py
-~~~~~~~~~~~
+~~~~~~~~~~~~
 
-There is an option to plot a graph showing distribution of bitflips across rows and columns from generated logs.
-For example one can generate graphs by calling: ::
+This script is capable of plotting graphs out of generated logs. It can generate two different types of graphs:
 
-  (venv) $ python logs2plot.py your_error_summary.json
 
-For every attack there will be one graph.
-So if you attacked two row pairs ``(A, B)``, ``(C, D)`` with two different read counts each ``(X, Y)``, for a total of 4 attacks, there will be 4 plots generated:
+#.
+   Distribution of bitflips across rows and columns. For example one can generate graphs by calling: ::
 
-* read count: ``X`` and pair: ``(A, B)``
-* read count: ``X`` and pair: ``(C, D)``
-* read count: ``Y`` and pair: ``(A, B)``
-* read count: ``Y`` and pair: ``(C, D)``
+      (venv) $ python logs2plot.py your_error_summary.json
 
-You can control number of displayed columns with ``--plot-columns``.
-For example if your module has 1024 columns and you provide ``--plot-columns 16``, then DRAM columns will be displayed in groups of 64.
+   For every attack there will be one graph.
+   So if you attacked two row pairs ``(A, B)``, ``(C, D)`` with two different read counts each ``(X, Y)``, for a total of 4 attacks, there will be 4 plots generated:
+
+   * read count: ``X`` and pair: ``(A, B)``
+   * read count: ``X`` and pair: ``(C, D)``
+   * read count: ``Y`` and pair: ``(A, B)``
+   * read count: ``Y`` and pair: ``(C, D)``
+
+   You can control number of displayed columns with ``--plot-columns``.
+   For example if your module has 1024 columns and you provide ``--plot-columns 16``, then DRAM columns will be displayed in groups of 64.
+
+
+#.
+   Distribution of rows affected by bitflips due to targetting single rows. For example one can generate a graph by calling: ::
+
+      (venv) $ python logs2plot.py --aggressors-vs-victims your_error_summary.json
+
+   There will be one graph generated that will show victims on X axis and aggressors on Y axis. Tiles' colors indicate how many bitflips occured on each victim.
+
+   You can enable additional annotation with ``--annotate bitflips`` so that number of occured bitflips will be explicitly labeled on top of each victim tile.
 
 
 logs2vis.py
