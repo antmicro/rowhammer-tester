@@ -5,6 +5,8 @@ import time
 import random
 import argparse
 import json
+import subprocess
+import os
 
 from pathlib import Path
 from rowhammer_tester.scripts.utils import (
@@ -442,6 +444,11 @@ def main(row_hammer_cls):
 
     wb = RemoteClient()
     wb.open()
+
+    if wb.regs.ddrctrl_init_done.read() != 1:
+        scripts_dir = os.path.dirname(os.path.realpath(__file__))
+        mem_script = os.path.join(scripts_dir, "mem.py")
+        subprocess.check_call(["python3", mem_script])
 
     row_hammer = row_hammer_cls(
         wb,
