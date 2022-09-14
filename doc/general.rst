@@ -236,7 +236,6 @@ There are also two versions of a rowhammer script:
 
 BIST blocks are faster and are the intended way of running Row Hammer Tester.
 
-.. warning:: Remember to initialize memory beforehand as explained in :ref:`mem.py`.
 
 Hammering
 ~~~~~~~~~
