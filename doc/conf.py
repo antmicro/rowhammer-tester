@@ -51,6 +51,7 @@ extensions = [
     'sphinx_antmicro_theme',
     'sphinx.ext.autosectionlabel',
     'sphinxcontrib.wavedrom',
+    'myst_parser',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
