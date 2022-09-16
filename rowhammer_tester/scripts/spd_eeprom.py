@@ -107,7 +107,7 @@ if __name__ == "__main__":
         wb = RemoteClient()
         wb.open()
         if not wb.regs.ddrctrl_init_done.read():
-            print('Wating for CPU to finish memory training ...')
+            print('Waiting for CPU to finish memory training ...')
             for i in range(args.mem_timeout):
                 time.sleep(1)
                 print('{:3} s'.format(args.mem_timeout - i - 1), end=' \r', flush=True)
