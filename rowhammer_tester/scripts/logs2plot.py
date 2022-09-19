@@ -13,8 +13,13 @@ from matplotlib import cm
 from matplotlib import colors
 from matplotlib import pyplot as plt
 import numpy as np
+from math import floor
 
 from rowhammer_tester.scripts.utils import get_generated_file
+
+from logs2dq import plot as plot_dqs, DQ_PADS
+
+dq_data: dict = {}
 
 
 def plot_single_attack(data: dict, _rows: int, cols: int, col_step=32, title=""):
@@ -78,6 +83,7 @@ def plot_aggressors_vs_victims(data: dict, annotate: str):
             # From json file - v[1] is a single victim row hierarchy
             bitflip_amount = v[1]["bitflips"]
             row_number = v[1]["row"]
+            cols = v[1]["col"]
 
             victims.append(row_number)
             aggressors.append(aggressor)
@@ -85,6 +91,10 @@ def plot_aggressors_vs_victims(data: dict, annotate: str):
 
             # Pack data for annotation
             avb_packed.append((aggressors[-1], victims[-1], bitflip_amount))
+
+            # Save DQ data for single aggressor vs victim
+            dq_counters = count_bitflips_per_dq(cols)
+            dq_data[f"{aggressor}_{row_number}"] = dq_counters
 
     min_victim = min(sorted(victims))
     max_victim = max(sorted(victims))
@@ -97,7 +107,9 @@ def plot_aggressors_vs_victims(data: dict, annotate: str):
     # Custom color map with white color for 0
     custom_cmap = colors.ListedColormap(["white", *cm.get_cmap("viridis").colors])
 
-    _, ax = plt.subplots()
+    fig, ax = plt.subplots()
+    fig.canvas.mpl_connect('button_press_event', on_click)
+
     h, _, _, qm = ax.hist2d(
         victims,
         aggressors,
@@ -132,6 +144,34 @@ def plot_aggressors_vs_victims(data: dict, annotate: str):
         f"Aggressors ({min_aggressor}, {max_aggressor}) vs victims ({min_victim}, {max_victim})")
 
     plt.show()
+
+
+def count_bitflips_per_dq(data: dict):
+    """Count bitflips per DQ pad in data of a single aggressor vs victim"""
+    counts = np.zeros(DQ_PADS)
+
+    for _, single_read in data.items():
+        for bitflip in single_read:
+            counts[bitflip % DQ_PADS] += 1
+
+    return counts
+
+
+def on_click(event):
+    if plt.get_current_fig_manager().toolbar.mode != '':
+        return
+    try:
+        x = floor(event.xdata)
+        y = floor(event.ydata)
+        dq_counters = dq_data[f"{y}_{x}"]
+        title = f"Bitflips per DQ pads for aggressor({y}) vs victim({x})."
+        plot_dqs(dq_counters, title=title)
+    except KeyError:
+        return
+        print(f"No data about attack - aggressor({y}) vs victim({x}).")
+    except TypeError:
+        return
+        print("Press detected out of bounds.")
 
 
 if __name__ == "__main__":
