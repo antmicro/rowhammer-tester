@@ -154,9 +154,11 @@ After simulation has finished, a signals dump can be investigated using [gtkwave
 gtkwave build/$TARGET/gateware/sim.fst
 ```
 
-WARNING: The repository contains a wrapper script around `sudo` which disallows LiteX to interfere with
+```{warning}
+The repository contains a wrapper script around `sudo` which disallows LiteX to interfere with
 the host network configuration. This forces the user to manually configure a TUN interface for valid
 communication with the simulated device:
+```
 
 1. Create the TUN interface:
 
@@ -177,7 +179,9 @@ communication with the simulated device:
    iptables -A OUTPUT -o litex-sim -j ACCEPT
    ```
 
-TIP: Typing `make ARGS="--sim"` will cause LiteX to generate only intermediate files and stop right after that.
+```{note}
+Typing `make ARGS="--sim"` will cause LiteX to generate only intermediate files and stop right after that.
+```
 
 (controlling-the-board)=
 
