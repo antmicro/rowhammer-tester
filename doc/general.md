@@ -135,6 +135,11 @@ The Makefile can be configured using environmental variables to modify the netwo
 Currently, the Arty-A7 (xc7a35t) FPGA board (`TARGET=arty`) and the ZCU104 board (`TARGET=zcu104`) are both supported.
 Keep in mind that Arty is targeting DDR3, while ZCU is targeting DDR4 (SO-DIMM modules).
 
+```{note}
+Although you choose a target board for the simulation, it doesn't require having a physical board.
+Simulation is done entirely on your computer.
+```
+
 For board-specific instructons refer to {ref}`arty-chapter` and {ref}`zcu104-chapter` chapters.
 The rest of this chapter describes operations that are common for all supported boards.
 
@@ -193,6 +198,11 @@ In order to communicate with the board via EtherBone, the `litex_server` needs t
 ```sh
 export IP_ADDRESS=192.168.100.50  # optional, should match the one used during build
 make srv
+```
+
+```{warning}
+If you want to run the simulation and the rowhammer scripts on a physical board at the same time,
+you have to change the ``IP_ADDRESS`` variable, otherwise the simulation can conflict with the communication with your board.
 ```
 
 The build files (CSRs address list) must be up to date. It can be re-generated with `make` without arguments.
