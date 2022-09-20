@@ -17,7 +17,7 @@ import numpy as np
 from rowhammer_tester.scripts.utils import get_generated_file
 
 
-def plot_single_attack(data: dict, _rows: int, cols: int, col_step=32, title=""):
+def plot_single_attack(data: dict, _rows: int, cols: int, col_step=32, max_row_cnt=128, title=""):
     affected_rows_count = len(data["errors_in_rows"])
 
     # row_labels correspond to actual row numbers, but row_vals
@@ -28,14 +28,42 @@ def plot_single_attack(data: dict, _rows: int, cols: int, col_step=32, title="")
     # cols_vals are normal column numbers
     col_vals: list[int] = []
 
+    row_step = 1 if affected_rows_count <= max_row_cnt else affected_rows_count // max_row_cnt
+
+    last_row = None
+    last_num = 0
+    begin_row = None
+    y_edges: list[int] = []
+    count = -1
+
     for i, (row, row_errors) in enumerate(data["errors_in_rows"].items()):
-        row_labels.append(row)
+        if row_step > 1 and count == -1:
+            begin_row = row
+            y_edges.append(i)
+        count += 1
+        last_row = row
+        last_num = i
+        if row_step > 1 and count == row_step - 1:
+            row_labels.append(f'{begin_row}...{last_row}')
+        elif row_step == 1:
+            row_labels.append(row)
+        if count == row_step - 1:
+            count = -1
         for col, col_errors in row_errors["col"].items():
             for _ in col_errors:
                 row_vals.append(i)
                 col_vals.append(int(col))
 
-    bins = [range(0, cols + 1, col_step), np.arange(min(row_vals) - 0.5, max(row_vals) + 1, 1)]
+    if row_step > 1:
+        y_edges.append(last_num + 1)
+        if count > -1:
+            row_labels.append(f'{begin_row}...{last_row}')
+
+    bins = [
+        range(0, cols + 1, col_step),
+        np.arange(min(row_vals) - 0.5,
+                  max(row_vals) + 1, 1) if row_step == 1 else y_edges
+    ]
 
     # custom cmap with white color for 0
     custom_cmap = colors.ListedColormap(["white", *cm.get_cmap("viridis").colors])
@@ -51,7 +79,7 @@ def plot_single_attack(data: dict, _rows: int, cols: int, col_step=32, title="")
     plt.xticks(range(0, cols + 1, col_step))
 
     plt.ylabel('Row')
-    plt.yticks(range(affected_rows_count), row_labels)
+    plt.yticks(range(0, affected_rows_count, row_step), row_labels)
 
     # limit number of colorbar ticks
     # if left unchanged they can be floats, which looks bad
@@ -149,6 +177,8 @@ if __name__ == "__main__":
         default="color",
         choices=["color", "bitflips"],
         help="Annotate heat map with number of bitflips or just a color (default: color).")
+    parser.add_argument(
+        "--plot-max-rows", type=int, default=128, help="how many rows to show in resulting grid")
     # TODO: add option to save plots to files without showing GUI
     args = parser.parse_args()
 
@@ -208,6 +238,7 @@ if __name__ == "__main__":
                     ROWS,
                     COLS,
                     COLS // args.plot_columns,
+                    args.plot_max_rows,
                     title=title,
                 )
         if args.aggressors_vs_victims:
