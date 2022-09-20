@@ -424,10 +424,11 @@ Perform set of tests for different read count values in a given range for a sequ
 This script is capable of plotting graphs out of generated logs. It can generate two different types of graphs:
 
 
-#.
-   Distribution of bitflips across rows and columns. For example one can generate graphs by calling: ::
+1. Distribution of bitflips across rows and columns. For example one can generate graphs by calling:
 
+   ```
       (venv) $ python logs2plot.py your_error_summary.json
+   ```
 
    For every attack there will be one graph.
    So if you attacked two row pairs ``(A, B)``, ``(C, D)`` with two different read counts each ``(X, Y)``, for a total of 4 attacks, there will be 4 plots generated:
@@ -441,10 +442,11 @@ This script is capable of plotting graphs out of generated logs. It can generate
    For example if your module has 1024 columns and you provide ``--plot-columns 16``, then DRAM columns will be displayed in groups of 64.
 
 
-#.
-   Distribution of rows affected by bitflips due to targetting single rows. For example one can generate a graph by calling: ::
+2. Distribution of rows affected by bitflips due to targetting single rows. For example one can generate a graph by calling:
 
+   ```
       (venv) $ python logs2plot.py --aggressors-vs-victims your_error_summary.json
+   ```
 
    There will be one graph generated that will show victims on X axis and aggressors on Y axis. Tiles' colors indicate how many bitflips occured on each victim.
 
