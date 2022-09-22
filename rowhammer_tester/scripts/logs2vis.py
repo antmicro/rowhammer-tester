@@ -14,7 +14,11 @@ from pathlib import Path
 from rowhammer_tester.scripts.utils import get_generated_file
 
 
-def get_vis_data(data: dict, rows: int, cols: int, col_step: int = 32) -> tuple[list, int, int]:
+def get_vis_data(data: dict,
+                 no_empty_rows: bool,
+                 rows: int,
+                 cols: int,
+                 col_step: int = 32) -> tuple[list, list]:
     """
     Generates ``vis_data``, which is a list of cell descriptions
     Each cell is a list of parameters:
@@ -28,11 +32,13 @@ def get_vis_data(data: dict, rows: int, cols: int, col_step: int = 32) -> tuple[
     """
 
     vis_data = []
+    rowsAffected: list(int) = []
 
     first_row: int = rows - 1
     last_row: int = 0
     for row_errors in data["errors_in_rows"].values():
         row = row_errors["row"]
+        rowsAffected.append(row)
 
         # we keep track of first and last row,
         # to limit the number of displayed rows
@@ -72,6 +78,9 @@ def get_vis_data(data: dict, rows: int, cols: int, col_step: int = 32) -> tuple[
                 ])
 
     if "hammer_row_1" in data and "hammer_row_2" in data:
+        rowsAffected.append(data["hammer_row_1"])
+        if data["hammer_row_1"] != data["hammer_row_2"]:
+            rowsAffected.append(data["hammer_row_2"])
         for row in (data["hammer_row_1"], data["hammer_row_2"]):
             # hammered row could have been at one of the ends
             if row < first_row:
@@ -82,7 +91,11 @@ def get_vis_data(data: dict, rows: int, cols: int, col_step: int = 32) -> tuple[
             # add "TGT" cells for rows that were hammered
             vis_data.append([0, row, cols // col_step, "TGT", "Target", "Target row", []])
 
-    return vis_data, first_row, last_row
+    rowsAffected = sorted(rowsAffected)
+    if not no_empty_rows:
+        rowsAffected = [[rowsAffected[0], rowsAffected[-1]]]
+
+    return vis_data, rowsAffected
 
 
 def get_vis_config(entries: list[Path]) -> dict[str, list[dict[str, str]]]:
@@ -94,14 +107,14 @@ def get_vis_config(entries: list[Path]) -> dict[str, list[dict[str, str]]]:
     }
 
 
-def get_vis_metadata(first_row: int, last_row: int, cols: int, data_file: str):
+def get_vis_metadata(rows: list[int], cols: int, data_file: str, rowsDescription: str):
     return {
         'buildDate': datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
         'grids': {
             'rowhammer': {
                 'name': 'Rowhammer',
                 'colsRange': cols - 1,
-                'rowsRange': [first_row, last_row],
+                rowsDescription: rows,
                 'cells': {
                     'fieldOrder':
                     ['col', 'row', 'width', 'type', 'name', 'fullName', 'description'],
@@ -130,6 +143,8 @@ if __name__ == "__main__":
     parser.add_argument("vis_dir", help="directory where to put visualization json files")
     parser.add_argument(
         "--vis-columns", type=int, default=32, help="how many columns to show in resulting grid")
+    parser.add_argument(
+        "--no-empty-rows", action="store_true", help="exclude empty rows from visualizer")
     args = parser.parse_args()
 
     # get module settings to calculate total number of rows and columns
@@ -151,6 +166,11 @@ if __name__ == "__main__":
     # only files listed in viewer config can be browsed
     meta_files: list[Path] = []
 
+    if args.no_empty_rows:
+        rowsDescription = "rows"
+    else:
+        rowsDescription = "rowsRange"
+
     # read_count / read_count_range level
     for read_count, attack_set_results in log_data.items():
         # remove read_count as it's only interrupting here
@@ -163,8 +183,9 @@ if __name__ == "__main__":
 
             # generate visualization data from logs of hammering
             # a single pair of rows
-            vis_data, first_row, last_row = get_vis_data(
+            vis_data, rows = get_vis_data(
                 attack_results,
+                args.no_empty_rows,
                 ROWS,
                 COLS,
                 COLS // args.vis_columns,
@@ -174,7 +195,7 @@ if __name__ == "__main__":
             with data_file.open("w") as fd:
                 json.dump(vis_data, fd)
 
-            vis_meta = get_vis_metadata(first_row, last_row, args.vis_columns, data_file.name)
+            vis_meta = get_vis_metadata(rows, args.vis_columns, data_file.name, rowsDescription)
             # write meta file
             meta_file = (vis_dir / output_name).with_suffix(".json")
             meta_files.append(meta_file)
