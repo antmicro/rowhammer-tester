@@ -74,8 +74,8 @@ class Decoder(Module):
     # TODO: Load widths from .proto file
     INSTRUCTION    = 32
     OP_CODE        = 3
-    TIMESLICE      = 6
-    ADDRESS        = 23
+    TIMESLICE      = 5
+    ADDRESS        = 24
     TIMESLICE_NOOP = TIMESLICE + ADDRESS
     LOOP_COUNT     = 12
     LOOP_JUMP      = 17
@@ -279,27 +279,35 @@ class SyncableRefresher(Module):
         self.cmd = refresher.cmd
 
 class RefreshCounter(Module):
-    def __init__(self, dfi_phase, width=32):
+    def __init__(self, dfi_phase, width=32, memtype=""):
         self.counter = Signal(width)
         self.refresh = Signal()
 
-        ref_cmd = dict(cs_n=0, cas_n=0, ras_n=0, we_n=1)
-        self.comb += self.refresh.eq(reduce(and_,
-            [getattr(dfi_phase, sig) == val for sig, val in ref_cmd.items()]))
+        if memtype == "DDR5":
+            ref_cmd = 0b10011
+            self.comb += self.refresh.eq(dfi_phase.address[:5] == ref_cmd)
+        else:
+            ref_cmd = dict(cs_n=0, cas_n=0, ras_n=0, we_n=1)
+            self.comb += self.refresh.eq(reduce(and_,
+                [getattr(dfi_phase, sig) == val for sig, val in ref_cmd.items()]))
+
         self.sync += If(self.refresh, self.counter.eq(self.counter + 1))
 
 
 class DFISwitch(Module, AutoCSR):
     # Synchronizes disconnection of the MC to last REF/ZQC command sent by MC
     # Refresher must provide `ce` signal
-    def __init__(self, with_refresh, dfii, refresher_reset):
+    def __init__(self, with_refresh, dfii, refresher_reset, memtype=""):
         self.wants_dfi = Signal()
         self.dfi_ready = Signal()
         self.dfi = dfii.ext_dfi
 
         # Refresh is issued always on phase 0. Count refresh commands on DFII
         # master (any refresh issued, both by MC and PayloadExecutor)
-        self.submodules.refresh_counter = RefreshCounter(dfii.master.phases[0])
+        if dfii.master.with_sub_channels:
+            self.submodules.refresh_counter = RefreshCounter(dfii.master.phases[0].A_, memtype=memtype)
+        else:
+            self.submodules.refresh_counter = RefreshCounter(dfii.master.phases[0], memtype=memtype)
 
         # If non-zero, we must wait until exactly that refresh count
         # Refresh counter is updated 1 cycle after refresh, so add +1 in the test
