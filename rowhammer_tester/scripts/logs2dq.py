@@ -25,9 +25,10 @@ def plot(
     """Show plot with DQ pads grouped per module"""
     modules = int(DQ_PADS / DQ_RATIO)
 
-    plt.xlabel("DQ pad")
-    plt.xticks(list(range(0, DQ_PADS, DQ_RATIO)) + [DQ_PADS - 1])
-    plt.ylabel("Bitflips")
+    fig, ax = plt.subplots()
+    ax.set_xlabel("DQ pad")
+    ax.set_xticks(list(range(0, DQ_PADS, DQ_RATIO)) + [DQ_PADS - 1])
+    ax.set_ylabel("Bitflips")
 
     for m in range(modules):
         start, end = DQ_RATIO * m, DQ_RATIO * (m + 1)
@@ -41,14 +42,14 @@ def plot(
         else:
             yerr = None
 
-        plt.bar(x, y, yerr=yerr)
+        ax.bar(x, y, yerr=yerr)
 
     if log_scale:
-        plt.yscale("log")
+        ax.set_yscale("log")
 
-    plt.title(title)
+    ax.set_title(title)
 
-    plt.show()
+    fig.show()
 
 
 def count_bitflips_per_dq(data: dict):
