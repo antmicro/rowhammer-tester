@@ -295,6 +295,7 @@ class RowHammerSoC(SoCCore):
                 with_refresh    = self.sdram.controller.settings.with_refresh,
                 dfii            = self.sdram.dfii,
                 refresher_reset = self.sdram.controller.refresher.reset,
+                memtype         = self.sdram.controller.settings.phy.memtype,
             )
             self.dfi_switch.add_csrs()
             self.add_csr('dfi_switch')

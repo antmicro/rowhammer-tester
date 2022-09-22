@@ -51,8 +51,9 @@ class SoC(common.RowHammerSoC):
 
     def get_ddrphy(self):
         return ddr5.K7DDR5PHY(self.platform.request("ddr5"),
-            iodelay_clk_freq = float(self.args.iodelay_clk_freq),
-            sys_clk_freq     = self.sys_clk_freq)
+            iodelay_clk_freq  = float(self.args.iodelay_clk_freq),
+            sys_clk_freq      = self.sys_clk_freq,
+            with_sub_channels = False)
 
     def get_sdram_ratio(self):
         return "1:4"
