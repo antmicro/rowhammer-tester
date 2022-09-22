@@ -255,7 +255,7 @@ Only hammers a pair of rows, without doing any error checks or reports.
 
 For example following command will hammer rows 4 and 6 1000 times total (so 500 times each):
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --hammer-only 4 6 --read_count 1000
 ```
 
@@ -274,13 +274,13 @@ Default values for used arguments are:
 
 So you can run following command to hammer rows `(0, 2), (1, 3), (2, 4)`:
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --all-rows --nrows 5
 ```
 
 And in case of:
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --all-rows --start-row 10 --nrows 16 --row-jump 2 --row-distance 3
 ```
 
@@ -291,7 +291,7 @@ Normally activations and deactivations are achieved with row reads using the DMA
 Because the same row is being read all the time, no deactivation command would be sent by the DMA.
 In this case, `--payload-executor` is requires as it bypasses the DMA and sends deactivation commands on its own.
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --all-rows --nrows 5 --row-pair-distance 0 --payload-executor
 ```
 
@@ -299,7 +299,7 @@ In this case, `--payload-executor` is requires as it bypasses the DMA and sends 
 
 Hammers pairs of `(start-row, start-row + n)`, where `n` is from 0 to `nrows`.
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --row-pairs sequential --start-row 4 --nrows 10
 ```
 
@@ -317,7 +317,7 @@ Command above, would hammer following set of row pairs:
 
 Two rows specified with the `const-rows-pair` parameter will be hammered:
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --row-pairs const --const-rows-pair 4 6
 ```
 
@@ -325,7 +325,7 @@ Two rows specified with the `const-rows-pair` parameter will be hammered:
 
 `nrows` pairs of random rows will be hammered. Row numbers will be between `start-row` and `start-row + nrows`.
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --row-pairs random --start-row 4 --nrows 10
 ```
 
@@ -341,7 +341,7 @@ User can choose a pattern that memory will be initially filled with:
 
 #### Example output
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh
 Preparing ...
 WARNING: only single word patterns supported, using: 0xaaaaaaaa
@@ -367,37 +367,37 @@ Bit-flips for row   134: 3
 
 Select row pairs from row 3 (`--start-row`) to row 59 (`--nrows`) where the next pair is 5 rows away (`--row-jump`) from the previous one:
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --pattern 01_in_row --all-rows --start-row 3 --nrows 60 --row-jump 5 --no-refresh --read_count 10e4
 ```
 
 Select row pairs from row 3 to to row 59 without a distance between subsequent pairs (no `--row-jump`), which means that rows pairs are incremented by 1:
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --pattern 01_in_row --all-rows --start-row 3 --nrows 60 --no-refresh --read_count 10e4
 ```
 
 Select all row pairs (from 0 to nrows - 1):
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --pattern 01_in_row --all-rows --nrows 512 --no-refresh --read_count 10e4
 ```
 
 Select all row pairs (from 0 to nrows - 1) and save the error summary in JSON format to the `test` directory:
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --pattern 01_in_row --all-rows --nrows 512 --no-refresh --read_count 10e4 --log_dir ./test
 ```
 
 Select only one row (42 in this case) and save the error summary in JSON format to the `test` directory:
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --pattern all_1 --row-pairs const --const-rows-pair 42 42 --no-refresh --read_count 10e4 --log_dir ./test
 ```
 
 Select all rows (from 0 to nrows - 1) and hammer them one by one 1M times each.
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --all-rows --nrows 100 --row-pair-distance 0 --payload-executor --no-refresh --read_count 1e6
 ```
 
@@ -405,31 +405,31 @@ Select all rows (from 0 to nrows - 1) and hammer them one by one 1M times each.
 
 Select all row pairs (from 0 to nrows - 1) and perform a set of tests for different read count values, starting from 10e4 and ending at 10e5 with a step of 20e4 (`--read_count_range [start stop step]`):
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --pattern 01_in_row --all-rows --nrows 512 --no-refresh --read_count_range 10e4 10e5 20e4
 ```
 
 Perform set of tests for different read count values in a given range for one row pair (50, 100):
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count_range 10e4 10e5 20e4
 ```
 
 Perform set of tests for different read count values in a given range for one row pair (50, 100) and stop the test execution as soon as a bitflip is found:
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count_range 10e4 10e5 20e4 --exit-on-bit-flip
 ```
 
 Perform set of tests for different read count values in a given range for one row pair (50, 100) and save the error summary in JSON format to the `test` directory:
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count_range 10e4 10e5 20e4 --log_dir ./test
 ```
 
 Perform set of tests for different read count values in a given range for a sequence of attacks for different pairs, where the first row of a pair is 40 and the second one is a row of a number from range (40, nrows - 1):
 
-```
+```sh
 (venv) $ python hw_rowhammer.py --pattern 01_in_row --row-pairs sequential --start-row 40 --nrows 512 --no-refresh --read_count_range 10e4 10e5 20e4
 ```
 
@@ -438,10 +438,11 @@ Perform set of tests for different read count values in a given range for a sequ
 This script is capable of plotting graphs out of generated logs. It can generate two different types of graphs:
 
 
-#.
-   Distribution of bitflips across rows and columns. For example one can generate graphs by calling: ::
+1. Distribution of bitflips across rows and columns. For example one can generate graphs by calling:
 
+   ```sh
       (venv) $ python logs2plot.py your_error_summary.json
+   ```
 
    For every attack there will be one graph.
    So if you attacked two row pairs ``(A, B)``, ``(C, D)`` with two different read counts each ``(X, Y)``, for a total of 4 attacks, there will be 4 plots generated:
@@ -455,10 +456,11 @@ This script is capable of plotting graphs out of generated logs. It can generate
    For example if your module has 1024 columns and you provide ``--plot-columns 16``, then DRAM columns will be displayed in groups of 64.
 
 
-#.
-   Distribution of rows affected by bitflips due to targetting single rows. For example one can generate a graph by calling: ::
+2. Distribution of rows affected by bitflips due to targetting single rows. For example one can generate a graph by calling:
 
+   ```sh
       (venv) $ python logs2plot.py --aggressors-vs-victims your_error_summary.json
+   ```
 
    There will be one graph generated that will show victims on X axis and aggressors on Y axis. Tiles' colors indicate how many bitflips occured on each victim.
 
@@ -473,7 +475,7 @@ To view results using DB Visualizer you need to:
 
 Clone and build the visualizer with:
 
-```
+```sh
 git clone https://github.com/chipsalliance/f4pga-database-visualizer
 cd f4pga-database-visualizer
 npm run build
@@ -483,7 +485,7 @@ Run `rowhammer.py` or `hw_rowhammer.py` with `--log-dir log_directory`
 
 Generate JSON files for the visualizer:
 
-```
+```sh
 python3 logs2vis.py log_directory/your_error_summary.json vis_directory
 ```
 
@@ -491,7 +493,7 @@ Copy generated JSON files from `vis_directory` to `/path/to/f4pga-database-visua
 
 Start a simple HTTP server inside the production directory:
 
-```
+```sh
 python -m http.server 8080
 ```
 
@@ -507,7 +509,7 @@ First run `rowhammer.py` or `hw_rowhammer.py` with `--log-dir log_directory`
 
 Then run:
 
-```
+```sh
 python3 logs2dq.py log_directory/your_error_summary.json
 ```
 
