@@ -18,21 +18,28 @@ from rowhammer_tester.targets import common
 
 class CRG(Module):
     def __init__(self, platform, sys_clk_freq, iodelay_clk_freq):
-        self.clock_domains.cd_sys          = ClockDomain()
-        self.clock_domains.cd_sys2x        = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys4x        = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys4x_90_ddr = ClockDomain(reset_less=True)
-        self.clock_domains.cd_idelay       = ClockDomain()
+        self.clock_domains.cd_sys             = ClockDomain()
+        self.clock_domains.cd_sys2x           = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys2x_unbuf     = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys4x_unbuf     = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys4x_90_unbuf  = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys4x_180_unbuf = ClockDomain(reset_less=True)
+        self.clock_domains.cd_idelay          = ClockDomain()
 
         # # #
 
-        self.submodules.pll = pll = S7PLL(speedgrade=-1)
+        self.submodules.pll = pll = S7PLL(speedgrade=-3)
         pll.register_clkin(platform.request("clk100"), 100e6)
-        pll.create_clkout(self.cd_sys,          sys_clk_freq)
-        pll.create_clkout(self.cd_sys2x,        2 * sys_clk_freq)
-        pll.create_clkout(self.cd_sys4x,        4 * sys_clk_freq)
-        pll.create_clkout(self.cd_sys4x_90_ddr, 2 * 4 * sys_clk_freq, phase=180)
-        pll.create_clkout(self.cd_idelay, iodelay_clk_freq)
+        pll.create_clkout(self.cd_sys,             sys_clk_freq)
+        pll.create_clkout(self.cd_idelay,          iodelay_clk_freq)
+
+        self.submodules.pll_ddr = pll_ddr = S7PLL(speedgrade=-3)
+        pll_ddr.register_clkin(self.cd_sys.clk,        sys_clk_freq)
+        pll_ddr.create_clkout(self.cd_sys2x,           2 * sys_clk_freq)
+        pll_ddr.create_clkout(self.cd_sys2x_unbuf,     2 * sys_clk_freq, buf=None, with_reset=False)
+        pll_ddr.create_clkout(self.cd_sys4x_unbuf,     4 * sys_clk_freq, buf=None, with_reset=False)
+        pll_ddr.create_clkout(self.cd_sys4x_90_unbuf,  4 * sys_clk_freq, phase=90, with_reset=False, buf=None)
+        pll_ddr.create_clkout(self.cd_sys4x_180_unbuf, 4 * sys_clk_freq, phase=180, with_reset=False, buf=None)
 
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_idelay)
 
