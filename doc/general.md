@@ -386,13 +386,13 @@ Select all row pairs (from 0 to nrows - 1):
 Select all row pairs (from 0 to nrows - 1) and save the error summary in JSON format to the `test` directory:
 
 ```sh
-(venv) $ python hw_rowhammer.py --pattern 01_in_row --all-rows --nrows 512 --no-refresh --read_count 10e4 --log_dir ./test
+(venv) $ python hw_rowhammer.py --pattern 01_in_row --all-rows --nrows 512 --no-refresh --read_count 10e4 --log-dir ./test
 ```
 
 Select only one row (42 in this case) and save the error summary in JSON format to the `test` directory:
 
 ```sh
-(venv) $ python hw_rowhammer.py --pattern all_1 --row-pairs const --const-rows-pair 42 42 --no-refresh --read_count 10e4 --log_dir ./test
+(venv) $ python hw_rowhammer.py --pattern all_1 --row-pairs const --const-rows-pair 42 42 --no-refresh --read_count 10e4 --log-dir ./test
 ```
 
 Select all rows (from 0 to nrows - 1) and hammer them one by one 1M times each.
@@ -424,7 +424,7 @@ Perform set of tests for different read count values in a given range for one ro
 Perform set of tests for different read count values in a given range for one row pair (50, 100) and save the error summary in JSON format to the `test` directory:
 
 ```sh
-(venv) $ python hw_rowhammer.py --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count_range 10e4 10e5 20e4 --log_dir ./test
+(venv) $ python hw_rowhammer.py --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count_range 10e4 10e5 20e4 --log-dir ./test
 ```
 
 Perform set of tests for different read count values in a given range for a sequence of attacks for different pairs, where the first row of a pair is 40 and the second one is a row of a number from range (40, nrows - 1):
