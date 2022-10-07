@@ -20,10 +20,6 @@
 	path = third_party/verilator
 	url = https://github.com/verilator/verilator.git
 	ignore = dirty
-[submodule "xc3sprog"]
-	path = third_party/xc3sprog
-	url = https://github.com/matrix-io/xc3sprog.git
-	ignore = dirty
 [submodule "third_party/litex-boards"]
 	path = third_party/litex-boards
 	url = https://github.com/litex-hub/litex-boards.git
