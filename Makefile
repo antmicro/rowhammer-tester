@@ -94,7 +94,6 @@ deps:: # Intentionally skipping --recursive as not needed (but doesn't break any
 	git submodule update --init
 	(make --no-print-directory -C . \
 		third_party/verilator/image/bin/verilator \
-		third_party/xc3sprog/xc3sprog \
 		python-deps \
 		third_party/riscv64-unknown-elf-gcc \
 	)
@@ -117,6 +116,3 @@ third_party/verilator/image/bin/verilator: third_party/verilator/configure.ac
 		./configure --prefix=$(PWD)/third_party/verilator/image && \
 		make -j`nproc` && make install) && touch $@
 
-third_party/xc3sprog/xc3sprog: third_party/xc3sprog/CMakeLists.txt
-	(cd third_party/xc3sprog && patch -Np1 < ../xc3sprog.patch && \
-		cmake . && make -j`nproc`)
