@@ -9,7 +9,6 @@
 -e third_party/litex-boards
 -e third_party/litehyperbus
 -e third_party/litesdcard
--e third_party/litepcie
 # vexriscv cpu
 git+https://github.com/litex-hub/pythondata-cpu-vexriscv.git
 # litex software data
