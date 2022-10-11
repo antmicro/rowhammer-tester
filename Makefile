@@ -10,6 +10,7 @@ UDP_PORT    ?= 1234
 TOP := antmicro_$(TARGET)
 ifeq ($(TARGET),arty)
 	OFL_BOARD := arty_a7_35t
+	TOP := digilent_arty
 else ifeq ($(TARGET),ddr4_datacenter_test_board)
 	OFL_BOARD := antmicro_ddr4_tester
 	TOP := antmicro_datacenter_ddr4_test_board
