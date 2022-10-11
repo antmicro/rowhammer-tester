@@ -1,6 +1,7 @@
 from math import ceil
 from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
 from rowhammer_tester.scripts.utils import (get_expected_execution_cycles, DRAMAddressConverter)
+import sys
 
 
 # returns the number of refreshes issued
@@ -148,7 +149,12 @@ def generate_payload_from_row_list(
             op, *args = map(lambda p: p[1], instruction._parts)
             print(op, *map(hex, args), sep="\t")
 
-    assert len(payload) <= payload_mem_size // 4, (len(payload), payload_mem_size)
+    if len(payload) > payload_mem_size // 4:
+        print(
+            'Memory required for payload executor instructions ({} bytes) exceeds available payload memory ({} bytes)'
+            .format(len(payload) * 4, payload_mem_size))
+        print('The payload memory size can be changed with \'--payload-size \' option.')
+        sys.exit(1)
 
     return encoder(payload)
 
