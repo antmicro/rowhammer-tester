@@ -28,11 +28,12 @@ The application side consists of a set of Python scripts communicating with the 
 ## Installing dependencies
 
 Make sure you have Python 3 installed with the `venv` module, and the dependencies required to build
-[verilator](https://github.com/verilator/verilator) and [xc3sprog](https://github.com/matrix-io/xc3sprog).
+[verilator](https://github.com/verilator/verilator), [openFPGALoader](https://github.com/trabucayre/openFPGALoader)
+and [OpenOCD](https://github.com/openocd-org/openocd).
 To install the dependencies on Ubuntu 18.04 LTS, run:
 
 ```sh
-apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel protobuf-compiler libcairo2
+apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel protobuf-compiler libcairo2 libftdi1-2 libftdi1-dev libhidapi-hidraw0 libhidapi-dev libudev-dev pkg-config tree zlib1g-dev
 ```
 
 ````{note}
@@ -49,19 +50,6 @@ On Ubuntu 22.04 LTS the following dependencies may also be required:
 
 ```sh
 apt install libtool libusb-1.0-0-dev pkg-config
-```
-
-### OpenOCD
-
-To flash QSPI flash module on LPDDR4 Test Board you'll need a patched version of `openocd` program. To install it, run:
-
-```sh
-git clone https://github.com/antmicro/openocd.git -b add-jtagspi-command
-cd openocd
-./bootstrap
-./configure --enable-ftdi
-make -j `nproc`
-sudo make install
 ```
 
 ### Row-hammer tester
@@ -399,6 +387,10 @@ Select all rows (from 0 to nrows - 1) and hammer them one by one 1M times each.
 
 ```sh
 (venv) $ python hw_rowhammer.py --all-rows --nrows 100 --row-pair-distance 0 --payload-executor --no-refresh --read_count 1e6
+```
+```{note}
+Since for a single ended attack row activation needs to be triggered the `--payload-executor` switch is required.
+The size of the payload memory is set by default to 1024 bytes and can be changed using the `--payload-size` switch.
 ```
 
 #### Cell retention measurement examples

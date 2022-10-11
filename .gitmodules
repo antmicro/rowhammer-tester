@@ -20,10 +20,6 @@
 	path = third_party/verilator
 	url = https://github.com/verilator/verilator.git
 	ignore = dirty
-[submodule "xc3sprog"]
-	path = third_party/xc3sprog
-	url = https://github.com/matrix-io/xc3sprog.git
-	ignore = dirty
 [submodule "third_party/litex-boards"]
 	path = third_party/litex-boards
 	url = https://github.com/litex-hub/litex-boards.git
@@ -33,9 +29,9 @@
 [submodule "third_party/litesdcard"]
 	path = third_party/litesdcard
 	url = https://github.com/enjoy-digital/litesdcard.git
-[submodule "third_party/litepcie"]
-	path = third_party/litepcie
-	url = https://github.com/enjoy-digital/litepcie.git
-[submodule "third_party/pythondata-software-picolibc"]
-	path = third_party/pythondata-software-picolibc
-	url = https://github.com/litex-hub/pythondata-software-picolibc.git
+[submodule "third_party/openFPGALoader"]
+	path = third_party/openFPGALoader
+	url = https://github.com/antmicro/openFPGALoader.git
+[submodule "third_party/openocd"]
+	path = third_party/openocd
+	url = https://github.com/antmicro/openocd.git

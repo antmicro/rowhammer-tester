@@ -6,6 +6,25 @@ UDP_PORT    ?= 1234
 
 # # #
 
+# Set openFPGALoader board name
+TOP := antmicro_$(TARGET)
+ifeq ($(TARGET),arty)
+	OFL_BOARD := arty_a7_35t
+	TOP := digilent_arty
+else ifeq ($(TARGET),ddr4_datacenter_test_board)
+	OFL_BOARD := antmicro_ddr4_tester
+	TOP := antmicro_datacenter_ddr4_test_board
+else ifeq ($(TARGET),lpddr4_test_board)
+	OFL_BOARD := antmicro_lpddr4_tester
+else ifeq ($(TARGET),ddr5_tester)
+	OFL_BOARD := antmicro_ddr5_tester
+else ifeq ($(TARGET),zcu104)
+	# For ZCU104 please copy the file build/zcu104/gateware/zcu104.bit to the boot partition on microSD card
+else
+	$(error Unsupported board type)
+endif
+
+
 # Gateware args
 ARGS ?=
 NET_ARGS := --ip-address $(IP_ADDRESS) --mac-address $(MAC_ADDRESS) --udp-port $(UDP_PORT)
@@ -17,7 +36,6 @@ TARGET_ARGS := $(NET_ARGS) $(ARGS)
 PATH := $(PWD)/venv/bin:$(PATH)
 # other binaries
 PATH := $(PWD)/bin:$(PATH)
-PATH := $(PWD)/third_party/verilator/image/bin:$(PATH)
 PATH := $(PWD)/third_party/riscv64-unknown-elf-gcc/bin:$(PATH)
 export PATH
 
@@ -44,19 +62,19 @@ ifeq ($(TARGET),zcu104)
 	@echo "For ZCU104 please copy the file build/zcu104/gateware/zcu104.bit to the boot partition on microSD card"
 	@exit 1
 else
-	python rowhammer_tester/targets/$(TARGET).py --load $(TARGET_ARGS)
+	openFPGALoader --board $(OFL_BOARD) build/$(TARGET)/gateware/$(TOP).bit
 endif
 
 flash: FORCE
 ifeq ($(TARGET),zcu104)
 	@echo "For ZCU104 please copy the file build/zcu104/gateware/zcu104.bit to the boot partition on microSD card"
 	@exit 1
-else
+else ifeq ($(TARGET),lpddr4_test_board)
 	python rowhammer_tester/targets/$(TARGET).py --flash $(TARGET_ARGS)
-ifeq ($(TARGET),lpddr4_test_board)
 	# Enable Quad mode in spi flash module
 	openocd -f prog/openocd_xc7_ft4232.cfg -c "init; jtagspi_init 0 prog/bscan_spi_xc7k70t.bit; jtagspi write_cmd 1 512 16 0; exit"
-endif
+else
+	openFPGALoader --board $(OFL_BOARD) build/$(TARGET)/gateware/$(TOP).bit --write-flash
 endif
 
 srv: FORCE
@@ -93,8 +111,9 @@ format: FORCE
 deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)
 	git submodule update --init
 	(make --no-print-directory -C . \
-		third_party/verilator/image/bin/verilator \
-		third_party/xc3sprog/xc3sprog \
+		venv/bin/verilator \
+		venv/bin/openFPGALoader \
+		venv/bin/openocd \
 		python-deps \
 		third_party/riscv64-unknown-elf-gcc \
 	)
@@ -112,11 +131,20 @@ third_party/riscv64-unknown-elf-gcc:
 		-exec mv {} third_party/riscv64-unknown-elf-gcc \; \
 		-quit
 
-third_party/verilator/image/bin/verilator: third_party/verilator/configure.ac
-	(cd third_party/verilator && autoconf && \
-		./configure --prefix=$(PWD)/third_party/verilator/image && \
-		make -j`nproc` && make install) && touch $@
+venv/bin/verilator: third_party/verilator/configure.ac
+	cd third_party/verilator && autoconf
+	cd third_party/verilator && ./configure --prefix=$(PWD)/venv
+	make -C third_party/verilator -j`nproc`
+	make -C third_party/verilator install
 
-third_party/xc3sprog/xc3sprog: third_party/xc3sprog/CMakeLists.txt
-	(cd third_party/xc3sprog && patch -Np1 < ../xc3sprog.patch && \
-		cmake . && make -j`nproc`)
+venv/bin/openFPGALoader: third_party/openFPGALoader/CMakeLists.txt
+	cd third_party/openFPGALoader && cmake . -DCMAKE_INSTALL_PREFIX=$(PWD)/venv
+	cd third_party/openFPGALoader && cmake --build . -j`nproc`
+	cd third_party/openFPGALoader && cmake --install .
+
+# required for flashing LPDDR4 board
+venv/bin/openocd: third_party/openocd/bootstrap
+	cd third_party/openocd && ./bootstrap
+	cd third_party/openocd && ./configure --enable-ftdi --prefix=$(PWD)/venv
+	make -C third_party/openocd -j`nproc`
+	make -C third_party/openocd install
