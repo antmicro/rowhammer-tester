@@ -12,7 +12,7 @@
 	url = https://github.com/enjoy-digital/litescope.git
 [submodule "litex"]
 	path = third_party/litex
-	url = https://github.com/enjoy-digital/litex.git
+	url = https://github.com/antmicro/litex.git
 [submodule "migen"]
 	path = third_party/migen
 	url = https://github.com/m-labs/migen
