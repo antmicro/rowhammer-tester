@@ -29,9 +29,6 @@
 [submodule "third_party/litesdcard"]
 	path = third_party/litesdcard
 	url = https://github.com/enjoy-digital/litesdcard.git
-[submodule "third_party/pythondata-software-picolibc"]
-	path = third_party/pythondata-software-picolibc
-	url = https://github.com/litex-hub/pythondata-software-picolibc.git
 [submodule "third_party/openFPGALoader"]
 	path = third_party/openFPGALoader
 	url = https://github.com/antmicro/openFPGALoader.git
