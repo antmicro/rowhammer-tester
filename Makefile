@@ -51,10 +51,10 @@ FORCE:
 build: FORCE
 	python rowhammer_tester/targets/$(TARGET).py --build $(TARGET_ARGS)
 
-sim: FORCE
+sim: sim-deps FORCE
 	python rowhammer_tester/targets/$(TARGET).py --build --sim $(TARGET_ARGS)
 
-sim-analyze: FORCE
+sim-analyze: sim-deps FORCE
 	python rowhammer_tester/scripts/sim_runner.py python rowhammer_tester/targets/$(TARGET).py --build --sim $(TARGET_ARGS)
 
 upload up load: FORCE
@@ -111,12 +111,13 @@ format: FORCE
 deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)
 	git submodule update --init
 	(make --no-print-directory -C . \
-		venv/bin/verilator \
 		venv/bin/openFPGALoader \
 		venv/bin/openocd \
 		python-deps \
 		third_party/riscv64-unknown-elf-gcc \
 	)
+
+sim-deps: venv/bin/verilator
 
 python-deps: venv/bin/activate  # installs python dependencies inside virtual environment
 	pip install -r requirements.txt
