@@ -1,6 +1,6 @@
 [submodule "litedram"]
 	path = third_party/litedram
-	url = https://github.com/enjoy-digital/litedram.git
+	url = https://github.com/antmicro/litedram.git
 [submodule "liteeth"]
 	path = third_party/liteeth
 	url = https://github.com/enjoy-digital/liteeth.git
