@@ -23,12 +23,6 @@
 [submodule "third_party/litex-boards"]
 	path = third_party/litex-boards
 	url = https://github.com/litex-hub/litex-boards.git
-[submodule "third_party/litehyperbus"]
-	path = third_party/litehyperbus
-	url = https://github.com/litex-hub/litehyperbus.git
-[submodule "third_party/litesdcard"]
-	path = third_party/litesdcard
-	url = https://github.com/enjoy-digital/litesdcard.git
 [submodule "third_party/openFPGALoader"]
 	path = third_party/openFPGALoader
 	url = https://github.com/antmicro/openFPGALoader.git
