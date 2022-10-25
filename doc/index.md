@@ -4,6 +4,8 @@
 :maxdepth: 2
 
 general.md
+usage.md
+visualization.md
 arty.md
 zcu104.md
 zcu104_img.md

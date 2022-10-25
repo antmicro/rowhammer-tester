@@ -1,5 +1,3 @@
-(arty-chapter)=
-
 # Arty-A7 board
 
 The [Arty-A7 board](https://reference.digilentinc.com/reference/programmable-logic/arty-a7/start) allows testing its on-board DDR3 module.
