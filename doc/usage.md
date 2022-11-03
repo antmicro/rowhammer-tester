@@ -22,6 +22,46 @@ For board-specific instructons refer to [Arty A7](arty.md), [ZCU104](zcu104.md),
 The rest of this chapter describes operations that are common for all supported boards.
 
 
+## Network USB adapter setup
+
+In order to control the rowhammer platform an Ethernet connection is necessary. 
+In case you want to use an USB Ethernet adapter for this purpose read the instructions below.
+
+1. Make sure you use a 1GbE USB network adapter
+2. Figure out the MAC address for the USB network adapter:
+   * Run ``sudo lshw -class network -short`` to get the list of all network interfaces
+   * Check which of the devices uses the r8152 driver by running ``sudo ethtool -i <device>``
+   * Display the link information for the device running ``sudo ip link show <device>`` and look for the mac address next to the ``link/ether`` field
+3. Configure the USB network adapter to appear as network device ``fpga0`` using systemd
+   * Create ``/etc/systemd/network/10-fpga0.link`` with the following contents:
+      ```sh
+      [Match]
+      # Set this to the MAC address of the USB network adapter
+      MACAddress=XX:XX:XX:XX:XX
+      
+      [Link]
+      Name=fpga0
+      ```
+4. Configure the ``fpga0`` network device with a static IP address, always up (even when disconnected) and ignored by network manager.
+   * Make sure your ``/etc/network/interfaces`` file has the following line:
+      ```sh
+      source /etc/network/interfaces.d/*
+      ```
+   * Create ``/etc/network/interfaces.d/fpga0`` with the following contents:
+      ```sh
+      auto fpga0
+      allow-hotplug fpga0
+      iface fpga0 inet static
+              address 192.168.100.100/24
+      ```
+   * Check that ``nmcli device`` says the state is ``connected (externally)`` otherwise run ``sudo systemctl restart NetworkManager``
+   * Run ``ifup fpga0``
+5. Run ``sudo udevadm control --reload`` and then unplug the USB ethernet device and plug it back in
+6. Check you have an ``fpga0`` interface and it has the correct IP address by running ``networkctl status``
+
+```{note} 
+In case you see ``libusb_open() failed with LIBUSB_ERROR_ACCESS`` when trying to use the rowhammer tester scripts with the USB ethernet adapter then it means that you have a permissions issue and need to allow access to the FTDI USB to serial port chip. Check the group listed for the tty's when running ``ls -l /dev/ttyUSB*`` and add the current user to this group by running ``sudo adduser <username> <group>``.
+```
 (controlling-the-board)=
 ## Controlling the board
 
