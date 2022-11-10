@@ -146,8 +146,12 @@ class RowHammerSoC(SoCCore):
             module = sdram_module_cls(self.sys_clk_freq, ratio, speedgrade=sdram_module_speedgrade)
 
         if args.sim:
+            mem_pads_name = {
+                "antmicro_datacenter_ddr4_test_board": "ddr4",
+                "antmicro_lpddr4_test_board": "lpddr4",
+            }.get(self.get_platform().name, "ddram")
             # Use the hardware platform to retrieve values for simulation
-            hw_pads = self.get_platform().request('ddram')
+            hw_pads = self.get_platform().request(mem_pads_name)
             core_config = dict(
                 sdram_module_nb = len(hw_pads.dq) // 8,  # number of byte groups
                 sdram_rank_nb =   len(hw_pads.cs_n),     # number of ranks
