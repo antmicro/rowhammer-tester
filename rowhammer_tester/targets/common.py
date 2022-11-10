@@ -59,6 +59,12 @@ sim_io = [
         Subsignal("sink_data",    Pins(8)),
     ),
 
+    ("i2c", 0,
+        Subsignal("scl",     Pins(1)),
+        Subsignal("sda_out", Pins(1)),
+        Subsignal("sda_in",  Pins(1)),
+    ),
+
     ("user_led", 0, Pins(1)),
     ("user_led", 1, Pins(1)),
     ("user_led", 2, Pins(1)),
