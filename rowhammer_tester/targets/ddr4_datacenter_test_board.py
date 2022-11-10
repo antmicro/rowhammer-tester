@@ -6,7 +6,7 @@ from migen import *
 
 from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 from litex.soc.integration.builder import Builder
-from litex.soc.cores.bitbang import I2CMaster
+from litex.soc.cores.bitbang import I2CMaster, I2CMasterSim
 from litex.soc.cores.clock import S7PLL, S7IDELAYCTRL
 
 from litex_boards.platforms import antmicro_datacenter_ddr4_test_board
@@ -44,7 +44,16 @@ class SoC(common.RowHammerSoC):
         super().__init__(**kwargs)
 
         # SPD EEPROM I2C ---------------------------------------------------------------------------
-        self.submodules.i2c = I2CMaster(self.platform.request("i2c"))
+        pads = self.platform.request("i2c")
+        if self.args.sim:
+            self.submodules.i2c = I2CMasterSim(pads)
+
+            # As we don't simulate communication with SPD or RCD via I2C,
+            # we need to set SDA high, so the I2C controller gets NACK.
+            self.comb += pads.sda_in.eq(1)
+        else:
+            self.submodules.i2c = I2CMaster(pads)
+
         self.add_csr("i2c")
 
     def get_platform(self):
