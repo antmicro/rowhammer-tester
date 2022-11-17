@@ -51,7 +51,7 @@ On Ubuntu 22.04 LTS the following dependencies may also be required:
 apt install libtool libusb-1.0-0-dev pkg-config
 ```
 
-### Row-hammer tester
+### Rowhammer tester
 
 Now clone the `rowhammer-tester` repository and install the rest of the required dependecies:
 
