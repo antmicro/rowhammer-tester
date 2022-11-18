@@ -15,13 +15,13 @@ such as on ZCU104. On other boards it would be necessary to desolder the DRAM ch
 Supported modules can be found in [litedram/modules.py](https://github.com/enjoy-digital/litedram/blob/master/litedram/modules.py).
 If a module is not listed there, you can add a new definition.
 
-To make developement more convenient, modules can be added in rowhammer-tester repository directly in file [rowhammer_tester/targets/modules.py](https://github.com/antmicro/rowhammer-tester/blob/master/rowhammer_tester/targets/modules.py). These definitions will be used before definitions in LiteDRAM.
+To make development more convenient, modules can be added in the rowhammer-tester repository directly in file [rowhammer_tester/targets/modules.py](https://github.com/antmicro/rowhammer-tester/blob/master/rowhammer_tester/targets/modules.py). These definitions will be used before definitions in LiteDRAM.
 
 ```{note}
 After ensuring that the module works correctly, a Pull Request to LiteDRAM should be created to add support for the module.
 ```
 
-To add a new module definition, use the existing ones as a reference. New module class should derive from `SDRAMModule` (or the helper classes, e.g. `DDR4Module`). Timing/geometry values for a module have to be obtained from the revelant DRAM module's datasheet. The timings in classes deriving from `SDRAMModule` are specified in nanoseconds. The timing value can also be specified as a 2-element tuple `(ck, ns)`, in which case `ck` is the number of clock cycles and `ns` is the number of nanoseconds (and can be `None`). The highest of the resulting timing values will be used.
+To add a new module definition, use the existing ones as a reference. New module class should derive from `SDRAMModule` (or the helper classes, e.g. `DDR4Module`). Timing/geometry values for a module have to be obtained from the relevant DRAM module's datasheet. The timings in classes deriving from `SDRAMModule` are specified in nanoseconds. The timing value can also be specified as a 2-element tuple `(ck, ns)`, in which case `ck` is the number of clock cycles and `ns` is the number of nanoseconds (and can be `None`). The highest of the resulting timing values will be used.
 
 ## SPD EEPROM
 
@@ -62,10 +62,10 @@ Then just load the new bitstream.
 
 ```{note}
 Not supporting DRAM parameter configuration in runtime reduces resource usage of the LiteDRAM controller
-and is enough for most use cases. In the future runtime configuration is planned as optional feature.
+and is enough for most use cases. In the future runtime configuration is planned as an optional feature.
 ```
 
 ### Adding module configuration
 
-After verifying that given module configuration stored in SPD works correctly it can be used to define module in Python.
+After verifying that a given module configuration stored in SPD works correctly it can be used to define modules in Python.
 To do that use the output of `spd_eeprom.py show` to add a new module as described in {ref}`adding-new-modules`

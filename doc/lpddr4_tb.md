@@ -13,7 +13,7 @@ The hardware is open and can be found on GitHub:
 
 ## Board configuration
 
-First insert the LPDDDR4 DRAM module into the socket and make sure that jumpers are set in correct positions:
+First insert the LPDDR4 DRAM module into the socket and make sure that jumpers are set in correct positions:
 
 - VDDQ (J10) should be set in position 1V1
 - MODE2 should be set in position FLASH

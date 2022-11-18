@@ -9,7 +9,7 @@ The setup consists of FPGA gateware and application side software.
 The following diagram illustrates the general system architecture.
 
 ```{image} ./architecture.png
-:alt: Archtecture diagram
+:alt: Architecture diagram
 :target: ./architecture.png
 ```
 
@@ -53,7 +53,7 @@ apt install libtool libusb-1.0-0-dev pkg-config
 
 ### Rowhammer tester
 
-Now clone the `rowhammer-tester` repository and install the rest of the required dependecies:
+Now clone the `rowhammer-tester` repository and install the rest of the required dependencies:
 
 ```sh
 git clone --recursive https://github.com/antmicro/rowhammer-tester.git
@@ -61,7 +61,7 @@ cd rowhammer-tester
 make deps
 ```
 
-The last command will download and build all the dependencies (inlcuding a RISC-V GCC toolchain)
+The last command will download and build all the dependencies (including a RISC-V GCC toolchain)
 and will set up a [Python virtual environment](https://docs.python.org/3/library/venv.html) under
 the `./venv` directory with all the required packages installed.
 
@@ -103,7 +103,7 @@ Next time you want to use a bitstream packaged in such way, all you need to do i
 ## Local documentation build
 
 The gateware part of the documentation is auto-generated from source files.
-Other files are static and are located in `doc/` directory.
+Other files are static and are located in the `doc/` directory.
 To build the documentation, enter:
 
 ```sh
