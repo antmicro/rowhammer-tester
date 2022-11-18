@@ -23,15 +23,15 @@ This script can plot graphs out of generated logs. It can generate two different
    You can control the number of displayed columns with ``--plot-columns``.
    For example if your module has 1024 columns and you provide ``--plot-columns 16``, then the DRAM columns will be displayed in groups of 64.
 
-2. Distribution of rows affected by bitflips due to targetting single rows. For example one can generate a graph by calling:
+2. Distribution of rows affected by bitflips due to targeting single rows. For example one can generate a graph by calling:
 
    ```sh
       (venv) $ python logs2plot.py --aggressors-vs-victims your_error_summary.json
    ```
 
-   One graph will be generated with victims on the X axis and aggressors on the Y axis. The colors of the tiles indicate how many bitflips occured on each victim.
+   One graph will be generated with victims on the X axis and aggressors on the Y axis. The colors of the tiles indicate how many bitflips occurred on each victim.
 
-   You can enable additional annotation with ``--annotate bitflips`` so that the number of occured bitflips will be explicitly labeled on top of each victim tile.
+   You can enable additional annotation with ``--annotate bitflips`` so that the number of occurred bitflips will be explicitly labeled on top of each victim tile.
 
    Example plot generated with annotation enabled:
    ```{image} annotation.png
