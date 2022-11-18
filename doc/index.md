@@ -6,13 +6,17 @@
 general.md
 usage.md
 visualization.md
-arty.md
-zcu104.md
-zcu104_img.md
-lpddr4_tb.md
-ddr4_datacenter_dram_tester.md
 playbook.md
 dram_modules.md
+```
+```{toctree}
+:caption: Hardware
+:maxdepth: 2
+
+arty.md
+zcu104.md
+lpddr4_tb.md
+ddr4_datacenter_dram_tester.md
 ```
 
 ```{toctree}

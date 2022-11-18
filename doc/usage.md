@@ -1,4 +1,4 @@
-# Rowhammer usage
+# User guidde
 
 This tool can be run on real hardware (FPGAs) or in a simulation mode.
 As the rowhammer attack exploits physical properties of cells in DRAM (draining charges), no bit flips can be observed in simulation mode.
