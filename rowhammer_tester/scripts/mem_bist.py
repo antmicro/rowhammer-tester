@@ -6,7 +6,7 @@ import argparse
 
 from datetime import datetime
 
-from rowhammer_tester.scripts.utils import RemoteClient, litex_server, hw_memset, hw_memtest, get_litedram_settings
+from rowhammer_tester.scripts.utils import RemoteClient, litex_server, hw_memset, hw_memtest, get_litedram_settings, read_ident
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -21,6 +21,7 @@ if __name__ == "__main__":
 
     wb = RemoteClient()
     wb.open()
+    print("Board info:", read_ident(wb))
 
     mem_base = wb.mems.main_ram.base
     mem_range = wb.mems.main_ram.size  # bytes

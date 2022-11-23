@@ -6,7 +6,7 @@ import time
 import itertools
 
 from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
-from rowhammer_tester.scripts.utils import memdump, memread, memwrite, DRAMAddressConverter, RemoteClient
+from rowhammer_tester.scripts.utils import memdump, memread, memwrite, DRAMAddressConverter, RemoteClient, read_ident
 
 # Sample program
 encoder = Encoder(bankbits=3)
@@ -91,6 +91,7 @@ def execute(wb):
 if __name__ == "__main__":
     wb = RemoteClient()
     wb.open()
+    print("Board info:", read_ident(wb))
 
     execute(wb)
 

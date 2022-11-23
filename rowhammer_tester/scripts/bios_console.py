@@ -9,7 +9,7 @@ import shutil
 
 from litex.tools.litex_term import LiteXTerm
 
-from rowhammer_tester.scripts.utils import RemoteClient, litex_server
+from rowhammer_tester.scripts.utils import RemoteClient, litex_server, read_ident
 
 
 def pty2crossover(m, stop):
@@ -43,6 +43,7 @@ if __name__ == "__main__":
 
     wb = RemoteClient()
     wb.open()
+    print("Board info:", read_ident(wb))
 
     m, s = pty.openpty()
     tty = os.ttyname(s)

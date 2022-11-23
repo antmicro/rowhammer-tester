@@ -5,7 +5,7 @@ import argparse
 
 from litescope.software.litescope_cli import *
 
-from rowhammer_tester.scripts.utils import RemoteClient, get_generated_file
+from rowhammer_tester.scripts.utils import RemoteClient, get_generated_file, read_ident
 
 # Wrapper around litescope_cli
 if __name__ == "__main__":
@@ -19,6 +19,7 @@ if __name__ == "__main__":
 
     wb = RemoteClient()
     wb.open()
+    print("Board info:", read_ident(wb))
 
     try:
         analyzer = LiteScopeAnalyzerDriver(wb.regs, "analyzer", debug=True)
