@@ -225,6 +225,19 @@ def memdump(data, base=0x40000000, chunk_len=16):
         print("0x{addr:08x}:  {bytes}  {chars}".format(addr=base + chunk_len * i, bytes=b, chars=c))
 
 
+def read_ident(wb) -> str:
+    # Maximal identification info size is 256
+    buildinfo = memread(wb, 256, wb.bases.identifier_mem)
+
+    # Info is stored as a \0 terminated string
+    # truncate it
+    string_term_idx = buildinfo.index(0)
+    buildinfo = buildinfo[:string_term_idx]
+
+    # Decode ASCII characters
+    return bytes(buildinfo).decode("ascii")
+
+
 ################################################################################
 
 
@@ -566,3 +579,4 @@ if __name__ == "__main__":
     if bool(getattr(sys, 'ps1', sys.flags.interactive)):
         wb = RemoteClient()
         wb.open()
+        print("Board info:", read_ident(wb))
