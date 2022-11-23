@@ -51,6 +51,7 @@ if __name__ == "__main__":
 
     wb = RemoteClient()
     wb.open()
+    print("Board info:", read_ident(wb))
 
     print(' === Waiting for CPU to initialize DRAM ===')
     if hasattr(wb.regs, "uart_xover_rxempty"):

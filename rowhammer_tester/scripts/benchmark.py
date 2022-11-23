@@ -6,7 +6,7 @@ import cProfile
 
 import argparse
 
-from rowhammer_tester.scripts.utils import memread, memwrite, hw_memset, hw_memtest, RemoteClient
+from rowhammer_tester.scripts.utils import memread, memwrite, hw_memset, hw_memtest, RemoteClient, read_ident
 
 
 def human_size(num):
@@ -90,6 +90,7 @@ if __name__ == "__main__":
 
     wb = RemoteClient()
     wb.open()
+    print("Board info:", read_ident(wb))
 
     if args.rw == 'write':
         is_write = True
