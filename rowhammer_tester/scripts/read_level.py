@@ -344,6 +344,7 @@ def write_level_hardcoded(wb, cdly, delays):
 if __name__ == "__main__":
     wb = RemoteClient()
     wb.open()
+    print("Board info:", read_ident(wb))
 
     read_level(wb, Settings.load())
 

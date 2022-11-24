@@ -3,7 +3,7 @@
 import time
 import argparse
 
-from rowhammer_tester.scripts.utils import RemoteClient, litex_server
+from rowhammer_tester.scripts.utils import RemoteClient, litex_server, read_ident
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -16,6 +16,7 @@ if __name__ == "__main__":
 
     wb = RemoteClient()
     wb.open()
+    print("Board info:", read_ident(wb))
 
     i = 1
     left = True

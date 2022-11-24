@@ -11,7 +11,7 @@ from pexpect import replwrap
 
 from litedram.modules import parse_spd_hexdump, SDRAMModule
 
-from rowhammer_tester.scripts.utils import get_generated_defs, RemoteClient, litex_server
+from rowhammer_tester.scripts.utils import get_generated_defs, RemoteClient, litex_server, read_ident
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
 
@@ -106,6 +106,7 @@ if __name__ == "__main__":
         console = pexpect.spawn('python bios_console.py -t litex_term', cwd=SCRIPT_DIR, timeout=6)
         wb = RemoteClient()
         wb.open()
+        print("Board info:", read_ident(wb))
         if not wb.regs.ddrctrl_init_done.read():
             print('Waiting for CPU to finish memory training ...')
             for i in range(args.mem_timeout):

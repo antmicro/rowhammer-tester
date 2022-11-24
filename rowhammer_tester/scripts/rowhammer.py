@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 from rowhammer_tester.scripts.utils import (
     memfill, memcheck, memwrite, DRAMAddressConverter, litex_server, RemoteClient,
-    get_litedram_settings, get_generated_defs, execute_payload)
+    get_litedram_settings, get_generated_defs, execute_payload, read_ident)
 from rowhammer_tester.scripts.playbook.lib import (generate_payload_from_row_list)
 
 ################################################################################
@@ -444,6 +444,7 @@ def main(row_hammer_cls):
 
     wb = RemoteClient()
     wb.open()
+    print("Board info:", read_ident(wb))
 
     if wb.regs.ddrctrl_init_done.read() != 1:
         scripts_dir = os.path.dirname(os.path.realpath(__file__))
