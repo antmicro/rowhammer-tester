@@ -150,7 +150,7 @@ venv/bin/verilator: third_party/verilator/configure.ac
 
 venv/bin/openFPGALoader: third_party/openFPGALoader/CMakeLists.txt
 	cd third_party/openFPGALoader && cmake . -DCMAKE_INSTALL_PREFIX=$(PWD)/venv
-	cd third_party/openFPGALoader && cmake --build . -j`nproc`
+	cd third_party/openFPGALoader && cmake --build . -j `nproc`
 	cd third_party/openFPGALoader && cmake --install .
 
 # required for flashing LPDDR4 board
