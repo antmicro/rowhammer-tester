@@ -116,12 +116,16 @@ pack: $(ZIP_CONTENTS)
 
 ### Dependencies ###
 
-deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)
+minimal-deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)
 	git submodule update --init
 	(make --no-print-directory -C . \
 		venv/bin/openFPGALoader \
-		venv/bin/openocd \
 		python-deps \
+	)
+
+deps: minimal-deps
+	(make --no-print-directory -C . \
+		venv/bin/openocd \
 		third_party/riscv64-unknown-elf-gcc \
 	)
 
