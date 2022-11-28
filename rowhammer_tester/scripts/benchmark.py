@@ -92,15 +92,15 @@ if __name__ == "__main__":
     wb.open()
     print("Board info:", read_ident(wb))
 
+    if args.subcommand is None:
+        parser.error('Select subcommand')
+
     if args.rw == 'write':
         is_write = True
     elif args.rw == 'read':
         is_write = False
     else:
         raise ValueError(args.rw)
-
-    if args.subcommand is None:
-        parser.error('Select subcommand')
 
     if args.subcommand == 'etherbone':
         run_etherbone(wb, is_write, int(args.n, 0), burst=int(args.burst, 0), profile=args.profile)
