@@ -106,6 +106,14 @@ format: FORCE
 		--exclude "rowhammer_tester/targets/*" \
 		$(PYTHON_FILES)
 
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr '/' '_')
+COMMIT := $(shell git rev-parse HEAD | head -c8)
+ZIP_CONTENTS := $(addprefix build/$(TARGET)/,csr.csv defs.csv sdram_init.py litedram_settings.json gateware/$(TOP).bit)
+
+.PHONY: pack
+pack: $(ZIP_CONTENTS)
+	zip -r "$(TARGET)-$(BRANCH)-$(COMMIT).zip" $^
+
 ### Dependencies ###
 
 deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)
