@@ -133,12 +133,10 @@ python-deps: venv/bin/activate  # installs python dependencies inside virtual en
 venv/bin/activate:  # creates virtual environment if it does not exist
 	python3 -m venv venv
 
-# `litex_setup.py` will avoid downloading to directories with .gitignore, so we install in third_party/
 third_party/riscv64-unknown-elf-gcc:
-	cd third_party/ && python litex/litex_setup.py gcc dev
-	find third_party/ -name 'riscv64-unknown-elf-gcc*' -type d \
-		-exec mv {} third_party/riscv64-unknown-elf-gcc \; \
-		-quit
+	@echo Downloading RISC-V toolchain
+	curl -L https://static.dev.sifive.com/dev-tools/freedom-tools/v2020.08/riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14.tar.gz | tar -xzf -
+	mv riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14 third_party/riscv64-unknown-elf-gcc
 
 venv/bin/verilator: third_party/verilator/configure.ac
 	cd third_party/verilator && autoconf
