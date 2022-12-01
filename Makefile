@@ -106,14 +106,26 @@ format: FORCE
 		--exclude "rowhammer_tester/targets/*" \
 		$(PYTHON_FILES)
 
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr '/' '_')
+COMMIT := $(shell git rev-parse HEAD | head -c8)
+ZIP_CONTENTS := $(addprefix build/$(TARGET)/,csr.csv defs.csv sdram_init.py litedram_settings.json gateware/$(TOP).bit)
+
+.PHONY: pack
+pack: $(ZIP_CONTENTS)
+	zip -r "$(TARGET)-$(BRANCH)-$(COMMIT).zip" $^
+
 ### Dependencies ###
 
-deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)
+minimal-deps:: # Intentionally skipping --recursive as not needed (but doesn't break anything either)
 	git submodule update --init
 	(make --no-print-directory -C . \
 		venv/bin/openFPGALoader \
-		venv/bin/openocd \
 		python-deps \
+	)
+
+deps: minimal-deps
+	(make --no-print-directory -C . \
+		venv/bin/openocd \
 		third_party/riscv64-unknown-elf-gcc \
 	)
 
@@ -125,12 +137,10 @@ python-deps: venv/bin/activate  # installs python dependencies inside virtual en
 venv/bin/activate:  # creates virtual environment if it does not exist
 	python3 -m venv venv
 
-# `litex_setup.py` will avoid downloading to directories with .gitignore, so we install in third_party/
 third_party/riscv64-unknown-elf-gcc:
-	cd third_party/ && python litex/litex_setup.py gcc dev
-	find third_party/ -name 'riscv64-unknown-elf-gcc*' -type d \
-		-exec mv {} third_party/riscv64-unknown-elf-gcc \; \
-		-quit
+	@echo Downloading RISC-V toolchain
+	curl -L https://static.dev.sifive.com/dev-tools/freedom-tools/v2020.08/riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14.tar.gz | tar -xzf -
+	mv riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14 third_party/riscv64-unknown-elf-gcc
 
 venv/bin/verilator: third_party/verilator/configure.ac
 	cd third_party/verilator && autoconf
@@ -140,7 +150,7 @@ venv/bin/verilator: third_party/verilator/configure.ac
 
 venv/bin/openFPGALoader: third_party/openFPGALoader/CMakeLists.txt
 	cd third_party/openFPGALoader && cmake . -DCMAKE_INSTALL_PREFIX=$(PWD)/venv
-	cd third_party/openFPGALoader && cmake --build . -j`nproc`
+	cd third_party/openFPGALoader && cmake --build . -j `nproc`
 	cd third_party/openFPGALoader && cmake --install .
 
 # required for flashing LPDDR4 board
