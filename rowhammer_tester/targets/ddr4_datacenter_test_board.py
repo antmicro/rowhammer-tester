@@ -10,7 +10,7 @@ from litex.soc.cores.bitbang import I2CMaster, I2CMasterSim
 from litex.soc.cores.clock import S7PLL, S7IDELAYCTRL
 
 from litex_boards.platforms import antmicro_datacenter_ddr4_test_board
-from litedram.phy import a7ddrphy
+from litedram.phy import k7ddrphy
 from liteeth.phy import LiteEthS7PHYRGMII
 
 from rowhammer_tester.targets import common
@@ -64,7 +64,7 @@ class SoC(common.RowHammerSoC):
             iodelay_clk_freq=float(self.args.iodelay_clk_freq))
 
     def get_ddrphy(self):
-        return a7ddrphy.A7DDRPHY(self.platform.request("ddr4"),
+        return k7ddrphy.K7DDRPHY(self.platform.request("ddr4"),
             write_latency_calibration = True,
             iodelay_clk_freq          = float(self.args.iodelay_clk_freq),
             sys_clk_freq              = self.sys_clk_freq,
