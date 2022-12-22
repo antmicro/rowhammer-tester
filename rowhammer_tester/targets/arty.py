@@ -2,7 +2,7 @@
 
 from migen import *
 
-from litex_boards.platforms import arty
+from litex_boards.platforms import digilent_arty
 from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 from litex.soc.integration.builder import Builder
 from litex.soc.cores.clock import S7PLL, S7IDELAYCTRL
@@ -63,7 +63,7 @@ class SoC(common.RowHammerSoC):
         # self.add_csr("analyzer")
 
     def get_platform(self):
-        return arty.Platform(variant=self.variant, toolchain=self.toolchain)
+        return digilent_arty.Platform(variant=self.variant, toolchain=self.toolchain)
 
     def get_crg(self):
         return CRG(self.platform, self.sys_clk_freq)
