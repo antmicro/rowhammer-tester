@@ -396,7 +396,7 @@ class ArgumentParser(argparse.ArgumentParser):
         self.add(g, "--no-memory-bist", action="store_true", help="Disable memory BIST module")
         self.add(g, "--pattern-data-size", default="1024", help="BIST pattern data memory size in bytes")
         self.add(g, "--no-payload-executor", action="store_true", help="Disable Payload Executor module")
-        self.add(g, "--payload-size", default="1024", help="Payload memory size in bytes")
+        self.add(g, "--payload-size", default="32768", help="Payload memory size in bytes")
         self.add(g, "--scratchpad-size", default="1024", help="Scratchpad memory size in bytes")
         self.add(g, "--ip-address", default="192.168.100.50", help="Use given IP address")
         self.add(g, "--mac-address", default="0x10e2d5000001", help="Use given MAC address")
