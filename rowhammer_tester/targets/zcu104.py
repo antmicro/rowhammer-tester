@@ -3,7 +3,7 @@
 from migen import *
 from migen.genlib.resetsync import AsyncResetSynchronizer
 
-from litex_boards.platforms import zcu104
+from litex_boards.platforms import xilinx_zcu104 as zcu104
 from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 from litex.soc.integration.builder import Builder
 from litex.soc.integration.soc_core import colorer
