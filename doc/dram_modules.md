@@ -50,22 +50,8 @@ Note that system clock frequency must be passed as an argument to determine timi
 
 ### Using SPD data
 
-LiteDRAM does not yet allow to specify timing parameters at runtime.
-In order to use the new parameters it is necessary to rebuild the bitstream using the information extracted from the SPD memory.
-To do this use the `--from-spd` command line argument, for example:
+The memory controller is able to set the timings read from an SPD EEPROM during system boot.
+The only requirement here is that the SoC is built with I2C controller, and I2C pins are routed to the (R)DIMM module.
+There is no additional action required from system user.
+The timings will be set automatically.
 
-```sh
-make ARGS="--from-spd MTA4ATF51264HZ-3G2J1.bin" build
-```
-
-Then just load the new bitstream.
-
-```{note}
-Not supporting DRAM parameter configuration in runtime reduces resource usage of the LiteDRAM controller
-and is enough for most use cases. In the future runtime configuration is planned as an optional feature.
-```
-
-### Adding module configuration
-
-After verifying that a given module configuration stored in SPD works correctly it can be used to define modules in Python.
-To do that use the output of `spd_eeprom.py show` to add a new module as described in {ref}`adding-new-modules`
