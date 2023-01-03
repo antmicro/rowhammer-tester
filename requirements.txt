@@ -15,7 +15,7 @@ git+https://github.com/litex-hub/pythondata-software-compiler_rt.git
 
 # PyPi packages
 gitpython
-meson
+meson == 0.59
 pexpect
 yapf == 0.32.0
 wheel
