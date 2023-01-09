@@ -28,13 +28,22 @@ class CRG(Module):
 
         # # #
 
+        mmcm_ddr_rst = Signal()
+        pll_rst = Signal()
+
         self.submodules.pll = pll = S7PLL(speedgrade=-3)
-        pll.register_clkin(platform.request("clk100"), 100e6)
-        pll.create_clkout(self.cd_sys,             sys_clk_freq)
-        pll.create_clkout(self.cd_idelay,          iodelay_clk_freq)
+        self.comb += pll_rst.eq(~pll.locked)
+        input_clk = platform.request("clk100")
+        pll.register_clkin(input_clk, 100e6)
+        pll.create_clkout(self.cd_sys, sys_clk_freq, external_rst=mmcm_ddr_rst)
+
+        self.submodules.pll_iodly = pll_iodly = S7PLL(speedgrade=-3)
+        pll_iodly.register_clkin(input_clk, 100e6)
+        pll_iodly.create_clkout(self.cd_idelay, iodelay_clk_freq)
 
         self.submodules.mmcm_ddr = mmcm_ddr = S7MMCM(speedgrade=-3)
-        mmcm_ddr.register_clkin(self.cd_sys.clk,        sys_clk_freq)
+        self.comb += mmcm_ddr_rst.eq(~mmcm_ddr.locked)
+        mmcm_ddr.register_clkin(self.cd_sys.clk, sys_clk_freq)
         mmcm_ddr.create_clkout(
             self.cd_sys4x_io,
             4 * sys_clk_freq,
@@ -58,6 +67,7 @@ class CRG(Module):
             buf='bufr',
             div=2,
             clock_out=0,
+            external_rst=pll_rst,
         )
         mmcm_ddr.create_clkout(
             self.cd_sys2x_90_io,
@@ -66,6 +76,7 @@ class CRG(Module):
             buf='bufr',
             div=2,
             clock_out=1,
+            external_rst=pll_rst,
         )
         mmcm_ddr.create_clkout(
             self.cd_sys_io,
@@ -73,6 +84,7 @@ class CRG(Module):
             buf='bufr',
             div=4,
             clock_out=0,
+            external_rst=pll_rst,
         )
 
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_idelay)
@@ -95,7 +107,8 @@ class SoC(common.RowHammerSoC):
             iodelay_clk_freq  = float(self.args.iodelay_clk_freq),
             sys_clk_freq      = self.sys_clk_freq,
             with_per_dq_idelay= True,
-            with_sub_channels = False)
+            with_sub_channels = False,
+            direct_control    = True)
 
     def get_sdram_ratio(self):
         return "1:4"
