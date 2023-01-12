@@ -471,6 +471,22 @@ No boot medium found
 litex>
 ```
 
+#### Perform memory tests from the BIOS
+
+After entering the BIOS, you may want to perform a memory test using utilities built into the BIOS itself.
+There are a couple ways to do such:
+
+- `mem_test` - performs a series of writes and reads to check if values read back are the same as those previously written.
+  It is limited by a 32-bit address bus, so only 4 GiB of address space can be tested.
+  You can get origin of the RAM space using `mem_list` command.
+- `sdram_test` - basically `mem_test`, but predefined for first 1/32 of defined RAM region size.
+- `sdram_hw_test` - similar to `mem_test`, but accesses the SDRAM directly using DMAs, so it is not limited to 4 GiB.
+  It requires passing 2 arguments (`origin` and `size`) with a 3rd optional argument being `burst_length`.
+  When using `sdram_hw_test` you don't have to offset the `origin` like in the case of `mem_test`.
+  `size` is a number of bytes to test and `burst_length` is a number of full transfer writes to the SDRAM, before reading and checking written content.
+  The default value for `burst_length` is 1, which means that after every write, a check is performed.
+  Generally, bigger `burst_length` means faster operation.
+
 ### Test with BIST - `mem_bist.py`
 
 A script written to test BIST block functionality. Two tests are available:
