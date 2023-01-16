@@ -18,6 +18,8 @@ else ifeq ($(TARGET),lpddr4_test_board)
 	OFL_BOARD := antmicro_lpddr4_tester
 else ifeq ($(TARGET),ddr5_tester)
 	OFL_BOARD := antmicro_ddr5_tester
+else ifeq ($(TARGET),ddr5_test_board)
+	OFL_BOARD := antmicro_lpddr4_tester
 else ifeq ($(TARGET),zcu104)
 	# For ZCU104 please copy the file build/zcu104/gateware/zcu104.bit to the boot partition on microSD card
 else
