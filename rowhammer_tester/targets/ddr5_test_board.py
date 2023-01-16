@@ -6,7 +6,7 @@ from migen import *
 
 from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 from litex.soc.integration.builder import Builder
-from litex.soc.cores.clock import S7PLL, S7IDELAYCTRL
+from litex.soc.cores.clock import S7PLL, S7MMCM, S7IDELAYCTRL
 
 from litex_boards.platforms import antmicro_ddr5_test_board
 from litedram.phy import ddr5
@@ -19,11 +19,11 @@ from rowhammer_tester.targets import common
 class CRG(Module):
     def __init__(self, platform, sys_clk_freq, iodelay_clk_freq):
         self.clock_domains.cd_sys             = ClockDomain()
-        self.clock_domains.cd_sys2x           = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys2x_unbuf     = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys4x_unbuf     = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys4x_90_unbuf  = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys4x_180_unbuf = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys_io          = ClockDomain()
+        self.clock_domains.cd_sys2x_io        = ClockDomain()
+        self.clock_domains.cd_sys2x_90_io     = ClockDomain()
+        self.clock_domains.cd_sys4x_io        = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys4x_90_io     = ClockDomain(reset_less=True)
         self.clock_domains.cd_idelay          = ClockDomain()
 
         # # #
@@ -33,13 +33,47 @@ class CRG(Module):
         pll.create_clkout(self.cd_sys,             sys_clk_freq)
         pll.create_clkout(self.cd_idelay,          iodelay_clk_freq)
 
-        self.submodules.pll_ddr = pll_ddr = S7PLL(speedgrade=-3)
-        pll_ddr.register_clkin(self.cd_sys.clk,        sys_clk_freq)
-        pll_ddr.create_clkout(self.cd_sys2x,           2 * sys_clk_freq)
-        pll_ddr.create_clkout(self.cd_sys2x_unbuf,     2 * sys_clk_freq, buf=None, with_reset=False)
-        pll_ddr.create_clkout(self.cd_sys4x_unbuf,     4 * sys_clk_freq, buf=None, with_reset=False)
-        pll_ddr.create_clkout(self.cd_sys4x_90_unbuf,  4 * sys_clk_freq, phase=90, with_reset=False, buf=None)
-        pll_ddr.create_clkout(self.cd_sys4x_180_unbuf, 4 * sys_clk_freq, phase=180, with_reset=False, buf=None)
+        self.submodules.mmcm_ddr = mmcm_ddr = S7MMCM(speedgrade=-3)
+        mmcm_ddr.register_clkin(self.cd_sys.clk,        sys_clk_freq)
+        mmcm_ddr.create_clkout(
+            self.cd_sys4x_io,
+            4 * sys_clk_freq,
+            buf='bufio',
+            with_reset=False,
+            name="sys4x_io",
+            platform=platform
+        )
+        mmcm_ddr.create_clkout(
+            self.cd_sys4x_90_io,
+            4 * sys_clk_freq,
+            phase=90,
+            with_reset=False,
+            buf='bufio',
+            name="sys4x_90_io",
+            platform=platform
+        )
+        mmcm_ddr.create_clkout(
+            self.cd_sys2x_io,
+            2 * sys_clk_freq,
+            buf='bufr',
+            div=2,
+            clock_out=0,
+        )
+        mmcm_ddr.create_clkout(
+            self.cd_sys2x_90_io,
+            2 * sys_clk_freq,
+            phase=90,
+            buf='bufr',
+            div=2,
+            clock_out=1,
+        )
+        mmcm_ddr.create_clkout(
+            self.cd_sys_io,
+            sys_clk_freq,
+            buf='bufr',
+            div=4,
+            clock_out=0,
+        )
 
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_idelay)
 
@@ -60,6 +94,7 @@ class SoC(common.RowHammerSoC):
         return ddr5.K7DDR5PHY(self.platform.request("ddr5"),
             iodelay_clk_freq  = float(self.args.iodelay_clk_freq),
             sys_clk_freq      = self.sys_clk_freq,
+            with_per_dq_idelay= True,
             with_sub_channels = False)
 
     def get_sdram_ratio(self):
@@ -96,11 +131,18 @@ def main():
 
     soc_kwargs = common.get_soc_kwargs(args)
     soc = SoC(**soc_kwargs)
+    soc.platform.add_platform_command("set_property CLOCK_BUFFER_TYPE BUFG [get_nets sys_rst]")
+    soc.platform.toolchain.pre_synthesis_commands.append("set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]")
+    soc.platform.toolchain.pre_synthesis_commands.append("set_property -name {{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}} -value {{-merge_equivalent_drivers -hier_fanout_limit 1000}} -objects [get_runs impl_1]")
 
     target_name = 'ddr5_test_board'
     builder_kwargs = common.get_builder_kwargs(args, target_name=target_name)
     builder = Builder(soc, **builder_kwargs)
     build_kwargs = vivado_build_argdict(args) if not args.sim else {}
+    if not args.sim:
+        build_kwargs["vivado_place_directive"] = "AltSpreadLogic_high"
+        build_kwargs["vivado_post_place_phys_opt_directive"] = "AggressiveExplore"
+        build_kwargs["vivado_route_directive"] = "AlternateCLBRouting"
 
     common.run(args, builder, build_kwargs, target_name=target_name)
 
