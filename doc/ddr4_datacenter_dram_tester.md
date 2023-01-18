@@ -38,4 +38,9 @@ export TARGET=ddr4_datacenter_test_board
 make flash
 ```
 
+```{warning}
+There is a JTAG/SPI jumper named `MODE2` on the right side of the board.
+Unless it's set to the SPI setting, the FPGA will load the bitstream received via JTAG.
+```
+
 Bitstream will be loaded from flash memory upon device power-on or after a PROG button press.
