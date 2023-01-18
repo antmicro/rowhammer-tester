@@ -5,6 +5,7 @@ import sys
 import math
 import time
 import argparse
+import itertools
 
 import pexpect
 from pexpect import replwrap
@@ -87,8 +88,6 @@ if __name__ == "__main__":
     read.add_argument('output_file', help='File to save SPD data to')
     read.add_argument('--srv', action='store_true', help='Start litex server in background')
     show.add_argument('input_file', help='File with SPD data')
-    read.add_argument(
-        '--mem-timeout', default=25, type=int, help='Time to wait for memory initialization')
     show.add_argument('clk_freq', help='DRAM controller clock frequency')
     args = parser.parse_args()
 
@@ -103,21 +102,20 @@ if __name__ == "__main__":
         spd_addr, init_commands = SPD_COMMANDS[target]
 
         print('Reading SPD EEPROM ...')
-        console = pexpect.spawn('python bios_console.py -t litex_term', cwd=SCRIPT_DIR, timeout=6)
+        console = pexpect.spawn('python bios_console.py -t litex_term', cwd=SCRIPT_DIR, timeout=30)
         wb = RemoteClient()
         wb.open()
         print("Board info:", read_ident(wb))
-        if not wb.regs.ddrctrl_init_done.read():
-            print('Waiting for CPU to finish memory training ...')
-            for i in range(args.mem_timeout):
-                time.sleep(1)
-                print('{:3} s'.format(args.mem_timeout - i - 1), end=' \r', flush=True)
-                # print('.', end='', flush=True)
-                if wb.regs.ddrctrl_init_done.read():
-                    print('Ready    ', end=' \r', flush=True)
-                    break
-            print()
-            time.sleep(2)
+
+        spinner = itertools.cycle("/-\\-")
+        spinner_fmt = "[{}] Waiting for CPU to finish memory training"
+        while not wb.regs.ddrctrl_init_done.read():
+            print(spinner_fmt.format(next(spinner)), end="\r")
+            time.sleep(1)
+
+        print("Ready", " " * len(spinner_fmt), flush=True)
+
+        time.sleep(2)
         wb.close()
 
         output = read_spd(console, spd_addr, init_commands)
