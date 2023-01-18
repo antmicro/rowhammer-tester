@@ -9,19 +9,18 @@ UDP_PORT    ?= 1234
 # Set openFPGALoader board name
 TOP := antmicro_$(TARGET)
 ifeq ($(TARGET),arty)
-	OFL_BOARD := arty_a7_35t
-	TOP := digilent_arty
+OFL_BOARD := arty_a7_35t
+TOP := digilent_arty
 else ifeq ($(TARGET),ddr4_datacenter_test_board)
-	OFL_BOARD := antmicro_ddr4_tester
-	TOP := antmicro_datacenter_ddr4_test_board
+OFL_BOARD := antmicro_ddr4_tester
+TOP := antmicro_datacenter_ddr4_test_board
 else ifeq ($(TARGET),lpddr4_test_board)
-	OFL_BOARD := antmicro_lpddr4_tester
-else ifeq ($(TARGET),ddr5_tester)
-	OFL_BOARD := antmicro_ddr5_tester
+OFL_BOARD := antmicro_lpddr4_tester
 else ifeq ($(TARGET),zcu104)
-	# For ZCU104 please copy the file build/zcu104/gateware/zcu104.bit to the boot partition on microSD card
+# For ZCU104 please copy the file build/zcu104/gateware/zcu104.bit to the boot partition on microSD card
+TOP := xilinx_zcu104
 else
-	$(error Unsupported board type)
+$(error Unsupported board type)
 endif
 
 
