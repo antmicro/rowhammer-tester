@@ -44,4 +44,9 @@ export TARGET=lpddr4_test_board
 make flash
 ```
 
-To load bitstream from flash memory press PROG_B1 button on LPDDR4 Test Board. MODE2 jumper must be in FLASH position.
+```{warning}
+There is a JTAG/FLASH jumper named `MODE2` on the right side of the board.
+Unless it's set to the FLASH setting, the FPGA will load the bitstream received via JTAG.
+```
+
+Bitstream will be loaded from flash memory upon device power-on or after a PROG button press.
