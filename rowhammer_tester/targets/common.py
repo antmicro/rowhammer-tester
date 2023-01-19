@@ -114,6 +114,7 @@ class RowHammerSoC(SoCCore):
         githash = git.Repo('.', search_parent_directories=True).git.rev_parse("HEAD")
 
         # SoCCore ----------------------------------------------------------------------------------
+        print(kwargs)
         SoCCore.__init__(self, self.platform, sys_clk_freq,
             ident          = "Row Hammer Tester SoC on {}, git: {}".format(self.platform.device, githash),
             integrated_rom_mode = 'rw' if args.rw_bios_mem else 'r',
@@ -196,7 +197,7 @@ class RowHammerSoC(SoCCore):
             module                  = module,
             origin                  = self.mem_map["main_ram"],
             size                    = kwargs.get("max_sdram_size", 0x40000000),
-            l2_cache_size           = 256,
+            l2_cache_size           = kwargs.get("l2_size", 256),
             controller_settings     = controller_settings,
             with_bist               = not args.no_litex_bist
         )
