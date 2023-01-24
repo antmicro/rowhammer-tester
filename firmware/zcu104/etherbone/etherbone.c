@@ -153,7 +153,8 @@ int etherbone_process_packet(struct etherbone_memory_handlers *mem,
         resp_packet->port_size = 4; // 32 bits
         resp_packet->record_hdr.wcount = rcount;
         resp_packet->record_hdr.rcount = 0;
-        resp_packet->record_hdr.base_write_addr = htonl(req_packet->record_hdr.base_ret_addr);
+        // we don't convert with htonl, as we didn't convert it before with ntohl
+        resp_packet->record_hdr.base_write_addr = req_packet->record_hdr.base_ret_addr;
         resp_len = sizeof(struct etherbone_packet) + rcount * sizeof(struct etherbone_record);
     }
 
