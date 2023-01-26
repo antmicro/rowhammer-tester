@@ -235,6 +235,12 @@ Bit-flips for row   134: 3
 
 ### Row selection examples
 
+```{warning}
+Attacks are performd on a single bank.
+By default it is bank 0.
+To change the bank that is being attacked use the `--bank` flag.
+```
+
 - Select row pairs from row 3 (`--start-row`) to row 59 (`--nrows`) where the next pair is 5 rows away (`--row-jump`) from the previous one:
 
   ```sh
