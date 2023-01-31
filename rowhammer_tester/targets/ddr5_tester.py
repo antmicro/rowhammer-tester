@@ -3,6 +3,7 @@
 import math
 
 from migen import *
+from migen.genlib.resetsync import AsyncResetSynchronizer
 
 from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 from litex.soc.integration.builder import Builder
@@ -19,13 +20,15 @@ from rowhammer_tester.targets import common
 
 class CRG(Module):
     def __init__(self, platform, sys_clk_freq, iodelay_clk_freq):
-        self.clock_domains.cd_sys             = ClockDomain()
-        self.clock_domains.cd_sys_io          = ClockDomain()
-        self.clock_domains.cd_sys2x_io        = ClockDomain()
-        self.clock_domains.cd_sys2x_90_io     = ClockDomain()
-        self.clock_domains.cd_sys4x_io        = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys4x_90_io     = ClockDomain(reset_less=True)
-        self.clock_domains.cd_idelay          = ClockDomain()
+        self.clock_domains.cd_sys                     = ClockDomain()
+        self.clock_domains.cd_sys_io                  = ClockDomain()
+        self.clock_domains.cd_sys2x_io                = ClockDomain()
+        self.clock_domains.cd_sys2x_90_io             = ClockDomain()
+        self.clock_domains.cd_sys4x_io                = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys4x_90_io             = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys4x_io_itermediate    = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys4x_90_io_itermediate = ClockDomain(reset_less=True)
+        self.clock_domains.cd_idelay                  = ClockDomain()
 
         # # #
 
@@ -46,47 +49,53 @@ class CRG(Module):
         self.comb += mmcm_ddr_rst.eq(~mmcm_ddr.locked)
         mmcm_ddr.register_clkin(self.cd_sys.clk, sys_clk_freq)
         mmcm_ddr.create_clkout(
-            self.cd_sys4x_io,
+            self.cd_sys4x_io_itermediate,
             4 * sys_clk_freq,
-            buf='bufio',
+            buf='bufmr',
             with_reset=False,
             name="sys4x_io",
             platform=platform
         )
         mmcm_ddr.create_clkout(
-            self.cd_sys4x_90_io,
+            self.cd_sys4x_90_io_itermediate,
             4 * sys_clk_freq,
             phase=90,
             with_reset=False,
-            buf='bufio',
+            buf='bufmr',
             name="sys4x_90_io",
             platform=platform
         )
-        mmcm_ddr.create_clkout(
-            self.cd_sys2x_io,
-            2 * sys_clk_freq,
-            buf='bufr',
-            div=2,
-            clock_out=0,
-            external_rst=pll_rst,
+
+        self.specials += Instance("BUFIO",
+            i_I = self.cd_sys4x_io_itermediate.clk,
+            o_O = self.cd_sys4x_io.clk,
         )
-        mmcm_ddr.create_clkout(
-            self.cd_sys2x_90_io,
-            2 * sys_clk_freq,
-            phase=90,
-            buf='bufr',
-            div=2,
-            clock_out=1,
-            external_rst=pll_rst,
+
+        self.specials += Instance("BUFIO",
+            i_I = self.cd_sys4x_90_io_itermediate.clk,
+            o_O = self.cd_sys4x_90_io.clk,
         )
-        mmcm_ddr.create_clkout(
-            self.cd_sys_io,
-            sys_clk_freq,
-            buf='bufr',
-            div=4,
-            clock_out=0,
-            external_rst=pll_rst,
+
+        self.specials += Instance("BUFR",
+            i_I = self.cd_sys4x_io_itermediate.clk,
+            o_O = self.cd_sys2x_io.clk,
+            p_BUFR_DIVIDE = "2",
         )
+        self.specials += AsyncResetSynchronizer(self.cd_sys2x_io, ~mmcm_ddr.locked | pll_rst)
+
+        self.specials += Instance("BUFR",
+            i_I = self.cd_sys4x_90_io_itermediate.clk,
+            o_O = self.cd_sys2x_90_io.clk,
+            p_BUFR_DIVIDE = "2",
+        )
+        self.specials += AsyncResetSynchronizer(self.cd_sys2x_90_io, ~mmcm_ddr.locked | pll_rst)
+
+        self.specials += Instance("BUFR",
+            i_I = self.cd_sys4x_io_itermediate.clk,
+            o_O = self.cd_sys_io.clk,
+            p_BUFR_DIVIDE = "4",
+        )
+        self.specials += AsyncResetSynchronizer(self.cd_sys_io, ~mmcm_ddr.locked | pll_rst)
 
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_idelay)
 
