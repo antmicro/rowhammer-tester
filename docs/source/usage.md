@@ -206,6 +206,16 @@ Different attack and row selection modes can be used, but only one of them can b
   (venv) $ python hw_rowhammer.py --row-pairs random --start-row 4 --nrows 10
   ```
 
+- `--no-attack-time <time>`
+
+  Instead of performing a rowhammer attack, the script will load the RAM with selected pattern and sleep for `time` nanoseconds.
+  After this time, it will check for any bitflips that could have happened.
+  This option does not imply `--no-refresh`!
+
+  ```sh
+  (venv) $ python hw_rowhammer.py --no-attack-time 100e9 --no-refresh
+  ```
+
 ### Patterns
 
 User can choose a pattern that memory will be initially filled with:

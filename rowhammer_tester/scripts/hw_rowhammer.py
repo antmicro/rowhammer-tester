@@ -113,17 +113,20 @@ class HwRowHammer(RowHammer):
             print('\nDisabling refresh ...')
             self.wb.regs.controller_settings_refresh.write(0)
 
-        print('\nRunning Rowhammer attacks ...')
-        for i, row_tuple in enumerate(row_pairs, start=1):
-            s = 'Iter {:{n}} / {:{n}}'.format(i, len(row_pairs), n=len(str(len(row_pairs))))
-            if self.payload_executor:
-                self.payload_executor_attack(read_count=read_count, row_tuple=row_tuple)
-            else:
-                if len(row_tuple) & (len(row_tuple) - 1) != 0:
-                    print("ERROR: BIST only supports power of 2 rows\n")
-                    return
+        if self.no_attack_time is not None:
+            self.no_attack_sleep()
+        else:
+            print('\nRunning Rowhammer attacks ...')
+            for i, row_tuple in enumerate(row_pairs, start=1):
+                s = 'Iter {:{n}} / {:{n}}'.format(i, len(row_pairs), n=len(str(len(row_pairs))))
+                if self.payload_executor:
+                    self.payload_executor_attack(read_count=read_count, row_tuple=row_tuple)
+                else:
+                    if len(row_tuple) & (len(row_tuple) - 1) != 0:
+                        print("ERROR: BIST only supports power of 2 rows\n")
+                        return
 
-                self.attack(row_tuple, read_count=read_count, progress_header=s)
+                    self.attack(row_tuple, read_count=read_count, progress_header=s)
 
         if self.no_refresh:
             print('\nReenabling refresh ...')
