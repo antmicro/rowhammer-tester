@@ -23,12 +23,3 @@ pyvcd
 matplotlib
 ninja
 
-# Documentation
-sphinx
-sphinx_tabs == 3.0.0
-docutils == 0.16.0
-sphinx-jinja
-git+https://github.com/antmicro/sphinx_antmicro_theme
-sphinx-autobuild
-jinja2<3.1.0
-myst-parser

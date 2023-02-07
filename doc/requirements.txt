@@ -1,23 +1,12 @@
-gitpython
+-r ../requirements.txt
+
 Sphinx==4.5.0
 sphinx_tabs == 3.0.0
 sphinx-jinja==2.0.2
+sphinx-autobuild
 docutils == 0.16.0
 jinja2<3.1.0
 myst-parser
--e .
--e third_party/migen
--e third_party/litex
--e third_party/litedram
--e third_party/liteeth
--e third_party/liteiclink
--e third_party/litescope
--e third_party/litex-boards
-# vexriscv cpu
-git+https://github.com/litex-hub/pythondata-cpu-vexriscv.git
-git+https://github.com/litex-hub/pythondata-software-compiler_rt.git
-git+https://github.com/litex-hub/pythondata-software-picolibc.git
-
 yapf
 
 https://github.com/antmicro/antmicro-sphinx-utils/archive/main.zip
