@@ -81,7 +81,7 @@ html_title = project
 (
     html_logo,
     html_theme_options,
-    html_context
+    _
 ) = antmicro_html(
     gh_slug="antmicro/rowhammer-tester",
     pdf_url=f"{basic_filename}.pdf"
