@@ -5,7 +5,6 @@ sphinx-jinja==2.0.2
 docutils == 0.16.0
 jinja2<3.1.0
 myst-parser
-git+https://github.com/antmicro/sphinx_antmicro_theme.git@master
 -e .
 -e third_party/migen
 -e third_party/litex
@@ -20,3 +19,6 @@ git+https://github.com/litex-hub/pythondata-software-compiler_rt.git
 git+https://github.com/litex-hub/pythondata-software-picolibc.git
 
 yapf
+
+https://github.com/antmicro/antmicro-sphinx-utils/archive/main.zip
+https://github.com/antmicro/sphinx-immaterial/releases/download/tip/sphinx_immaterial-0.0.post1.tip-py3-none-any.whl
