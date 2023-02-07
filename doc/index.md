@@ -1,4 +1,4 @@
-# Welcome to Rowhammer Tester!
+# Welcome to Rowhammer tester!
 
 ```{toctree}
 :maxdepth: 2

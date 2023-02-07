@@ -35,7 +35,7 @@ from antmicro_sphinx_utils.defaults import (
 # -- General configuration -----------------------------------------------------
 
 # General information about the project.
-project = u'Row Hammer Tester'
+project = u'Rowhammer tester'
 basic_filename = u'rowhammer-tester'
 if 'tags' in globals() and 'internal' in tags:
     basic_filename = 'INTERNAL--' + basic_filename
