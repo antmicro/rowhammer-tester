@@ -34,14 +34,14 @@ This script can plot graphs out of generated logs. It can generate two different
    You can enable additional annotation with ``--annotate bitflips`` so that the number of occurred bitflips will be explicitly labeled on top of each victim tile.
 
    Example plot generated with annotation enabled:
-   ```{image} annotation.png
+   ```{image} images/annotation.png
    ```
    You can zoom-in on interesting parts by using a matplotlib's zoom tool (in the bottom left corner):
-   ```{image} annotation_zoom.png
+   ```{image} images/annotation_zoom.png
    ```
 
    This type of plot has built-in DQ per pad statistics for each attack. After clicking a specific tile you will see a new pop-up window with a plot:
-   ```{image} dqs_vict_vs_aggr.png
+   ```{image} images/dqs_vict_vs_aggr.png
    ```
 
 ## Plot per DQ pad - `logs2dq.py`
@@ -96,5 +96,5 @@ To view results using the visualizer you need to:
    ```
 
 An example output generated with the `--aggresors-vs-victims` flag looks like this:
-```{image} f4pga_visualizer_aggr_vs_vict.png
+```{image} images/f4pga_visualizer_aggr_vs_vict.png
 ```

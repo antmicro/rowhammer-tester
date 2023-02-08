@@ -1,6 +1,6 @@
 # LPDDR4 Test Board
 
-```{image} lpddr4-test-board.jpg
+```{image} images/lpddr4-test-board.jpg
 ```
 
 LPDDR4 Test Board is a platform developed by Antmicro for testing LPDDR4 memory.

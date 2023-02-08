@@ -1,6 +1,6 @@
 # Data Center DRAM Tester
 
-```{image} ddr4_datacenter_dram_tester.jpg
+```{image} images/ddr4_datacenter_dram_tester.jpg
 ```
 
 The data center DRAM tester is an open source hardware test platform that enables testing and experimenting with various DDR4 RDIMMs (Registered Dual In-Line Memory Module).

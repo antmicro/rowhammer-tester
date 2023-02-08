@@ -8,9 +8,9 @@ The aim of this project is to provide a platform for testing [DRAM vulnerability
 The setup consists of FPGA gateware and application side software.
 The following diagram illustrates the general system architecture.
 
-```{image} ./architecture.png
+```{image} ./images/architecture.png
 :alt: Architecture diagram
-:target: ./architecture.png
+:target: ./images/architecture.png
 ```
 
 The DRAM is connected to [LiteDRAM](https://github.com/enjoy-digital/litedram), which provides swappable PHYs and a DRAM controller implementation.
