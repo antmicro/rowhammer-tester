@@ -3,7 +3,7 @@
 The [Arty-A7 board](https://reference.digilentinc.com/reference/programmable-logic/arty-a7/start) allows testing its on-board DDR3 module.
 The board is designed around the Artix-7™ Field Programmable Gate Array (FPGA) from Xilinx.
 
-```{image} arty-a7.jpg
+```{image} images/arty-a7.jpg
 ```
 
 The following instructions explain how to set up the board.

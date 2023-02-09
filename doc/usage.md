@@ -100,7 +100,7 @@ There are two versions of a rowhammer script:
 - `rowhammer.py` - this one uses regular memory access via EtherBone to fill/check the memory (slower)
 - `hw_rowhammer.py` - BIST blocks will be used to fill/check the memory (much faster, but with some limitations regarding fill pattern)
 
-BIST blocks are faster and are the intended way of running Row Hammer Tester.
+BIST blocks are faster and are the intended way of running Rowhammer tester.
 
 Hammering of a row is done by reading it. There are two ways to specify a number of reads:
 
@@ -338,7 +338,7 @@ Example output:
 
 ```sh
 (venv) python version.py
-Row Hammer Tester SoC on xc7k160tffg676-1, git: e7854fdd16d5f958e616bbb4976a97962ee9197d 2022-07-24 15:46:52
+Rowhammer tester SoC on xc7k160tffg676-1, git: e7854fdd16d5f958e616bbb4976a97962ee9197d 2022-07-24 15:46:52
 ```
 
 ### Check CSRs - `dump_regs.py`

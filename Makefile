@@ -80,7 +80,7 @@ srv: FORCE
 	litex_server --udp --udp-ip $(IP_ADDRESS) --udp-port $(UDP_PORT)
 
 doc: FORCE
-	python -m sphinx -b html doc build/documentation/html
+	$(MAKE) -C doc html
 
 test: FORCE
 	python -m unittest -v
