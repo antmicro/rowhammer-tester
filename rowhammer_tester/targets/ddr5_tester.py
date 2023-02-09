@@ -21,17 +21,13 @@ from rowhammer_tester.targets import common
 class CRG(Module):
     def __init__(self, platform, sys_clk_freq, iodelay_clk_freq):
         self.clock_domains.cd_sys                     = ClockDomain()
-        self.clock_domains.cd_sys_io                  = ClockDomain()
-        self.clock_domains.cd_sys2x_io                = ClockDomain()
-        self.clock_domains.cd_sys2x_90_io             = ClockDomain()
-        self.clock_domains.cd_sys4x_io                = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys4x_90_io             = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys4x_io_itermediate    = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys4x_90_io_itermediate = ClockDomain(reset_less=True)
+        # BUFMR to BUFR and BUFIO, "raw" clocks
+        self.clock_domains.cd_sys4x_itermediate    = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys4x_90_itermediate = ClockDomain(reset_less=True)
+
         self.clock_domains.cd_idelay                  = ClockDomain()
 
         # # #
-
         mmcm_ddr_rst = Signal()
         pll_rst = Signal()
 
@@ -49,7 +45,7 @@ class CRG(Module):
         self.comb += mmcm_ddr_rst.eq(~mmcm_ddr.locked)
         mmcm_ddr.register_clkin(self.cd_sys.clk, sys_clk_freq)
         mmcm_ddr.create_clkout(
-            self.cd_sys4x_io_itermediate,
+            self.cd_sys4x_itermediate,
             4 * sys_clk_freq,
             buf='bufmr',
             with_reset=False,
@@ -57,7 +53,7 @@ class CRG(Module):
             platform=platform
         )
         mmcm_ddr.create_clkout(
-            self.cd_sys4x_90_io_itermediate,
+            self.cd_sys4x_90_itermediate,
             4 * sys_clk_freq,
             phase=90,
             with_reset=False,
@@ -66,38 +62,52 @@ class CRG(Module):
             platform=platform
         )
 
-        self.specials += Instance("BUFIO",
-            i_I = self.cd_sys4x_io_itermediate.clk,
-            o_O = self.cd_sys4x_io.clk,
-        )
-
-        self.specials += Instance("BUFIO",
-            i_I = self.cd_sys4x_90_io_itermediate.clk,
-            o_O = self.cd_sys4x_90_io.clk,
-        )
-
-        self.specials += Instance("BUFR",
-            i_I = self.cd_sys4x_io_itermediate.clk,
-            o_O = self.cd_sys2x_io.clk,
-            p_BUFR_DIVIDE = "2",
-        )
-        self.specials += AsyncResetSynchronizer(self.cd_sys2x_io, ~mmcm_ddr.locked | pll_rst)
-
-        self.specials += Instance("BUFR",
-            i_I = self.cd_sys4x_90_io_itermediate.clk,
-            o_O = self.cd_sys2x_90_io.clk,
-            p_BUFR_DIVIDE = "2",
-        )
-        self.specials += AsyncResetSynchronizer(self.cd_sys2x_90_io, ~mmcm_ddr.locked | pll_rst)
-
-        self.specials += Instance("BUFR",
-            i_I = self.cd_sys4x_io_itermediate.clk,
-            o_O = self.cd_sys_io.clk,
-            p_BUFR_DIVIDE = "4",
-        )
-        self.specials += AsyncResetSynchronizer(self.cd_sys_io, ~mmcm_ddr.locked | pll_rst)
-
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_idelay)
+
+        # DDR5 PHY clock domains
+        clock_domains = ["sys_io", "sys2x_io", "sys2x_90_io", "sys4x_io", "sys4x_90_io"]
+        for bank_io in ["bank32", "bank33", "bank34"]:
+            for clk_domain in clock_domains:
+                buf_type = "BUFR"
+                reset    = ~mmcm_ddr.locked | pll_rst
+                if "4x" in clk_domain:
+                    buf_type="BUFIO"
+                    reset = None
+
+                in_clk = ClockSignal("sys4x_itermediate")
+                if "90" in clk_domain:
+                    in_clk = ClockSignal("sys4x_90_itermediate")
+
+                div = None
+                if "sys4x_" not in clk_domain:
+                    div = 4
+                    if "2x" in clk_domain:
+                        div = 2
+
+                reset_less = True if reset is None else False
+                setattr(self.clock_domains,
+                        f"cd_{clk_domain}_{bank_io}",
+                        ClockDomain(reset_less=reset_less, name=f"{clk_domain}_{bank_io}")
+                )
+
+                clk = ClockSignal(f"{clk_domain}_{bank_io}")
+                buffer_dict = dict(
+                    i_I=in_clk,
+                    o_O=clk,
+                )
+                if div is not None:
+                    buffer_dict["p_BUFR_DIVIDE"] = str(div)
+
+                special = Instance(
+                    buf_type,
+                    **buffer_dict
+                )
+
+                self.specials += special
+                if reset is not None:
+                    cd = getattr(self, f"cd_{clk_domain}_{bank_io}")
+                    self.specials += AsyncResetSynchronizer(cd, reset)
+
 
 # SoC ----------------------------------------------------------------------------------------------
 
@@ -116,12 +126,34 @@ class SoC(common.RowHammerSoC):
         return CRG(self.platform, self.sys_clk_freq,
             iodelay_clk_freq=float(self.args.iodelay_clk_freq))
 
+    def get_ddr_pin_domains(self):
+        return dict(
+            ck_t=(("sys2x_io", "sys4x_io"), None),
+            ck_c=(("sys2x_io", "sys4x_io"), None),
+            A_ca=(("sys2x_io", "sys4x_io"), None),
+            A_par=(("sys2x_io", "sys4x_io"), None),
+            A_cs_n=(("sys2x_io", "sys4x_io"), None),
+            B_ca=(("sys2x_io", "sys4x_io"), None),
+            B_par=(("sys2x_io", "sys4x_io"), None),
+            B_cs_n=(("sys2x_io", "sys4x_io"), None),
+            reset_n=(("sys2x_io", "sys4x_io"), None),
+            alert_n=(None, ("sys_io", "sys4x_io")),
+            A_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys_io", "sys4x_io")),
+            A_dqs_t=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
+            A_dqs_c=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
+            B_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys_io", "sys4x_io")),
+            B_dqs_t=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
+            B_dqs_c=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
+        )
+
     def get_ddrphy(self):
         return ddr5.K7DDR5PHY(self.platform.request("ddr5"),
             iodelay_clk_freq  = float(self.args.iodelay_clk_freq),
             sys_clk_freq      = self.sys_clk_freq,
             with_sub_channels = True,
             direct_control    = False,
+            pin_domains       = self.get_ddr_pin_domains(),
+            pin_banks         = self.platform.pin_bank_mapping()["ddr5"],
         )
 
     def get_sdram_ratio(self):
@@ -158,6 +190,7 @@ def main():
 
     soc_kwargs = common.get_soc_kwargs(args)
     soc = SoC(**soc_kwargs)
+    soc.get_ddr_pin_domains()
     soc.platform.add_platform_command("set_property CLOCK_BUFFER_TYPE BUFG [get_nets sys_rst]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property -name {{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}} -value {{-merge_equivalent_drivers -hier_fanout_limit 1000}} -objects [get_runs impl_1]")
