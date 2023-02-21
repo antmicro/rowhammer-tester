@@ -21,6 +21,7 @@ from rowhammer_tester.targets import common
 class CRG(Module):
     def __init__(self, platform, sys_clk_freq, iodelay_clk_freq):
         self.clock_domains.cd_sys                     = ClockDomain()
+        self.clock_domains.cd_sys2x                   = ClockDomain(reset_less=True)
         self.clock_domains.cd_sys_bufmrce_rst         = ClockDomain()
 
         self.clock_domains.cd_idelay                  = ClockDomain()
@@ -41,6 +42,7 @@ class CRG(Module):
 
         pll.create_clkout(self.cd_sys, sys_clk_freq, external_rst=~mmcm_ddr_ready, rst_bufg=True)
         pll.create_clkout(self.cd_sys_bufmrce_rst, sys_clk_freq)
+        pll.create_clkout(self.cd_sys2x, sys_clk_freq * 2)
 
         self.submodules.pll_iodly = pll_iodly = S7PLL(speedgrade=-3)
         pll_iodly.register_clkin(input_clk, 100e6)
@@ -51,7 +53,9 @@ class CRG(Module):
 
         # BUFR with BUFMRCE reset sequence
         bufr_clr = Signal()
+        bufr_clr_d = Signal()
         bufmrce_sig = Signal(reset=1)
+        bufmrce_sig_d = Signal(reset=1)
         counter = Signal(6)
 
         self.sync.sys_bufmrce_rst += [
@@ -76,8 +80,9 @@ class CRG(Module):
             If(counter == 0x3F,
                 mmcm_ddr_ready.eq(1),
             ),
+            bufr_clr_d.eq(bufr_clr),
+            bufmrce_sig_d.eq(bufmrce_sig),
         ]
-
 
         mmcm_ddr.register_clkin(self.cd_sys.clk, sys_clk_freq)
         mmcm_ddr.create_clkout(
@@ -87,7 +92,7 @@ class CRG(Module):
             with_reset=False,
             name="sys4x_io",
             platform=platform,
-            ce=bufmrce_sig,
+            ce=bufmrce_sig_d,
         )
         mmcm_ddr.create_clkout(
             self.cd_sys4x_90_itermediate,
@@ -97,7 +102,7 @@ class CRG(Module):
             buf='bufmrce',
             name="sys4x_90_io",
             platform=platform,
-            ce=bufmrce_sig,
+            ce=bufmrce_sig_d,
         )
 
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_idelay)
@@ -135,7 +140,7 @@ class CRG(Module):
                 )
                 if div is not None:
                     buffer_dict["p_BUFR_DIVIDE"] = str(div)
-                    buffer_dict["i_CLR"] = bufr_clr
+                    buffer_dict["i_CLR"] = bufr_clr_d
 
                 special = Instance(
                     buf_type,
@@ -176,13 +181,13 @@ class SoC(common.RowHammerSoC):
             B_par=(("sys2x_io", "sys4x_io"), None),
             B_cs_n=(("sys2x_io", "sys4x_io"), None),
             reset_n=(("sys2x_io", "sys4x_io"), None),
-            alert_n=(None, ("sys_io", "sys4x_io")),
-            A_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys_io", "sys4x_io")),
-            A_dqs_t=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
-            A_dqs_c=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
-            B_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys_io", "sys4x_io")),
-            B_dqs_t=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
-            B_dqs_c=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
+            alert_n=(None, ("sys", "sys2x")),
+            A_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys2x_90_io", "sys4x_90_io")),
+            A_dqs_t=(("sys2x_io", "sys4x_io"), ("sys2x_90_io", "sys4x_90_io")),
+            A_dqs_c=(("sys2x_io", "sys4x_io"), ("sys2x_90_io", "sys4x_90_io")),
+            B_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys2x_90_io", "sys4x_90_io")),
+            B_dqs_t=(("sys2x_io", "sys4x_io"), ("sys2x_90_io", "sys4x_90_io")),
+            B_dqs_c=(("sys2x_io", "sys4x_io"), ("sys2x_90_io", "sys4x_90_io")),
         )
 
     def get_ddrphy(self):
@@ -231,6 +236,16 @@ def main():
     soc = SoC(**soc_kwargs)
     soc.get_ddr_pin_domains()
     soc.platform.add_platform_command("set_property CLOCK_BUFFER_TYPE BUFG [get_nets sys_rst]")
+    soc.platform.add_platform_command("set_multicycle_path 5 -setup -quiet -start "
+        "-to [get_pins -filter {{ REF_PIN_NAME == CE }} -of_objects [get_cells -hierarchical -filter {{ REF_NAME == BUFMRCE }}]]")
+    soc.platform.add_platform_command("set_multicycle_path 4 -hold -quiet -start "
+        "-to [get_pins -filter {{ REF_PIN_NAME == CE }} -of_objects [get_cells -hierarchical -filter {{ REF_NAME == BUFMRCE }}]]")
+    soc.platform.add_platform_command("set_multicycle_path 2 -setup -quiet -end "
+        "-from [get_pins -filter {{ REF_PIN_NAME == C }} -of_objects [get_cells -hierarchical -filter {{ ps_sf == TRUE }}]] "
+        "-to [get_pins -filter {{ REF_PIN_NAME == D }} -of_objects [get_cells -hierarchical -filter {{ mr_ff == TRUE }}]]")
+    soc.platform.add_platform_command("set_multicycle_path 1 -hold -quiet -end "
+        "-from [get_pins -filter {{ REF_PIN_NAME == C }} -of_objects [get_cells -hierarchical -filter {{ ps_sf == TRUE }}]] "
+        "-to [get_pins -filter {{ REF_PIN_NAME == D }} -of_objects [get_cells -hierarchical -filter {{ mr_ff == TRUE }}]]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property -name {{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}} -value {{-merge_equivalent_drivers -hier_fanout_limit 1000}} -objects [get_runs impl_1]")
 
@@ -241,7 +256,8 @@ def main():
     if not args.sim:
         build_kwargs["vivado_place_directive"] = "AltSpreadLogic_high"
         build_kwargs["vivado_post_place_phys_opt_directive"] = "AggressiveExplore"
-        build_kwargs["vivado_route_directive"] = "AlternateCLBRouting"
+        build_kwargs["vivado_route_directive"] = "AggressiveExplore"
+        build_kwargs["vivado_post_route_phys_opt_directive"] = "AggressiveExplore"
 
     common.run(args, builder, build_kwargs, target_name=target_name)
 

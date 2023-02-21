@@ -18,13 +18,14 @@ from rowhammer_tester.targets import common
 
 class CRG(Module):
     def __init__(self, platform, sys_clk_freq, iodelay_clk_freq):
-        self.clock_domains.cd_sys             = ClockDomain()
-        self.clock_domains.cd_sys_io          = ClockDomain()
-        self.clock_domains.cd_sys2x_io        = ClockDomain()
-        self.clock_domains.cd_sys2x_90_io     = ClockDomain()
-        self.clock_domains.cd_sys4x_io        = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys4x_90_io     = ClockDomain(reset_less=True)
-        self.clock_domains.cd_idelay          = ClockDomain()
+        self.clock_domains.cd_sys                = ClockDomain()
+        self.clock_domains.cd_sys2x              = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys_io_bank34      = ClockDomain()
+        self.clock_domains.cd_sys2x_io_bank34    = ClockDomain()
+        self.clock_domains.cd_sys2x_90_io_bank34 = ClockDomain()
+        self.clock_domains.cd_sys4x_io_bank34    = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys4x_90_io_bank34 = ClockDomain(reset_less=True)
+        self.clock_domains.cd_idelay             = ClockDomain()
 
         # # #
 
@@ -35,7 +36,8 @@ class CRG(Module):
         self.comb += pll_rst.eq(~pll.locked)
         input_clk = platform.request("clk100")
         pll.register_clkin(input_clk, 100e6)
-        pll.create_clkout(self.cd_sys, sys_clk_freq, external_rst=mmcm_ddr_rst)
+        pll.create_clkout(self.cd_sys, sys_clk_freq, external_rst=mmcm_ddr_rst, rst_bufg=True)
+        pll.create_clkout(self.cd_sys2x, sys_clk_freq * 2)
 
         self.submodules.pll_iodly = pll_iodly = S7PLL(speedgrade=-3)
         pll_iodly.register_clkin(input_clk, 100e6)
@@ -45,24 +47,22 @@ class CRG(Module):
         self.comb += mmcm_ddr_rst.eq(~mmcm_ddr.locked)
         mmcm_ddr.register_clkin(self.cd_sys.clk, sys_clk_freq)
         mmcm_ddr.create_clkout(
-            self.cd_sys4x_io,
+            self.cd_sys4x_io_bank34,
             4 * sys_clk_freq,
             buf='bufio',
             with_reset=False,
-            name="sys4x_io",
             platform=platform
         )
         mmcm_ddr.create_clkout(
-            self.cd_sys4x_90_io,
+            self.cd_sys4x_90_io_bank34,
             4 * sys_clk_freq,
             phase=90,
             with_reset=False,
             buf='bufio',
-            name="sys4x_90_io",
             platform=platform
         )
         mmcm_ddr.create_clkout(
-            self.cd_sys2x_io,
+            self.cd_sys2x_io_bank34,
             2 * sys_clk_freq,
             buf='bufr',
             div=2,
@@ -70,7 +70,7 @@ class CRG(Module):
             external_rst=pll_rst,
         )
         mmcm_ddr.create_clkout(
-            self.cd_sys2x_90_io,
+            self.cd_sys2x_90_io_bank34,
             2 * sys_clk_freq,
             phase=90,
             buf='bufr',
@@ -79,7 +79,7 @@ class CRG(Module):
             external_rst=pll_rst,
         )
         mmcm_ddr.create_clkout(
-            self.cd_sys_io,
+            self.cd_sys_io_bank34,
             sys_clk_freq,
             buf='bufr',
             div=4,
@@ -102,13 +102,32 @@ class SoC(common.RowHammerSoC):
         return CRG(self.platform, self.sys_clk_freq,
             iodelay_clk_freq=float(self.args.iodelay_clk_freq))
 
+    def get_ddr_pin_domains(self):
+        return dict(
+            ck_t=(("sys2x_io", "sys4x_io"), None),
+            ck_c=(("sys2x_io", "sys4x_io"), None),
+            ca=(("sys2x_io", "sys4x_io"), None),
+            par=(("sys2x_io", "sys4x_io"), None),
+            cs_n=(("sys2x_io", "sys4x_io"), None),
+            reset_n=(("sys2x_io", "sys4x_io"), None),
+            alert_n=(None, ("sys", "sys2x")),
+            dq=(("sys2x_90_io", "sys4x_90_io"), ("sys2x_90_io", "sys4x_90_io")),
+            dm_n=(("sys2x_90_io", "sys4x_90_io"), ("sys2x_90_io", "sys4x_90_io")),
+            dqs_t=(("sys2x_io", "sys4x_io"), ("sys2x_90_io", "sys4x_90_io")),
+            dqs_c=(("sys2x_io", "sys4x_io"), ("sys2x_90_io", "sys4x_90_io")),
+        )
+
     def get_ddrphy(self):
         return ddr5.K7DDR5PHY(self.platform.request("ddr5"),
             iodelay_clk_freq  = float(self.args.iodelay_clk_freq),
             sys_clk_freq      = self.sys_clk_freq,
             with_per_dq_idelay= True,
             with_sub_channels = False,
-            direct_control    = True)
+            direct_control    = True,
+            pin_domains       = self.get_ddr_pin_domains(),
+            pin_banks         = self.platform.pin_bank_mapping()["ddr5"],
+        )
+
 
     def get_sdram_ratio(self):
         return "1:4"
