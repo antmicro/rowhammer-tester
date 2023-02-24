@@ -126,7 +126,7 @@ minimal-deps:: # Intentionally skipping --recursive as not needed (but doesn't b
 		python-deps \
 	)
 
-deps: minimal-deps
+deps: minimal-deps sim-deps
 	(make --no-print-directory -C . \
 		venv/bin/openocd \
 		third_party/riscv64-unknown-elf-gcc \
