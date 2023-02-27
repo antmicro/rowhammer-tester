@@ -29,7 +29,7 @@ jobs:
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           sudo apt-get update
-          sudo apt-get install git build-essential autoconf cmake ninja-build flex libfl-dev bison libftdi-dev
+          sudo apt-get install git build-essential autoconf cmake ninja-build flex libfl-dev bison libftdi-dev help2man
           sudo apt-get install libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel
           sudo apt-get install libftdi1-2 libftdi1-dev libhidapi-hidraw0 libhidapi-dev libudev-dev pkg-config tree zlib1g-dev zip unzip
           make deps
