@@ -20,7 +20,6 @@ class CRG(Module):
     def __init__(self, platform, sys_clk_freq, iodelay_clk_freq):
         self.clock_domains.cd_sys                = ClockDomain()
         self.clock_domains.cd_sys2x              = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys_io_bank34      = ClockDomain()
         self.clock_domains.cd_sys2x_io_bank34    = ClockDomain()
         self.clock_domains.cd_sys2x_90_io_bank34 = ClockDomain()
         self.clock_domains.cd_sys4x_io_bank34    = ClockDomain(reset_less=True)
@@ -44,8 +43,9 @@ class CRG(Module):
         pll_iodly.create_clkout(self.cd_idelay, iodelay_clk_freq)
 
         self.submodules.mmcm_ddr = mmcm_ddr = S7MMCM(speedgrade=-3)
-        self.comb += mmcm_ddr_rst.eq(~mmcm_ddr.locked)
+        self.comb += mmcm_ddr_rst.eq(~mmcm_ddr.locked | ~pll.locked)
         mmcm_ddr.register_clkin(self.cd_sys.clk, sys_clk_freq)
+
         mmcm_ddr.create_clkout(
             self.cd_sys4x_io_bank34,
             4 * sys_clk_freq,
@@ -76,14 +76,6 @@ class CRG(Module):
             buf='bufr',
             div=2,
             clock_out=1,
-            external_rst=pll_rst,
-        )
-        mmcm_ddr.create_clkout(
-            self.cd_sys_io_bank34,
-            sys_clk_freq,
-            buf='bufr',
-            div=4,
-            clock_out=0,
             external_rst=pll_rst,
         )
 
@@ -164,6 +156,10 @@ def main():
     soc_kwargs = common.get_soc_kwargs(args)
     soc = SoC(**soc_kwargs)
     soc.platform.add_platform_command("set_property CLOCK_BUFFER_TYPE BUFG [get_nets sys_rst]")
+    # According to UG473 reset is synchronized internally, and must last 5 cycles
+    soc.platform.add_platform_command("set_false_path -to "
+        "[get_pins -filter {{REF_PIN_NAME == RST}} -of_objects "
+        "[get_cells -filter {{(REF_NAME == FIFO18E1 || REF_NAME == FIFO36E1) && EN_SYN == FALSE}}]]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property -name {{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}} -value {{-merge_equivalent_drivers -hier_fanout_limit 1000}} -objects [get_runs impl_1]")
 
