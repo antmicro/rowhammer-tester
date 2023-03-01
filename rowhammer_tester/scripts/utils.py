@@ -110,7 +110,9 @@ def sdram_software_control(wb):
 
 
 def sdram_hardware_control(wb):
-    wb.regs.sdram_dfii_control.write(dfii_control_sel)
+    previous = wb.regs.sdram_dfii_control.read()
+    if not (previous & dfii_control_sel):
+        wb.regs.sdram_dfii_control.write(previous | dfii_control_sel)
     if hasattr(wb.regs, 'ddrphy_en_vtc'):
         wb.regs.ddrphy_en_vtc.write(1)
 
