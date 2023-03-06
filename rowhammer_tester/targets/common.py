@@ -514,7 +514,7 @@ def run(args, builder, build_kwargs, target_name):
 
     # Build & run
     if not args.sim:  # hardware
-        builder.build(**build_kwargs, run=args.build)
+        builder.build(**build_kwargs, run=(args.build and not args.no_compile_gateware))
 
     else:  # simulation
         sim_kwargs = get_sim_kwargs(args)
@@ -539,7 +539,7 @@ def run(args, builder, build_kwargs, target_name):
 
         from litex.soc.integration.common import get_mem_data
         bios_bin = os.path.join(builder.software_dir, "bios", "bios.bin")
-        rom_data = get_mem_data(bios_bin, "little")
+        rom_data = get_mem_data(bios_bin, endianness="little")
         print(f"Loading BIOS from: {bios_bin} starting at 0x{wb.mems.rom.base:08x} ...")
 
         print('Stopping CPU')
