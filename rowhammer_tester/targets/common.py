@@ -198,6 +198,7 @@ class RowHammerSoC(SoCCore):
             origin                  = self.mem_map["main_ram"],
             size                    = kwargs.get("max_sdram_size", 0x40000000),
             l2_cache_size           = kwargs.get("l2_size", 256),
+            l2_cache_full_memory_we = kwargs.get("masked_write", False),
             controller_settings     = controller_settings,
             with_bist               = not args.no_litex_bist
         )

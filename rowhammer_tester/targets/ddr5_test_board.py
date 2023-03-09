@@ -111,15 +111,15 @@ class SoC(common.RowHammerSoC):
 
     def get_ddrphy(self):
         return ddr5.K7DDR5PHY(self.platform.request("ddr5"),
-            iodelay_clk_freq  = float(self.args.iodelay_clk_freq),
-            sys_clk_freq      = self.sys_clk_freq,
-            with_per_dq_idelay= True,
-            with_sub_channels = False,
-            direct_control    = True,
-            pin_domains       = self.get_ddr_pin_domains(),
-            pin_banks         = self.platform.pin_bank_mapping()["ddr5"],
+            iodelay_clk_freq   = float(self.args.iodelay_clk_freq),
+            sys_clk_freq       = self.sys_clk_freq,
+            masked_write       = False,
+            with_per_dq_idelay = True,
+            with_sub_channels  = False,
+            direct_control     = True,
+            pin_domains        = self.get_ddr_pin_domains(),
+            pin_banks          = self.platform.pin_bank_mapping()["ddr5"],
         )
-
 
     def get_sdram_ratio(self):
         return "1:4"

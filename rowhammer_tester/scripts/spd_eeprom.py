@@ -30,7 +30,6 @@ def read_spd(console, spd_addr, init_commands=None, ddr5=False):
     console.sendline()
     console.expect(prompt)
     if ddr5:
-
         def add_page_to_address(dump):
             ret = []
             for line in dump.splitlines():
@@ -44,12 +43,13 @@ def read_spd(console, spd_addr, init_commands=None, ddr5=False):
         spd_data = ''
         for page in range(8):
             print(f"Reading page {page}")
-            console.sendline(f'i2c_write 0x50 0x0b {page:x}')
+            console.sendline(f'i2c_write 0x50 0x0b 1 {page:x}')
             console.expect(prompt)
-            console.sendline('i2c_read 0x50 0x80 128')
+            console.sendline('i2c_read 0x50 0x80 128 0')
             console.expect('Memory dump:')
             console.expect(prompt)
-            modified_dump = add_page_to_address(console.after.decode())
+            text = console.after.decode()
+            modified_dump = add_page_to_address(text)
             spd_data += '\n' + modified_dump
     else:
         for cmd in init_commands or []:
@@ -132,7 +132,8 @@ if __name__ == "__main__":
 
         spinner = itertools.cycle("/-\\-")
         spinner_fmt = "[{}] Waiting for CPU to finish memory training"
-        while not wb.regs.ddrctrl_init_done.read():
+        while hasattr(wb.regs, "ddrctrl_init_done") and \
+            not wb.regs.ddrctrl_init_done.read():
             print(spinner_fmt.format(next(spinner)), end="\r")
             time.sleep(1)
 
