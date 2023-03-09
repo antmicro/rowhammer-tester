@@ -76,6 +76,7 @@ if __name__ == "__main__":
     ret = 0
 
     def run_memtest(name, generator, **kwargs):
+        global ret
         print('\nMemtest ({})'.format(name))
         errors = memtest(wb, length=memtest_size, generator=generator, **kwargs)
         print('OK' if errors == 0 else 'FAIL: errors = {}'.format(errors))
