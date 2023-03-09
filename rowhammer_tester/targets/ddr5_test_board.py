@@ -20,6 +20,7 @@ class CRG(Module):
     def __init__(self, platform, sys_clk_freq, iodelay_clk_freq):
         self.clock_domains.cd_sys                = ClockDomain()
         self.clock_domains.cd_sys2x              = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys_io_bank34      = ClockDomain()
         self.clock_domains.cd_sys2x_io_bank34    = ClockDomain()
         self.clock_domains.cd_sys2x_90_io_bank34 = ClockDomain()
         self.clock_domains.cd_sys4x_io_bank34    = ClockDomain(reset_less=True)
@@ -76,6 +77,14 @@ class CRG(Module):
             buf='bufr',
             div=2,
             clock_out=1,
+            external_rst=pll_rst,
+        )
+        mmcm_ddr.create_clkout(
+            self.cd_sys_io_bank34,
+            sys_clk_freq,
+            buf='bufr',
+            div=4,
+            clock_out=0,
             external_rst=pll_rst,
         )
 
