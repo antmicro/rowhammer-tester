@@ -104,13 +104,15 @@ def litex_server():
 
 
 def sdram_software_control(wb):
-    wb.regs.sdram_dfii_control.write(dfii_control_cke | dfii_control_odt | dfii_control_reset_n)
+    reg_value = wb.regs.sdram_dfii_control.read()
+    wb.regs.sdram_dfii_control.write(reg_value&(~dfii_control_sel))
     if hasattr(wb.regs, 'ddrphy_en_vtc'):
         wb.regs.ddrphy_en_vtc.write(0)
 
 
 def sdram_hardware_control(wb):
-    wb.regs.sdram_dfii_control.write(dfii_control_sel)
+    reg_value = wb.regs.sdram_dfii_control.read()
+    wb.regs.sdram_dfii_control.write(reg_value | dfii_control_sel)
     if hasattr(wb.regs, 'ddrphy_en_vtc'):
         wb.regs.ddrphy_en_vtc.write(1)
 
