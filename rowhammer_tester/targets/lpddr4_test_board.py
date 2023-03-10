@@ -85,6 +85,7 @@ def main():
     args = parser.parse_args()
 
     soc_kwargs = common.get_soc_kwargs(args)
+    soc_kwargs["masked_write"] = True # LPDDR4 always has masked writes
     soc = SoC(**soc_kwargs)
 
     target_name = 'lpddr4_test_board'
