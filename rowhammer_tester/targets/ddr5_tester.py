@@ -236,6 +236,8 @@ def main():
     soc = SoC(**soc_kwargs)
     soc.get_ddr_pin_domains()
     soc.platform.add_platform_command("set_property CLOCK_BUFFER_TYPE BUFG [get_nets sys_rst]")
+    soc.platform.add_platform_command("set_disable_timing -from WRCLK -to RST "
+        "[get_cells -filter {{(REF_NAME == FIFO18E1 || REF_NAME == FIFO36E1) && EN_SYN == FALSE}}]")
     soc.platform.add_platform_command("set_multicycle_path 5 -setup -quiet -start "
         "-to [get_pins -filter {{ REF_PIN_NAME == CE }} -of_objects [get_cells -hierarchical -filter {{ REF_NAME == BUFMRCE }}]]")
     soc.platform.add_platform_command("set_multicycle_path 4 -hold -quiet -start "

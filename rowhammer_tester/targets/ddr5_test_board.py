@@ -228,7 +228,6 @@ class CRG(Module):
 class SoC(common.RowHammerSoC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.submodules.dut = AsyncFIFOWraperDUT("sys", "sys2x")
 
     def get_platform(self):
         return antmicro_ddr5_test_board.Platform()
@@ -300,11 +299,8 @@ def main():
     soc = SoC(**soc_kwargs)
     soc.platform.add_platform_command("set_property CLOCK_BUFFER_TYPE BUFG [get_nets sys_rst]")
     # According to UG473 reset is synchronized internally, and must last 5 cycles
-    soc.platform.add_platform_command("set_false_path -from "
-        "[get_pins -filter {{REF_PIN_NAME == WRCLK}} -of_objects "
-        "[get_cells -filter {{(REF_NAME == FIFO18E1 || REF_NAME == FIFO36E1) && EN_SYN == FALSE}}]] "
-        "-to [get_pins -filter {{REF_PIN_NAME == RST}} -of_objects "
-        "[get_cells -filter {{(REF_NAME == FIFO18E1 || REF_NAME == FIFO36E1) && EN_SYN == FALSE}}]]")
+    soc.platform.add_platform_command("set_disable_timing -from WRCLK -to RST "
+        "[get_cells -filter {{(REF_NAME == FIFO18E1 || REF_NAME == FIFO36E1) && EN_SYN == FALSE}}]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property -name {{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}} -value {{-merge_equivalent_drivers -hier_fanout_limit 1000}} -objects [get_runs impl_1]")
 
