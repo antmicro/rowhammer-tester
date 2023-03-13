@@ -182,12 +182,12 @@ class SoC(common.RowHammerSoC):
             B_cs_n=(("sys2x_io", "sys4x_io"), None),
             reset_n=(("sys2x_io", "sys4x_io"), None),
             alert_n=(None, ("sys_io", "sys2x_io")),
-            A_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys2x_90_io", "sys4x_90_io")),
-            A_dqs_t=(("sys2x_io", "sys4x_io"), ("sys2x_90_io", "sys4x_90_io")),
-            A_dqs_c=(("sys2x_io", "sys4x_io"), ("sys2x_90_io", "sys4x_90_io")),
-            B_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys2x_90_io", "sys4x_90_io")),
-            B_dqs_t=(("sys2x_io", "sys4x_io"), ("sys2x_90_io", "sys4x_90_io")),
-            B_dqs_c=(("sys2x_io", "sys4x_io"), ("sys2x_90_io", "sys4x_90_io")),
+            A_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys_io", "sys4x_io")),
+            A_dqs_t=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
+            A_dqs_c=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
+            B_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys_io", "sys4x_io")),
+            B_dqs_t=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
+            B_dqs_c=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
         )
 
     def get_ddrphy(self):
