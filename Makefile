@@ -66,6 +66,7 @@ ifeq ($(TARGET),zcu104)
 	@exit 1
 else
 	openFPGALoader --board $(OFL_BOARD) build/$(TARGET)/gateware/$(TOP).bit
+	openocd -f openocd_scripts/openocd_xc7_ft4232_reset.cfg
 endif
 
 flash: FORCE
@@ -79,6 +80,7 @@ else ifeq ($(TARGET),lpddr4_test_board)
 else
 	openFPGALoader --board $(OFL_BOARD) build/$(TARGET)/gateware/$(TOP).bit --write-flash
 endif
+	openocd -f openocd_scripts/openocd_xc7_ft4232_reset.cfg
 
 srv: FORCE
 	litex_server --udp --udp-ip $(IP_ADDRESS) --udp-port $(UDP_PORT)
