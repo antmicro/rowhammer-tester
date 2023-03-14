@@ -181,7 +181,7 @@ class SoC(common.RowHammerSoC):
             B_par=(("sys2x_io", "sys4x_io"), None),
             B_cs_n=(("sys2x_io", "sys4x_io"), None),
             reset_n=(("sys2x_io", "sys4x_io"), None),
-            alert_n=(None, ("sys_io", "sys2x_io")),
+            alert_n=(None, ("sys_io", "sys4x_io")),
             A_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys_io", "sys4x_io")),
             A_dqs_t=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
             A_dqs_c=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
