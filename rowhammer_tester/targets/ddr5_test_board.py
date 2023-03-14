@@ -136,9 +136,6 @@ class CRG(Module):
         self.clock_domains.cd_sys4x_io_bank34    = ClockDomain(reset_less=True)
         self.clock_domains.cd_sys4x_90_io_bank34 = ClockDomain(reset_less=True)
         self.clock_domains.cd_idelay             = ClockDomain()
-
-        self.clock_domains.cd_sys4x        = ClockDomain()
-        self.clock_domains.cd_sys2x_dut    = ClockDomain()
         # # #
 
         mmcm_ddr_rst = Signal()
@@ -197,26 +194,6 @@ class CRG(Module):
             external_rst=pll_rst,
         )
 
-        self.submodules.mmcm_dut = mmcm_dut = S7MMCM(speedgrade=-3)
-        mmcm_dut.register_clkin(self.cd_sys.clk, sys_clk_freq)
-        self.comb += mmcm_dut.reset.eq(~pll.locked)
-
-        mmcm_dut.create_clkout(
-            self.cd_sys4x,
-            4 * sys_clk_freq,
-            buf='bufio',
-            with_reset=False,
-            platform=platform
-        )
-        mmcm_dut.create_clkout(
-            self.cd_sys2x_dut,
-            2 * sys_clk_freq,
-            buf='bufr',
-            div=2,
-            clock_out=0,
-            external_rst=pll_rst,
-        )
-
         self.submodules.pll_iodly = pll_iodly = S7PLL(speedgrade=-3)
         pll_iodly.register_clkin(input_clk, 100e6)
         pll_iodly.create_clkout(self.cd_idelay, iodelay_clk_freq)
@@ -244,11 +221,11 @@ class SoC(common.RowHammerSoC):
             par=(("sys2x_io", "sys4x_io"), None),
             cs_n=(("sys2x_io", "sys4x_io"), None),
             reset_n=(("sys2x_io", "sys4x_io"), None),
-            alert_n=(None, ("sys", "sys4x")),
-            dq=(("sys2x_90_io", "sys4x_90_io"), ("sys2x_90_io", "sys4x_90_io")),
-            dm_n=(("sys2x_90_io", "sys4x_90_io"), ("sys2x_90_io", "sys4x_90_io")),
-            dqs_t=(("sys2x_io", "sys4x_io"), ("sys2x_90_io", "sys4x_90_io")),
-            dqs_c=(("sys2x_io", "sys4x_io"), ("sys2x_90_io", "sys4x_90_io")),
+            alert_n=(None, ("sys_io", "sys4x_io")),
+            dq=(("sys2x_90_io", "sys4x_90_io"), ("sys_io", "sys4x_io")),
+            dm_n=(("sys2x_90_io", "sys4x_90_io"), ("sys_io", "sys4x_io")),
+            dqs_t=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
+            dqs_c=(("sys2x_io", "sys4x_io"), ("sys_io", "sys4x_io")),
         )
 
     def get_ddrphy(self):
