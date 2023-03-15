@@ -60,13 +60,17 @@ sim: sim-deps FORCE
 sim-analyze: sim-deps FORCE
 	python rowhammer_tester/scripts/sim_runner.py python rowhammer_tester/targets/$(TARGET).py --build --sim $(TARGET_ARGS)
 
+reset_FTDI:
+	openocd -f openocd_scripts/openocd_xc7_ft4232_reset.cfg
+
+.PHONY: reset_FTDI
+
 upload up load: FORCE
 ifeq ($(TARGET),zcu104)
 	@echo "For ZCU104 please copy the file build/zcu104/gateware/zcu104.bit to the boot partition on microSD card"
 	@exit 1
 else
 	openFPGALoader --board $(OFL_BOARD) build/$(TARGET)/gateware/$(TOP).bit
-	openocd -f openocd_scripts/openocd_xc7_ft4232_reset.cfg
 endif
 
 flash: FORCE
@@ -80,7 +84,6 @@ else ifeq ($(TARGET),lpddr4_test_board)
 else
 	openFPGALoader --board $(OFL_BOARD) build/$(TARGET)/gateware/$(TOP).bit --write-flash
 endif
-	openocd -f openocd_scripts/openocd_xc7_ft4232_reset.cfg
 
 srv: FORCE
 	litex_server --udp --udp-ip $(IP_ADDRESS) --udp-port $(UDP_PORT)
