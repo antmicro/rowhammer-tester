@@ -20,36 +20,22 @@ from rowhammer_tester.targets import common
 
 class CRG(Module):
     def __init__(self, platform, sys_clk_freq, iodelay_clk_freq):
-        self.clock_domains.cd_sys                     = ClockDomain()
-        self.clock_domains.cd_sys2x                   = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys_bufmrce_rst         = ClockDomain()
+        self.clock_domains.cd_sys                  = ClockDomain()
+        self.clock_domains.cd_sys2x                = ClockDomain(reset_less=True)
+        self.clock_domains.cd_idelay               = ClockDomain()
+        self.clock_domains.cd_sys_bufmrce_rst      = ClockDomain()
 
-        self.clock_domains.cd_idelay                  = ClockDomain()
         # BUFMR to BUFR and BUFIO, "raw" clocks
         self.clock_domains.cd_sys4x_itermediate    = ClockDomain(reset_less=True)
         self.clock_domains.cd_sys4x_90_itermediate = ClockDomain(reset_less=True)
 
         # # #
-        mmcm_ddr_ready = Signal()
-
-        pll_rst = Signal()
-
-        self.submodules.pll = pll = S7PLL(speedgrade=-3)
-        self.comb += pll_rst.eq(~pll.locked)
-
+        input_clk_freq = 100e6
         input_clk = platform.request("clk100")
-        pll.register_clkin(input_clk, 100e6)
 
-        pll.create_clkout(self.cd_sys, sys_clk_freq, external_rst=~mmcm_ddr_ready, rst_bufg=True)
-        pll.create_clkout(self.cd_sys_bufmrce_rst, sys_clk_freq)
-        pll.create_clkout(self.cd_sys2x, sys_clk_freq * 2)
-
-        self.submodules.pll_iodly = pll_iodly = S7PLL(speedgrade=-3)
-        pll_iodly.register_clkin(input_clk, 100e6)
-        pll_iodly.create_clkout(self.cd_idelay, iodelay_clk_freq)
-
-        self.submodules.mmcm_ddr = mmcm_ddr = S7MMCM(speedgrade=-3)
-        self.comb += mmcm_ddr.reset.eq(~pll.locked)
+        # MMCM
+        self.submodules.mmcm = mmcm = S7MMCM(speedgrade=-3)
+        mmcm.register_clkin(input_clk, input_clk_freq)
 
         # BUFR with BUFMRCE reset sequence
         bufr_clr = Signal()
@@ -57,9 +43,41 @@ class CRG(Module):
         bufmrce_sig = Signal(reset=1)
         bufmrce_sig_d = Signal(reset=1)
         counter = Signal(6)
+        buffers_ready = Signal()
+
+        mmcm.create_clkout(
+            self.cd_sys4x_itermediate,
+            4 * sys_clk_freq,
+            buf='bufmrce',
+            with_reset=False,
+            name="sys4x_io",
+            platform=platform,
+            ce=bufmrce_sig_d,
+        )
+        mmcm.create_clkout(
+            self.cd_sys4x_90_itermediate,
+            4 * sys_clk_freq,
+            phase=90,
+            with_reset=False,
+            buf='bufmrce',
+            name="sys4x_90_io",
+            platform=platform,
+            ce=bufmrce_sig_d,
+        )
+
+        mmcm.create_clkout(self.cd_sys,    sys_clk_freq, external_rst=~buffers_ready)
+        mmcm.create_clkout(self.cd_sys2x,  sys_clk_freq * 2)
+
+        bufmrce_clk = ClockSignal("sys_bufmrce_rst")
+        bufmrce_rst = ResetSignal("sys_bufmrce_rst")
+
+        self.comb += [
+            bufmrce_clk.eq(self.cd_sys.clk),
+            bufmrce_rst.eq(~mmcm.locked),
+        ]
 
         self.sync.sys_bufmrce_rst += [
-            If(mmcm_ddr.locked & pll.locked,
+            If(mmcm.locked,
                 counter.eq(1),
             ),
             If((counter != 0) & (counter != 0x3F),
@@ -78,32 +96,15 @@ class CRG(Module):
                 bufmrce_sig.eq(1),
             ),
             If(counter == 0x3F,
-                mmcm_ddr_ready.eq(1),
+                buffers_ready.eq(1),
             ),
             bufr_clr_d.eq(bufr_clr),
             bufmrce_sig_d.eq(bufmrce_sig),
         ]
 
-        mmcm_ddr.register_clkin(self.cd_sys.clk, sys_clk_freq)
-        mmcm_ddr.create_clkout(
-            self.cd_sys4x_itermediate,
-            4 * sys_clk_freq,
-            buf='bufmrce',
-            with_reset=False,
-            name="sys4x_io",
-            platform=platform,
-            ce=bufmrce_sig_d,
-        )
-        mmcm_ddr.create_clkout(
-            self.cd_sys4x_90_itermediate,
-            4 * sys_clk_freq,
-            phase=90,
-            with_reset=False,
-            buf='bufmrce',
-            name="sys4x_90_io",
-            platform=platform,
-            ce=bufmrce_sig_d,
-        )
+        self.submodules.pll_iodly = pll_iodly = S7PLL(speedgrade=-3)
+        pll_iodly.register_clkin(input_clk, input_clk_freq)
+        pll_iodly.create_clkout(self.cd_idelay, iodelay_clk_freq)
 
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_idelay)
 
@@ -112,7 +113,7 @@ class CRG(Module):
         for bank_io in ["bank32", "bank33", "bank34"]:
             for clk_domain in clock_domains:
                 buf_type = "BUFR"
-                reset    = ~mmcm_ddr_ready
+                reset    = ~buffers_ready
                 if "4x" in clk_domain:
                     buf_type="BUFIO"
                     reset = None
