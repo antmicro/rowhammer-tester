@@ -242,12 +242,6 @@ def main():
         "-to [get_pins -filter {{ REF_PIN_NAME == CE }} -of_objects [get_cells -hierarchical -filter {{ REF_NAME == BUFMRCE }}]]")
     soc.platform.add_platform_command("set_multicycle_path 4 -hold -quiet -start "
         "-to [get_pins -filter {{ REF_PIN_NAME == CE }} -of_objects [get_cells -hierarchical -filter {{ REF_NAME == BUFMRCE }}]]")
-    soc.platform.add_platform_command("set_multicycle_path 2 -setup -quiet -end "
-        "-from [get_pins -filter {{ REF_PIN_NAME == C }} -of_objects [get_cells -hierarchical -filter {{ ps_sf == TRUE }}]] "
-        "-to [get_pins -filter {{ REF_PIN_NAME == D }} -of_objects [get_cells -hierarchical -filter {{ mr_ff == TRUE }}]]")
-    soc.platform.add_platform_command("set_multicycle_path 1 -hold -quiet -end "
-        "-from [get_pins -filter {{ REF_PIN_NAME == C }} -of_objects [get_cells -hierarchical -filter {{ ps_sf == TRUE }}]] "
-        "-to [get_pins -filter {{ REF_PIN_NAME == D }} -of_objects [get_cells -hierarchical -filter {{ mr_ff == TRUE }}]]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property -name {{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}} -value {{-merge_equivalent_drivers -hier_fanout_limit 1000}} -objects [get_runs impl_1]")
 
