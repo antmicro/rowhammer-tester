@@ -136,31 +136,22 @@ class CRG(Module):
         self.clock_domains.cd_sys4x_io_bank34    = ClockDomain(reset_less=True)
         self.clock_domains.cd_sys4x_90_io_bank34 = ClockDomain(reset_less=True)
         self.clock_domains.cd_idelay             = ClockDomain()
+
         # # #
-
-        mmcm_ddr_rst = Signal()
-        pll_rst = Signal()
-
-        self.submodules.pll = pll = S7PLL(speedgrade=-3)
-        self.comb += pll_rst.eq(~pll.locked)
+        input_clk_freq = 100e6
         input_clk = platform.request("clk100")
-        pll.register_clkin(input_clk, 100e6)
-        pll.create_clkout(self.cd_sys, sys_clk_freq, external_rst=mmcm_ddr_rst, rst_bufg=True)
-        pll.create_clkout(self.cd_sys2x, sys_clk_freq * 2)
 
-        self.submodules.mmcm_ddr = mmcm_ddr = S7MMCM(speedgrade=-3)
-        mmcm_ddr.register_clkin(self.cd_sys.clk, sys_clk_freq)
-        self.comb += mmcm_ddr_rst.eq(~mmcm_ddr.locked | ~pll.locked)
-        self.comb += mmcm_ddr.reset.eq(~pll.locked)
+        self.submodules.mmcm = mmcm = S7MMCM(speedgrade=-3)
+        mmcm.register_clkin(input_clk, input_clk_freq)
 
-        mmcm_ddr.create_clkout(
+        mmcm.create_clkout(
             self.cd_sys4x_io_bank34,
             4 * sys_clk_freq,
             buf='bufio',
             with_reset=False,
             platform=platform
         )
-        mmcm_ddr.create_clkout(
+        mmcm.create_clkout(
             self.cd_sys4x_90_io_bank34,
             4 * sys_clk_freq,
             phase=90,
@@ -168,34 +159,34 @@ class CRG(Module):
             buf='bufio',
             platform=platform
         )
-        mmcm_ddr.create_clkout(
+        mmcm.create_clkout(
             self.cd_sys2x_io_bank34,
             2 * sys_clk_freq,
             buf='bufr',
             div=2,
             clock_out=0,
-            external_rst=pll_rst,
         )
-        mmcm_ddr.create_clkout(
+        mmcm.create_clkout(
             self.cd_sys2x_90_io_bank34,
             2 * sys_clk_freq,
             phase=90,
             buf='bufr',
             div=2,
             clock_out=1,
-            external_rst=pll_rst,
         )
-        mmcm_ddr.create_clkout(
+        mmcm.create_clkout(
             self.cd_sys_io_bank34,
             sys_clk_freq,
             buf='bufr',
             div=4,
             clock_out=0,
-            external_rst=pll_rst,
         )
 
+        mmcm.create_clkout(self.cd_sys,   sys_clk_freq)
+        mmcm.create_clkout(self.cd_sys2x, sys_clk_freq * 2)
+
         self.submodules.pll_iodly = pll_iodly = S7PLL(speedgrade=-3)
-        pll_iodly.register_clkin(input_clk, 100e6)
+        pll_iodly.register_clkin(input_clk, input_clk_freq)
         pll_iodly.create_clkout(self.cd_idelay, iodelay_clk_freq)
 
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_idelay)
