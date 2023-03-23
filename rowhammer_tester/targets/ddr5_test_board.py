@@ -270,7 +270,9 @@ def main():
     soc.platform.add_platform_command("set_disable_timing -from WRCLK -to RST "
         "[get_cells -filter {{(REF_NAME == FIFO18E1 || REF_NAME == FIFO36E1) && EN_SYN == FALSE}}]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]")
-    soc.platform.toolchain.pre_synthesis_commands.append("set_property -name {{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}} -value {{-merge_equivalent_drivers -hier_fanout_limit 1000}} -objects [get_runs impl_1]")
+    soc.platform.toolchain.pre_synthesis_commands.append(
+        "set_property -name ""{{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}} "
+        "-value {{-merge_equivalent_drivers -hier_fanout_limit 1000}} -objects [get_runs impl_1]")
 
     target_name = 'ddr5_test_board'
     builder_kwargs = common.get_builder_kwargs(args, target_name=target_name)
