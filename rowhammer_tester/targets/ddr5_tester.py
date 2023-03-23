@@ -77,7 +77,7 @@ class CRG(Module):
         ]
 
         self.sync.sys_bufmrce_rst += [
-            If(mmcm.locked,
+            If(mmcm.locked & (counter == 0),
                 counter.eq(1),
             ),
             If((counter != 0) & (counter != 0x3F),
