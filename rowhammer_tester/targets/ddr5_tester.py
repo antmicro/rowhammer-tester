@@ -4,6 +4,7 @@ import math
 
 from migen import *
 from migen.genlib.resetsync import AsyncResetSynchronizer
+from migen.genlib.cdc import MultiReg
 
 from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 from litex.soc.integration.builder import Builder
@@ -29,6 +30,10 @@ class CRG(Module):
         self.clock_domains.cd_sys4x_itermediate    = ClockDomain(reset_less=True)
         self.clock_domains.cd_sys4x_90_itermediate = ClockDomain(reset_less=True)
 
+        # BUFMR reset domain
+        self.clock_domains.cd_sys2x_rst    = ClockDomain()
+        self.clock_domains.cd_sys2x_90_rst = ClockDomain()
+
         # # #
         input_clk_freq = 100e6
         input_clk = platform.request("clk100")
@@ -41,9 +46,11 @@ class CRG(Module):
         bufr_clr = Signal()
         bufr_clr_d = Signal()
         bufmrce_sig = Signal(reset=1)
-        bufmrce_sig_d = Signal(reset=1)
         counter = Signal(6)
         buffers_ready = Signal()
+
+        bufmrce_sig_d    = Signal(reset=1)
+        bufmrce_sig_d_90 = Signal(reset=1)
 
         mmcm.create_clkout(
             self.cd_sys4x_itermediate,
@@ -62,7 +69,22 @@ class CRG(Module):
             buf='bufmrce',
             name="sys4x_90_io",
             platform=platform,
-            ce=bufmrce_sig_d,
+            ce=bufmrce_sig_d_90,
+        )
+        mmcm.create_clkout(
+            self.cd_sys2x_rst,
+            2 * sys_clk_freq,
+            buf = 'bufr',
+            div = 2,
+            clock_out = 0,
+        )
+        mmcm.create_clkout(
+            self.cd_sys2x_90_rst,
+            2 * sys_clk_freq,
+            phase = 90,
+            buf = 'bufr',
+            div = 2,
+            clock_out = 1,
         )
 
         mmcm.create_clkout(self.cd_sys,    sys_clk_freq, external_rst=~buffers_ready)
@@ -86,21 +108,23 @@ class CRG(Module):
             If(counter == 10,
                 bufmrce_sig.eq(0),
             ),
-            If(counter == 20,
+            If(counter == 30,
                 bufr_clr.eq(1),
             ),
-            If(counter == 30,
+            If(counter == 40,
                 bufr_clr.eq(0),
             ),
-            If(counter == 40,
+            If(counter == 60,
                 bufmrce_sig.eq(1),
             ),
             If(counter == 0x3F,
                 buffers_ready.eq(1),
             ),
             bufr_clr_d.eq(bufr_clr),
-            bufmrce_sig_d.eq(bufmrce_sig),
         ]
+
+        self.specials += MultiReg(bufmrce_sig, bufmrce_sig_d, "sys2x_rst")
+        self.specials += MultiReg(bufmrce_sig, bufmrce_sig_d_90, "sys2x_90_rst")
 
         self.submodules.pll_iodly = pll_iodly = S7PLL(speedgrade=-3)
         pll_iodly.register_clkin(input_clk, input_clk_freq)
@@ -239,10 +263,6 @@ def main():
     soc.platform.add_platform_command("set_property CLOCK_BUFFER_TYPE BUFG [get_nets sys_rst]")
     soc.platform.add_platform_command("set_disable_timing -from WRCLK -to RST "
         "[get_cells -filter {{(REF_NAME == FIFO18E1 || REF_NAME == FIFO36E1) && EN_SYN == FALSE}}]")
-    soc.platform.add_platform_command("set_multicycle_path 5 -setup -quiet -start "
-        "-to [get_pins -filter {{ REF_PIN_NAME == CE }} -of_objects [get_cells -hierarchical -filter {{ REF_NAME == BUFMRCE }}]]")
-    soc.platform.add_platform_command("set_multicycle_path 4 -hold -quiet -start "
-        "-to [get_pins -filter {{ REF_PIN_NAME == CE }} -of_objects [get_cells -hierarchical -filter {{ REF_NAME == BUFMRCE }}]]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property -name {{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}} -value {{-merge_equivalent_drivers -hier_fanout_limit 1000}} -objects [get_runs impl_1]")
 
