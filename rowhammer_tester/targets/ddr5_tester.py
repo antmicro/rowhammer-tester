@@ -108,7 +108,7 @@ class CRG(Module):
             If(counter == 10,
                 bufmrce_sig.eq(0),
             ),
-            If(counter == 30,
+            If(counter == 20,
                 bufr_clr.eq(1),
             ),
             If(counter == 40,
@@ -263,6 +263,8 @@ def main():
     soc.platform.add_platform_command("set_property CLOCK_BUFFER_TYPE BUFG [get_nets sys_rst]")
     soc.platform.add_platform_command("set_disable_timing -from WRCLK -to RST "
         "[get_cells -filter {{(REF_NAME == FIFO18E1 || REF_NAME == FIFO36E1) && EN_SYN == FALSE}}]")
+    soc.platform.add_platform_command("set_max_delay -quiet "
+        "-to [get_pins -hierarchical -regexp BUFR.*/CLR] 10.0")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]")
     soc.platform.toolchain.pre_synthesis_commands.append("set_property -name {{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}} -value {{-merge_equivalent_drivers -hier_fanout_limit 1000}} -objects [get_runs impl_1]")
 
