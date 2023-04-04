@@ -31,7 +31,6 @@ class CRG(Module):
         self.clock_domains.cd_sys4x_90_itermediate = ClockDomain(reset_less=True)
 
         # BUFMR reset domain
-        self.clock_domains.cd_sys2x_rst    = ClockDomain()
         self.clock_domains.cd_sys2x_90_rst = ClockDomain()
 
         # # #
@@ -46,10 +45,10 @@ class CRG(Module):
         bufr_clr = Signal()
         bufr_clr_d = Signal()
         bufmrce_sig = Signal(reset=1)
-        counter = Signal(6)
+        counter = Signal(8)
         buffers_ready = Signal()
+        buffers_ready_d_90 = Signal()
 
-        bufmrce_sig_d    = Signal(reset=1)
         bufmrce_sig_d_90 = Signal(reset=1)
 
         mmcm.create_clkout(
@@ -59,7 +58,7 @@ class CRG(Module):
             with_reset=False,
             name="sys4x_io",
             platform=platform,
-            ce=bufmrce_sig_d,
+            ce=bufmrce_sig_d_90,
         )
         mmcm.create_clkout(
             self.cd_sys4x_90_itermediate,
@@ -70,13 +69,6 @@ class CRG(Module):
             name="sys4x_90_io",
             platform=platform,
             ce=bufmrce_sig_d_90,
-        )
-        mmcm.create_clkout(
-            self.cd_sys2x_rst,
-            2 * sys_clk_freq,
-            buf = 'bufr',
-            div = 2,
-            clock_out = 0,
         )
         mmcm.create_clkout(
             self.cd_sys2x_90_rst,
@@ -102,29 +94,35 @@ class CRG(Module):
             If(mmcm.locked & (counter == 0),
                 counter.eq(1),
             ),
-            If((counter != 0) & (counter != 0x3F),
+            If((counter != 0) & (counter != 0xFF),
                 counter.eq(counter+1)
             ),
-            If(counter == 10,
+            If(counter == 0x10,
                 bufmrce_sig.eq(0),
             ),
-            If(counter == 20,
+            If(counter == 0x28,
                 bufr_clr.eq(1),
             ),
-            If(counter == 40,
-                bufr_clr.eq(0),
-            ),
-            If(counter == 60,
+            If(counter == 0x40,
                 bufmrce_sig.eq(1),
             ),
-            If(counter == 0x3F,
+            If(counter == 0x50,
+                bufmrce_sig.eq(0),
+            ),
+            If(counter == 0x68,
+                bufr_clr.eq(0),
+            ),
+            If(counter == 0x80,
+                bufmrce_sig.eq(1),
+            ),
+            If(counter == 0xFF,
                 buffers_ready.eq(1),
             ),
             bufr_clr_d.eq(bufr_clr),
         ]
 
-        self.specials += MultiReg(bufmrce_sig, bufmrce_sig_d, "sys2x_rst")
         self.specials += MultiReg(bufmrce_sig, bufmrce_sig_d_90, "sys2x_90_rst")
+        self.specials += MultiReg(buffers_ready, buffers_ready_d_90, "sys2x_90_rst")
 
         self.submodules.pll_iodly = pll_iodly = S7PLL(speedgrade=-3)
         pll_iodly.register_clkin(input_clk, input_clk_freq)
@@ -137,7 +135,7 @@ class CRG(Module):
         for bank_io in ["bank32", "bank33", "bank34"]:
             for clk_domain in clock_domains:
                 buf_type = "BUFR"
-                reset    = ~buffers_ready
+                reset    = Signal(reset_less=True)
                 if "4x" in clk_domain:
                     buf_type="BUFIO"
                     reset = None
@@ -174,8 +172,13 @@ class CRG(Module):
 
                 self.specials += special
                 if reset is not None:
+                    intermediate_reset = Signal(reset=1)
+                    cd_rst = getattr(self.sync, "sys2x_90_rst")
+                    cd_rst += intermediate_reset.eq(~buffers_ready_d_90)
                     cd = getattr(self, f"cd_{clk_domain}_{bank_io}")
-                    self.specials += AsyncResetSynchronizer(cd, reset)
+                    cd_s = getattr(self.sync, f"{clk_domain}_{bank_io}")
+                    cd_s += reset.eq(intermediate_reset)
+                    self.comb += cd.rst.eq(reset)
 
 
 # SoC ----------------------------------------------------------------------------------------------
@@ -221,6 +224,7 @@ class SoC(common.RowHammerSoC):
             sys_clk_freq      = self.sys_clk_freq,
             with_sub_channels = True,
             direct_control    = False,
+            with_per_dq_idelay= True,
             pin_domains       = self.get_ddr_pin_domains(),
             pin_banks         = self.platform.pin_bank_mapping()["ddr5"],
         )
