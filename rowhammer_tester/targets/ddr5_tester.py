@@ -24,12 +24,10 @@ class CRG(Module):
         self.clock_domains.cd_sys                  = ClockDomain()
         self.clock_domains.cd_sys2x                = ClockDomain(reset_less=True)
         self.clock_domains.cd_idelay               = ClockDomain()
-        self.clock_domains.cd_sys_bufmrce_rst      = ClockDomain()
 
         # BUFMR to BUFR and BUFIO, "raw" clocks
-        self.clock_domains.cd_sys4x_itermediate    = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys4x_90_itermediate = ClockDomain(reset_less=True)
-
+        self.clock_domains.cd_sys4x_raw    = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys4x_90_raw = ClockDomain(reset_less=True)
         # BUFMR reset domain
         self.clock_domains.cd_sys2x_90_rst = ClockDomain()
 
@@ -41,34 +39,18 @@ class CRG(Module):
         self.submodules.mmcm = mmcm = S7MMCM(speedgrade=-3)
         mmcm.register_clkin(input_clk, input_clk_freq)
 
-        # BUFR with BUFMRCE reset sequence
-        bufr_clr = Signal()
-        bufr_clr_d = Signal()
-        bufmrce_sig = Signal(reset=1)
-        counter = Signal(8)
-        buffers_ready = Signal()
-        buffers_ready_d_90 = Signal()
-
-        bufmrce_sig_d_90 = Signal(reset=1)
-
         mmcm.create_clkout(
-            self.cd_sys4x_itermediate,
+            self.cd_sys4x_raw,
             4 * sys_clk_freq,
-            buf='bufmrce',
+            buf=None,
             with_reset=False,
-            name="sys4x_io",
-            platform=platform,
-            ce=bufmrce_sig_d_90,
         )
         mmcm.create_clkout(
-            self.cd_sys4x_90_itermediate,
+            self.cd_sys4x_90_raw,
             4 * sys_clk_freq,
             phase=90,
             with_reset=False,
-            buf='bufmrce',
-            name="sys4x_90_io",
-            platform=platform,
-            ce=bufmrce_sig_d_90,
+            buf=None,
         )
         mmcm.create_clkout(
             self.cd_sys2x_90_rst,
@@ -77,108 +59,17 @@ class CRG(Module):
             buf = 'bufr',
             div = 2,
             clock_out = 1,
+            name = "rst_domain"
         )
 
-        mmcm.create_clkout(self.cd_sys,    sys_clk_freq, external_rst=~buffers_ready)
+        mmcm.create_clkout(self.cd_sys,    sys_clk_freq)
         mmcm.create_clkout(self.cd_sys2x,  sys_clk_freq * 2)
-
-        bufmrce_clk = ClockSignal("sys_bufmrce_rst")
-        bufmrce_rst = ResetSignal("sys_bufmrce_rst")
-
-        self.comb += [
-            bufmrce_clk.eq(self.cd_sys.clk),
-            bufmrce_rst.eq(~mmcm.locked),
-        ]
-
-        self.sync.sys_bufmrce_rst += [
-            If(mmcm.locked & (counter == 0),
-                counter.eq(1),
-            ),
-            If((counter != 0) & (counter != 0xFF),
-                counter.eq(counter+1)
-            ),
-            If(counter == 0x10,
-                bufmrce_sig.eq(0),
-            ),
-            If(counter == 0x28,
-                bufr_clr.eq(1),
-            ),
-            If(counter == 0x40,
-                bufmrce_sig.eq(1),
-            ),
-            If(counter == 0x50,
-                bufmrce_sig.eq(0),
-            ),
-            If(counter == 0x68,
-                bufr_clr.eq(0),
-            ),
-            If(counter == 0x80,
-                bufmrce_sig.eq(1),
-            ),
-            If(counter == 0xFF,
-                buffers_ready.eq(1),
-            ),
-            bufr_clr_d.eq(bufr_clr),
-        ]
-
-        self.specials += MultiReg(bufmrce_sig, bufmrce_sig_d_90, "sys2x_90_rst")
-        self.specials += MultiReg(buffers_ready, buffers_ready_d_90, "sys2x_90_rst")
 
         self.submodules.pll_iodly = pll_iodly = S7PLL(speedgrade=-3)
         pll_iodly.register_clkin(input_clk, input_clk_freq)
         pll_iodly.create_clkout(self.cd_idelay, iodelay_clk_freq)
 
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_idelay)
-
-        # DDR5 PHY clock domains
-        clock_domains = ["sys_io", "sys2x_io", "sys2x_90_io", "sys4x_io", "sys4x_90_io"]
-        for bank_io in ["bank32", "bank33", "bank34"]:
-            for clk_domain in clock_domains:
-                buf_type = "BUFR"
-                reset    = Signal(reset_less=True)
-                if "4x" in clk_domain:
-                    buf_type="BUFIO"
-                    reset = None
-
-                in_clk = ClockSignal("sys4x_itermediate")
-                if "90" in clk_domain:
-                    in_clk = ClockSignal("sys4x_90_itermediate")
-
-                div = None
-                if "sys4x_" not in clk_domain:
-                    div = 4
-                    if "2x" in clk_domain:
-                        div = 2
-
-                reset_less = True if reset is None else False
-                setattr(self.clock_domains,
-                        f"cd_{clk_domain}_{bank_io}",
-                        ClockDomain(reset_less=reset_less, name=f"{clk_domain}_{bank_io}")
-                )
-
-                clk = ClockSignal(f"{clk_domain}_{bank_io}")
-                buffer_dict = dict(
-                    i_I=in_clk,
-                    o_O=clk,
-                )
-                if div is not None:
-                    buffer_dict["p_BUFR_DIVIDE"] = str(div)
-                    buffer_dict["i_CLR"] = bufr_clr_d
-
-                special = Instance(
-                    buf_type,
-                    **buffer_dict
-                )
-
-                self.specials += special
-                if reset is not None:
-                    intermediate_reset = Signal(reset=1)
-                    cd_rst = getattr(self.sync, "sys2x_90_rst")
-                    cd_rst += intermediate_reset.eq(~buffers_ready_d_90)
-                    cd = getattr(self, f"cd_{clk_domain}_{bank_io}")
-                    cd_s = getattr(self.sync, f"{clk_domain}_{bank_io}")
-                    cd_s += reset.eq(intermediate_reset)
-                    self.comb += cd.rst.eq(reset)
 
 
 # SoC ----------------------------------------------------------------------------------------------
@@ -219,7 +110,18 @@ class SoC(common.RowHammerSoC):
         )
 
     def get_ddrphy(self):
+        PHYCRG = ddr5.S7PHYCRG(
+            reset_clock_domain = "sys2x_90_rst",
+            source_4x          = ClockSignal("sys4x_raw"),
+            source_4x_90       = ClockSignal("sys4x_90_raw"),
+        )
+        self.submodules.PHYCRG = PHYCRG
+        PHYCRG.create_clock_domains(
+            clock_domains = ["sys_io", "sys2x_io", "sys2x_90_io", "sys4x_io", "sys4x_90_io"],
+            io_banks      = ["bank32", "bank33", "bank34"],
+        )
         return ddr5.K7DDR5PHY(self.platform.request("ddr5"),
+            crg               = PHYCRG,
             iodelay_clk_freq  = float(self.args.iodelay_clk_freq),
             sys_clk_freq      = self.sys_clk_freq,
             with_sub_channels = True,
@@ -269,8 +171,12 @@ def main():
         "[get_cells -filter {{(REF_NAME == FIFO18E1 || REF_NAME == FIFO36E1) && EN_SYN == FALSE}}]")
     soc.platform.add_platform_command("set_max_delay -quiet "
         "-to [get_pins -hierarchical -regexp BUFR.*/CLR] 10.0")
+    soc.platform.add_platform_command("set_max_delay -quiet "
+        "-from [get_clocks -of_objects [get_pins rst_domain/O]] "
+        "-to [list [get_pins -hierarchical -regexp .*CLR.*] [get_pins -hierarchical -regexp .*PRE.*]] 10.0")
+
     soc.platform.toolchain.pre_synthesis_commands.append("set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]")
-    soc.platform.toolchain.pre_synthesis_commands.append("set_property -name {{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}} -value {{-merge_equivalent_drivers -hier_fanout_limit 1000}} -objects [get_runs impl_1]")
+#    soc.platform.toolchain.pre_synthesis_commands.append("set_property -name {{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}} -value {{-merge_equivalent_drivers -hier_fanout_limit 1000}} -objects [get_runs impl_1]")
 
     target_name = 'ddr5_tester'
     builder_kwargs = common.get_builder_kwargs(args, target_name=target_name)

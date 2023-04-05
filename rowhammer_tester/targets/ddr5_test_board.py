@@ -130,12 +130,13 @@ class CRG(Module):
     def __init__(self, platform, sys_clk_freq, iodelay_clk_freq):
         self.clock_domains.cd_sys                = ClockDomain()
         self.clock_domains.cd_sys2x              = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys_io_bank34      = ClockDomain()
-        self.clock_domains.cd_sys2x_io_bank34    = ClockDomain()
-        self.clock_domains.cd_sys2x_90_io_bank34 = ClockDomain()
-        self.clock_domains.cd_sys4x_io_bank34    = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys4x_90_io_bank34 = ClockDomain(reset_less=True)
         self.clock_domains.cd_idelay             = ClockDomain()
+
+        # BUFMR to BUFR and BUFIO, "raw" clocks
+        self.clock_domains.cd_sys4x_raw    = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys4x_90_raw = ClockDomain(reset_less=True)
+        # BUFMR reset domain
+        self.clock_domains.cd_sys2x_90_rst = ClockDomain()
 
         # # #
         input_clk_freq = 100e6
@@ -145,41 +146,28 @@ class CRG(Module):
         mmcm.register_clkin(input_clk, input_clk_freq)
 
         mmcm.create_clkout(
-            self.cd_sys4x_io_bank34,
+            self.cd_sys4x_raw,
             4 * sys_clk_freq,
-            buf='bufio',
+            buf=None,
             with_reset=False,
             platform=platform
         )
         mmcm.create_clkout(
-            self.cd_sys4x_90_io_bank34,
+            self.cd_sys4x_90_raw,
             4 * sys_clk_freq,
             phase=90,
             with_reset=False,
-            buf='bufio',
+            buf=None,
             platform=platform
         )
         mmcm.create_clkout(
-            self.cd_sys2x_io_bank34,
-            2 * sys_clk_freq,
-            buf='bufr',
-            div=2,
-            clock_out=0,
-        )
-        mmcm.create_clkout(
-            self.cd_sys2x_90_io_bank34,
+            self.cd_sys2x_90_rst,
             2 * sys_clk_freq,
             phase=90,
             buf='bufr',
             div=2,
             clock_out=1,
-        )
-        mmcm.create_clkout(
-            self.cd_sys_io_bank34,
-            sys_clk_freq,
-            buf='bufr',
-            div=4,
-            clock_out=0,
+            name = "rst_domain"
         )
 
         mmcm.create_clkout(self.cd_sys,   sys_clk_freq)
@@ -220,7 +208,19 @@ class SoC(common.RowHammerSoC):
         )
 
     def get_ddrphy(self):
+        PHYCRG = ddr5.S7PHYCRG(
+            reset_clock_domain = "sys2x_90_rst",
+            source_4x          = ClockSignal("sys4x_raw"),
+            source_4x_90       = ClockSignal("sys4x_90_raw"),
+        )
+        self.submodules.PHYCRG = PHYCRG
+        PHYCRG.create_clock_domains(
+            clock_domains = ["sys_io", "sys2x_io", "sys2x_90_io", "sys4x_io", "sys4x_90_io"],
+            io_banks      = ["bank34"],
+        )
+
         return ddr5.K7DDR5PHY(self.platform.request("ddr5"),
+            crg                = PHYCRG,
             iodelay_clk_freq   = float(self.args.iodelay_clk_freq),
             sys_clk_freq       = self.sys_clk_freq,
             masked_write       = False,
