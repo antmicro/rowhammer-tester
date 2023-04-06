@@ -30,6 +30,7 @@ def read_spd(console, spd_addr, init_commands=None, ddr5=False):
     console.sendline()
     console.expect(prompt)
     if ddr5:
+
         def add_page_to_address(dump):
             ret = []
             for line in dump.splitlines():
