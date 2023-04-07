@@ -1,14 +1,2 @@
 -r ../requirements.txt
-
-Sphinx==4.5.0
-sphinx_tabs == 3.0.0
-sphinx-jinja==2.0.2
-sphinx-autobuild
-docutils == 0.16.0
-jinja2<3.1.0
-myst-parser
-yapf
-
 https://github.com/antmicro/antmicro-sphinx-utils/archive/main.zip
-https://github.com/antmicro/sphinxcontrib-internal/archive/master.zip
-https://github.com/antmicro/sphinx-immaterial/releases/download/tip/sphinx_immaterial-0.0.post1.tip-py3-none-any.whl

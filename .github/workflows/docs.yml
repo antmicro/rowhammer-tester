@@ -1,0 +1,45 @@
+name: Rowhammer tester docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  docs-generation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-full
+          python -m pip install -r doc/requirements.txt
+      - name: Generate documentation
+        run: |
+          cd doc
+          make html latexpdf
+          cp build/latex/*.pdf build/html/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: gh-page
+          path: doc/build/html
+      - name: Deploy to Github Pages
+        if: github.event_name == 'push'
+        run: |
+          cd doc/build/html
+          touch .nojekyll
+          git init
+          cp ../../../.git/config ./.git/config
+          git add .
+          git config --local user.email "push@gha"
+          git config --local user.name "GHA"
+          git commit -am "update ${{ github.sha }}"
+          git push -u origin +HEAD:gh-pages
+          rm -rf .git
