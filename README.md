@@ -13,4 +13,3 @@ The repository includes:
 * `doc/` - Sphinx-based documentation for the project
 * `.github/` - Directory with CI configuration
 
-Full documentation is available [on Read The Docs](https://rowhammer-tester.readthedocs.io/en/latest/).
