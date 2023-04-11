@@ -12,13 +12,15 @@ Currently, 4 boards are supported, each targeting different memory type:
 | ZCU104                     | DDR4 (SO-DIMM)   | `zcu104`                     |
 | DDR Datacenter DRAM Tester | DDR4 (RDIMM)     | `ddr4_datacenter_test_board` |
 | LPDDR4 Test Board          | LPDDR4 (SO-DIMM) | `lpddr4_test_board`          |
+| DDR5 Tester                | DDR5 (RDIMM)     | `ddr5_tester`                |
+| DDR5 Test Board            | DDR5 (SO-DIMM)   | `ddr5_test_board`            |
 
 ```{note}
 Although you choose a target board for the simulation, it doesn't require having a physical board.
 Simulation is done entirely on your computer.
 ```
 
-For board-specific instructions refer to [Arty A7](arty.md), [ZCU104](zcu104.md), [DDR4 Datacenter DRAM Tester](ddr4_datacenter_dram_tester.md) and [LPDDR4 Test Board](lpddr4_tb.md) chapters.
+For board-specific instructions refer to [Arty A7](arty.md), [ZCU104](zcu104.md), [DDR4 Datacenter DRAM Tester](ddr4_datacenter_dram_tester.md), [LPDDR4 Test Board](lpddr4_tb.md), [DDR5 Tester](ddr5_tester.md) and [DDR5 Test Board](ddr5_test_board.md) chapters.
 The rest of this chapter describes operations that are common for all supported boards.
 
 

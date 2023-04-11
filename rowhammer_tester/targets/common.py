@@ -408,7 +408,7 @@ class ArgumentParser(argparse.ArgumentParser):
         self.add(g, "--from-spd", required=False, help="Use DRAM module data from given file. Overwrites --module")
         self.add(g, "--speedgrade", default=None, help="DRAM module speedgrade, default value depends on module")
         self.add(g, "--no-memory-bist", action="store_true", help="Disable memory BIST module")
-        self.add(g, "--no-litex-bist", action="store_true", help="Disable BIST modules functionality from LiteX")
+        self.add(g, "--no-sdram-hw-test", action="store_true", help="Disable HW accelerated memory test")
         self.add(g, "--pattern-data-size", default="1024", help="BIST pattern data memory size in bytes")
         self.add(g, "--no-payload-executor", action="store_true", help="Disable Payload Executor module")
         self.add(g, "--payload-size", default="32768", help="Payload memory size in bytes")

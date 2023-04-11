@@ -17,6 +17,8 @@ arty.md
 zcu104.md
 lpddr4_tb.md
 ddr4_datacenter_dram_tester.md
+ddr5_tester.md
+ddr5_test_board.md
 ```
 
 ```{toctree}
