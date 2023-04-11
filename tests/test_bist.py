@@ -46,7 +46,7 @@ class BISTDUT(Module):
         return [self.write_handler(), self.read_handler()]
 
     @passive
-    def read_handler(self, rdata_callback=None, read_delay=1):
+    def read_handler(self, rdata_callback=None, read_delay=0):
         if rdata_callback is None:
             rdata_callback = lambda addr: 0xbaadc0de
         if not callable(rdata_callback):  # passed a single value to always be returned
@@ -54,6 +54,7 @@ class BISTDUT(Module):
             rdata_callback = lambda addr: data
 
         while True:
+            yield self.read_port.cmd.ready.eq(1)
             while not (yield self.read_port.cmd.valid):
                 yield
 
@@ -63,9 +64,6 @@ class BISTDUT(Module):
             if we:
                 yield
                 continue
-
-            yield self.read_port.cmd.ready.eq(1)
-            yield
             yield self.read_port.cmd.ready.eq(0)
 
             for _ in range(read_delay):
@@ -74,11 +72,10 @@ class BISTDUT(Module):
             data = rdata_callback(addr)
             yield self.read_port.rdata.data.eq(data)
             yield self.read_port.rdata.valid.eq(1)
-            yield
             while not (yield self.read_port.rdata.ready):
                 yield
-            yield self.read_port.rdata.valid.eq(0)
             yield
+            yield self.read_port.rdata.valid.eq(0)
 
             self.commands.append((addr, we, data))
 
