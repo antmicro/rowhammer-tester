@@ -239,13 +239,21 @@ class RowHammerSoC(SoCCore):
             assert pattern_data_size % (pattern_data_width//8) == 0, \
                 'Pattern data memory size must be multiple of {} bytes'.format(pattern_data_width//8)
 
-            self.submodules.pattern_mem = PatternMemory(
+            self.submodules.writer_pattern_mem = PatternMemory(
                 data_width = pattern_data_width,
                 mem_depth  = pattern_length)
-            self.add_memory(self.pattern_mem.data, name='pattern_data', origin=0x20000000)
-            self.add_memory(self.pattern_mem.addr, name='pattern_addr', origin=0x21000000)
+            self.add_memory(self.writer_pattern_mem.data, name='writer_pattern_data', origin=0x20000000)
+            self.add_memory(self.writer_pattern_mem.addr, name='writer_pattern_addr', origin=0x21000000)
             self.logger.info('{}: Length: {}, Data Width: {}-bit, Address width: {}-bit'.format(
-                colorer('BIST pattern'), colorer(pattern_length), colorer(pattern_data_width), colorer(32)))
+                colorer('Writer BIST pattern'), colorer(pattern_length), colorer(pattern_data_width), colorer(32)))
+
+            self.submodules.reader_pattern_mem = PatternMemory(
+                data_width = pattern_data_width,
+                mem_depth  = pattern_length)
+            self.add_memory(self.reader_pattern_mem.data, name='reader_pattern_data', origin=0x22000000)
+            self.add_memory(self.reader_pattern_mem.addr, name='reader_pattern_addr', origin=0x23000000)
+            self.logger.info('{}: Length: {}, Data Width: {}-bit, Address width: {}-bit'.format(
+                colorer('Reader BIST pattern'), colorer(pattern_length), colorer(pattern_data_width), colorer(32)))
 
             assert controller_settings.address_mapping == 'ROW_BANK_COL'
             row_offset = controller_settings.geom.bankbits + controller_settings.geom.colbits
@@ -256,13 +264,13 @@ class RowHammerSoC(SoCCore):
 
             # Writer
             dram_wr_port = self.sdram.crossbar.get_port()
-            self.submodules.writer = Writer(dram_wr_port, self.pattern_mem, **inversion_kwargs)
+            self.submodules.writer = Writer(dram_wr_port, self.writer_pattern_mem, **inversion_kwargs)
             self.writer.add_csrs()
             self.add_csr('writer')
 
             # Reader
             dram_rd_port = self.sdram.crossbar.get_port()
-            self.submodules.reader = Reader(dram_rd_port, self.pattern_mem, **inversion_kwargs)
+            self.submodules.reader = Reader(dram_rd_port, self.reader_pattern_mem, **inversion_kwargs)
             self.reader.add_csrs()
             self.add_csr('reader')
 

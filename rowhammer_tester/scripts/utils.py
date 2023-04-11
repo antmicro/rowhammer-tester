@@ -383,8 +383,10 @@ def hw_memset(wb, offset, size, patterns, dbg=False):
     wb.regs.writer_mem_mask.write(0xffffffff)
 
     # FIXME: Support more patterns
-    wb.write(wb.mems.pattern_data.base, [pattern] * (nbytes // 4))  # pattern is 32-bit
-    wb.write(wb.mems.pattern_addr.base, offset // nbytes)
+    wb.write(wb.mems.writer_pattern_data.base, [pattern] * (nbytes // 4))  # pattern is 32-bit
+    wb.write(wb.mems.writer_pattern_addr.base, offset // nbytes)
+    wb.write(wb.mems.reader_pattern_data.base, [pattern] * (nbytes // 4))  # pattern is 32-bit
+    wb.write(wb.mems.reader_pattern_addr.base, offset // nbytes)
     # Unmask just one pattern/offset (will always take data/addr from address 0)
     wb.regs.writer_data_mask.write(0x00000000)
 
@@ -434,8 +436,10 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     wb.regs.reader_mem_mask.write(0xffffffff)
 
     # FIXME: Support more patterns
-    wb.write(wb.mems.pattern_data.base, [pattern] * (nbytes // 4))  # pattern is 32-bit
-    wb.write(wb.mems.pattern_addr.base, offset // nbytes)
+    wb.write(wb.mems.writer_pattern_data.base, [pattern] * (nbytes // 4))  # pattern is 32-bit
+    wb.write(wb.mems.writer_pattern_addr.base, offset // nbytes)
+    wb.write(wb.mems.reader_pattern_data.base, [pattern] * (nbytes // 4))  # pattern is 32-bit
+    wb.write(wb.mems.reader_pattern_addr.base, offset // nbytes)
     # Unmask just one pattern/offset (will always take data/addr from address 0)
     wb.regs.reader_data_mask.write(0x00000000)
 

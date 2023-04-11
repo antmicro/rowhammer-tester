@@ -40,7 +40,8 @@ class HwRowHammer(RowHammer):
         self.wb.regs.reader_data_mask.write(len(row_tuple) - 1)
 
         # Attacked addresses
-        memwrite(self.wb, addresses, base=self.wb.mems.pattern_addr.base)
+        memwrite(self.wb, addresses, base=self.wb.mems.writer_pattern_addr.base)
+        memwrite(self.wb, addresses, base=self.wb.mems.reader_pattern_addr.base)
 
         # how many
         print('read_count: ' + str(int(read_count)))
