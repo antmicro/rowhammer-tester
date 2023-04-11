@@ -42,7 +42,7 @@ class AddressSelector(Module):
         assert len(decoder.i) == len(self.divisor_mask)
         assert len(decoder.o) == len(self.selection_mask)
 
-        self.comb += [
+        self.sync += [
             decoder.i.eq(self.address & self.divisor_mask),
             self.selected.eq((self.selection_mask & decoder.o) != 0),
         ]
@@ -67,6 +67,8 @@ class RowDataInverter(Module, AutoCSR):
 
         self.comb += [
             selector.address.eq(addr[row_shift:row_shift + rowbits]),
+        ]
+        self.sync += [
             If(selector.selected,
                 data_out.eq(~data_in)
             ).Else(
@@ -159,14 +161,18 @@ Pattern
         self.submodules += dma
 
         cmd_counter = Signal(32)
+        mem_addr    = Signal.like(cmd_counter)
+        dram_addr   = Signal.like(dma.sink.address)
+
+        wait_counter = Signal(max=3)
 
         self.comb += [
             self.done.eq(cmd_counter),
             # pattern
-            self.data_port.adr.eq(cmd_counter & self.data_mask),
-            self.addr_port.adr.eq(cmd_counter & self.data_mask),
+            self.data_port.adr.eq(mem_addr),
+            self.addr_port.adr.eq(mem_addr),
             # DMA
-            dma.sink.address.eq(self.addr_port.dat_r + (cmd_counter & self.mem_mask)),
+            dma.sink.address.eq(dram_addr),
         ]
 
         # DMA data may be inverted using AddressSelector
@@ -183,21 +189,36 @@ Pattern
             self.ready.eq(1),
             If(self.start,
                 NextValue(cmd_counter, 0),
-                NextState("WAIT"),
+                NextState("COMPUTE_MEM_ADDR"),
             )
         )
-        fsm.act("WAIT",  # TODO: we could pipeline the access
+        fsm.act("COMPUTE_MEM_ADDR",
+            NextValue(mem_addr, cmd_counter & self.data_mask),
             If(cmd_counter >= self.count,
                 NextState("READY")
             ).Else(
-                NextState("RUN")
+                NextState("WAIT_FOR_DRAM_ADDR"),
             )
         )
-        fsm.act("RUN",
+        fsm.act("WAIT_FOR_DRAM_ADDR",
+            NextState("COMPUTE_DRAM_ADDR"),
+        )
+        fsm.act("COMPUTE_DRAM_ADDR",
+            NextValue(wait_counter, 0),
+            NextValue(dram_addr, self.addr_port.dat_r + (cmd_counter & self.mem_mask)),
+            NextState("INVERT_COMPUTE"),
+        )
+        fsm.act("INVERT_COMPUTE",
+            If(wait_counter == 2,
+                NextState("SEND")
+            ),
+            NextValue(wait_counter, wait_counter + 1),
+        )
+        fsm.act("SEND",
             dma.sink.valid.eq(1),
             If(dma.sink.ready,
                 NextValue(cmd_counter, cmd_counter + 1),
-                NextState("WAIT")
+                NextState("COMPUTE_MEM_ADDR")
             )
         )
 
@@ -257,10 +278,13 @@ The current progress can be read from the `done` CSR.
 
         # ----------------- Address FSM -----------------
         counter_addr = Signal(32)
+        mem_addr    = Signal.like(counter_addr)
+        dram_addr   = Signal.like(dma.sink.address)
 
         self.comb += [
-            self.addr_port.adr.eq(counter_addr & self.data_mask),
-            dma.sink.address.eq(self.addr_port.dat_r + (counter_addr & self.mem_mask)),
+            self.addr_port.adr.eq(mem_addr),
+            address_fifo.sink.address.eq(dram_addr),
+            dma.sink.address.eq(dram_addr),
         ]
 
         # Using temporary state 'WAIT' to obtain address offset from memory
@@ -268,32 +292,42 @@ The current progress can be read from the `done` CSR.
         fsm_addr.act("READY",
             If(self.start,
                 NextValue(counter_addr, 0),
-                NextState("WAIT"),
-            )
+                NextState("COMPUTE_MEM_ADDR"),
+            ),
         )
-        fsm_addr.act("WAIT",
-            # FIXME: should be possible to write the address in WR_ADDR
-            address_fifo.sink.valid.eq(counter_addr != 0),
-            If(address_fifo.sink.ready | (counter_addr == 0),
-                If(counter_addr >= self.count,
-                    NextState("READY")
-                ).Else(
-                    NextState("WR_ADDR")
-                )
-            )
+        fsm_addr.act("COMPUTE_MEM_ADDR",
+            NextValue(mem_addr, counter_addr & self.data_mask),
+            If(counter_addr >= self.count,
+                NextState("READY"),
+            ).Else(
+                NextState("WAIT_FOR_DRAM_ADDR"),
+            ),
         )
-        fsm_addr.act("WR_ADDR",
+        fsm_addr.act("WAIT_FOR_DRAM_ADDR",
+            NextState("COMPUTE_DRAM_ADDR"),
+        )
+        fsm_addr.act("COMPUTE_DRAM_ADDR",
+            NextValue(dram_addr, self.addr_port.dat_r + (counter_addr & self.mem_mask)),
+            NextState("PUSH_TO_FIFO"),
+        )
+        fsm_addr.act("PUSH_TO_FIFO",
+            address_fifo.sink.valid.eq(1),
+            If(address_fifo.sink.ready,
+                NextState("PUSH_TO_DMA"),
+            ),
+        )
+        fsm_addr.act("PUSH_TO_DMA",
             dma.sink.valid.eq(1),
             If(dma.sink.ready,
-                # send the address in WAIT
-                NextValue(address_fifo.sink.address, dma.sink.address),
                 NextValue(counter_addr, counter_addr + 1),
-                NextState("WAIT")
+                NextState("COMPUTE_MEM_ADDR")
             )
         )
 
         # ------------- Pattern FSM ----------------
         counter_gen = Signal(32)
+        data_mem_addr = Signal.like(counter_gen)
+        wait_counter = Signal(max=3)
 
         # Unmatched memory offsets
         error_fifo = stream.SyncFIFO(error_desc, depth=2, buffered=False)
@@ -310,7 +344,7 @@ The current progress can be read from the `done` CSR.
         )
 
         self.comb += [
-            self.data_port.adr.eq(counter_gen & self.data_mask),
+            self.data_port.adr.eq(data_mem_addr),
             self.error.offset.eq(error_fifo.source.offset),
             self.error.data.eq(error_fifo.source.data),
             self.error.expected.eq(error_fifo.source.expected),
@@ -325,8 +359,28 @@ The current progress can be read from the `done` CSR.
             If(self.start,
                 NextValue(counter_gen, 0),
                 NextValue(self.error_count, 0),
-                NextState("WAIT"),
+                NextState("COMPUTE_MEM_ADDR"),
             )
+        )
+        fsm_pattern.act("COMPUTE_MEM_ADDR",
+            NextValue(data_mem_addr, counter_gen & self.data_mask),
+            If(counter_gen >= self.count,
+                NextState("READY")
+            ).Else(
+                NextState("WAIT_FOR_DRAM_ADDR"),
+            )
+        )
+        fsm_pattern.act("WAIT_FOR_DRAM_ADDR",
+            If(address_fifo.source.valid,
+                NextValue(wait_counter, 0),
+                NextState("INVERT_COMPUTE"),
+            ),
+        )
+        fsm_pattern.act("INVERT_COMPUTE",
+            If(wait_counter == 2,
+                NextState("RD_DATA")
+            ),
+            NextValue(wait_counter, wait_counter + 1),
         )
         fsm_pattern.act("WAIT",  # TODO: we could pipeline the access
             If(counter_gen >= self.count,
@@ -336,7 +390,7 @@ The current progress can be read from the `done` CSR.
             )
         )
         fsm_pattern.act("RD_DATA",
-            If(dma.source.valid & address_fifo.source.valid,
+            If(dma.source.valid,
                 # we must now change FSM state in single cycle
                 dma.source.ready.eq(1),
                 address_fifo.source.ready.eq(1),
@@ -349,19 +403,19 @@ The current progress can be read from the `done` CSR.
                     NextValue(error_fifo.sink.data, dma.source.data),
                     NextValue(error_fifo.sink.expected, data_expected),
                     If(self.skip_fifo,
-                        NextState("WAIT")
+                        NextState("COMPUTE_MEM_ADDR")
                     ).Else(
                         NextState("WR_ERR")
                     )
                 ).Else(
-                    NextState("WAIT")
+                    NextState("COMPUTE_MEM_ADDR")
                 )
             )
         )
         fsm_pattern.act("WR_ERR",
             error_fifo.sink.valid.eq(1),
             If(error_fifo.sink.ready | self.skip_fifo,
-                NextState("WAIT")
+                NextState("COMPUTE_MEM_ADDR")
             )
         )
 

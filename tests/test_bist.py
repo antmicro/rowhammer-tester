@@ -207,7 +207,7 @@ class TestWriter(unittest.TestCase):
             yield from dut.writer._start.write(1)
             yield from dut.writer._start.write(0)
 
-            yield from wait_or_timeout(200, dut.writer._ready.read)
+            yield from wait_or_timeout(500, dut.writer._ready.read)
 
         dut = BISTDUT(pattern_init=pattern, rowbits=rowbits, row_shift=row_shift)
         generators = [generator(dut), *dut.default_port_handlers()]
@@ -368,7 +368,7 @@ class TestReader(unittest.TestCase):
                 yield from dut.reader._error_continue.write(1)
                 yield
 
-            yield from wait_or_timeout(200, dut.reader._ready.read)
+            yield from wait_or_timeout(500, dut.reader._ready.read)
 
         dut = BISTDUT(pattern_init=pattern, rowbits=rowbits, row_shift=row_shift)
         generators = [generator(dut), dut.read_handler(rdata_callback)]
