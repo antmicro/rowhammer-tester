@@ -113,8 +113,8 @@ class BISTModule(Module):
         self.mem_mask = Signal(32)
         self.data_mask = Signal(32)
 
-        self.data_port = pattern_mem.data.get_port()
-        self.addr_port = pattern_mem.addr.get_port()
+        self.data_port = pattern_mem.data.get_port(mode=READ_FIRST)
+        self.addr_port = pattern_mem.addr.get_port(mode=READ_FIRST)
         self.specials += self.data_port, self.addr_port
 
     def add_csrs(self):

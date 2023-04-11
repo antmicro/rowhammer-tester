@@ -326,7 +326,8 @@ class RowHammerSoC(SoCCore):
     def add_memory(self, mem, *, name, origin, mode='rw'):
         ram = wishbone.SRAM(mem,
             bus       = wishbone.Interface(data_width=mem.width),
-            read_only = 'w' not in mode)
+            read_only = 'w' not in mode,
+            mode      = READ_FIRST)
         # Perform bus width conversion
         ram_bus = wishbone.Interface(data_width=self.bus.data_width)
         self.submodules += wishbone.Converter(ram_bus, ram.bus)
