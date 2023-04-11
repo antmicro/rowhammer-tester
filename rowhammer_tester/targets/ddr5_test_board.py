@@ -163,11 +163,11 @@ class CRG(Module):
         mmcm.create_clkout(
             self.cd_sys2x_90_rst,
             2 * sys_clk_freq,
-            phase=90,
-            buf='bufr',
-            div=2,
-            clock_out=1,
-            name = "rst_domain"
+            clock_out = 1,
+            div       = 2,
+            phase     = 90,
+            buf       = 'bufr',
+            name      = 'rst_domain',
         )
 
         mmcm.create_clkout(self.cd_sys,   sys_clk_freq)
