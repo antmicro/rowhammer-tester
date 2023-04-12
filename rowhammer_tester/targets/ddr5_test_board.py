@@ -281,7 +281,8 @@ def main():
     if not args.sim:
         build_kwargs["vivado_place_directive"] = "AltSpreadLogic_high"
         build_kwargs["vivado_post_place_phys_opt_directive"] = "AggressiveExplore"
-        build_kwargs["vivado_route_directive"] = "AlternateCLBRouting"
+        build_kwargs["vivado_route_directive"] = "AggressiveExplore"
+        build_kwargs["vivado_post_route_phys_opt_directive"] = "AggressiveExplore"
 
     common.run(args, builder, build_kwargs, target_name=target_name)
 
