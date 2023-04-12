@@ -157,7 +157,7 @@ Pattern
 {common}
         """.format(common=BISTModule.__doc__))
 
-        dma = LiteDRAMDMAWriter(dram_port, fifo_depth=4)
+        dma = LiteDRAMDMAWriter(dram_port, fifo_depth=4, fifo_buffered=True)
         self.submodules += dma
 
         cmd_counter = Signal(32)
@@ -269,7 +269,7 @@ The current progress can be read from the `done` CSR.
         self.skip_fifo    = Signal()
         self.error        = stream.Endpoint(error_desc)
 
-        dma = LiteDRAMDMAReader(dram_port, fifo_depth=4)
+        dma = LiteDRAMDMAReader(dram_port, fifo_depth=4, fifo_buffered=True)
         self.submodules += dma
 
         # pass addresses from address FSM (command producer) to pattern FSM (data consumer)
@@ -330,7 +330,7 @@ The current progress can be read from the `done` CSR.
         wait_counter = Signal(max=3)
 
         # Unmatched memory offsets
-        error_fifo = stream.SyncFIFO(error_desc, depth=2, buffered=False)
+        error_fifo = stream.SyncFIFO(error_desc, depth=2, buffered=True)
         self.submodules += error_fifo
 
         # DMA data may be inverted using AddressSelector
@@ -342,16 +342,6 @@ The current progress can be read from the `done` CSR.
             rowbits   = rowbits,
             row_shift = row_shift,
         )
-
-        self.comb += [
-            self.data_port.adr.eq(data_mem_addr),
-            self.error.offset.eq(error_fifo.source.offset),
-            self.error.data.eq(error_fifo.source.data),
-            self.error.expected.eq(error_fifo.source.expected),
-            self.error.valid.eq(error_fifo.source.valid),
-            error_fifo.source.ready.eq(self.error.ready | self.skip_fifo),
-            self.done.eq(counter_gen),
-        ]
 
         self.submodules.fsm_pattern = fsm_pattern = FSM()
         fsm_pattern.act("READY",
@@ -418,6 +408,49 @@ The current progress can be read from the `done` CSR.
                 NextState("COMPUTE_MEM_ADDR")
             )
         )
+
+        self.comb += [
+            self.data_port.adr.eq(data_mem_addr),
+            self.done.eq(counter_gen),
+        ]
+
+        error_reg = stream.Endpoint(error_desc)
+        self.submodules.fsm_error = fsm_error = FSM()
+        fsm_error.act("INVALID",
+            If(error_fifo.source.valid,
+                error_fifo.source.ready.eq(1),
+                If(~self.skip_fifo,
+                    NextValue(error_reg.offset, error_fifo.source.offset),
+                    NextValue(error_reg.data, error_fifo.source.data),
+                    NextValue(error_reg.expected, error_fifo.source.expected),
+                    NextState("VALID"),
+                )
+            )
+        )
+        fsm_error.act("VALID",
+            error_reg.valid.eq(1),
+            If(error_reg.ready & error_fifo.source.valid,
+                error_fifo.source.ready.eq(1),
+                If(~self.skip_fifo,
+                    NextValue(error_reg.offset, error_fifo.source.offset),
+                    NextValue(error_reg.data, error_fifo.source.data),
+                    NextValue(error_reg.expected, error_fifo.source.expected),
+                ).Else(
+                    NextState("INVALID"),
+                )
+            ).Elif(error_reg.ready,
+                NextState("INVALID"),
+            ),
+        )
+
+        self.comb += [
+            self.error.offset.eq(error_reg.offset),
+            self.error.data.eq(error_reg.data),
+            self.error.expected.eq(error_reg.expected),
+            self.error.valid.eq(error_reg.valid),
+            error_reg.ready.eq(self.error.ready),
+        ]
+
 
     def add_csrs(self):
         super().add_csrs()
