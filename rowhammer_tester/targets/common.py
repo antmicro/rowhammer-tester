@@ -189,6 +189,7 @@ class RowHammerSoC(SoCCore):
         controller_settings.with_auto_precharge = True
         controller_settings.with_refresh = self.controller_settings.refresh.storage
         controller_settings.refresh_cls = SyncableRefresher
+        controller_settings.cmd_buffer_buffered = True
 
         assert self.ddrphy.settings.memtype == module.memtype, \
             'Wrong DRAM module type: {} vs {}'.format(self.ddrphy.settings.memtype, module.memtype)
