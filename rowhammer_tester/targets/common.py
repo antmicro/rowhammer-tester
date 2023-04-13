@@ -201,7 +201,7 @@ class RowHammerSoC(SoCCore):
             l2_cache_size           = kwargs.get("l2_size", 256),
             l2_cache_full_memory_we = kwargs.get("masked_write", False),
             controller_settings     = controller_settings,
-            with_bist               = not args.no_litex_bist
+            with_bist               = not args.no_sdram_hw_test
         )
 
         # CPU will report that leveling finished by writing to ddrctrl CSRs
