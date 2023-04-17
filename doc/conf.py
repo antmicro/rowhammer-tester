@@ -97,13 +97,19 @@ html_sidebars = {
     "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
 }
 
-html_static_path = ['build/documentation/_static/']
+html_static_path = ['build/arty/documentation/_static/']
 
-for target in ['arty']: #,'zcu104'
+for target in ['arty', 'zcu104', 'ddr4_datacenter_test_board',
+    'lpddr4_test_board', 'ddr5_test_board','ddr5_tester']:
     run([
         'python3',
         f'../rowhammer_tester/targets/{target}.py',
-        '--docs'
+        '--docs',
+    ])
+    run([
+        'cp',
+        f'images/{target}_CRG.png',
+        f'build/{target}/documentation/{target}_CRG.png',
     ])
 
 # -- Options for LaTeX output --------------------------------------------------

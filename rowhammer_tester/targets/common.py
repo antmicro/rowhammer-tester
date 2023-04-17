@@ -40,6 +40,15 @@ from rowhammer_tester.gateware.bist import Reader, Writer, PatternMemory
 from rowhammer_tester.gateware.rowhammer import RowHammerDMA
 from rowhammer_tester.gateware.payload_executor import PayloadExecutor, DFISwitch, SyncableRefresher
 
+_target_name_to_fancy_string = {
+    'arty': "Arty-A7",
+    'zcu104': "ZCU104",
+    'lpddr4_test_board': "LPDDR4 Test Board",
+    'ddr4_datacenter_test_board': "Data Center DRAM Tester",
+    'ddr5_tester': "DDR5 Tester",
+    'ddr5_test_board': "DDR5 Test Board"
+}
+
 # SoC ----------------------------------------------------------------------------------------------
 
 sim_io = [
@@ -533,8 +542,8 @@ def run(args, builder, build_kwargs, target_name):
 
     if args.docs:
         doc.generate_docs(builder.soc,
-            base_dir     = "build/documentation",
-            project_name = "Row Hammer Tester",
+            base_dir     = f"build/{target_name}/documentation",
+            project_name = f"Row Hammer Tester {_target_name_to_fancy_string[target_name]}",
             author       = "Antmicro")
 
     if args.load:

@@ -10,6 +10,7 @@ from litex.build.xilinx.vivado import vivado_build_args, vivado_build_argdict
 from litex.soc.integration.builder import Builder
 from litex.soc.cores.bitbang import I2CMaster
 from litex.soc.cores.clock import S7PLL, S7MMCM, S7IDELAYCTRL
+from litex.soc.integration.doc import ModuleDoc
 
 from litex_boards.platforms import antmicro_ddr5_tester
 from litedram.phy import ddr5
@@ -71,6 +72,21 @@ class CRG(Module):
 
         self.submodules.idelayctrl = S7IDELAYCTRL(self.cd_idelay)
 
+def ddr5_tester_CRGDOC():
+    return [
+    ModuleDoc(title="S7CRGPHY", body="""\
+This module contains 7 series specific clock and reset generation for S7DDR5 PHY.
+It adds:
+
+- BUFMRCE to control multi region PHYs (UDIMMs and/or RDIMMs),
+- BUFMRCE/BUFRs reset sequence,
+- ISERDES reset sequence correct with Xilinx documentation and design advisories,
+- OSERDES reset sequence.
+"""),
+    ModuleDoc(title="DDR5 Tester Clock tree", body="""\
+.. image:: ddr5_tester_CRG.png
+"""),
+]
 
 # SoC ----------------------------------------------------------------------------------------------
 
@@ -86,8 +102,9 @@ class SoC(common.RowHammerSoC):
         return antmicro_ddr5_tester.Platform()
 
     def get_crg(self):
-        return CRG(self.platform, self.sys_clk_freq,
+        crg = CRG(self.platform, self.sys_clk_freq,
             iodelay_clk_freq=float(self.args.iodelay_clk_freq))
+        return crg
 
     def get_ddr_pin_domains(self):
         return dict(
@@ -120,6 +137,7 @@ class SoC(common.RowHammerSoC):
             clock_domains = ["sys_io", "sys2x_io", "sys2x_90_io", "sys4x_io", "sys4x_90_io"],
             io_banks      = ["bank32", "bank33", "bank34"],
         )
+        setattr(PHYCRG, "get_module_documentation", ddr5_tester_CRGDOC)
         return ddr5.K7DDR5PHY(self.platform.request("ddr5"),
             crg               = PHYCRG,
             iodelay_clk_freq  = float(self.args.iodelay_clk_freq),

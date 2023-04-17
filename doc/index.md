@@ -25,5 +25,10 @@ ddr5_test_board.md
 :caption: Gateware documentation
 :maxdepth: 2
 
-build/documentation/index.md
+build/arty/documentation/index.rst
+build/zcu104/documentation/index.rst
+build/ddr4_datacenter_test_board/documentation/index.rst
+build/lpddr4_test_board/documentation/index.rst
+build/ddr5_test_board/documentation/index.rst
+build/ddr5_tester/documentation/index.rst
 ```
