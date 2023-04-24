@@ -144,6 +144,8 @@ class RowHammerSoC(SoCCore):
         self.add_csr("leds")
 
         # SDRAM PHY --------------------------------------------------------------------------------
+        if args.keep_going_on_dram_error:
+            self.add_constant("KEEP_GOING_ON_DRAM_ERROR")
         if sdram_module_spd_file is not None:
             self.logger.info('Using DRAM module {} data: {}'.format(colorer('SPD'), sdram_module_spd_file))
             with open(sdram_module_spd_file, 'rb') as f:
@@ -425,6 +427,7 @@ class ArgumentParser(argparse.ArgumentParser):
         self.add(g, "--ip-address", default="192.168.100.50", help="Use given IP address")
         self.add(g, "--mac-address", default="0x10e2d5000001", help="Use given MAC address")
         self.add(g, "--udp-port", default="1234", help="Use given UDP port")
+        self.add(g, "--keep-going-on-dram-error", action="store_true", help="Continue DRAM training even if part of it fails")
         self.add(g, "--bist-inversion-rowbits", default="5", help="Number of row bits used for BIST data inversion feature")
 
         # Litex args
