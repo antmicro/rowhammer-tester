@@ -457,7 +457,7 @@ def get_soc_kwargs(args):
     # Set some defaults for SoC - no CPU, memory, etc.
     soc_kwargs.update(dict(
         cpu_type                 = "vexriscv",
-        cpu_variant              = "minimal",
+        cpu_variant              = "lite",
         no_timer                 = False,
         no_ctrl                  = False,
         no_uart                  = False,
