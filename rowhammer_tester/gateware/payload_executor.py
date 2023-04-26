@@ -240,7 +240,7 @@ class DFIExecutor(Module):
         nranks = len(dfi.p0.cs_n)
 
         for i, phase in enumerate(dfi.phases):
-            self.comb += [
+            self.sync += [
                 # constant signals
                 phase.cke.eq(Replicate(1, nranks)),
                 phase.odt.eq(Replicate(1, nranks)),  # FIXME: needs to be dynamically driven for multi-rank systems
@@ -409,13 +409,13 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         self.fsm.act("READY",
             self.ready.eq(1),
             If(self.start,
+                NextValue(dfi_switch.wants_dfi, 1),
                 NextState("WAIT-DFI"),
             )
         )
         self.fsm.act("WAIT-DFI",
             self.scratchpad.reset.eq(1),
             fetch_address.eq(0),
-            dfi_switch.wants_dfi.eq(1),
             If(dfi_switch.dfi_ready,
                 NextValue(self.program_counter, 0),
                 NextState("RUN")
@@ -423,9 +423,9 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         )
         self.fsm.act("RUN",
             self.executing.eq(1),
-            dfi_switch.wants_dfi.eq(1),
             # Terminate after executing the whole program or when STOP instruction is encountered
             If((self.program_counter == mem_payload.depth - 1) | decoder.stop,
+                NextValue(dfi_switch.wants_dfi, 0),
                 NextState("READY")
             ),
             # Execute instruction
@@ -465,7 +465,6 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         )
         self.fsm.act("IDLE",
             self.executing.eq(1),
-            dfi_switch.wants_dfi.eq(1),
             If(self.idle_counter == 0,
                 fetch_address.eq(self.program_counter + 1),
                 NextValue(self.program_counter, fetch_address),

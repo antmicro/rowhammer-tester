@@ -273,6 +273,8 @@ class TestDFIExecutor(unittest.TestCase):
             yield dut.executor.phase.eq(0)
             yield dut.executor.exec.eq(1)
             yield
+            yield dut.executor.exec.eq(0)
+            yield
 
             for i, phase in enumerate(dut.dfi.phases):
                 if i == 0:  # phase enabled
