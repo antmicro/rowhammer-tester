@@ -215,6 +215,11 @@ class RowHammerSoC(SoCCore):
             with_bist               = not args.no_sdram_hw_test
         )
 
+        if controller_settings.phy.memtype == "DDR5":
+            prefixes = [""] if not controller_settings.phy.with_sub_channels else ["A_", "B_"]
+            for i, prefix in enumerate(prefixes):
+                setattr(self, prefix+"DQ_remapping", CSRStorage(8*controller_settings.phy.nibbles*4, name=prefix+"DQ_remapping"))
+
         # CPU will report that leveling finished by writing to ddrctrl CSRs
         self.submodules.ddrctrl = LiteDRAMCoreControl()
         self.add_csr("ddrctrl")
