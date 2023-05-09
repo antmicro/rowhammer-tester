@@ -45,18 +45,23 @@ In case you want to use an USB Ethernet adapter for this purpose read the instru
       Name=fpga0
       ```
 4. Configure the ``fpga0`` network device with a static IP address, always up (even when disconnected) and ignored by the network manager.
-   * Make sure your ``/etc/network/interfaces`` file has the following line:
+   * Run the following command, assuming your system uses NetworkManager
       ```sh
-      source /etc/network/interfaces.d/*
+      nmcli con add type ethernet con-name 'Rowhammer Tester' ifname fpga0 ipv4.method manual ipv4.addresses 192.168.100.100/24
       ```
-   * Create ``/etc/network/interfaces.d/fpga0`` with the following contents:
-      ```sh
-      auto fpga0
-      allow-hotplug fpga0
-      iface fpga0 inet static
-              address 192.168.100.100/24
-      ```
-   * Check that ``nmcli device`` says the state is ``connected (externally)`` otherwise run ``sudo systemctl restart NetworkManager``
+   * Alternatively, if your system supports legacy ``interfaces`` configuration file:
+       1. Make sure your ``/etc/network/interfaces`` file has the following line:
+           ```sh
+           source /etc/network/interfaces.d/*
+           ```
+       2. Create ``/etc/network/interfaces.d/fpga0`` with the following contents:
+           ```sh
+           auto fpga0
+           allow-hotplug fpga0
+           iface fpga0 inet static
+                   address 192.168.100.100/24
+           ```
+       3. Check that ``nmcli device`` says the state is ``connected (externally)`` otherwise run ``sudo systemctl restart NetworkManager``
    * Run ``ifup fpga0``
 5. Run ``sudo udevadm control --reload`` and then unplug the USB ethernet device and plug it back in
 6. Check you have an ``fpga0`` interface and it has the correct IP address by running ``networkctl status``
