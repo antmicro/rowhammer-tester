@@ -12,4 +12,4 @@ dump.vcd
 sdram_init.py
 vivado.*
 riscv64-unknown-elf-gcc*
-doc/build
+docs/build

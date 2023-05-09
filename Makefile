@@ -89,7 +89,7 @@ srv: FORCE
 	litex_server --udp --udp-ip $(IP_ADDRESS) --udp-port $(UDP_PORT)
 
 doc: FORCE
-	$(MAKE) -C doc html
+	$(MAKE) -C docs html
 
 test: FORCE
 	python -m unittest -v

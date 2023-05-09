@@ -10,6 +10,6 @@ The repository includes:
 
   * gateware for Rowhammer Tester platform
   * userspace scripts used for running tests
-* `doc/` - Sphinx-based documentation for the project
+* `docs/` - Sphinx-based documentation for the project
 * `.github/` - Directory with CI configuration
 
