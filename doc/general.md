@@ -32,7 +32,7 @@ and [OpenOCD](https://github.com/openocd-org/openocd).
 To install the dependencies on Ubuntu 18.04 LTS, run:
 
 ```sh
-apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel protobuf-compiler libcairo2 libftdi1-2 libftdi1-dev libhidapi-hidraw0 libhidapi-dev libudev-dev pkg-config tree zlib1g-dev zip unzip help2man
+apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel protobuf-compiler libcairo2 libftdi1-2 libftdi1-dev libhidapi-hidraw0 libhidapi-dev libudev-dev pkg-config tree zlib1g-dev zip unzip help2man curl ethtool
 ```
 
 ````{note}
@@ -70,7 +70,7 @@ To enter the environment, you have to run `source venv/bin/activate` in each new
 You can also use the provided `make env` target, which will start a new Bash shell with the virtualenv already sourced.
 You can install packages inside the virtual environment by entering the environment and then using `pip`.
 
-To build the bitstream you will also need to have Vivado installed and the `vivado` command available in your `PATH`.
+To build the bitstream you will also need to have Vivado (version 2020.2 or newer) installed and the `vivado` command available in your `PATH`.
 To configure Vivado in the current shell, you need to `source /PATH/TO/Vivado/VERSION/settings64.sh`.
 This can be put in your `.bashrc` or other shell init script.
 
