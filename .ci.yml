@@ -1,16 +1,33 @@
-build-and-deploy:
-    image: $CI_DOCS_DOCKER_IMAGE
-    tags:
-        - docs
-    variables:
-        GIT_SUBMODULE_STRATEGY: normal
-    before_script:
-        - pip3 install -r docs/requirements.txt
-    script:
-        - cd docs
-        - make html latexpdf
-        - cp build/latex/*.pdf build/html/
-        - tar cf ../$CI_DOCS_ARCHIVE -C build/html/ .
-    artifacts:
-        paths:
-            - $CI_DOCS_ARCHIVE
+stages:
+  - build
+  - deploy
+
+image: $CI_DOCS_DOCKER_IMAGE
+
+build:
+  stage: build
+  tags: ['ace-x86_64']
+  variables:
+    GIT_SUBMODULE_STRATEGY: normal
+  before_script:
+    - pip3 install -r docs/requirements.txt
+  script:
+    - cd docs
+    - make html latexpdf
+    - cp build/latex/*.pdf build/html/
+    - tar cf ../$CI_DOCS_ARCHIVE -C build/html/ .
+  artifacts:
+    paths:
+      - $CI_DOCS_ARCHIVE
+
+deploy:
+  variables:
+    GIT_STRATEGY: none
+  dependencies:
+    - build
+  stage: deploy
+  tags: ['docs']
+  script: echo 'Deploying docs'
+  artifacts:
+    paths:
+      - $CI_DOCS_ARCHIVE
