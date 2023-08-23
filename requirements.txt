@@ -8,6 +8,7 @@
 -e third_party/litescope
 -e third_party/litex-boards
 # vexriscv cpu
+-e third_party/pythondata-cpu-vexriscv_smp
 git+https://github.com/litex-hub/pythondata-cpu-vexriscv.git
 # litex software data
 git+https://github.com/litex-hub/pythondata-software-picolibc.git
