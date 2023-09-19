@@ -571,13 +571,13 @@ def run(args, builder, build_kwargs, target_name):
         print(f"Loading BIOS from: {bios_bin} starting at 0x{wb.mems.rom.base:08x} ...")
 
         print('Stopping CPU')
-        wb.regs.ctrl_reset.write(0b10)  # cpu_rst
+        wb.regs.ctrl__reset.write(0b10)  # cpu_rst
 
         memwrite(wb, rom_data, base=wb.mems.rom.base)
         wb.read(wb.mems.rom.base)
 
         print('Rebooting CPU')
-        wb.regs.ctrl_reset.write(0)
+        wb.regs.ctrl__reset.write(0)
 
         wb.close()
 
