@@ -120,7 +120,7 @@ class HwRowHammer(RowHammer):
             for i, row_tuple in enumerate(row_pairs, start=1):
                 s = 'Iter {:{n}} / {:{n}}'.format(i, len(row_pairs), n=len(str(len(row_pairs))))
                 if self.payload_executor:
-                    self.payload_executor_attack(read_count=read_count, row_tuple=row_tuple)
+                    self.payload_executor_attack(read_count=read_count//len(row_tuple), row_tuple=row_tuple)
                 else:
                     if len(row_tuple) & (len(row_tuple) - 1) != 0:
                         print("ERROR: BIST only supports power of 2 rows\n")

@@ -123,7 +123,7 @@ class Decoder(Module):
 
         if rankbits:
             self.dfi_rank = Signal(rankbits)
-            self.comb += self.dfi_bank.eq(self.address[:rankbits]),
+            self.comb += self.dfi_rank.eq(self.address[:rankbits]),
 
 class Encoder:
     """Helper for writing payloads"""
