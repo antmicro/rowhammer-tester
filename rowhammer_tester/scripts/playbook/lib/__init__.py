@@ -5,7 +5,8 @@ import sys
 
 
 # returns the number of refreshes issued
-def encode_one_loop(*, unrolled, rolled, row_sequence, timings, encoder, bank, rank, refresh_op, payload):
+def encode_one_loop(
+        *, unrolled, rolled, row_sequence, timings, encoder, bank, rank, refresh_op, payload):
     tras = timings.tRAS
     trp = timings.tRP
     trefi = timings.tREFI
@@ -26,9 +27,12 @@ def encode_one_loop(*, unrolled, rolled, row_sequence, timings, encoder, bank, r
             payload.extend(
                 [
                     encoder.I(
-                        OpCode.ACT, timeslice=tras, address=encoder.address(bank=bank, row=row, rank=rank)),
-                    encoder.I(OpCode.PRE, timeslice=trp,
-                              address=encoder.address(col=1 << 10, rank=rank)),  # all
+                        OpCode.ACT,
+                        timeslice=tras,
+                        address=encoder.address(bank=bank, row=row, rank=rank)),
+                    encoder.I(
+                        OpCode.PRE, timeslice=trp, address=encoder.address(col=1 << 10,
+                                                                           rank=rank)),  # all
                 ])
     jump_target = 2 * unrolled * len(row_sequence) + local_refreshes
     assert jump_target < 2**Decoder.LOOP_JUMP
