@@ -24,6 +24,9 @@ OFL_BOARD := antmicro_lpddr4_tester
 else ifeq ($(TARGET),zcu104)
 # For ZCU104 please copy the file build/zcu104/gateware/zcu104.bit to the boot partition on microSD card
 TOP := xilinx_zcu104
+else ifeq ($(TARGET),ddr5_tester_linux)
+OFL_BOARD := antmicro_ddr5_tester
+TOP := antmicro_ddr5_tester
 else
 $(error Unsupported board type)
 endif
