@@ -129,6 +129,7 @@ Different attack and row selection modes can be used, but only one of them can b
 - `--hammer-only`
 
   Only hammers a pair of rows, without doing any error checks or reports.
+  If command is combined with `--payload-executor`, then any number of rows can be provided.
 
   For example following command will hammer rows 4 and 6 1000 times total (so 500 times each):
 

@@ -351,7 +351,12 @@ def main(row_hammer_cls):
         help='Pattern written to DRAM before running attacks')
     row_selector_group = parser.add_mutually_exclusive_group()
     row_selector_group.add_argument(
-        '--hammer-only', nargs=2, type=int, help='Run only the Rowhammer attack')
+        '--hammer-only',
+        nargs='+',
+        type=int,
+        help='Run only the Rowhammer attack. '
+        'If BIST or DMA mode is used exactly 2 rows must be provided.'
+        'If payload executor is used, any number of rows can be provided')
     row_selector_group.add_argument(
         '--row-pairs',
         choices=['sequential', 'const', 'random'],
@@ -383,9 +388,7 @@ def main(row_hammer_cls):
         required=False,
         help='Jump between rows when using --all-rows')
     parser.add_argument(
-        '--payload-executor',
-        action='store_true',
-        help='Do the attack using Payload Executor (1st row only)')
+        '--payload-executor', action='store_true', help='Do the attack using Payload Executor')
     parser.add_argument('-v', '--verbose', action='store_true', help='Be more verbose')
     parser.add_argument("--srv", action="store_true", help='Start LiteX server')
     parser.add_argument(
@@ -413,6 +416,8 @@ def main(row_hammer_cls):
         args.no_refresh = True
 
     if args.hammer_only:
+        if not args.payload_executor and len(args.hammer_only) != 2:
+            parser.error("")
         row_pairs = [tuple(args.hammer_only)]
     elif args.all_rows:
         if args.row_pair_distance < 0:
