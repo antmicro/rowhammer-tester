@@ -216,20 +216,7 @@ class RowHammer:
 
         print()
 
-    def run(self, row_pairs, pattern_generator, read_count, row_progress=16, verify_initial=False):
-        """
-        Main part of the script.
-        First fills the memory with specified patterns, then optionally checks its integrity.
-        It disables refreshes if requested.
-        Next it executes the attack, one row pair at a time.
-        If refreshes were disabled, it reenables them.
-        It checks for errors, and if any were found, displays them.
-        """
-
-        # TODO: need to invert data when writing/reading, make sure Python integer inversion works correctly
-        if self.data_inversion:
-            raise NotImplementedError('Currently only HW rowhammer supports data inversion')
-
+    def prepare_memory(self):
         print('\nPreparing ...')
         row_patterns = pattern_generator(self.rows)
 
@@ -251,6 +238,23 @@ class RowHammer:
                 print()
                 self.display_errors(errors, read_count)
                 return
+
+
+    def run(self, row_pairs, pattern_generator, read_count, row_progress=16, verify_initial=False):
+        """
+        Main part of the script.
+        First fills the memory with specified patterns, then optionally checks its integrity.
+        It disables refreshes if requested.
+        Next it executes the attack, one row pair at a time.
+        If refreshes were disabled, it reenables them.
+        It checks for errors, and if any were found, displays them.
+        """
+
+        # TODO: need to invert data when writing/reading, make sure Python integer inversion works correctly
+        if self.data_inversion:
+            raise NotImplementedError('Currently only HW rowhammer supports data inversion')
+
+        self.prepare_memory()
 
         if self.no_refresh:
             print('\nDisabling refresh ...')
@@ -416,8 +420,6 @@ def main(row_hammer_cls):
         args.no_refresh = True
 
     if args.hammer_only:
-        if not args.payload_executor and len(args.hammer_only) != 2:
-            parser.error("")
         row_pairs = [tuple(args.hammer_only)]
     elif args.all_rows:
         if args.row_pair_distance < 0:

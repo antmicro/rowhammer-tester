@@ -9,10 +9,13 @@ from rowhammer_tester.gateware.bist import Reader, Writer, PatternMemory
 # DUT ----------------------------------------------------------------------------------------------
 
 class BISTDUT(Module):
-    def __init__(self, address_width=32, data_width=128, pattern_mem_length=32, pattern_init=None, rowbits=5, row_shift=10):
+    def __init__(self, address_width=32, data_width=128, pattern_mem_length=32, pattern_init=None, rowbits=5, row_shift=10,
+        writer=False, reader=False):
         self.address_width = address_width
         self.data_width = data_width
         self.pattern_mem_length = pattern_mem_length
+        self.has_reader = reader
+        self.has_writer = writer
 
         self.submodules.pattern_mem = PatternMemory(data_width, pattern_mem_length,
             addr_width=address_width, pattern_init=pattern_init)
@@ -23,13 +26,15 @@ class BISTDUT(Module):
 
         inverter_kwargs = dict(rowbits=rowbits, row_shift=row_shift)
 
-        self.read_port = LiteDRAMNativePort(address_width=address_width, data_width=data_width, mode='read')
-        self.submodules.reader = Reader(self.read_port, self.pattern_mem, **inverter_kwargs)
-        self.reader.add_csrs()
+        if reader:
+            self.read_port = LiteDRAMNativePort(address_width=address_width, data_width=data_width, mode='read')
+            self.submodules.reader = Reader(self.read_port, self.pattern_mem, **inverter_kwargs)
+            self.reader.add_csrs()
 
-        self.write_port = LiteDRAMNativePort(address_width=address_width, data_width=data_width, mode='write')
-        self.submodules.writer = Writer(self.write_port, self.pattern_mem, **inverter_kwargs)
-        self.writer.add_csrs()
+        if writer:
+            self.write_port = LiteDRAMNativePort(address_width=address_width, data_width=data_width, mode='write')
+            self.submodules.writer = Writer(self.write_port, self.pattern_mem, **inverter_kwargs)
+            self.writer.add_csrs()
 
         # storage for port_handler (addr, we, data)
         self.commands = []
@@ -47,6 +52,8 @@ class BISTDUT(Module):
 
     @passive
     def read_handler(self, rdata_callback=None, read_delay=0):
+        if not self.has_reader:
+            return
         if rdata_callback is None:
             rdata_callback = lambda addr: 0xbaadc0de
         if not callable(rdata_callback):  # passed a single value to always be returned
@@ -81,6 +88,8 @@ class BISTDUT(Module):
 
     @passive
     def write_handler(self, write_delay=1):
+        if not self.has_writer:
+            return
         while True:
             while not (yield self.write_port.cmd.valid):
                 yield
@@ -153,9 +162,13 @@ def access_pattern_test(bist_name, mem_inc, pattern, count):
 
             yield from wait_or_timeout(100, module._ready.read)
 
-        dut = BISTDUT(pattern_init=pattern)
+        dut = BISTDUT(pattern_init=pattern, writer='writer' in bist_name, reader='reader' in bist_name)
         generators = [generator(dut), *dut.default_port_handlers()]
-        run_simulation(dut, generators)
+        if pattern == PATTERNS_ADDR_0:
+            pattern_name = 'PATTERNS_ADDR_0'
+        else:
+            pattern_name = 'PATTERNS_ADDR_INC'
+        run_simulation(dut, generators, vcd_name=bist_name + pattern_name + f'mem_inc:{mem_inc}.vcd')
 
         we = 0 if bist_name == 'reader' else 1
         pattern_cycle = itertools.cycle(pattern)
@@ -209,7 +222,7 @@ class TestWriter(unittest.TestCase):
 
             yield from wait_or_timeout(500, dut.writer._ready.read)
 
-        dut = BISTDUT(pattern_init=pattern, rowbits=rowbits, row_shift=row_shift)
+        dut = BISTDUT(pattern_init=pattern, rowbits=rowbits, row_shift=row_shift, writer=True)
         generators = [generator(dut), *dut.default_port_handlers()]
         run_simulation(dut, generators)
 
@@ -222,6 +235,45 @@ class TestWriter(unittest.TestCase):
             invert = inversion_address_matcher(addr >> row_shift, modulo_divisor, selection_mask)
             expected = 0x55555555555555555555555555555555 if invert else 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
             self.assertEqual(data, expected, msg=addr)
+
+    def test_multiple_addresses(self):
+        # specification
+        rowbits = 5
+        row_shift = 12   # assuming just 2 bits for column+bank
+        divisor_mask = 0b00111  # modulo divisor = 8
+        selection_mask = 0b00000000000000000000000010010010  # rows: 1, 4, 7
+
+        # fill whole memory with the same data
+        pattern = [(0x00, 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa),
+                   (0x40, 0x55555555555555555555555555555555),
+                   (0x1040, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF),
+                   (0x2040, 0xBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB)]
+
+        def generator(dut):
+            yield from dut.writer._count.write(4)
+            yield from dut.writer._mem_mask.write(0)
+            yield from dut.writer._data_mask.write(0x1f)
+
+            yield from dut.writer.inverter._divisor_mask.write(0)
+            yield from dut.writer.inverter._selection_mask.write(0)
+
+            yield from dut.writer._start.write(1)
+            yield from dut.writer._start.write(0)
+
+            yield from wait_or_timeout(500, dut.writer._ready.read)
+
+        dut = BISTDUT(pattern_init=pattern, rowbits=rowbits, row_shift=row_shift, writer=True)
+        generators = [generator(dut), *dut.default_port_handlers()]
+        run_simulation(dut, generators, vcd_name='test_multiple_addresses.vcd')
+
+        # print()
+        # for addr, we, data in dut.commands:
+        #     print('0x{:08x} {} 0x{:032x}'.format(addr, we, data))
+
+        for (addr, we, data), (expected_addr, expected_data) in zip(dut.commands, pattern):
+            self.assertEqual(we, 1)
+            self.assertEqual(data, expected_data, msg=addr)
+            self.assertEqual(addr, expected_addr, msg=addr)
 
 # Reader -------------------------------------------------------------------------------------------
 
@@ -271,7 +323,7 @@ class TestReader(unittest.TestCase):
             yield from wait_or_timeout(50, dut.reader._ready.read)
             self.assertEqual((yield from dut.reader._done.read()), count)
 
-        dut = BISTDUT(pattern_init=pattern)
+        dut = BISTDUT(pattern_init=pattern, reader=True)
         generators = [generator(dut), dut.read_handler(rdata_callback)]
         run_simulation(dut, generators)
 
@@ -301,12 +353,12 @@ class TestReader(unittest.TestCase):
             while not (yield from dut.reader._ready.read()):
                 yield
 
-        dut = BISTDUT(pattern_init=[(addr, 0) for addr in row_addresses])
+        dut = BISTDUT(pattern_init=[(addr, 0) for addr in row_addresses], reader=True)
         generators = [
             generator(dut),
             dut.read_handler(0),
         ]
-        run_simulation(dut, generators)
+        run_simulation(dut, generators, vcd_name="test_row_hammer_attack_pattern.vcd")
 
         # BIST Reader should cycle through the list of addresses
         we = 0
@@ -370,7 +422,7 @@ class TestReader(unittest.TestCase):
 
             yield from wait_or_timeout(500, dut.reader._ready.read)
 
-        dut = BISTDUT(pattern_init=pattern, rowbits=rowbits, row_shift=row_shift)
+        dut = BISTDUT(pattern_init=pattern, rowbits=rowbits, row_shift=row_shift, reader=True)
         generators = [generator(dut), dut.read_handler(rdata_callback)]
         run_simulation(dut, generators, vcd_name='sim.vcd')
 

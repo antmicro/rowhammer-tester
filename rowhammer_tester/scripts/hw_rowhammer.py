@@ -37,11 +37,14 @@ class HwRowHammer(RowHammer):
 
         # Do not increment memory address
         self.wb.regs.reader_mem_mask.write(0x00000000)
-        self.wb.regs.reader_data_mask.write(len(row_tuple) - 1)
+        self.wb.regs.reader_modulo.write(1)
+        self.wb.regs.reader_data_div.write(len(row_tuple) - 1)
+        #self.wb.regs.reader_data_mask.write(len(row_tuple) - 1)
 
         # Attacked addresses
-        memwrite(self.wb, addresses, base=self.wb.mems.writer_pattern_addr.base)
         memwrite(self.wb, addresses, base=self.wb.mems.reader_pattern_addr.base)
+        memwrite(self.wb, ([0xaaaaaaaa]*16),
+            base=self.wb.mems.reader_pattern_data.base)
 
         # how many
         print('read_count: ' + str(int(read_count)))
@@ -63,11 +66,11 @@ class HwRowHammer(RowHammer):
             progress(r_count)
             if self.wb.regs.reader_ready.read():
                 break
-            else:
-                time.sleep(10 / 1e3)
+            time.sleep(10 / 1e3)
 
         progress(self.wb.regs.reader_done.read())  # also clears the value
         print()
+        self.wb.regs.reader_modulo.write(0)
 
     def check_errors(self, row_pattern):
         dma_data_width = self.settings.phy.dfi_databits * self.settings.phy.nphases

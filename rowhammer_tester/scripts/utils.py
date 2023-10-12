@@ -166,7 +166,7 @@ def compare(val, ref, fmt, nbytes=4):
 
 def memwrite(wb, data, base=0x40000000, burst=0xff):
     for i in range(0, len(data), burst):
-        wb.write(base + 4 * i, data[i:i + burst])
+        wb.write(base + 4 * i, data[i:min(i + burst, len(data))])
 
 
 def memread(wb, n, base=0x40000000, burst=0xff):

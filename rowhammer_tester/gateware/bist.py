@@ -105,13 +105,15 @@ class BISTModule(Module):
     the operation. When the operation is ongoing `ready` will be 0.
     """
     def __init__(self, pattern_mem):
-        self.start = Signal()
-        self.ready = Signal()
-        self.count = Signal(32)
-        self.done  = Signal(32)
+        self.start  = Signal()
+        self.ready  = Signal()
+        self.modulo = Signal()
+        self.count  = Signal(32)
+        self.done   = Signal(32)
 
         self.mem_mask = Signal(32)
-        self.data_mask = Signal(32)
+        self.data_mask = Signal(max=pattern_mem.data.depth)
+        self.data_div = Signal(max=pattern_mem.data.depth)
 
         self.data_port = pattern_mem.data.get_port(mode=READ_FIRST)
         self.addr_port = pattern_mem.addr.get_port(mode=READ_FIRST)
@@ -121,6 +123,8 @@ class BISTModule(Module):
         self._start = CSR()
         self._start.description = 'Write to the register starts the transfer (if ready=1)'
         self._ready = CSRStatus(description='Indicates that the transfer is not ongoing')
+        self._modulo = CSRStorage(description='When set use modulo to calculate DMA transfers address'
+            ' rather than bit masking')
         self._count = CSRStorage(size=len(self.count), description='Desired number of DMA transfers')
         self._done = CSRStatus(size=len(self.done), description='Number of completed DMA transfers')
         self._mem_mask = CSRStorage(
@@ -128,17 +132,23 @@ class BISTModule(Module):
             description = 'DRAM address mask for DMA transfers'
         )
         self._data_mask = CSRStorage(
-            size        = len(self.mem_mask),
+            size        = len(self.data_mask),
             description = 'Pattern memory address mask'
+        )
+        self._data_div = CSRStorage(
+            size        = len(self.data_mask),
+            description = 'Pattern memory address divisior-1'
         )
 
         self.comb += [
             self.start.eq(self._start.re),
             self._ready.status.eq(self.ready),
+            self.modulo.eq(self._modulo.storage),
             self.count.eq(self._count.storage),
             self._done.status.eq(self.done),
             self.mem_mask.eq(self._mem_mask.storage),
             self.data_mask.eq(self._data_mask.storage),
+            self.data_div.eq(self._data_div.storage),
         ]
 
 
@@ -158,11 +168,11 @@ Pattern
         """.format(common=BISTModule.__doc__))
 
         dma = LiteDRAMDMAWriter(dram_port, fifo_depth=4, fifo_buffered=True)
-        self.submodules += dma
+        self.submodules.dma = dma
 
         cmd_counter = Signal(32)
-        mem_addr    = Signal.like(cmd_counter)
-        dram_addr   = Signal.like(dma.sink.address)
+        mem_addr    = Signal.like(self.data_mask)
+        self.dram_addr = dram_addr = Signal.like(dma.sink.address)
 
         wait_counter = Signal(max=3)
 
@@ -177,7 +187,7 @@ Pattern
 
         # DMA data may be inverted using AddressSelector
         self.submodules.inverter = RowDataInverter(
-            addr      = dma.sink.address,
+            addr      = dram_addr,
             data_in   = self.data_port.dat_r,
             data_out  = dma.sink.data,
             rowbits   = rowbits,
@@ -189,11 +199,14 @@ Pattern
             self.ready.eq(1),
             If(self.start,
                 NextValue(cmd_counter, 0),
+                NextValue(mem_addr, 0),
                 NextState("COMPUTE_MEM_ADDR"),
             )
         )
         fsm.act("COMPUTE_MEM_ADDR",
-            NextValue(mem_addr, cmd_counter & self.data_mask),
+            If(~self.modulo,
+                NextValue(mem_addr, cmd_counter[:len(self.data_mask)] & self.data_mask),
+            ),
             If(cmd_counter >= self.count,
                 NextState("READY")
             ).Else(
@@ -205,7 +218,8 @@ Pattern
         )
         fsm.act("COMPUTE_DRAM_ADDR",
             NextValue(wait_counter, 0),
-            NextValue(dram_addr, self.addr_port.dat_r + (cmd_counter & self.mem_mask)),
+            NextValue(dram_addr, self.addr_port.dat_r +
+                (cmd_counter & self.mem_mask)),
             NextState("INVERT_COMPUTE"),
         )
         fsm.act("INVERT_COMPUTE",
@@ -218,6 +232,11 @@ Pattern
             dma.sink.valid.eq(1),
             If(dma.sink.ready,
                 NextValue(cmd_counter, cmd_counter + 1),
+                If(self.modulo & (mem_addr == self.data_div),
+                    NextValue(mem_addr, 0),
+                ).Elif(self.modulo,
+                    NextValue(mem_addr, mem_addr + 1),
+                ),
                 NextState("COMPUTE_MEM_ADDR")
             )
         )
@@ -225,6 +244,12 @@ Pattern
     def add_csrs(self):
         super().add_csrs()
         self.inverter.add_csrs()
+        self._last_address = CSRStatus(size=32, description='Number of completed DMA transfers')
+        self.sync += [
+            If(self.dma.sink.valid & self.dma.sink.ready,
+                self._last_address.status.eq(self.dram_addr)
+            ),
+        ]
 
 
 class Reader(BISTModule, AutoCSR, AutoDoc):
@@ -278,7 +303,7 @@ The current progress can be read from the `done` CSR.
 
         # ----------------- Address FSM -----------------
         counter_addr = Signal(32)
-        mem_addr    = Signal.like(counter_addr)
+        mem_addr    = Signal.like(self.data_mask)
         dram_addr   = Signal.like(dma.sink.address)
 
         self.comb += [
@@ -292,11 +317,14 @@ The current progress can be read from the `done` CSR.
         fsm_addr.act("READY",
             If(self.start,
                 NextValue(counter_addr, 0),
+                NextValue(mem_addr, 0),
                 NextState("COMPUTE_MEM_ADDR"),
             ),
         )
         fsm_addr.act("COMPUTE_MEM_ADDR",
-            NextValue(mem_addr, counter_addr & self.data_mask),
+            If(~self.modulo,
+                NextValue(mem_addr, counter_addr[:len(self.data_mask)] & self.data_mask),
+            ),
             If(counter_addr >= self.count,
                 NextState("READY"),
             ).Else(
@@ -307,7 +335,8 @@ The current progress can be read from the `done` CSR.
             NextState("COMPUTE_DRAM_ADDR"),
         )
         fsm_addr.act("COMPUTE_DRAM_ADDR",
-            NextValue(dram_addr, self.addr_port.dat_r + (counter_addr & self.mem_mask)),
+            NextValue(dram_addr, self.addr_port.dat_r +
+                (counter_addr & self.mem_mask)),
             NextState("PUSH_TO_FIFO"),
         )
         fsm_addr.act("PUSH_TO_FIFO",
@@ -320,13 +349,18 @@ The current progress can be read from the `done` CSR.
             dma.sink.valid.eq(1),
             If(dma.sink.ready,
                 NextValue(counter_addr, counter_addr + 1),
+                If(self.modulo & (mem_addr == self.data_div),
+                    NextValue(mem_addr, 0),
+                ).Elif(self.modulo,
+                    NextValue(mem_addr, mem_addr + 1),
+                ),
                 NextState("COMPUTE_MEM_ADDR")
             )
         )
 
         # ------------- Pattern FSM ----------------
         counter_gen = Signal(32)
-        data_mem_addr = Signal.like(counter_gen)
+        data_mem_addr = Signal.like(self.data_mask)
         wait_counter = Signal(max=3)
 
         # Unmatched memory offsets
@@ -348,12 +382,15 @@ The current progress can be read from the `done` CSR.
             self.ready.eq(1),
             If(self.start,
                 NextValue(counter_gen, 0),
+                NextValue(data_mem_addr, 0),
                 NextValue(self.error_count, 0),
                 NextState("COMPUTE_MEM_ADDR"),
             )
         )
         fsm_pattern.act("COMPUTE_MEM_ADDR",
-            NextValue(data_mem_addr, counter_gen & self.data_mask),
+            If(~self.modulo,
+                NextValue(data_mem_addr, counter_gen & self.data_mask),
+            ),
             If(counter_gen >= self.count,
                 NextState("READY")
             ).Else(
@@ -371,13 +408,6 @@ The current progress can be read from the `done` CSR.
                 NextState("RD_DATA")
             ),
             NextValue(wait_counter, wait_counter + 1),
-        )
-        fsm_pattern.act("WAIT",  # TODO: we could pipeline the access
-            If(counter_gen >= self.count,
-                NextState("READY")
-            ).Else(
-                NextState("RD_DATA")
-            )
         )
         fsm_pattern.act("RD_DATA",
             If(dma.source.valid,
