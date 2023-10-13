@@ -113,6 +113,9 @@ def main():
     target_name = 'ddr5_tester_linux'
     builder_kwargs = common.get_builder_kwargs(args, target_name=target_name)
     builder = Builder(soc, **builder_kwargs)
+
+    common.configure_generated_files(builder, args, target_name)
+
     build_kwargs = vivado_build_argdict(args)
     build_kwargs.update({"vivado_place_directive":               "AltSpreadLogic_high",
                          "vivado_post_place_phys_opt_directive": "AggressiveExplore",
