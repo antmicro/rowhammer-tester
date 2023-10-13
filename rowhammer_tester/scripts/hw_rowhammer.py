@@ -43,8 +43,7 @@ class HwRowHammer(RowHammer):
 
         # Attacked addresses
         memwrite(self.wb, addresses, base=self.wb.mems.reader_pattern_addr.base)
-        memwrite(self.wb, ([0xaaaaaaaa]*16),
-            base=self.wb.mems.reader_pattern_data.base)
+        memwrite(self.wb, ([0xaaaaaaaa] * 16), base=self.wb.mems.reader_pattern_data.base)
 
         # how many
         print('read_count: ' + str(int(read_count)))

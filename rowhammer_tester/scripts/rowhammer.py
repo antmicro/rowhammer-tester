@@ -239,7 +239,6 @@ class RowHammer:
                 self.display_errors(errors, read_count)
                 return
 
-
     def run(self, row_pairs, pattern_generator, read_count, row_progress=16, verify_initial=False):
         """
         Main part of the script.
