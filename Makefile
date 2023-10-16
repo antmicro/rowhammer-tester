@@ -121,7 +121,7 @@ format: FORCE
 
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr '/' '_')
 COMMIT := $(shell git rev-parse HEAD | head -c8)
-ZIP_CONTENTS := $(addprefix build/$(TARGET)/,csr.csv defs.csv sdram_init.py litedram_settings.json gateware/$(TOP).bit)
+ZIP_CONTENTS ?= $(addprefix build/$(TARGET)/,csr.csv defs.csv sdram_init.py litedram_settings.json gateware/$(TOP).bit)
 
 .PHONY: pack
 pack: $(ZIP_CONTENTS)
