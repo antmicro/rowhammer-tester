@@ -93,6 +93,7 @@ Additionally, **etherbone** or **ethernet** can be set up with either:
 
 After having configured the DDR5 Tester Linux, the target can be build with `make build` Makefile target.
 Use example of DDR5 Tester Linux Target with ethernet configured:
+
 ```bash
 make build TARGET=ddr5_tester_linux TARGET_ARGS="--build --l2-size 256 --iodelay-clk-freq 400e6 --module MTC10F1084S1RC --with-wishbone-memory --wishbone-force-32b --with-ethernet --remote-ip-address 192.168.100.100 --local-ip-address 192.168.100.50"
 ```
@@ -100,12 +101,14 @@ make build TARGET=ddr5_tester_linux TARGET_ARGS="--build --l2-size 256 --iodelay
 ### Interacting with DDR5 Tester Linux Target
 
 First, load the bitstream onto the DDR5 Tester with the help of the OpenFPGALoader:
+
 ```bash
 openFPGALoader --board antmicro_ddr5_tester build/ddr5_tester_linux/gateware/antmicro_ddr5_tester.bit --freq 3e6
 ```
 
 In order to connect to the board, assign IP Address -- `192.168.100.100` -- to the ethernet interface that is plugged to the DDR5 Tester board and set up the device if needed.
 For example by:
+
 ```bash
 ip addr add 192.168.100.100/24 dev $ETH
 ip link set dev $ETH up
@@ -113,6 +116,7 @@ ip link set dev $ETH up
 Where **ETH** is the name of your ethernet interface.
 
 When the ethernet interface has been set up correctly, you may access the BIOS console on the DDR5 Tester with:
+
 ```bash
 picocom -b 115200 /dev/ttyUSB2
 ```
@@ -122,36 +126,44 @@ picocom -b 115200 /dev/ttyUSB2
 From this this point, several linux boot methods can be invoked but booting via ethernet is recommended.
 In order to enable netboot, the TFTP server needs to be set up first.
 
+```{note}
 Running TFTP server varies between distributions, this can mean different TFTP implementation name and a different location of the configuration file.
+```
 
-As an example, here's a how-to guide for Arch Linux:
+As an example, here's a quick guide on how to configure TFTP server for Arch Linux:
 
-First, if not equipped already, get a implementation of a TFTP server, for example:
+Firstly, if not equipped already, get an implementation of a TFTP server, for example:
+
 ```bash
 pacman -S tftp-hpa
 ```
 
-The TFTP server is configured via `/etc/conf.d/tftpd` file, here's a suggested configuration for the DDR5 Tester Linux boot process:
+The TFTP server is configured via a `/etc/conf.d/tftpd` file, here's a suggested configuration for the DDR5 Tester Linux boot process:
+
 ```bash
 TFTP_USERNAME="tftp"
 TFTPD_OPTIONS="--secure"
 TFTP_DIRECTORY="/srv/tftp"
 TFTP_ADDRESS="192.168.100.100:69"
 ```
-The **TFTP_ADDRESS** is the specified **--remote-ip-address** whilst building the target and the port is the default for the TFTP server.
+
+The **TFTP_ADDRESS** is the specified **--remote-ip-address** whilst building the target and the port is the default one for the TFTP server.
 The **TFTP_DIRECTORY** is the TFTP's root directory.
 
-In order to start the TFTP server, the TFTP service needs to be started:
+Then, the TFTP service needs to be started:
+
 ```bash
 systemctl start tftpd
 ```
 
 To check if the TFTP sever has been set up properly, one may run:
+
 ```bash
 cd /srv/tftp/ && echo "TEST TFTP SERVER" > test
 
 cd ~/ && tftp 192.168.100.100 -c get test
 ```
+
 The **test** file should appear in the home directory with "TEST TFTP SERVER" contents.
 
 ### Booting Linux on DDR5 Tester Linux Target
@@ -164,11 +176,13 @@ You will need the following binaries:
 
 All of those can be obtained with the use of provided `buildroot_ext` buildroot external configuration.
 To build binaries with buildroot run:
+
 ```bash
 git clone --single-branch -b 2023.05.x https://github.com/buildroot/buildroot.git
 pushd buildroot
 make BR2_EXTERNAL="$(pwd)/../buildroot_ext" ddr5_vexriscv_defconfig
 ```
+
 Then, transfer the binaries to the TFTP root directory:
 
 ```bash
@@ -177,6 +191,7 @@ mv $out/fw_jump.bin /srv/tftp/opensbi.bin
 ```
 
 The address map of the binaries alongside boot args can be contained within the **boot.json** file, for example:
+
 ```json
 {
     "/srv/tftp/Image":        "0x40000000",
@@ -191,12 +206,15 @@ The address map of the binaries alongside boot args can be contained within the 
     }
 ```
 
+
 Having placed linux boot binaries in the TFTP's root directory with `boot.json`, the netboot can be invoked from BIOS console with:
+
 ```bash
 netboot /srv/tftp/boot.json
 ```
 
-Upon successful execution a somewhat-similar log will be printed:
+Upon successful execution a similar log will be printed:
+
 ```
 litex> netboot /srv/tftp/boot.json
 Booting from network...
@@ -211,7 +229,9 @@ Executing booted program at 0x40f00000
 
 --============= Liftoff! ===============--
 ```
+
 Then, the Opensbi and Linux boot log should follow:
+
 ```
 OpenSBI v1.3-24-g84c6dc1
    ____                    _____ ____ _____
@@ -237,6 +257,7 @@ Platform Console Device   : litex_uart
 ```
 
 At the very end you should be greeted with:
+
 ```
 Welcome to Buildroot
 buildroot login: root
