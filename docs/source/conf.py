@@ -58,6 +58,9 @@ extensions = list(set(default_extensions + [
     'sphinxcontrib.wavedrom',
 ]))
 
+# Supress duplicate label warnings from autosectionlabel
+suppress_warnings = ['autosectionlabel.*']
+
 myst_enable_extensions = default_myst_enable_extensions
 
 myst_substitutions = {
@@ -103,7 +106,7 @@ for target in ['arty', 'zcu104', 'ddr4_datacenter_test_board',
     'lpddr4_test_board', 'ddr5_test_board','ddr5_tester']:
     run([
         'python3',
-        f'../rowhammer_tester/targets/{target}.py',
+        f'../../rowhammer_tester/targets/{target}.py',
         '--docs',
     ])
     run([
