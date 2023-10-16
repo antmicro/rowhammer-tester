@@ -187,7 +187,7 @@ Then, transfer the binaries to the TFTP root directory:
 
 ```bash
 mv buildroot/output/images/* /srv/tftp/
-mv $out/fw_jump.bin /srv/tftp/opensbi.bin
+mv /srv/tftp/fw_jump.bin /srv/tftp/opensbi.bin
 ```
 
 The address map of the binaries alongside boot args can be contained within the **boot.json** file, for example:
