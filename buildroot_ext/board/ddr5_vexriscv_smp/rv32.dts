@@ -5,9 +5,9 @@
 	#size-cells = <0x01>;
 
 	chosen {
-		bootargs = "mem=256M@0x40000000 console=liteuart earlycon=liteuart,0xf0001000 rootwait root=/dev/ram0";
+		bootargs = "rootwait console=liteuart earlycon=sbi root=/dev/ram0 init=/sbin/init swiotlb=0032";
 		linux,initrd-start = <0x42000000>;
-		linux,initrd-end = <0x45000000>;
+		linux,initrd-end = <0x43000000>;
 	};
 
 	cpus {
@@ -21,24 +21,13 @@
 			riscv,isa = "rv32ima";
 			mmu-type = "riscv,sv32";
 			reg = <0x00>;
-			clock-frequency = <0x5f5e100>;
 			status = "okay";
-			d-cache-size = <0x40>;
-			d-cache-sets = <0x01>;
-			d-cache-block-size = <0x40>;
-			i-cache-size = <0x40>;
-			i-cache-sets = <0x01>;
-			i-cache-block-size = <0x40>;
-			d-tlb-size = <0x04>;
-			d-tlb-sets = <0x04>;
-			i-tlb-size = <0x04>;
-			i-tlb-sets = <0x04>;
 
-			L0: interrupt-controller {
+			interrupt-controller {
 				#interrupt-cells = <0x01>;
 				interrupt-controller;
 				compatible = "riscv,cpu-intc";
-				phandle = <0x02>;
+				phandle = <0x01>;
 			};
 		};
 	};
@@ -58,14 +47,6 @@
 		};
 	};
 
-	clocks {
-		litex_sys_clk {
-			#clock-cells = <0x00>;
-			compatible = "fixed-clock";
-			clock-frequency = <0x5f5e100>;
-		};
-	};
-
 	soc {
 		#address-cells = <0x01>;
 		#size-cells = <0x01>;
@@ -73,21 +54,14 @@
 		compatible = "simple-bus";
 		ranges;
 
-		oc_ctrl0: soc_controller@f0003800 {
-            compatible = "litex,soc_controller";
-            reg = <0xf0003800 0x0c>;
-            status = "okay";
-        };
-
-		plic: interrupt-controller@f0c00000 {
+		interrupt-controller@f0c00000 {
 			compatible = "sifive,plic-1.0.0\0sifive,fu540-c000-plic";
 			reg = <0xf0c00000 0x400000>;
-			#address-cells = <0x00>;
 			#interrupt-cells = <0x01>;
 			interrupt-controller;
-			interrupts-extended = <&L0 11 &L0 9>;
-			riscv,ndev = <0x20>;
-			phandle = <0x01>;
+			interrupts-extended = <0x01 0x0b 0x01 0x09>;
+			riscv,ndev = <0x32>;
+			phandle = <0x02>;
 		};
 
 		serial@f0001000 {
