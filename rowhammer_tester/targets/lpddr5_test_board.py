@@ -53,7 +53,7 @@ class SoC(common.RowHammerSoC):
             ck_freq     = self.sys_clk_freq)
 
     def get_sdram_ratio(self):
-        return "1:8"
+        return "1:8" # TODO: Verify
 
     def add_host_bridge(self):
         self.submodules.ethphy = LiteEthS7PHYRGMII(
@@ -78,14 +78,13 @@ def main():
         sys_clk_freq = '100e6',
         module       = 'MT62F1G32D4DR'
     )
-    g = parser.add_argument_group(title="LPDDR4 Test Board")
+    g = parser.add_argument_group(title="LPDDR5 Test Board")
     parser.add(g, "--eth-reset-time", default="10e-3", help="Duration of Ethernet PHY reset")
     parser.add(g, "--iodelay-clk-freq", default="200e6", help="IODELAY clock frequency")
     vivado_build_args(g)
     args = parser.parse_args()
 
     soc_kwargs = common.get_soc_kwargs(args)
-    soc_kwargs["masked_write"] = True # LPDDR5 always has masked writes
     soc = SoC(**soc_kwargs)
 
     target_name = 'lpddr5_test_board'
