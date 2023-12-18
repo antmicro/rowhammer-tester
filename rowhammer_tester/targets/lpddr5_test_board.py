@@ -75,7 +75,7 @@ class SoC(common.RowHammerSoC):
 def main():
     parser = common.ArgumentParser(
         description  = "LiteX SoC on LPDDR5 Test Board",
-        sys_clk_freq = '100e6',
+        sys_clk_freq = '60e6',
         module       = 'MT62F1G32D4DR'
     )
     g = parser.add_argument_group(title="LPDDR5 Test Board")
