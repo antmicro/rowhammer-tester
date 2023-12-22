@@ -16,6 +16,8 @@ OFL_BOARD := antmicro_ddr4_tester
 TOP := antmicro_datacenter_ddr4_test_board
 else ifeq ($(TARGET),lpddr4_test_board)
 OFL_BOARD := antmicro_lpddr4_tester
+else ifeq ($(TARGET),lpddr5_test_board)
+OFL_BOARD := antmicro_lpddr5_tester
 else ifeq ($(TARGET),ddr5_tester)
 OFL_BOARD := antmicro_ddr5_tester
 OFL_EXTRA_ARGS := --freq 3e6
