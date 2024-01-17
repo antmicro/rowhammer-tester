@@ -101,10 +101,11 @@ def main():
     builder = Builder(soc, **builder_kwargs)
     build_kwargs = vivado_build_argdict(args) if not args.sim else {}
 
+    common.run(args, builder, build_kwargs, target_name=target_name)
+
     if args.pcie_driver:
         generate_litepcie_software(soc, os.path.join(builder.output_dir, "pcie_driver"))
 
-    common.run(args, builder, build_kwargs, target_name=target_name)
 
 if __name__ == "__main__":
     main()
