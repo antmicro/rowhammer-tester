@@ -32,3 +32,6 @@
 [submodule "third_party/pythondata-cpu-vexriscv_smp"]
 	path = third_party/pythondata-cpu-vexriscv_smp
 	url = https://github.com/litex-hub/pythondata-cpu-vexriscv_smp
+[submodule "third_party/litepcie"]
+	path = third_party/litepcie
+	url = https://github.com/enjoy-digital/litepcie

@@ -6,6 +6,7 @@
 -e third_party/liteeth
 -e third_party/liteiclink
 -e third_party/litescope
+-e third_party/litepcie
 -e third_party/litex-boards
 # vexriscv cpu
 -e third_party/pythondata-cpu-vexriscv_smp
