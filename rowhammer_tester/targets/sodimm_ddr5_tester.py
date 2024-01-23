@@ -95,6 +95,7 @@ def main():
     args = parser.parse_args()
 
     soc_kwargs = common.get_soc_kwargs(args)
+    soc_kwargs['with_sub_channels'] = True
     soc = SoC(**soc_kwargs)
 
     target_name = 'sodimm_ddr5_tester'
