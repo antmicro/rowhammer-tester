@@ -44,9 +44,9 @@ class SoC(common.RowHammerSoC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.pcie_phy = S7PCIEPHY(self.platform, self.platform.request("pcie_x4"),
-                                  data_width = 128, bar0_size  = 0x20000)
-        self.add_pcie(phy=self.pcie_phy, ndmas=1)
+        # self.pcie_phy = S7PCIEPHY(self.platform, self.platform.request("pcie_x2"),
+                                #   data_width = 128, bar0_size  = 0x20000)
+        # self.add_pcie(phy=self.pcie_phy, ndmas=1)
 
     def get_platform(self):
         return antmicro_sodimm_ddr5_tester.Platform()
