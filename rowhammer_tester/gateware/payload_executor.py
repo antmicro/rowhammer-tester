@@ -237,9 +237,6 @@ class DFIExecutor(Module):
         self.phase = Signal(max=max(len(dfi.phases) - 1, 2))
         self.exec  = Signal()
 
-        if len(dfi.phases) == 1:
-            self.phase.eq(0)
-
         nranks = len(dfi.p0.cs_n)
 
         for i, phase in enumerate(dfi.phases):
