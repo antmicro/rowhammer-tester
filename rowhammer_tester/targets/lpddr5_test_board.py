@@ -25,7 +25,7 @@ class CRG(Module):
 
         # # #
 
-        self.submodules.pll = pll = S7PLL(speedgrade=-1)
+        self.submodules.pll = pll = S7PLL(speedgrade=-3)
         pll.register_clkin(platform.request("clk100"), 100e6)
         pll.create_clkout(self.cd_sys,    sys_clk_freq)
         pll.create_clkout(self.cd_sys2x,  2 * sys_clk_freq)
