@@ -76,12 +76,12 @@ class SoC(common.RowHammerSoC):
 def main():
     parser = common.ArgumentParser(
         description  = "LiteX SoC on LPDDR5 Test Board",
-        sys_clk_freq = '50e6',
+        sys_clk_freq = '60e6',
         module       = 'MT62F1G32D4DR'
     )
     g = parser.add_argument_group(title="LPDDR5 Test Board")
     parser.add(g, "--eth-reset-time", default="10e-3", help="Duration of Ethernet PHY reset")
-    parser.add(g, "--iodelay-clk-freq", default="200e6", help="IODELAY clock frequency")
+    parser.add(g, "--iodelay-clk-freq", default="400e6", help="IODELAY clock frequency")
     vivado_build_args(g)
     args = parser.parse_args()
 
