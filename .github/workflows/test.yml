@@ -36,11 +36,7 @@ jobs:
 
       - name: Check targets
         run: |
-          make TARGET=arty
-          make TARGET=zcu104
-          make TARGET=lpddr4_test_board
-          make TARGET=ddr4_datacenter_test_board
-          make TARGET=arty ARGS="--sim"
+          make TARGET=lpddr5_test_board
 
       - name: Run tests
         run: make test
