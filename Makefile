@@ -32,6 +32,8 @@ OFL_BOARD := antmicro_ddr5_tester
 TOP := antmicro_ddr5_tester
 else ifeq ($(TARGET),sodimm_lpddr5_tester)
 OFL_BOARD := antmicro_sodimm_lpddr5_tester
+else ifeq ($(TARGET),sodimm_ddr5_tester)
+OFL_BOARD := antmicro_sodimm_ddr5_tester
 else
 $(error Unsupported board type)
 endif
