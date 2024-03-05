@@ -153,7 +153,8 @@ class SoC(common.RowHammerSoC):
 	default_i2c = get_i2c_active_dev();
 	for(i=0; i < i2c_count; ++i) {
 		set_i2c_active_dev(i);
-		if (strcmp(get_i2c_devs()->name, "platform_i2c")) {
+		printf("%d:%s\\n", i, get_i2c_devs()[i].name);
+		if (strcmp(get_i2c_devs()[i].name, "platform_i2c") == 0) {
 			unsigned char command[2] = {0x80, 0x00};
 			i2c_write(0x60, 0x70, command, 2, 1);
 			set_i2c_active_dev(default_i2c);
@@ -248,7 +249,7 @@ def main():
     parser = common.ArgumentParser(
         description  = "LiteX SoC on DDR5 Tester Board",
         sys_clk_freq = '200e6',
-        module       = 'M329R8GA0BB0'
+        module       = 'MTC8C1084S1SC48BA1_BC'
     )
     g = parser.add_argument_group(title="DDR5 Tester Board")
     parser.add(g, "--eth-reset-time", default="10e-3", help="Duration of Ethernet PHY reset")

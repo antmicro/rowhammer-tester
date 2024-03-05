@@ -21,6 +21,7 @@ SPD_COMMANDS = {
     'zcu104': (1, ['i2c_write 0x74 0x80']),
     'ddr4_datacenter_test_board': (0, None),
     'ddr5_tester': (0, None, True),
+    'sodimm_ddr5_tester': (0, None, True),
 }
 
 
