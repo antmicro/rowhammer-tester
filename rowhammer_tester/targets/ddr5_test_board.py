@@ -197,7 +197,6 @@ class SoC(common.RowHammerSoC):
             ck_t=(("sys2x_io", "sys4x_io"), None),
             ck_c=(("sys2x_io", "sys4x_io"), None),
             ca=(("sys2x_io", "sys4x_io"), None),
-            par=(("sys2x_io", "sys4x_io"), None),
             cs_n=(("sys2x_io", "sys4x_io"), None),
             reset_n=(("sys2x_io", "sys4x_io"), None),
             alert_n=(None, ("sys_io", "sys4x_io")),
