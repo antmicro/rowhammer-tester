@@ -113,8 +113,11 @@ class SoC(common.RowHammerSoC):
 
         out_pads = [
             self.platform.request("pwr_en"),
+            self.platform.request("LED_yellow"),
+            self.platform.request("LED_red"),
+            self.platform.request("LED_green"),
         ]
-        _out = Signal(1)
+        _out = Signal(4)
         self.comb += [pad.eq(_out[i]) for i, pad in enumerate(out_pads)]
         self.submodules.GPIO_out = GPIOOut(_out)
         self.add_csr("GPIO_out")
@@ -123,10 +126,12 @@ class SoC(common.RowHammerSoC):
             early_init += """printf("Early Init\\n");
 	uint32_t board_state = 0;
 	uint32_t i2c_count;
+	uint32_t GPIO_state;
 	uint32_t default_i2c;
 	int i;
 	// Disable PWR_EN
 	GPIO_out_out_write(0);
+	busy_wait(5000);
 
 	// Wait for DIMM to show up
 	do {
@@ -139,6 +144,9 @@ class SoC(common.RowHammerSoC):
 	// Testbed detected but SO-DIMM expected
 	if (board_state&0x2) {
 		printf("Incorrect module detected! Power-off and replace with DDR5 SO-DIMM\\n");
+		GPIO_state = GPIO_out_out_read();
+		GPIO_state |= 0x4;
+		GPIO_out_out_write(GPIO_state);
 		while (1) {
 			busy_wait(500);
 			leds_out_write(-1);
@@ -148,6 +156,9 @@ class SoC(common.RowHammerSoC):
 		}
 	}
 
+	GPIO_state = GPIO_out_out_read();
+	GPIO_state |= 0x8;
+	GPIO_out_out_write(GPIO_state);
 	// Setup Vref values
 	i2c_count = get_i2c_devs_count();
 	default_i2c = get_i2c_active_dev();
@@ -163,7 +174,9 @@ class SoC(common.RowHammerSoC):
 	}
 
 	// Set PWR_EN
-	GPIO_out_out_write(1);
+	GPIO_state = GPIO_out_out_read();
+	GPIO_state |= 0x1;
+	GPIO_out_out_write(GPIO_state);
 	// Wait for PWR_GOOD
 	do {
 		busy_wait(50);
