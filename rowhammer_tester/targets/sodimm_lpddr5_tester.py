@@ -98,7 +98,7 @@ def main():
     soc_kwargs['with_sub_channels'] = True
     soc = SoC(**soc_kwargs)
 
-    target_name = 'sodimm_ddr5_tester'
+    target_name = 'sodimm_lpddr5_tester'
     builder_kwargs = common.get_builder_kwargs(args, target_name=target_name)
     builder = Builder(soc, **builder_kwargs)
     build_kwargs = vivado_build_argdict(args) if not args.sim else {}
