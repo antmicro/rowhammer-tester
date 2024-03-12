@@ -29,11 +29,16 @@ else ifeq ($(TARGET),zcu104)
 TOP := xilinx_zcu104
 else ifeq ($(TARGET),ddr5_tester_linux)
 OFL_BOARD := antmicro_ddr5_tester
+OFL_EXTRA_ARGS := --freq 3e6
 TOP := antmicro_ddr5_tester
 else ifeq ($(TARGET),sodimm_lpddr5_tester)
-OFL_BOARD := antmicro_sodimm_lpddr5_tester
+OFL_BOARD := antmicro_ddr5_tester
+OFL_EXTRA_ARGS := --freq 3e6
+TOP := antmicro_sodimm_ddr5_tester
 else ifeq ($(TARGET),sodimm_ddr5_tester)
-OFL_BOARD := antmicro_sodimm_ddr5_tester
+OFL_BOARD := antmicro_ddr5_tester
+OFL_EXTRA_ARGS := --freq 3e6
+TOP := antmicro_sodimm_ddr5_tester
 else
 $(error Unsupported board type)
 endif
