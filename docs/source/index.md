@@ -19,6 +19,7 @@ lpddr4_tb.md
 ddr4_datacenter_dram_tester.md
 ddr5_tester.md
 ddr5_test_board.md
+sodimm_ddr5_tester.md
 ```
 
 ```{toctree}
