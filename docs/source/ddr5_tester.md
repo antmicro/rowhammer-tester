@@ -284,3 +284,13 @@ buildroot login: root
 
 login[65]: root login on 'console'
 ```
+
+## Simulation
+
+The simulation is based on a DDR5 DRAM model ([sdram_simulation_model.py](../../third_party/litedram/litedram/phy/ddr5/sdram_simulation_model.py)) and a DDR5 PHY simulation model ([simphy.py](../../third_party/litedram/litedram/phy/ddr5/simphy.py)). These two models are used by the SoC simulation model ([simsoc.py](../../third_party/litedram/litedram/phy/ddr5/simsoc.py)).
+
+The simulation can be started with:
+
+```sh
+python3 third_party/litedram/litedram/phy/ddr5/simsoc.py --no-masked-write --with-sub-channels --dq-dqs-ratio 4 --modules-in-rank 1 --log-level error --skip-csca --skip-reset-seq --skip-mrs-seq --with-prompt --l2-size 256 --uart-name serial
+```
