@@ -30,7 +30,8 @@ class CRG(Module):
         # BUFMR to BUFR and BUFIO, "raw" clocks
         self.clock_domains.cd_sys4x_raw    = ClockDomain(reset_less=True)
         self.clock_domains.cd_sys4x_90_raw = ClockDomain(reset_less=True)
-        # BUFMR reset domain
+        # BUFMR reset domains
+        self.clock_domains.cd_sys2x_rst = ClockDomain()
         self.clock_domains.cd_sys2x_90_rst = ClockDomain()
 
         # # #
@@ -55,13 +56,19 @@ class CRG(Module):
             buf=None,
         )
         mmcm.create_clkout(
+            self.cd_sys2x_rst,
+            2 * sys_clk_freq,
+            clock_out = 0,
+            div       = 2,
+            buf       = 'bufr',
+        )
+        mmcm.create_clkout(
             self.cd_sys2x_90_rst,
             2 * sys_clk_freq,
             clock_out = 1,
             div       = 2,
             phase     = 90,
             buf       = 'bufr',
-            name      = "rst_domain",
         )
 
         mmcm.create_clkout(self.cd_sys,    sys_clk_freq)
@@ -217,7 +224,8 @@ class SoC(common.RowHammerSoC):
 
     def get_ddrphy(self):
         PHYCRG = ddr5.S7PHYCRG(
-            reset_clock_domain = "sys2x_90_rst",
+            reset_clock_domain = "sys2x_rst",
+            reset_clock_90_domain = "sys2x_90_rst",
             source_4x          = ClockSignal("sys4x_raw"),
             source_4x_90       = ClockSignal("sys4x_90_raw"),
         )
