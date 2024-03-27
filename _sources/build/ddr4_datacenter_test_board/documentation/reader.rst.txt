@@ -1,0 +1,652 @@
+READER
+======
+
+
+
+DMA DRAM reader.
+
+Allows to check DRAM contents against a predefined pattern using DMA.
+
+Pattern
+-------
+
+
+    Provides access to RAM to store access pattern: `mem_addr` and `mem_data`.
+    The pattern address space can be limited using the `data_mask`.
+
+    For example, having `mem_adr` filled with `[ 0x04, 0x02, 0x03, ... ]`
+    and `mem_data` filled with `[ 0xff, 0xaa, 0x55, ... ]` and setting
+    `data_mask = 0b01`, the pattern [(address, data), ...] written will be:
+    `[(0x04, 0xff), (0x02, 0xaa), (0x04, 0xff), ...]` (wraps due to masking).
+
+    DRAM memory range that is being accessed can be configured using `mem_mask`.
+
+    To use this module, make sure that `ready` is 1, then write the desired
+    number of transfers to `count`. Writing to the `start` CSR will initialize
+    the operation. When the operation is ongoing `ready` will be 0.
+
+
+Reading errors
+--------------
+
+This module allows to check the locations of errors in the memory.
+It scans the configured memory area and compares the values read to
+the predefined pattern. If `skip_fifo` is 0, this module will stop
+after each error encountered, so that it can be examined. Wait until
+the `error_ready` CSR is 1. Then use the CSRs `error_offset`,
+`error_data` and `error_expected` to examine the errors in the current
+transfer. To continue reading, write 1 to `error_continue` CSR.
+Setting `skip_fifo` to 1 will disable this behaviour entirely.
+
+The final number of errors can be read from `error_count`.
+NOTE: This value represents the number of erroneous *DMA transfers*.
+
+The current progress can be read from the `done` CSR.
+
+
+Register Listing for READER
+---------------------------
+
++------------------------------------------------------------------------+----------------------------------------------------+
+| Register                                                               | Address                                            |
++========================================================================+====================================================+
+| :ref:`READER_START <READER_START>`                                     | :ref:`0xf0003000 <READER_START>`                   |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_READY <READER_READY>`                                     | :ref:`0xf0003004 <READER_READY>`                   |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_MODULO <READER_MODULO>`                                   | :ref:`0xf0003008 <READER_MODULO>`                  |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_COUNT <READER_COUNT>`                                     | :ref:`0xf000300c <READER_COUNT>`                   |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_DONE <READER_DONE>`                                       | :ref:`0xf0003010 <READER_DONE>`                    |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_MEM_MASK <READER_MEM_MASK>`                               | :ref:`0xf0003014 <READER_MEM_MASK>`                |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_DATA_MASK <READER_DATA_MASK>`                             | :ref:`0xf0003018 <READER_DATA_MASK>`               |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_DATA_DIV <READER_DATA_DIV>`                               | :ref:`0xf000301c <READER_DATA_DIV>`                |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_INVERTER_DIVISOR_MASK <READER_INVERTER_DIVISOR_MASK>`     | :ref:`0xf0003020 <READER_INVERTER_DIVISOR_MASK>`   |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_INVERTER_SELECTION_MASK <READER_INVERTER_SELECTION_MASK>` | :ref:`0xf0003024 <READER_INVERTER_SELECTION_MASK>` |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_COUNT <READER_ERROR_COUNT>`                         | :ref:`0xf0003028 <READER_ERROR_COUNT>`             |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_SKIP_FIFO <READER_SKIP_FIFO>`                             | :ref:`0xf000302c <READER_SKIP_FIFO>`               |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_OFFSET <READER_ERROR_OFFSET>`                       | :ref:`0xf0003030 <READER_ERROR_OFFSET>`            |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_DATA7 <READER_ERROR_DATA7>`                         | :ref:`0xf0003034 <READER_ERROR_DATA7>`             |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_DATA6 <READER_ERROR_DATA6>`                         | :ref:`0xf0003038 <READER_ERROR_DATA6>`             |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_DATA5 <READER_ERROR_DATA5>`                         | :ref:`0xf000303c <READER_ERROR_DATA5>`             |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_DATA4 <READER_ERROR_DATA4>`                         | :ref:`0xf0003040 <READER_ERROR_DATA4>`             |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_DATA3 <READER_ERROR_DATA3>`                         | :ref:`0xf0003044 <READER_ERROR_DATA3>`             |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_DATA2 <READER_ERROR_DATA2>`                         | :ref:`0xf0003048 <READER_ERROR_DATA2>`             |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_DATA1 <READER_ERROR_DATA1>`                         | :ref:`0xf000304c <READER_ERROR_DATA1>`             |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_DATA0 <READER_ERROR_DATA0>`                         | :ref:`0xf0003050 <READER_ERROR_DATA0>`             |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_EXPECTED7 <READER_ERROR_EXPECTED7>`                 | :ref:`0xf0003054 <READER_ERROR_EXPECTED7>`         |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_EXPECTED6 <READER_ERROR_EXPECTED6>`                 | :ref:`0xf0003058 <READER_ERROR_EXPECTED6>`         |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_EXPECTED5 <READER_ERROR_EXPECTED5>`                 | :ref:`0xf000305c <READER_ERROR_EXPECTED5>`         |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_EXPECTED4 <READER_ERROR_EXPECTED4>`                 | :ref:`0xf0003060 <READER_ERROR_EXPECTED4>`         |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_EXPECTED3 <READER_ERROR_EXPECTED3>`                 | :ref:`0xf0003064 <READER_ERROR_EXPECTED3>`         |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_EXPECTED2 <READER_ERROR_EXPECTED2>`                 | :ref:`0xf0003068 <READER_ERROR_EXPECTED2>`         |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_EXPECTED1 <READER_ERROR_EXPECTED1>`                 | :ref:`0xf000306c <READER_ERROR_EXPECTED1>`         |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_EXPECTED0 <READER_ERROR_EXPECTED0>`                 | :ref:`0xf0003070 <READER_ERROR_EXPECTED0>`         |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_READY <READER_ERROR_READY>`                         | :ref:`0xf0003074 <READER_ERROR_READY>`             |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`READER_ERROR_CONTINUE <READER_ERROR_CONTINUE>`                   | :ref:`0xf0003078 <READER_ERROR_CONTINUE>`          |
++------------------------------------------------------------------------+----------------------------------------------------+
+
+READER_START
+^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x0 = 0xf0003000`
+
+    Write to the register starts the transfer (if ready=1)
+
+    .. wavedrom::
+        :caption: READER_START
+
+        {
+            "reg": [
+                {"name": "start", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+READER_READY
+^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x4 = 0xf0003004`
+
+    Indicates that the transfer is not ongoing
+
+    .. wavedrom::
+        :caption: READER_READY
+
+        {
+            "reg": [
+                {"name": "ready", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+READER_MODULO
+^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x8 = 0xf0003008`
+
+    When set use modulo to calculate DMA transfers address rather than bit masking
+
+    .. wavedrom::
+        :caption: READER_MODULO
+
+        {
+            "reg": [
+                {"name": "modulo", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+READER_COUNT
+^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0xc = 0xf000300c`
+
+    Desired number of DMA transfers
+
+    .. wavedrom::
+        :caption: READER_COUNT
+
+        {
+            "reg": [
+                {"name": "count[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_DONE
+^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x10 = 0xf0003010`
+
+    Number of completed DMA transfers
+
+    .. wavedrom::
+        :caption: READER_DONE
+
+        {
+            "reg": [
+                {"name": "done[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_MEM_MASK
+^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x14 = 0xf0003014`
+
+    DRAM address mask for DMA transfers
+
+    .. wavedrom::
+        :caption: READER_MEM_MASK
+
+        {
+            "reg": [
+                {"name": "mem_mask[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_DATA_MASK
+^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x18 = 0xf0003018`
+
+    Pattern memory address mask
+
+    .. wavedrom::
+        :caption: READER_DATA_MASK
+
+        {
+            "reg": [
+                {"name": "data_mask[4:0]", "bits": 5},
+                {"bits": 27},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+READER_DATA_DIV
+^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x1c = 0xf000301c`
+
+    Pattern memory address divisior-1
+
+    .. wavedrom::
+        :caption: READER_DATA_DIV
+
+        {
+            "reg": [
+                {"name": "data_div[4:0]", "bits": 5},
+                {"bits": 27},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+READER_INVERTER_DIVISOR_MASK
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x20 = 0xf0003020`
+
+    Divisor mask for selecting rows for which pattern data gets inverted
+
+    .. wavedrom::
+        :caption: READER_INVERTER_DIVISOR_MASK
+
+        {
+            "reg": [
+                {"name": "inverter_divisor_mask[4:0]", "bits": 5},
+                {"bits": 27},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+READER_INVERTER_SELECTION_MASK
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x24 = 0xf0003024`
+
+    Selection mask for selecting rows for which pattern data gets inverted
+
+    .. wavedrom::
+        :caption: READER_INVERTER_SELECTION_MASK
+
+        {
+            "reg": [
+                {"name": "inverter_selection_mask[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_COUNT
+^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x28 = 0xf0003028`
+
+    Number of errors detected
+
+    .. wavedrom::
+        :caption: READER_ERROR_COUNT
+
+        {
+            "reg": [
+                {"name": "error_count[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_SKIP_FIFO
+^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x2c = 0xf000302c`
+
+    Skip waiting for user to read the errors FIFO
+
+    .. wavedrom::
+        :caption: READER_SKIP_FIFO
+
+        {
+            "reg": [
+                {"name": "skip_fifo", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+READER_ERROR_OFFSET
+^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x30 = 0xf0003030`
+
+    Current offset of the error
+
+    .. wavedrom::
+        :caption: READER_ERROR_OFFSET
+
+        {
+            "reg": [
+                {"name": "error_offset[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_DATA7
+^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x34 = 0xf0003034`
+
+    Bits 224-255 of `READER_ERROR_DATA`. Erroneous value read from DRAM memory
+
+    .. wavedrom::
+        :caption: READER_ERROR_DATA7
+
+        {
+            "reg": [
+                {"name": "error_data[255:224]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_DATA6
+^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x38 = 0xf0003038`
+
+    Bits 192-223 of `READER_ERROR_DATA`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_DATA6
+
+        {
+            "reg": [
+                {"name": "error_data[223:192]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_DATA5
+^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x3c = 0xf000303c`
+
+    Bits 160-191 of `READER_ERROR_DATA`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_DATA5
+
+        {
+            "reg": [
+                {"name": "error_data[191:160]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_DATA4
+^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x40 = 0xf0003040`
+
+    Bits 128-159 of `READER_ERROR_DATA`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_DATA4
+
+        {
+            "reg": [
+                {"name": "error_data[159:128]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_DATA3
+^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x44 = 0xf0003044`
+
+    Bits 96-127 of `READER_ERROR_DATA`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_DATA3
+
+        {
+            "reg": [
+                {"name": "error_data[127:96]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_DATA2
+^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x48 = 0xf0003048`
+
+    Bits 64-95 of `READER_ERROR_DATA`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_DATA2
+
+        {
+            "reg": [
+                {"name": "error_data[95:64]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_DATA1
+^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x4c = 0xf000304c`
+
+    Bits 32-63 of `READER_ERROR_DATA`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_DATA1
+
+        {
+            "reg": [
+                {"name": "error_data[63:32]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_DATA0
+^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x50 = 0xf0003050`
+
+    Bits 0-31 of `READER_ERROR_DATA`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_DATA0
+
+        {
+            "reg": [
+                {"name": "error_data[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_EXPECTED7
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x54 = 0xf0003054`
+
+    Bits 224-255 of `READER_ERROR_EXPECTED`. Value expected to be read from DRAM
+    memory
+
+    .. wavedrom::
+        :caption: READER_ERROR_EXPECTED7
+
+        {
+            "reg": [
+                {"name": "error_expected[255:224]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_EXPECTED6
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x58 = 0xf0003058`
+
+    Bits 192-223 of `READER_ERROR_EXPECTED`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_EXPECTED6
+
+        {
+            "reg": [
+                {"name": "error_expected[223:192]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_EXPECTED5
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x5c = 0xf000305c`
+
+    Bits 160-191 of `READER_ERROR_EXPECTED`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_EXPECTED5
+
+        {
+            "reg": [
+                {"name": "error_expected[191:160]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_EXPECTED4
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x60 = 0xf0003060`
+
+    Bits 128-159 of `READER_ERROR_EXPECTED`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_EXPECTED4
+
+        {
+            "reg": [
+                {"name": "error_expected[159:128]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_EXPECTED3
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x64 = 0xf0003064`
+
+    Bits 96-127 of `READER_ERROR_EXPECTED`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_EXPECTED3
+
+        {
+            "reg": [
+                {"name": "error_expected[127:96]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_EXPECTED2
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x68 = 0xf0003068`
+
+    Bits 64-95 of `READER_ERROR_EXPECTED`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_EXPECTED2
+
+        {
+            "reg": [
+                {"name": "error_expected[95:64]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_EXPECTED1
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x6c = 0xf000306c`
+
+    Bits 32-63 of `READER_ERROR_EXPECTED`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_EXPECTED1
+
+        {
+            "reg": [
+                {"name": "error_expected[63:32]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_EXPECTED0
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x70 = 0xf0003070`
+
+    Bits 0-31 of `READER_ERROR_EXPECTED`.
+
+    .. wavedrom::
+        :caption: READER_ERROR_EXPECTED0
+
+        {
+            "reg": [
+                {"name": "error_expected[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+READER_ERROR_READY
+^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x74 = 0xf0003074`
+
+    Error detected and ready to read
+
+    .. wavedrom::
+        :caption: READER_ERROR_READY
+
+        {
+            "reg": [
+                {"name": "error_ready", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+READER_ERROR_CONTINUE
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x78 = 0xf0003078`
+
+    Continue reading until the next error
+
+    .. wavedrom::
+        :caption: READER_ERROR_CONTINUE
+
+        {
+            "reg": [
+                {"name": "error_continue", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+

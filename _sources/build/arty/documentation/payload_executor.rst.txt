@@ -1,0 +1,137 @@
+PAYLOAD_EXECUTOR
+================
+
+
+
+        Executes the DRAM payload from memory
+
+
+    **Instruction decoder**
+
+    All instructions are 32-bit. The format of most instructions is the same,
+    except for the LOOP instruction, which has a constant TIMESLICE of 1.
+
+    NOOP with a TIMESLICE of 0 is a special case which is interpreted as
+    STOP instruction. When this instruction is encountered execution gets
+    finished immediately.
+
+    **NOTE:** TIMESLICE is the number of cycles the instruction will take. This
+    means that instructions other than NOOP that use TIMESLICE=0 are illegal
+    (although will silently be executed as having TIMESLICE=1).
+
+    **NOTE2:** LOOP instruction will *jump* COUNT times, meaning that the "code"
+    inside the loop will effectively be executed COUNT+1 times.
+
+    Op codes:
+
++------+-------+
++ Op   + Value +
++======+=======+
++ NOOP | 0b000 +
++------+-------+
++ LOOP | 0b111 +
++------+-------+
++ ACT  | 0b100 +
++------+-------+
++ PRE  | 0b101 +
++------+-------+
++ REF  | 0b110 +
++------+-------+
++ ZQC  | 0b001 +
++------+-------+
++ READ | 0b010 +
++------+-------+
+
+    Instruction format::
+
+              LSB                       MSB
+        dfi:  OP_CODE | TIMESLICE | ADDRESS
+        noop: OP_CODE | TIMESLICE_NOOP
+        loop: OP_CODE | COUNT     | JUMP
+        stop: <NOOP>  | 0
+
+    Where ADDRESS depends on the DFI command and is one of::
+
+        LSB              MSB
+        RANK | BANK | COLUMN
+        RANK | BANK | ROW
+
+
+
+Register Listing for PAYLOAD_EXECUTOR
+-------------------------------------
+
++------------------------------------------------------------------+-------------------------------------------------+
+| Register                                                         | Address                                         |
++==================================================================+=================================================+
+| :ref:`PAYLOAD_EXECUTOR_START <PAYLOAD_EXECUTOR_START>`           | :ref:`0xf0004800 <PAYLOAD_EXECUTOR_START>`      |
++------------------------------------------------------------------+-------------------------------------------------+
+| :ref:`PAYLOAD_EXECUTOR_STATUS <PAYLOAD_EXECUTOR_STATUS>`         | :ref:`0xf0004804 <PAYLOAD_EXECUTOR_STATUS>`     |
++------------------------------------------------------------------+-------------------------------------------------+
+| :ref:`PAYLOAD_EXECUTOR_READ_COUNT <PAYLOAD_EXECUTOR_READ_COUNT>` | :ref:`0xf0004808 <PAYLOAD_EXECUTOR_READ_COUNT>` |
++------------------------------------------------------------------+-------------------------------------------------+
+
+PAYLOAD_EXECUTOR_START
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0004800 + 0x0 = 0xf0004800`
+
+    Writing to this register initializes payload execution
+
+    .. wavedrom::
+        :caption: PAYLOAD_EXECUTOR_START
+
+        {
+            "reg": [
+                {"name": "start", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+PAYLOAD_EXECUTOR_STATUS
+^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0004800 + 0x4 = 0xf0004804`
+
+    Payload executor status register
+
+    .. wavedrom::
+        :caption: PAYLOAD_EXECUTOR_STATUS
+
+        {
+            "reg": [
+                {"name": "ready",  "bits": 1},
+                {"name": "overflow",  "bits": 1},
+                {"bits": 30}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++-------+----------+---------------------------------------------------------------------------------+
+| Field | Name     | Description                                                                     |
++=======+==========+=================================================================================+
+| [0]   | READY    | Indicates that the executor is not running                                      |
++-------+----------+---------------------------------------------------------------------------------+
+| [1]   | OVERFLOW | Indicates the scratchpad memory address counter has overflown due to the number |
+|       |          | of READ commands sent during execution                                          |
++-------+----------+---------------------------------------------------------------------------------+
+
+PAYLOAD_EXECUTOR_READ_COUNT
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0004800 + 0x8 = 0xf0004808`
+
+    Number of data from READ commands that is stored in the scratchpad memory
+
+    .. wavedrom::
+        :caption: PAYLOAD_EXECUTOR_READ_COUNT
+
+        {
+            "reg": [
+                {"name": "read_count[5:0]", "bits": 6},
+                {"bits": 26},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
