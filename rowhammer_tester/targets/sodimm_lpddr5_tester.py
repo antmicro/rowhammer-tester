@@ -117,7 +117,7 @@ class SoC(common.RowHammerSoC):
         set_i2c_active_dev(i);
         printf("%d:%s\\n", i, get_i2c_devs()[i].name);
         if (strcmp(get_i2c_devs()[i].name, "platform_i2c") == 0) {
-            unsigned char command[2] = {0x40, 0x00};
+            unsigned char command[2] = {0x44, 0x00};
             i2c_write(0x60, 0x70, command, 2, 1);
             set_i2c_active_dev(default_i2c);
             break;
