@@ -12,7 +12,8 @@ The hardware is open and can be found on GitHub:
 
 The following instructions explain how to set up the board.
 
-Connect the board USB-C `J3` and Ethernet `J6` via cable to your computer, plug the board into the power socket `J7` and turn it on using power switch `SW5`. Then configure the network. The board's IP address will be `192.168.100.50` (so you could e.g. use `192.168.100.2/24`). The `IP_ADDRESS` environment variable can be used to modify the board's address.
+Connect power supply (7-15VDC) to [`J7`](#sodimm-ddr5-tester_J7) barrel jack.
+Then connect the board's USB-C [`J3`](#sodimm-ddr5-tester_J3) and Ethernet [`J6`](#sodimm-ddr5-tester_J6) interfaces to your computer, insert the memory module into the [`J2`](#sodimm-ddr5-tester_J2) socket and turn it on using power switch [`SW5`](#sodimm-ddr5-tester_SW5). Then configure the network. The board's IP address will be `192.168.100.50` (you can use `192.168.100.2/24`). The `IP_ADDRESS` environment variable can be used to modify the board's address.
 Next, generate the FPGA bitstream:
 
 ```sh
@@ -45,8 +46,8 @@ make flash
 ```
 
 ```{warning}
-There is a `SW1` `MODE` selector to the right of the FPGA.
-If the bitstream needs to be loaded from the Flash memory, select ```Master SPI``` mode. This configuration is set by default
+There is a [`SW1`](#sodimm-ddr5-tester_SW1) selector to the right of the FPGA ([`U4`](#sodimm-ddr5-tester_U4)).
+If the bitstream needs to be loaded from the Flash memory, select ```Master SPI``` mode. This configuration is set by default.
 
 | Configuration mode | MODE[2] | MODE[1] | MODE[0] |
 |--------------------|---------|---------|---------|
@@ -58,7 +59,7 @@ If the bitstream needs to be loaded from the Flash memory, select ```Master SPI`
 | Slave SelectMAP    | 1       | 1       | 0       |
 | Slave Serial       | 1       | 1       | 1       |
 
-Bitstream will be loaded from flash memory upon device power-on or after a PROG button press.
+Bitstream will be loaded from flash memory upon device power-on or after a [`SW2`](#sodimm-ddr5-tester_SW2) button press.
 ```
 
 

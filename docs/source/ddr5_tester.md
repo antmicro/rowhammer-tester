@@ -1,9 +1,9 @@
-# DDR5 Tester
+# Data Center RDIMM DDR5 Tester
 
 ```{image} images/datacenter-rdimm-ddr5-tester.png
 ```
 
-The DDR5 tester is an open source hardware test platform that enables testing and experimenting with various DDR5 RDIMMs (Registered Dual In-Line Memory Module).
+The Data Center RDIMM DDR5 Tester is an open source hardware test platform that enables testing and experimenting with various DDR5 RDIMMs (Registered Dual In-Line Memory Module).
 
 The hardware is open and can be found on GitHub:
 <https://github.com/antmicro/ddr5-tester/>
@@ -12,7 +12,9 @@ The following instructions explain how to set up the board.
 
 ## Rowhammer Tester Target Configuration
 
-First connect the board USB and Ethernet cables to your computer, plug the board to the socket and turn it on using power switch. Then configure the network. The board's IP address will be `192.168.100.50` (so you could e.g. use `192.168.100.2/24`). The `IP_ADDRESS` environment variable can be used to modify the board's address.
+Connect power supply (12-15VDC) to [`J1`](#ddr5-tester_J1) barrel jack. Then connect the board USB cable ([`J6`](#ddr5-tester_J6)) and Ethernet cable ([`J4`](#ddr5-tester_J4)) to your computer and insert the memory module to the socket [`U12`](#ddr5-tester_U12).
+To turn the board on, use power switch [`S1`](#ddr5-tester_S1). 
+After power is up, configure the network. The board's IP address will be `192.168.100.50` (so you could e.g. use `192.168.100.2/24`). The `IP_ADDRESS` environment variable can be used to modify the board's address.
 Next, generate the FPGA bitstream:
 
 ```sh
@@ -45,15 +47,15 @@ make flash
 ```
 
 ```{warning}
-There is a JTAG/SPI jumper named `MODE` on the right side of the board.
-Unless it's set to the SPI setting, the FPGA will load the bitstream received via JTAG.
+There is a JTAG/SPI switch ([`MODE1`](#ddr5-tester_MODE1)) on the right side of the board.
+Unless it's set to the SPI setting, the FPGA will load the bitstream received via JTAG ([`J3`](#ddr5-tester_J3)).
 ```
 
-Bitstream will be loaded from flash memory upon device power-on or after a PROG button press.
+Bitstream will be loaded from flash memory upon device power-on or after a [`PROG_B1`](#ddr5-tester_PROG_B1) button press.
 
 ## Linux Target Configuration
 
-There's another DDR5 Tester tagret provided.
+There's another RDIMM DDR5 Tester tagret provided.
 The `ddr5_tester_linux` is a linux capable target (**with no rowhammer tester**) that allows you to define custom DDR5 tester module utilizing linux-based software.
 
 ### Base DDR5 Tester Linux Options
@@ -89,18 +91,18 @@ Additionally, **etherbone** or **ethernet** can be set up with either:
 |   `--mac-address`  | MAC address to be used for the etherbone. |
 
 
-### Building DDR5 Tester Linux Target
+### Building RDIMM DDR5 Tester Linux Target
 
-After having configured the DDR5 Tester Linux, the target can be build with `make build` Makefile target.
+After having configured the RDIMM DDR5 Tester Linux, the target can be build with `make build` Makefile target.
 Use example of DDR5 Tester Linux Target with ethernet configured:
 
 ```bash
 make build TARGET=ddr5_tester_linux TARGET_ARGS="--build --l2-size 256 --iodelay-clk-freq 400e6 --module MTC10F1084S1RC --with-wishbone-memory --wishbone-force-32b --with-ethernet --remote-ip-address 192.168.100.100 --local-ip-address 192.168.100.50"
 ```
 
-### Interacting with DDR5 Tester Linux Target
+### Interacting with RDIMM DDR5 Tester Linux Target
 
-First, load the bitstream onto the DDR5 Tester with the help of the OpenFPGALoader:
+First, load the bitstream onto the RDIMM DDR5 Tester with the help of the OpenFPGALoader:
 
 ```bash
 openFPGALoader --board antmicro_ddr5_tester build/ddr5_tester_linux/gateware/antmicro_ddr5_tester.bit --freq 3e6
@@ -166,7 +168,7 @@ cd ~/ && tftp 192.168.100.100 -c get test
 
 The **test** file should appear in the home directory with "TEST TFTP SERVER" contents.
 
-### Booting Linux on DDR5 Tester Linux Target
+### Booting Linux on RDIMM DDR5 Tester Linux Target
 
 You will need the following binaries:
 - Linux kernel Image

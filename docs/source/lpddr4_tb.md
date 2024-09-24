@@ -13,12 +13,15 @@ The hardware is open and can be found on GitHub:
 
 ## Board configuration
 
-First insert the LPDDR4 DRAM module into the socket and make sure that jumpers are set in correct positions:
+First insert the LPDDR4 DRAM module into the socket [``](#lpddr4-test-board_) and make sure that jumpers are set in correct positions:
 
-- VDDQ (J10) should be set in position 1V1
-- MODE2 should be set in position FLASH
+- VDDQ switch ([`J7`](#lpddr4-test-board_J7)) should be set in position 1V1
+- [`MODE1`](#lpddr4-test-board_MODE1) switch should be set in position FLASH
 
-Then connect the board USB and Ethernet cables to your computer and configure the network. The board's IP address will be `192.168.100.50` (so you could e.g. use `192.168.100.2/24`). The `IP_ADDRESS` environment variable can be used to modify the board's address.
+Connect power supply (7-15VDC) to [`J6`](#lpddr4-test-board_J6) barrel jack.
+Then connect the board's USB-C [`J1`](#lpddr4-test-board_J1) and Ethernet [`J5`](#lpddr4-test-board_J5) interfaces to your computer.
+Turn the board on using power switch [`S1`](#lpddr4-test-board_S1).
+Then configure the network. The board's IP address will be `192.168.100.50` (so you could e.g. use `192.168.100.2/24`). The `IP_ADDRESS` environment variable can be used to modify the board's address.
 Next, generate the FPGA bitstream:
 
 ```sh
@@ -45,8 +48,8 @@ make flash
 ```
 
 ```{warning}
-There is a JTAG/FLASH jumper named `MODE2` on the right side of the board.
-Unless it's set to the FLASH setting, the FPGA will load the bitstream received via JTAG.
+There is a JTAG/FLASH jumper [`MODE1`](#lpddr4-test-board_MODE1) on the right side of the board.
+Unless it's set to the FLASH setting, the FPGA will load the bitstream received via JTAG ([`J4`](#lpddr4-test-board_J4)).
 ```
 
-Bitstream will be loaded from flash memory upon device power-on or after a PROG button press.
+Bitstream will be loaded from flash memory upon device power-on or after a PROG button ([`PROG_B1`](#lpddr4-test-board_PROG_B1)) press.

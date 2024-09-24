@@ -16,9 +16,9 @@ dram_modules.md
 arty.md
 zcu104.md
 lpddr4_tb.md
+ddr5_test_board.md
 ddr4_datacenter_dram_tester.md
 ddr5_tester.md
-ddr5_test_board.md
 sodimm_ddr5_tester.md
 ```
 
