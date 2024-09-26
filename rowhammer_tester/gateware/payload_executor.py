@@ -212,13 +212,14 @@ class Scratchpad(Module):
         self.counter  = Signal(max=mem.depth - 1)
         self.overflow = Signal()
 
-        wr_port = mem.get_port(write_capable=True)
+        wr_port = mem.get_port(we_granularity=8, write_capable=True)
+        we_replicate = len(dfi.p0.rddata)//8
         self.specials += wr_port
 
         self.sync += [  # use sync for easier timing as we don't need comb here
             wr_port.adr.eq(self.counter),
             wr_port.dat_w.eq(Cat(*[p.rddata for p in dfi.phases])),
-            wr_port.we.eq(reduce(or_, [p.rddata_valid for p in dfi.phases])),
+            wr_port.we.eq(Cat(*[Replicate(p.rddata_valid, we_replicate) for p in dfi.phases])),
         ]
 
         self.sync += [
@@ -269,6 +270,7 @@ class DFIExecutor(Module):
                     phase.cas_n.eq(1),
                     phase.ras_n.eq(1),
                     phase.we_n.eq(1),
+                    phase.rddata_en.eq(0),
                 )
             ]
 

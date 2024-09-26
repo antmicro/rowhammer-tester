@@ -312,7 +312,7 @@ class RowHammerSoC(SoCCore):
             self.specials += payload_mem, scratchpad_mem
 
             self.add_memory(payload_mem,    name='payload',    origin=0x30000000)
-            self.add_memory(scratchpad_mem, name='scratchpad', origin=0x31000000, mode='r')
+            self.add_memory(scratchpad_mem, name='scratchpad', origin=0x31000000)
             self.logger.info('{}: Length: {}, Data Width: {}-bit'.format(
                 colorer('Instruction payload'), colorer(payload_size//4), colorer(32)))
             self.logger.info('{}: Length: {}, Data Width: {}-bit'.format(
