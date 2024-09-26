@@ -223,7 +223,7 @@ class Scratchpad(Module):
         ]
 
         self.sync += [
-            If(wr_port.we,
+            If(reduce(or_, wr_port.we),
                 If(self.counter == mem.depth - 1,
                     self.overflow.eq(1),
                     self.counter.eq(0),
