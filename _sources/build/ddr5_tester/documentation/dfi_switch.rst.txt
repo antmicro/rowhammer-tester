@@ -1,0 +1,71 @@
+DFI_SWITCH
+==========
+
+Register Listing for DFI_SWITCH
+-------------------------------
+
++--------------------------------------------------------------+-----------------------------------------------+
+| Register                                                     | Address                                       |
++==============================================================+===============================================+
+| :ref:`DFI_SWITCH_REFRESH_COUNT <DFI_SWITCH_REFRESH_COUNT>`   | :ref:`0xf0003800 <DFI_SWITCH_REFRESH_COUNT>`  |
++--------------------------------------------------------------+-----------------------------------------------+
+| :ref:`DFI_SWITCH_AT_REFRESH <DFI_SWITCH_AT_REFRESH>`         | :ref:`0xf0003804 <DFI_SWITCH_AT_REFRESH>`     |
++--------------------------------------------------------------+-----------------------------------------------+
+| :ref:`DFI_SWITCH_REFRESH_UPDATE <DFI_SWITCH_REFRESH_UPDATE>` | :ref:`0xf0003808 <DFI_SWITCH_REFRESH_UPDATE>` |
++--------------------------------------------------------------+-----------------------------------------------+
+
+DFI_SWITCH_REFRESH_COUNT
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003800 + 0x0 = 0xf0003800`
+
+    Count of all refresh commands issued (both by Memory Controller and Payload
+    Executor). Value is latched from internal counter on mode trasition: MC -> PE or
+    by writing to the `refresh_update` CSR.
+
+    .. wavedrom::
+        :caption: DFI_SWITCH_REFRESH_COUNT
+
+        {
+            "reg": [
+                {"name": "refresh_count[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DFI_SWITCH_AT_REFRESH
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003800 + 0x4 = 0xf0003804`
+
+    If set to a value different than 0 the mode transition MC -> PE will be peformed
+    only when the value of this register matches the current refresh commands count.
+
+    .. wavedrom::
+        :caption: DFI_SWITCH_AT_REFRESH
+
+        {
+            "reg": [
+                {"name": "at_refresh[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DFI_SWITCH_REFRESH_UPDATE
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003800 + 0x8 = 0xf0003808`
+
+    Force an update of the `refresh_count` CSR.
+
+    .. wavedrom::
+        :caption: DFI_SWITCH_REFRESH_UPDATE
+
+        {
+            "reg": [
+                {"name": "refresh_update", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+

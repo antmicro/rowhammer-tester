@@ -1,0 +1,251 @@
+WRITER
+======
+
+
+
+DMA DRAM writer.
+
+Allows to fill DRAM with a predefined pattern using DMA.
+
+Pattern
+-------
+
+
+    Provides access to RAM to store access pattern: `mem_addr` and `mem_data`.
+    The pattern address space can be limited using the `data_mask`.
+
+    For example, having `mem_adr` filled with `[ 0x04, 0x02, 0x03, ... ]`
+    and `mem_data` filled with `[ 0xff, 0xaa, 0x55, ... ]` and setting
+    `data_mask = 0b01`, the pattern [(address, data), ...] written will be:
+    `[(0x04, 0xff), (0x02, 0xaa), (0x04, 0xff), ...]` (wraps due to masking).
+
+    DRAM memory range that is being accessed can be configured using `mem_mask`.
+
+    To use this module, make sure that `ready` is 1, then write the desired
+    number of transfers to `count`. Writing to the `start` CSR will initialize
+    the operation. When the operation is ongoing `ready` will be 0.
+
+
+
+Register Listing for WRITER
+---------------------------
+
++------------------------------------------------------------------------+----------------------------------------------------+
+| Register                                                               | Address                                            |
++========================================================================+====================================================+
+| :ref:`WRITER_START <WRITER_START>`                                     | :ref:`0xf0003000 <WRITER_START>`                   |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`WRITER_READY <WRITER_READY>`                                     | :ref:`0xf0003004 <WRITER_READY>`                   |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`WRITER_MODULO <WRITER_MODULO>`                                   | :ref:`0xf0003008 <WRITER_MODULO>`                  |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`WRITER_COUNT <WRITER_COUNT>`                                     | :ref:`0xf000300c <WRITER_COUNT>`                   |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`WRITER_DONE <WRITER_DONE>`                                       | :ref:`0xf0003010 <WRITER_DONE>`                    |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`WRITER_MEM_MASK <WRITER_MEM_MASK>`                               | :ref:`0xf0003014 <WRITER_MEM_MASK>`                |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`WRITER_DATA_MASK <WRITER_DATA_MASK>`                             | :ref:`0xf0003018 <WRITER_DATA_MASK>`               |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`WRITER_DATA_DIV <WRITER_DATA_DIV>`                               | :ref:`0xf000301c <WRITER_DATA_DIV>`                |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`WRITER_INVERTER_DIVISOR_MASK <WRITER_INVERTER_DIVISOR_MASK>`     | :ref:`0xf0003020 <WRITER_INVERTER_DIVISOR_MASK>`   |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`WRITER_INVERTER_SELECTION_MASK <WRITER_INVERTER_SELECTION_MASK>` | :ref:`0xf0003024 <WRITER_INVERTER_SELECTION_MASK>` |
++------------------------------------------------------------------------+----------------------------------------------------+
+| :ref:`WRITER_LAST_ADDRESS <WRITER_LAST_ADDRESS>`                       | :ref:`0xf0003028 <WRITER_LAST_ADDRESS>`            |
++------------------------------------------------------------------------+----------------------------------------------------+
+
+WRITER_START
+^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x0 = 0xf0003000`
+
+    Write to the register starts the transfer (if ready=1)
+
+    .. wavedrom::
+        :caption: WRITER_START
+
+        {
+            "reg": [
+                {"name": "start", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+WRITER_READY
+^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x4 = 0xf0003004`
+
+    Indicates that the transfer is not ongoing
+
+    .. wavedrom::
+        :caption: WRITER_READY
+
+        {
+            "reg": [
+                {"name": "ready", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+WRITER_MODULO
+^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x8 = 0xf0003008`
+
+    When set use modulo to calculate DMA transfers address rather than bit masking
+
+    .. wavedrom::
+        :caption: WRITER_MODULO
+
+        {
+            "reg": [
+                {"name": "modulo", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+WRITER_COUNT
+^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0xc = 0xf000300c`
+
+    Desired number of DMA transfers
+
+    .. wavedrom::
+        :caption: WRITER_COUNT
+
+        {
+            "reg": [
+                {"name": "count[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+WRITER_DONE
+^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x10 = 0xf0003010`
+
+    Number of completed DMA transfers
+
+    .. wavedrom::
+        :caption: WRITER_DONE
+
+        {
+            "reg": [
+                {"name": "done[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+WRITER_MEM_MASK
+^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x14 = 0xf0003014`
+
+    DRAM address mask for DMA transfers
+
+    .. wavedrom::
+        :caption: WRITER_MEM_MASK
+
+        {
+            "reg": [
+                {"name": "mem_mask[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+WRITER_DATA_MASK
+^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x18 = 0xf0003018`
+
+    Pattern memory address mask
+
+    .. wavedrom::
+        :caption: WRITER_DATA_MASK
+
+        {
+            "reg": [
+                {"name": "data_mask[5:0]", "bits": 6},
+                {"bits": 26},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+WRITER_DATA_DIV
+^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x1c = 0xf000301c`
+
+    Pattern memory address divisior-1
+
+    .. wavedrom::
+        :caption: WRITER_DATA_DIV
+
+        {
+            "reg": [
+                {"name": "data_div[5:0]", "bits": 6},
+                {"bits": 26},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+WRITER_INVERTER_DIVISOR_MASK
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x20 = 0xf0003020`
+
+    Divisor mask for selecting rows for which pattern data gets inverted
+
+    .. wavedrom::
+        :caption: WRITER_INVERTER_DIVISOR_MASK
+
+        {
+            "reg": [
+                {"name": "inverter_divisor_mask[4:0]", "bits": 5},
+                {"bits": 27},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+WRITER_INVERTER_SELECTION_MASK
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x24 = 0xf0003024`
+
+    Selection mask for selecting rows for which pattern data gets inverted
+
+    .. wavedrom::
+        :caption: WRITER_INVERTER_SELECTION_MASK
+
+        {
+            "reg": [
+                {"name": "inverter_selection_mask[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+WRITER_LAST_ADDRESS
+^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0003000 + 0x28 = 0xf0003028`
+
+    Number of completed DMA transfers
+
+    .. wavedrom::
+        :caption: WRITER_LAST_ADDRESS
+
+        {
+            "reg": [
+                {"name": "last_address[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
