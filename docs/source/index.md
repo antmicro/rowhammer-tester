@@ -15,11 +15,11 @@ dram_modules.md
 
 arty.md
 zcu104.md
-lpddr4_tb.md
-ddr5_test_board.md
-ddr4_datacenter_dram_tester.md
-ddr5_tester.md
-sodimm_ddr5_tester.md
+lpddr4_test_board.md
+lpddr4_test_board_with_ddr5_testbed.md
+data_center_rdimm_ddr4_tester.md
+data_center_rdimm_ddr5_tester.md
+so_dimm_ddr5_tester.md
 ```
 
 ```{toctree}

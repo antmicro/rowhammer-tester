@@ -1,5 +1,14 @@
 # Image references
 
+```{image} images/data-center-dram-tester/PWR1.png
+:name: data-center-dram-tester_PWR1
+```
+```{image} images/data-center-dram-tester/D1.png
+:name: data-center-dram-tester_D1
+```
+```{image} images/data-center-dram-tester/D10.png
+:name: data-center-dram-tester_D10
+```
 ```{image} images/data-center-dram-tester/D15.png
 :name: data-center-dram-tester_D15
 ```
@@ -51,7 +60,7 @@
 ```{image} images/data-center-dram-tester/S1.png
 :name: data-center-dram-tester_S1
 ```
-```{image} images/data-center-dram-tester/S3.png
+```{image} images/data-center-dram-tester/S2.png
 :name: data-center-dram-tester_S2
 ```
 ```{image} images/data-center-dram-tester/S3.png

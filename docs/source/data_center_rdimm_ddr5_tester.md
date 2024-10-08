@@ -10,6 +10,38 @@ The hardware is open and can be found on GitHub:
 
 The following instructions explain how to set up the board.
 
+## IO map
+A map of on-board connectors, status LEDs, control buttons and I/O interfaces is provided below.
+
+:::{figure-md}
+![](images/rdimm-ddr5-tester-descriptions.png)
+
+DDR5 tester interface map
+:::
+
+Connectors:
+* [`J1`](#ddr5-tester_J1) - main DC barrel jack power connector, voltage between 12-15V is supported
+* [`J6`](#ddr5-tester_J6) - USB Micro-B debug connector used for programming FPGA or Flash memory
+* [`J3`](#ddr5-tester_J3) - standard 14-pin JTAG connector used for programming FPGA or Flash memory
+* [`J5`](#ddr5-tester_J5) - HDMI connector
+* [`J4`](#ddr5-tester_J4) - Ethernet connector used for data exchange with on-board FPGA
+* [`U12`](#ddr5-tester_U12) - 288-pin RDIMM connector for connecting DDR5 memory modules
+* [`MODE1`](#ddr5-tester_MODE1) - configuration mode selector, short proper pins with jumper to specify programming mode
+* [`J2`](#ddr5-tester_J2) - optional 5V fan connector
+* [`J7`](#ddr5-tester_J7) - socket for SD card
+* [`J8`](#ddr5-tester_J8) - 2.54mm goldpin connector with exposed I2C and I3C signals
+
+Switches and buttons:
+* Power ON/OFF button [`S1`](#ddr5-tester_S1) - swipe up to power up a device, swipe down to turn the device off
+* FPGA programming button [`PROG_B1`](#ddr5-tester_PROG_B1) - push button to start programming from Flash
+* 4x User button ([`PROG_B2`](#ddr5-tester_PROG_B2), [`PROG_B3`](#ddr5-tester_PROG_B3), [`PROG_B4`](#ddr5-tester_PROG_B4), [`PROG_B5`](#ddr5-tester_PROG_B5)) - buttons for user's definition
+
+LEDs:
+* 3V3 Power indicator [`PWR1`](#ddr5-tester_PWR1) - indicates presence of stabilized 3.3V voltage
+* FPGA programming INIT [`D6`](#ddr5-tester_D6) - indicates current FPGA configuration state
+* FPGA programming DONE [`D5`](#ddr5-tester_D5) - indicates completion of FPGA programming
+* 5x User ([`D7`](#ddr5-tester_D7), [`D8`](#ddr5-tester_D8), [`D9`](#ddr5-tester_D9), [`D10`](#ddr5-tester_D10), [`D11`](#ddr5-tester_D11)) - LEDs for user's definition
+
 ## Rowhammer Tester Target Configuration
 
 Connect power supply (12-15VDC) to [`J1`](#ddr5-tester_J1) barrel jack. Then connect the board USB cable ([`J6`](#ddr5-tester_J6)) and Ethernet cable ([`J4`](#ddr5-tester_J4)) to your computer and insert the memory module to the socket [`U12`](#ddr5-tester_U12).
