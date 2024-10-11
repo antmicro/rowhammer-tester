@@ -16,12 +16,12 @@ git+https://github.com/litex-hub/pythondata-software-picolibc.git
 git+https://github.com/litex-hub/pythondata-software-compiler_rt.git
 
 # PyPi packages
-gitpython
+gitpython == 3.1.36
 meson == 0.63.0
-pexpect
+pexpect == 4.8.0
 yapf == 0.32.0
-wheel
-pyvcd
-matplotlib
-ninja
+wheel == 0.41.2
+pyvcd == 0.4.0
+matplotlib == 3.7.3
+ninja == 1.11.1
 
