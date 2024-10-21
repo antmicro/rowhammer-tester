@@ -1,4 +1,11 @@
-# Welcome to Rowhammer tester!
+# Rowhammer tester
+
+```{toctree}
+:caption: Introduction
+:maxdepth: 2
+
+introduction.md
+```
 
 ```{toctree}
 :maxdepth: 2
