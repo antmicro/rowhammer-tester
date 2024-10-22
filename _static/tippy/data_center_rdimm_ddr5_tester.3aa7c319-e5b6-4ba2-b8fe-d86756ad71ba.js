@@ -1,0 +1,22 @@
+selector_to_html = {"a[href=\"references.html#ddr5-tester-j5\"]": "<img alt=\"_images/J51.png\" id=\"ddr5-tester-j5\" src=\"_images/J51.png\"/>", "a[href=\"references.html#ddr5-tester-prog-b2\"]": "<img alt=\"_images/PROG_B2.png\" id=\"ddr5-tester-prog-b2\" src=\"_images/PROG_B2.png\"/>", "a[href=\"references.html#ddr5-tester-d7\"]": "<img alt=\"_images/D71.png\" id=\"ddr5-tester-d7\" src=\"_images/D71.png\"/>", "a[href=\"references.html#ddr5-tester-d5\"]": "<img alt=\"_images/D51.png\" id=\"ddr5-tester-d5\" src=\"_images/D51.png\"/>", "a[href=\"references.html#ddr5-tester-d9\"]": "<img alt=\"_images/D91.png\" id=\"ddr5-tester-d9\" src=\"_images/D91.png\"/>", "a[href=\"references.html#ddr5-tester-j2\"]": "<img alt=\"_images/J21.png\" id=\"ddr5-tester-j2\" src=\"_images/J21.png\"/>", "a[href=\"#id1\"]": "<figure class=\"align-default\" id=\"id1\">\n<img alt=\"\" src=\"_images/rdimm-ddr5-tester-descriptions.png\"/>\n<figcaption>\n<p><span class=\"caption-number\">Fig. 5 </span><span class=\"caption-text\"><span class=\"caption-text\">\nDDR5 tester interface map</span><a class=\"headerlink\" href=\"#id1\" title=\"Permalink to this image\">\u00b6</a></span></p></figcaption>\n</figure>", "a[href=\"references.html#ddr5-tester-s1\"]": "<img alt=\"_images/S11.png\" id=\"ddr5-tester-s1\" src=\"_images/S11.png\"/>", "a[href=\"references.html#ddr5-tester-prog-b5\"]": "<img alt=\"_images/PROG_B5.png\" id=\"ddr5-tester-prog-b5\" src=\"_images/PROG_B5.png\"/>", "a[href=\"references.html#ddr5-tester-pwr1\"]": "<img alt=\"_images/PWR11.png\" id=\"ddr5-tester-pwr1\" src=\"_images/PWR11.png\"/>", "a[href=\"references.html#ddr5-tester-prog-b1\"]": "<img alt=\"_images/PROG_B11.png\" id=\"ddr5-tester-prog-b1\" src=\"_images/PROG_B11.png\"/>", "a[href=\"references.html#ddr5-tester-d10\"]": "<img alt=\"_images/D101.png\" id=\"ddr5-tester-d10\" src=\"_images/D101.png\"/>", "a[href=\"references.html#ddr5-tester-j4\"]": "<img alt=\"_images/J4.png\" id=\"ddr5-tester-j4\" src=\"_images/J4.png\"/>", "a[href=\"references.html#ddr5-tester-d11\"]": "<img alt=\"_images/D11.png\" id=\"ddr5-tester-d11\" src=\"_images/D11.png\"/>", "a[href=\"references.html#ddr5-tester-prog-b3\"]": "<img alt=\"_images/PROG_B3.png\" id=\"ddr5-tester-prog-b3\" src=\"_images/PROG_B3.png\"/>", "a[href=\"references.html#ddr5-tester-j1\"]": "<img alt=\"_images/J1.png\" id=\"ddr5-tester-j1\" src=\"_images/J1.png\"/>", "a[href=\"references.html#ddr5-tester-j3\"]": "<img alt=\"_images/J31.png\" id=\"ddr5-tester-j3\" src=\"_images/J31.png\"/>", "a[href=\"references.html#ddr5-tester-d8\"]": "<img alt=\"_images/D81.png\" id=\"ddr5-tester-d8\" src=\"_images/D81.png\"/>", "a[href=\"references.html#ddr5-tester-j7\"]": "<img alt=\"_images/J71.png\" id=\"ddr5-tester-j7\" src=\"_images/J71.png\"/>", "a[href=\"references.html#ddr5-tester-j6\"]": "<img alt=\"_images/J61.png\" id=\"ddr5-tester-j6\" src=\"_images/J61.png\"/>", "a[href=\"references.html#ddr5-tester-mode1\"]": "<img alt=\"_images/MODE1.png\" id=\"ddr5-tester-mode1\" src=\"_images/MODE1.png\"/>", "a[href=\"references.html#ddr5-tester-d6\"]": "<img alt=\"_images/D61.png\" id=\"ddr5-tester-d6\" src=\"_images/D61.png\"/>", "a[href=\"references.html#ddr5-tester-prog-b4\"]": "<img alt=\"_images/PROG_B4.png\" id=\"ddr5-tester-prog-b4\" src=\"_images/PROG_B4.png\"/>", "a[href=\"references.html#ddr5-tester-u12\"]": "<img alt=\"_images/U12.png\" id=\"ddr5-tester-u12\" src=\"_images/U12.png\"/>"}
+skip_classes = ["headerlink", "sd-stretched-link"]
+
+window.onload = function () {
+    for (const [select, tip_html] of Object.entries(selector_to_html)) {
+        const links = document.querySelectorAll(`p ${select}`);
+        for (const link of links) {
+            if (skip_classes.some(c => link.classList.contains(c))) {
+                continue;
+            }
+
+            tippy(link, {
+                content: tip_html,
+                allowHTML: true,
+                arrow: true,
+                placement: 'auto-start', maxWidth: 500, interactive: false,
+
+            });
+        };
+    };
+    console.log("tippy tips loaded!");
+};
