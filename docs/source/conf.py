@@ -91,6 +91,8 @@ html_title = project
 
 render_using_wavedrompy = True
 
+tippy_anchor_parent_selector = "p"
+
 offline_wavedrom_js_path = r"WaveDrom.js"
 offline_skin_js_path = r"default.js"
 
