@@ -5,17 +5,9 @@
 :maxdepth: 2
 
 introduction.md
+
 ```
 
-```{toctree}
-:maxdepth: 2
-
-general.md
-usage.md
-visualization.md
-playbook.md
-dram_modules.md
-```
 ```{toctree}
 :caption: Hardware
 :maxdepth: 2
@@ -27,6 +19,16 @@ lpddr4_test_board_with_ddr5_testbed.md
 data_center_rdimm_ddr4_tester.md
 data_center_rdimm_ddr5_tester.md
 so_dimm_ddr5_tester.md
+```
+
+```{toctree}
+:caption: User guide
+:maxdepth: 2
+
+usage.md
+visualization.md
+playbook.md
+dram_modules.md
 ```
 
 ```{toctree}
