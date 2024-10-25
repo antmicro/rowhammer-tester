@@ -12,9 +12,9 @@ The hardware is open and can be found on GitHub:
 - Testbed: <https://github.com/antmicro/lpddr4-testbed>
 
 ## IO map
-A map of on-board connectors, status LEDs, control buttons and I/O interfaces is provided below.
+A map of on-board connectors, status LEDs, control buttons and I/O interfaces is provided in {numref}`lpddr4-test-board-interface-map` below.
 
-:::{figure-md}
+:::{figure-md} lpddr4-test-board-interface-map
 ![](images/lpddr4-test-board-descriptions.png)
 
 LPDDR4 test board interface map

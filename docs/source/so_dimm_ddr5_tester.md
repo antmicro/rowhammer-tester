@@ -11,7 +11,7 @@ The hardware is open and can be found on GitHub:
 ## IO map
 A map of on-board connectors, status LEDs, control buttons and I/O interfaces is provided below.
 
-:::{figure-md}
+:::{figure-md} sodimm-ddr5-tester-interface map
 ![](images/sodimm-ddr5-tester-descriptions.png)
 
 SO-DIMM DDR5 tester interface map

@@ -11,9 +11,9 @@ The hardware is open and can be found on GitHub:
 The following instructions explain how to set up the board.
 
 ## IO map
-A map of on-board connectors, status LEDs, control buttons and I/O interfaces is provided below.
+A map of on-board connectors, status LEDs, control buttons and I/O interfaces is provided in {numref}`data-center-rdimm-ddr4-tester-interface-map` below.
 
-:::{figure-md}
+:::{figure-md} data-center-rdimm-ddr4-tester-interface-map
 ![](images/data-center-rdimm-ddr4-tester-descriptions.png)
 
 DDR4 data center dram tester interface map
