@@ -1,11 +1,14 @@
-## User guide
+# User guide
 
 This tool can be run on real hardware (FPGAs) or in a simulation mode.
 As the rowhammer attack exploits physical properties of cells in DRAM (draining charges), no bit flips can be observed in simulation mode (see [Simulation section](#simulation)).
-However, the simulation mode is useful to test command sequences during the development.
+However, the simulation mode is useful for testing command sequences during development.
 
 The Makefile can be configured using environmental variables to modify the network configuration used and to select the target.
 Currently, 6 boards are supported, each targeting a different memory type:
+
+:::
+
 | Board                      | Memory type      | TARGET                       |
 |----------------------------|------------------|------------------------------|
 | Arty A7                    | DDR3             | `arty`                       |
@@ -35,9 +38,9 @@ apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-
 ```
 
 ````{note}
-On some Debian-based systems there's a problem with a broken dependency:
+On some Debian-based systems, there's a problem with a broken dependency:
 
-  ```
+  ```sh
   libc6-dev : Breaks: libgcc-9-dev (< 9.3.0-5~) but 9.2.1-19 is to be installed
   ```
 
@@ -52,7 +55,7 @@ apt install libtool libusb-1.0-0-dev pkg-config
 
 ### Install Rowhammer tester
 
-Now clone the `rowhammer-tester` repository and install the rest of the required dependencies:
+Clone the `rowhammer-tester` repository and install the rest of the required dependencies:
 
 ```sh
 git clone --recursive https://github.com/antmicro/rowhammer-tester.git
@@ -61,7 +64,7 @@ make deps
 ```
 
 The last command will download and build all the dependencies (including a RISC-V GCC toolchain)
-and will set up a [Python virtual environment](https://docs.python.org/3/library/venv.html) under
+and set up a [Python virtual environment](https://docs.python.org/3/library/venv.html) under
 the `./venv` directory with all the required packages installed.
 
 The virtual environment allows you to use Python without installing the packages system-wide.
@@ -69,12 +72,12 @@ To enter the environment, you have to run `source venv/bin/activate` in each new
 You can also use the provided `make env` target, which will start a new Bash shell with the virtualenv already sourced.
 You can install packages inside the virtual environment by entering the environment and then using `pip`.
 
-To build the bitstream you will also need to have Vivado (version 2020.2 or newer) installed and the `vivado` command available in your `PATH`.
+To build the bitstream, you will also need to have Vivado (version 2020.2 or newer) installed and the `vivado` command available in your `PATH`.
 To configure Vivado in the current shell, you need to `source /PATH/TO/Vivado/VERSION/settings64.sh`.
-This can be put in your `.bashrc` or other shell init script.
+Then include it in your `.bashrc` or other shell init script.
 
-To make the process automatic without hard-coding these things in shell init script,
-tools like [direnv](https://github.com/direnv/direnv) can be used. A sample `.envrc` file would then look like this:
+To make the process automatic without hard-coding in the shell init script, you can use tools like [direnv](https://github.com/direnv/direnv).
+A sample `.envrc` file looks like so:
 
 ```sh
 source venv/bin/activate
@@ -85,19 +88,19 @@ All other commands assume that you run Python from the virtual environment with 
 
 ## Packaging the bitstream
 
-If you want to save the bitstream and use it later or share it with someone, there is an utility target `make pack`.
-It packs files necessary to load the bitstream and run rowhammer scripts on it.
-Those files are:
- - `build/$TARGET/gateware/$TOP.bit`
- - `build/$TARGET/csr.csv`
- - `build/$TARGET/defs.csv`
- - `build/$TARGET/sdram_init.py`
- - `build/$TARGET/litedram_settings.json`
+To save the bitstream and use it later or share it, use the `make pack` utility target.
+It packs the files necessary to load the bitstream and run rowhammer scripts on it.
+These files are:
 
-After running `make pack`, you should have a zip file named like `$TARGET-$BRANCH-$COMMIT.zip`.
+* `build/$TARGET/gateware/$TOP.bit`
+* `build/$TARGET/csr.csv`
+* `build/$TARGET/defs.csv`
+* `build/$TARGET/sdram_init.py`
+* `build/$TARGET/litedram_settings.json`
 
-Next time you want to use a bitstream packaged in such way, all you need to do is to run
-`unzip your-bitstream-file.zip` and you are all set.
+Running `make pack` creates a zip file named, for instance, `$TARGET-$BRANCH-$COMMIT.zip`.
+
+To use a bitstream packaged this way, run `unzip your-bitstream-file.zip`.
 
 ## Local documentation build
 
@@ -116,7 +119,7 @@ The documentation will be located in `build/documentation/index.html`.
 ```{note}
 For easier development one can use [sphinx-autobuild](https://pypi.org/project/sphinx-autobuild)
 using command `sphinx-autobuild -b html doc build/documentation/html --re-ignore 'doc/build/.*'`.
-The documentation can be then viewed in a browser at `http://127.0.0.1:8000`.
+You can then view the documentation in a browser at `http://127.0.0.1:8000`.
 ```
 
 ## Tests
@@ -129,54 +132,65 @@ make test
 
 ## Network USB adapter setup
 
-In order to control the Rowhammer platform an Ethernet connection is necessary. 
-In case you want to use an USB Ethernet adapter for this purpose read the instructions below.
+In order to control the Rowhammer platform, an Ethernet connection is necessary.
+In case you want to use an USB Ethernet adapter for this purpose, follow the instructions below.
 
-1. Make sure you use a 1GbE USB network adapter
-2. Figure out the MAC address for the USB network adapter:
-   * Run ``sudo lshw -class network -short`` to get the list of all network interfaces
-   * Check which of the devices uses the r8152 driver by running ``sudo ethtool -i <device>``
-   * Display the link information for the device running ``sudo ip link show <device>`` and look for the mac address next to the ``link/ether`` field
-3. Configure the USB network adapter to appear as network device ``fpga0`` using systemd
-   * Create ``/etc/systemd/network/10-fpga0.link`` with the following contents:
-      ```sh
-      [Match]
-      # Set this to the MAC address of the USB network adapter
-      MACAddress=XX:XX:XX:XX:XX
-      
-      [Link]
-      Name=fpga0
-      ```
-4. Configure the ``fpga0`` network device with a static IP address, always up (even when disconnected) and ignored by the network manager.
-   * Run the following command, assuming your system uses NetworkManager
+1. Make sure you use a 1GbE USB network adapter.
+2. Determine the MAC address for the USB network adapter:
+   * Run `sudo lshw -class network -short` to get the list of all network interfaces
+   * Check which of the devices uses the r8152 driver by running `sudo ethtool -i <device>`
+   * Display the link information for the device running `sudo ip link show <device>` and look for the mac address next to the `link/ether` field.
+3. Configure the USB network adapter to appear as network device `fpga0` using systemd
+   * Create `/etc/systemd/network/10-fpga0.link` with the following contents:
+  
+    ```sh
+    [Match]
+    # Set this to the MAC address of the USB network adapter
+    MACAddress=XX:XX:XX:XX:XX
+    
+    [Link]
+    Name=fpga0
+    ```
+
+4. Configure the `fpga0` network device with a static IP address, always up (even when disconnected) and ignored by the network manager.
+   * Run the following command, assuming your system uses NetworkManager:
+  
       ```sh
       nmcli con add type ethernet con-name 'Rowhammer Tester' ifname fpga0 ipv4.method manual ipv4.addresses 192.168.100.100/24
       ```
-   * Alternatively, if your system supports legacy ``interfaces`` configuration file:
-       1. Make sure your ``/etc/network/interfaces`` file has the following line:
+  
+   * Alternatively, if your system supports the legacy `interfaces` configuration file:
+       1. Make sure your `/etc/network/interfaces` file contains the following line:
+  
            ```sh
            source /etc/network/interfaces.d/*
            ```
-       2. Create ``/etc/network/interfaces.d/fpga0`` with the following contents:
+  
+       2. Create `/etc/network/interfaces.d/fpga0` with the following contents:
+  
            ```sh
            auto fpga0
            allow-hotplug fpga0
            iface fpga0 inet static
                    address 192.168.100.100/24
            ```
-       3. Check that ``nmcli device`` says the state is ``connected (externally)`` otherwise run ``sudo systemctl restart NetworkManager``
-   * Run ``ifup fpga0``
-5. Run ``sudo udevadm control --reload`` and then unplug the USB ethernet device and plug it back in
-6. Check you have an ``fpga0`` interface and it has the correct IP address by running ``networkctl status``
+  
+       3. Check that `nmcli device` says the state is `connected (externally)` otherwise run `sudo systemctl restart NetworkManager`
+   * Run `ifup fpga0`
+5. Run `sudo udevadm control --reload` and then unplug the USB Ethernet device and plug it back in
+6. Check whether an `fpga0` interface is present with the correct IP address by running `networkctl status`
 
-```{note} 
-In case you see ``libusb_open() failed with LIBUSB_ERROR_ACCESS`` when trying to use the rowhammer tester scripts with the USB ethernet adapter then it means that you have a permissions issue and need to allow access to the FTDI USB to serial port chip. Check the group listed for the tty's when running ``ls -l /dev/ttyUSB*`` and add the current user to this group by running ``sudo adduser <username> <group>``.
+```{note}
+In case you see `libusb_open() failed with LIBUSB_ERROR_ACCESS` when trying to use the rowhammer tester scripts with the USB Ethernet adapter, it indicates a permissions issue.
+To remedy it, allow access to the FTDI USB to serial port chip. 
+Run `ls -l /dev/ttyUSB*`, check the listed group for tty's and add the current user to this group by running ``sudo adduser <username> <group>``.
 ```
+
 (controlling-the-board)=
 ## Controlling the board
 
-Board control is the same for both simulation and hardware runs.
-In order to communicate with the board via EtherBone, the `litex_server` needs to be started with the following command:
+Boards are controlled the same way for both simulation and hardware runs.
+In order to communicate with the board via EtherBone, start `litex_server` with the following command:
 
 ```sh
 export IP_ADDRESS=192.168.100.50  # optional, should match the one used during build
@@ -184,13 +198,15 @@ make srv
 ```
 
 ```{warning}
-If you want to run the simulation and the rowhammer scripts on a physical board at the same time,
-you have to change the ``IP_ADDRESS`` variable, otherwise the simulation can conflict with the communication with your board.
+To run the simulation and the rowhammer scripts on a physical board at the same time, change the ``IP_ADDRESS`` variable, otherwise the simulation can conflict with the communication with your board.
 ```
 
-The build files (CSRs address list) must be up to date. It can be re-generated with `make` without arguments.
+The build files (CSRs address list) must be up-to-date.
+The build files can be re-generated with `make` without arguments.
 
-Then, in another terminal, you can use the Python scripts provided. *Remember to enter the Python virtual environment before running the scripts!* Also, the `TARGET` variable should be set to load configuration for the given target.
+Then, in another terminal, you can use the Python scripts provided.
+*Remember to enter the Python virtual environment before running the scripts!*
+Also, the `TARGET` variable should be set to load configuration for the given target.
 For example, to use the `leds.py` script, run the following:
 
 ```sh
@@ -202,52 +218,54 @@ python leds.py  # stop with Ctrl-C
 
 ## Hammering
 
-Rowhammer attacks can be run against a DRAM module. It can be then used for measuring cell retention.
-For the complete list of scripts' modifiers, see `--help`.
+Rowhammer attacks can be run against a DRAM module.
+It can be then used for measuring cell retention.
+For the complete list of script modifiers, see `--help`.
 
-There are two versions of a rowhammer script:
+There are two versions of the rowhammer script:
 
-- `rowhammer.py` - this one uses regular memory access via EtherBone to fill/check the memory (slower)
-- `hw_rowhammer.py` - BIST blocks will be used to fill/check the memory (much faster, but with some limitations regarding fill pattern)
+* `rowhammer.py` - uses regular memory access via EtherBone to fill/check the memory (slower)
+* `hw_rowhammer.py` - BIST blocks will be used to fill/check the memory (much faster, but with some limitations regarding fill pattern)
 
 BIST blocks are faster and are the intended way of running Rowhammer tester.
 
-Hammering of a row is done by reading it. There are two ways to specify a number of reads:
+Hammering of a row is done by reading it. 
+There are two ways to specify a number of reads:
 
-- `--read_count N`           - one pass of `N` reads
-- `--read_count_range K M N` - multiple passes of reads, as generated by `range(K, M, N)`
+* `--read_count N` - one pass of `N` reads
+* `--read_count_range K M N` - multiple passes of reads, as generated by `range(K, M, N)`
 
-Regardless of which one is used, the number of reads in one pass is divided equally between hammered rows.
+Regardless of which one is used, the number of reads in one pass is divided equally between the hammered rows.
 If a user specifies `--read_count 1000`, then each row will be hammered 500 times.
 
-Normally hammering is being performed via DMA, but there is also an alternative way with `--payload-executor`.
-It bypasses the DMA and directly talks with the PHY.
+As standard, hammering is performed via DMA, but there is an alternative way with `--payload-executor` which bypasses the DMA and talks directly with the PHY.
 That allows the user to issue specific activation, refresh and precharge commands.
-
 
 ### Attack modes
 
-Different attack and row selection modes can be used, but only one of them can be specified at the same time.
+Several attack and row selection modes are available, but only one mode can be specified at a time.
 
-- `--hammer-only`
+* `--hammer-only`
 
-  Only hammers rows, without doing any error checks or reports.
-  When run with `rowhammer.py` the attack is limited to one row pair.
+  Hammers rows without error checks or reports.
+  When run with `rowhammer.py`, the attack is limited to one row pair.
   `hw_rowhammer.py` can attack up to 32 rows.
-  With `--payload-executor` enabled the row limit is dictated by the payload memory size.
+  With `--payload-executor` enabled, the row limit is dictated by the payload memory size.
 
-  For example following command will hammer rows 4 and 6 1000 times total (so 500 times each):
+  For example, the following command will hammer rows 4 and 6 1000 times total (so 500 times each):
 
   ```sh
   (venv) $ python hw_rowhammer.py --hammer-only 4 6 --read_count 1000
   ```
 
-- `--all-rows`
+* `--all-rows`
 
-  Row pairs generated from `range(start-row, nrows - row-pair-distance, row-jump)` expression will be hammered.
+  Row pairs generated from the `range(start-row, nrows - row-pair-distance, row-jump)` expression will be hammered.
 
-  Generated pairs are of form `(i, i + row-pair-distance)`.
-  Default values for used arguments are:
+  The generated pairs come in the format of `(i, i + row-pair-distance)`.
+  Table {numref}`default-all-rows-arguments` shows default values for arguments:
+
+:::{table} default-all-rows-arguments
 
   | argument              | default |
   | --------------------- | ------- |
@@ -255,40 +273,40 @@ Different attack and row selection modes can be used, but only one of them can b
   | `--row-jump`          | 1       |
   | `--row-pair-distance` | 2       |
 
-  So you can run following command to hammer rows `(0, 2), (1, 3), (2, 4)`:
+:::
+
+  For instance, to hammer rows `(0, 2), (1, 3), (2, 4)`, run the following command:
 
   ```sh
   (venv) $ python hw_rowhammer.py --all-rows --nrows 5
   ```
 
-  And in case of:
+  And to hammer rows `(10, 13), (12, 15)`, run:
 
   ```sh
   (venv) $ python hw_rowhammer.py --all-rows --start-row 10 --nrows 16 --row-jump 2 --row-distance 3
   ```
 
-  hammered pairs would be: `(10, 13), (12, 15)`.
-
-  In a special case, where `--row-pair-distance` is 0, you can check how hammering a single row affects other rows.
-  Normally activations and deactivations are achieved with row reads using the DMA, but in this case it is not possible.
-  Because the same row is being read all the time, no deactivation command would be sent by the DMA.
-  In this case, `--payload-executor` is required as it bypasses the DMA and sends deactivation commands on its own.
+  Setting `--row-pair-distance` to 0 lets you check how hammering a single row affects other rows.
+  Normally, activations and deactivations are achieved with row reads using the DMA, but in this case this is not possible.
+  Since a single row is being read all the time, no deactivation command would be sent by the DMA.
+  In this case, the `--payload-executor` argument is required as it bypasses the DMA and sends deactivation commands on its own:
 
   ```sh
   (venv) $ python hw_rowhammer.py --all-rows --nrows 5 --row-pair-distance 0 --payload-executor
   ```
 
-- `--row-pairs sequential`
+* `--row-pairs sequential`
 
-  Hammers pairs of `(start-row, start-row + n)`, where `n` is from 0 to `nrows`.
+  Hammers pairs of `(start-row, start-row + n)`, where `n` is a value from `0` to `nrows`, e.g.:
 
   ```sh
   (venv) $ python hw_rowhammer.py --row-pairs sequential --start-row 4 --nrows 10
   ```
 
-  Command above, would hammer following set of row pairs:
+  The command above will hammer the following set of row pairs:
 
-  ```
+  ```  
   (4, 4 + 0)
   (4, 4 + 1)
   ...
@@ -296,7 +314,7 @@ Different attack and row selection modes can be used, but only one of them can b
   (4, 4 + 10)
   ```
 
-- `--row-pairs const`
+* `--row-pairs const`
 
   Two rows specified with the `const-rows-pair` parameter will be hammered:
 
@@ -304,7 +322,7 @@ Different attack and row selection modes can be used, but only one of them can b
   (venv) $ python hw_rowhammer.py --row-pairs const --const-rows-pair 4 6
   ```
 
-- `--row-pairs random`
+* `--row-pairs random`
 
   `nrows` pairs of random rows will be hammered. Row numbers will be between `start-row` and `start-row + nrows`.
 
@@ -312,11 +330,11 @@ Different attack and row selection modes can be used, but only one of them can b
   (venv) $ python hw_rowhammer.py --row-pairs random --start-row 4 --nrows 10
   ```
 
-- `--no-attack-time <time>`
+* `--no-attack-time <time>`
 
   Instead of performing a rowhammer attack, the script will load the RAM with selected pattern and sleep for `time` nanoseconds.
   After this time, it will check for any bitflips that could have happened.
-  This option does not imply `--no-refresh`!
+  This option does not imply `--no-refresh`.
 
   ```sh
   (venv) $ python hw_rowhammer.py --no-attack-time 100e9 --no-refresh
@@ -324,13 +342,13 @@ Different attack and row selection modes can be used, but only one of them can b
 
 ### Patterns
 
-User can choose a pattern that memory will be initially filled with:
+You can choose a pattern that memory will be initially filled with:
 
-- `all_0` - all bits set to 0
-- `all_1` - all bits set to 1
-- `01_in_row` - alternating 0's and 1's in a row (`0xaaaaaaaa` in hex)
-- `01_per_row` - all 0's in odd-numbered rows, all 1's in even rows
-- `rand_per_row` - random values for all rows
+* `all_0` - all bits set to 0
+* `all_1` - all bits set to 1
+* `01_in_row` - alternating 0s and 1s in a row (`0xaaaaaaaa` in hex)
+* `01_per_row` - all 0s in odd-numbered rows, all 1s in even rows
+* `rand_per_row` - random values for all rows
 
 ### Example output
 
@@ -359,42 +377,41 @@ Bit-flips for row   134: 3
 ### Row selection examples
 
 ```{warning}
-Attacks are performd on a single bank.
-By default it is bank 0.
+Attacks are performed on a single bank - bank 0 by default.
 To change the bank that is being attacked use the `--bank` flag.
 ```
 
-- Select row pairs from row 3 (`--start-row`) to row 59 (`--nrows`) where the next pair is 5 rows away (`--row-jump`) from the previous one:
+* Select row pairs from row 3 (`--start-row`) to row 59 (`--nrows`) where the next pair is 5 rows over (`--row-jump`) from the previous one:
 
   ```sh
   (venv) $ python hw_rowhammer.py --pattern 01_in_row --all-rows --start-row 3 --nrows 60 --row-jump 5 --no-refresh --read_count 10e4
   ```
 
-- Select row pairs from row 3 to to row 59 without a distance between subsequent pairs (no `--row-jump`), which means that rows pairs are incremented by 1:
+* Select row pairs from row 3 to row 59 without a distance between subsequent pairs (no `--row-jump`), which means that rows pairs are incremented by 1:
 
   ```sh
   (venv) $ python hw_rowhammer.py --pattern 01_in_row --all-rows --start-row 3 --nrows 60 --no-refresh --read_count 10e4
   ```
 
-- Select all row pairs (from 0 to nrows - 1):
+* Select all row pairs (from `0` to `nrows - 1`):
 
   ```sh
   (venv) $ python hw_rowhammer.py --pattern 01_in_row --all-rows --nrows 512 --no-refresh --read_count 10e4
   ```
 
-- Select all row pairs (from 0 to nrows - 1) and save the error summary in JSON format to the `test` directory:
+* Select all row pairs (from `0` to `nrows - 1`) and save the error summary in JSON format to the `test` directory:
 
   ```sh
   (venv) $ python hw_rowhammer.py --pattern 01_in_row --all-rows --nrows 512 --no-refresh --read_count 10e4 --log-dir ./test
   ```
 
-- Select only one row (42 in this case) and save the error summary in JSON format to the `test` directory:
+* Select a single row (42 in this case) and save the error summary in JSON format to the `test` directory:
 
   ```sh
   (venv) $ python hw_rowhammer.py --pattern all_1 --row-pairs const --const-rows-pair 42 42 --no-refresh --read_count 10e4 --log-dir ./test
   ```
 
-- Select all rows (from 0 to nrows - 1) and hammer them one by one 1M times each.
+* Select all rows (from `0` to `nrows - 1`) and hammer them one by one 1M times each.
 
   ```sh
   (venv) $ python hw_rowhammer.py --all-rows --nrows 100 --row-pair-distance 0 --payload-executor --no-refresh --read_count 1e6
@@ -407,31 +424,31 @@ The size of the payload memory is set by default to 1024 bytes and can be change
 
 ### Cell retention measurement examples
 
-- Select all row pairs (from 0 to nrows - 1) and perform a set of tests for different read count values, starting from 10e4 and ending at 10e5 with a step of 20e4 (`--read_count_range [start stop step]`):
+* Select all row pairs (from 0 to nrows - 1) and perform a set of tests for different read count values, starting from 10e4 and ending at 10e5 with a step of 20e4 (`--read_count_range [start stop step]`):
 
   ```sh
   (venv) $ python hw_rowhammer.py --pattern 01_in_row --all-rows --nrows 512 --no-refresh --read_count_range 10e4 10e5 20e4
   ```
 
-- Perform set of tests for different read count values in a given range for one row pair (50, 100):
+* Perform a set of tests for different read count values in a given range for one row pair (50, 100):
 
   ```sh
   (venv) $ python hw_rowhammer.py --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count_range 10e4 10e5 20e4
   ```
 
-- Perform set of tests for different read count values in a given range for one row pair (50, 100) and stop the test execution as soon as a bitflip is found:
+* Perform a set of tests for different read count values in a given range for one row pair (50, 100) and stop the test execution as soon as a bitflip is found:
 
   ```sh
   (venv) $ python hw_rowhammer.py --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count_range 10e4 10e5 20e4 --exit-on-bit-flip
   ```
 
-- Perform set of tests for different read count values in a given range for one row pair (50, 100) and save the error summary in JSON format to the `test` directory:
+* Perform a set of tests for different read count values in a given range for one row pair (50, 100) and save the error summary in JSON format to the `test` directory:
 
   ```sh
   (venv) $ python hw_rowhammer.py --pattern 01_in_row --row-pairs const --const-rows-pair 50 100 --no-refresh --read_count_range 10e4 10e5 20e4 --log-dir ./test
   ```
 
-- Perform set of tests for different read count values in a given range for a sequence of attacks for different pairs, where the first row of a pair is 40 and the second one is a row of a number from range (40, nrows - 1):
+* Perform a set of tests for different read count values in a given range for a sequence of attacks for different pairs, where the first row of a pair is 40 and the second one is a row of a number from range (40, nrows - 1):
 
   ```sh
   (venv) $ python hw_rowhammer.py --pattern 01_in_row --row-pairs sequential --start-row 40 --nrows 512 --no-refresh --read_count_range 10e4 10e5 20e4
@@ -439,9 +456,10 @@ The size of the payload memory is set by default to 1024 bytes and can be change
 
 ## Utilities
 
-Some of the scripts are simple and do not take command line arguments, others will provide help via `<script_name>.py --help` or `<script_name>.py -h`.
+Some scripts are simple and do not take command line arguments, others will provide help via `<script_name>.py --help` or `<script_name>.py -h`.
 
-Few of the scripts accept a `--srv` option. With this option enabled, a program will start it's own instance of `litex_server` (the user doesn't need to run `make srv` to {ref}`control the board <controlling the board>`)
+Few of the scripts accept a `--srv` option.
+With this option enabled, a program will start its own instance of `litex_server` (the user doesn't need to run `make srv` to [control the board](#controlling-the-board)).
 
 ### Run LEDs demo - `leds.py`
 
@@ -453,9 +471,9 @@ Displays a simple "bouncing" animation using the LEDs on Arty-A7 board, with the
 
 Prints the data stored in the LiteX identification memory:
 
-- hardware platform identifier
-- source code git hash
-- build date
+* hardware platform identifier
+* source code git hash
+* build date
 
 Example output:
 
@@ -482,13 +500,13 @@ Example output of `dump_regs.py`:
 ```
 
 ```{note}
-Note that ctrl_scratch value is 0x12345678. This is the reset value of this register.
-If you are getting a different, this may indicate a problem.
+Note that the `ctrl_scratch` value is `0x12345678`. This is the reset value of this register.
+If you are getting a different value, it may indicate a problem.
 ```
 
 ### Initialize memory - `mem.py`
 
-Before the DRAM memory can be used, the initialization and leveling must be performed. The `mem.py` script serves this purpose.
+Before the DRAM memory can be used, perform initialization and leveling using the `mem.py` script.
 
 Expected output:
 
@@ -536,22 +554,21 @@ OK
 
 ### Enter BIOS - `bios_console.py`
 
-Sometimes it may happen that memory initialization fails when running the `mem.py` script.
-This is most likely due to using boards that allow to swap memory modules, such as ZCU104.
+It may happen that memory initialization fails when running the `mem.py` script.
+This is most likely due to using boards that allow to swap memory modules, such as the ZCU104.
 
-Memory initialization procedure is performed by the CPU instantiated inside the FPGA fabric.
+The memory initialization procedure is performed by the CPU instantiated inside the FPGA fabric.
 The CPU runs the LiteX BIOS.
-In case of memory training failure it may be helpful to access the LiteX BIOS console.
+In case of memory training failure, it may be helpful to access the LiteX BIOS console.
 
-If the script cannot find a serial terminal emulator program on the host system, it will fall back
-to `litex_term` which is shipped with LiteX. It is however advised to install `picocom`/`minicom`
-as `litex_term` has worse performance.
+If the script cannot find a serial terminal emulator program on the host system, it will fall back to `litex_term` which ships with LiteX.
+It is however advised to install `picocom`/`minicom` as `litex_term` has worse performance.
 
-In the BIOS console use the `help` command to get information about other available commands.
-To re-run memory initialization and training type `reboot`.
+In the BIOS console, use the `help` command to get information about other available commands.
+To re-run memory initialization and training, type `reboot`.
 
 ```{note}
-To close picocom/minicom enter CTRL+A+X key combination.
+To close picocom/minicom, use the CTRL+A+X key combination.
 ```
 
 Example:
@@ -602,36 +619,38 @@ litex>
 
 #### Perform memory tests from the BIOS
 
-After entering the BIOS, you may want to perform a memory test using utilities built into the BIOS itself.
-There are a couple ways to do such:
+After entering the BIOS, you may want to perform a memory test using utilities built into the BIOS.
+There are several ways to do it:
 
-- `mem_test` - performs a series of writes and reads to check if values read back are the same as those previously written.
+* `mem_test` - performs a series of writes and reads to check if values read back are the same as those previously written.
   It is limited by a 32-bit address bus, so only 4 GiB of address space can be tested.
-  You can get origin of the RAM space using `mem_list` command.
-- `sdram_test` - basically `mem_test`, but predefined for first 1/32 of defined RAM region size.
-- `sdram_hw_test` - similar to `mem_test`, but accesses the SDRAM directly using DMAs, so it is not limited to 4 GiB.
-  It requires passing 2 arguments (`origin` and `size`) with a 3rd optional argument being `burst_length`.
+  You can get the origin of the RAM space using `mem_list` command.
+* `sdram_test` - essentially `mem_test` but predefined for the first 1/32 of the defined RAM region size.
+* `sdram_hw_test` - similar to `mem_test`, but accesses the SDRAM directly using DMAs, so it is not limited to 4 GiB.
+  
+  It requires passing 2 arguments (`origin` and `size`) with a 3rd optional argument, `burst_length`.
   When using `sdram_hw_test` you don't have to offset the `origin` like in the case of `mem_test`.
-  `size` is a number of bytes to test and `burst_length` is a number of full transfer writes to the SDRAM, before reading and checking written content.
+  `size` is a number of bytes to test and `burst_length` is a number of full transfer writes to the SDRAM before reading and checking the written content.
   The default value for `burst_length` is 1, which means that after every write, a check is performed.
-  Generally, bigger `burst_length` means faster operation.
+  Generally, higher `burst_length` values mean faster operation.
 
 ### Test with BIST - `mem_bist.py`
 
-A script written to test BIST block functionality. Two tests are available:
+A script written to test the BIST block functionality.
+Two tests are available:
 
-- `test-modules` - memory is initialized and then a series of errors is introduced (on purpose).
-  Then BIST is used to check the content of the memory. If the number of errors detected is equal to the number
-  of errors introduced, the test is passed.
-- `test-memory` - simple test that writes a pattern in the memory, reads it, and checks if the content is correct.
+* `test-modules` - the memory is initialized and then a series of errors is introduced.
+  Then BIST is used to check the contents of the memory.
+  If the number of errors detected is equal to the number of errors introduced, the test is passed.
+* `test-memory` - a simple test that writes a pattern in the memory, reads it, and checks whether the content is correct.
   Both write and read operations are done via BIST.
 
 ### Run benchmarks - `benchmark.py`
 
 Benchmarks memory access performance. There are two subcommands available:
 
-- `etherbone` - measure performance of the EtherBone bridge
-- `bist` - measure performance of DMA DRAM access using the BIST modules
+* `etherbone` - measure performance of the EtherBone bridge
+* `bist` - measure performance of DMA DRAM access using the BIST modules
 
 Example output:
 
@@ -656,15 +675,16 @@ Speed   = 321.797 MiBps
 
 ### Use logic analyzer - `analyzer.py`
 
-This script utilizes the Litescope functionality to gather debug information about
-signals in the LiteX system. In-depth Litescope documentation [is here](https://github.com/enjoy-digital/litex/wiki/Use-LiteScope-To-Debug-A-SoC).
+This script utilizes the Litescope functionality to gather debug information about signals in the LiteX system.
+In-depth Litescope documentation is available on [GitHub](https://github.com/enjoy-digital/litex/wiki/Use-LiteScope-To-Debug-A-SoC).
 
-As you can see in Litescope documentation, Litescope analyzer needs to be instantiated in your design. Example design with analyzer added was provided as `arty_litescope` TARGET.
-As the name implies it can be run using Arty board. You can use `rowhammer_tester/targets/arty_litescope.py` as a reference for your own Litescope-enabled targets.
+Litescope analyzer needs to be instantiated in your design.
+A sample design with the analyzer added is provided as the `arty_litescope` TARGET and can be run using the Arty-A7 board.
+You can use `rowhammer_tester/targets/arty_litescope.py` as a reference for your own Litescope-enabled targets.
 
-To build `arty_litescope` example and upload it to device, follow instructions below:
+To build the `arty_litescope` sample and upload it to device, follow the instructions below:
 
-1. In root directory run:
+1. In the root directory, run:
 
    ```sh
    export TARGET=arty_litescope
@@ -672,37 +692,36 @@ To build `arty_litescope` example and upload it to device, follow instructions b
    make upload
    ```
 
-   `analyzer.csv` file will be created in the root directory.
+   the `analyzer.csv` file will be created in the root directory.
 
-2. We need to copy it to target's build dir before using `analyzer.py`.
+2. Copy it to the target's build directory before using `analyzer.py`.
 
    ```sh
    cp analyzer.csv build/arty_litescope/
    ```
 
-3. Then start litex-server with:
+3. Start `litex-server` with:
 
    ```sh
    make srv
    ```
 
-4. And execute analyzer script in a separate shell:
+4. Execute the analyzer script in a separate shell:
 
    ```sh
    export TARGET=arty_litescope
    python rowhammer_tester/scripts/analyzer.py
    ```
 
-   Results will be stored in `dump.vcd` file and can be viewed with gtkwave:
+   Results will be stored in the `dump.vcd` file and can be viewed using `gtkwave`:
 
    ```sh
    gtkwave dump.vcd
    ```
 
-
 ## Simulation
 
-Select `TARGET`, generate intermediate files & run simulation:
+Select `TARGET`, generate intermediate files & run the simulation:
 
 ```sh
 export TARGET=arty # (or zcu104)
@@ -710,7 +729,7 @@ make sim
 ```
 
 This command will generate intermediate files & simulate them with Verilator.
-After simulation has finished, a signals dump can be investigated using [gtkwave](http://gtkwave.sourceforge.net/):
+After simulation has finished, a signal dump can be investigated using [gtkwave](http://gtkwave.sourceforge.net/):
 
 ```sh
 gtkwave build/$TARGET/gateware/sim.fst
@@ -742,5 +761,5 @@ communication with the simulated device.
    ```
 
 ```{note}
-Typing `make ARGS="--sim"` will cause LiteX to generate only intermediate files and stop right after that.
+Typing `make ARGS="--sim"` will cause LiteX to only generate intermediate files and stop right after.
 ```
