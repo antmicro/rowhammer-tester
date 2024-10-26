@@ -160,21 +160,6 @@ class SoC(common.RowHammerSoC):
     def get_sdram_ratio(self):
         return "1:4"
 
-    def add_host_bridge(self):
-        self.submodules.ethphy = LiteEthS7PHYRGMII(
-            clock_pads         = self.platform.request("eth_clocks"),
-            pads               = self.platform.request("eth"),
-            hw_reset_cycles    = math.ceil(float(self.args.eth_reset_time) * self.sys_clk_freq),
-            rx_delay           = 0.8e-9,
-            iodelay_clk_freq   = float(self.args.iodelay_clk_freq),
-        )
-        self.add_etherbone(
-            phy          = self.ethphy,
-            ip_address   = self.ip_address,
-            mac_address  = self.mac_address,
-            udp_port     = self.udp_port,
-            buffer_depth = 256)
-
 # Build --------------------------------------------------------------------------------------------
 
 def main():

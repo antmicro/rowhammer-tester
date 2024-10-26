@@ -5,6 +5,7 @@ import logging
 import argparse
 import git
 import time
+import math
 
 from migen import *
 
@@ -31,6 +32,7 @@ from litedram.common import PhySettings, GeomSettings, TimingSettings
 from liteeth.phy.model import LiteEthPHYModel
 from liteeth.core import LiteEthUDPIPCore
 from liteeth.frontend.etherbone import LiteEthEtherbone
+from liteeth.phy import LiteEthS7PHYRGMII
 
 from litedram.modules import SDRAMModule
 import litedram.modules as litedram_modules
@@ -101,7 +103,28 @@ class RowHammerSoC(SoCCore):
         raise NotImplementedError()
 
     def add_host_bridge(self):
-        raise NotImplementedError()
+        clock_pads = self.platform.request("eth_clocks")
+        self.submodules.ethphy = phy = LiteEthS7PHYRGMII(
+            clock_pads         = clock_pads,
+            pads               = self.platform.request("eth"),
+            hw_reset_cycles    = math.ceil(float(self.args.eth_reset_time) * self.sys_clk_freq),
+            rx_delay           = 0.8e-9,
+            iodelay_clk_freq   = float(self.args.iodelay_clk_freq),
+        )
+        self.add_etherbone(
+            phy                     = phy,
+            ip_address              = self.ip_address,
+            mac_address             = self.mac_address,
+            udp_port                = self.udp_port,
+            buffer_depth            = 256,
+            with_timing_constraints = False)
+
+        eth_rx_clk = getattr(phy, "crg", phy).cd_eth_rx.clk
+        eth_tx_clk = getattr(phy, "crg", phy).cd_eth_tx.clk
+        eth_rx_clk.attr.add("keep")
+        eth_tx_clk.attr.add("keep")
+        self.platform.add_period_constraint(clock_pads.rx, 1e9/phy.rx_clk_freq)
+        self.platform.add_false_path_constraints(self.crg.cd_sys.clk, eth_rx_clk, eth_tx_clk)
 
     # Common SoC configuration ---------------------------------------------------------------------
 
