@@ -8,8 +8,6 @@ Specifying different DRAM module makes most sense on boards that allow to easily
 such as on ZCU104. On other boards it would be necessary to desolder the DRAM chip and solder a new one.
 ```
 
-(adding-new-modules)=
-
 ## Adding new modules
 
 The [LiteDRAM](https://github.com/enjoy-digital/litedram) controller provides out-of-the-box support for various DRAM modules.

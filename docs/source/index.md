@@ -1,17 +1,22 @@
 # Rowhammer tester
 
 ```{toctree}
-:caption: Introduction
 :maxdepth: 2
 
 introduction.md
-
 ```
 
 ```{toctree}
-:caption: Hardware
 :maxdepth: 2
 
+setup.md
+```
+
+```{toctree}
+:caption: Board configuration and control
+:maxdepth: 2
+
+board_control.md
 arty.md
 zcu104.md
 lpddr4_test_board.md
@@ -22,13 +27,21 @@ so_dimm_ddr5_tester.md
 ```
 
 ```{toctree}
-:caption: User guide
 :maxdepth: 2
 
-usage.md
+hammering.md
+```
+
+```{toctree}
+:maxdepth: 2
+
 visualization.md
+```
+
+```{toctree}
+:maxdepth: 2
+
 playbook.md
-dram_modules.md
 ```
 
 ```{toctree}

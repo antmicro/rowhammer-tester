@@ -2,7 +2,6 @@
 
 The aim of this project is to provide a platform for testing [DRAM vulnerability to rowhammer attacks](https://users.ece.cmu.edu/~yoonguk/papers/kim-isca14.pdf).
 
-(architecture)=
 ## Architecture
 
 The setup consists of FPGA gateware and application side software.
@@ -88,12 +87,13 @@ All other commands assume that you run Python from the virtual environment with 
 
 If you want to save the bitstream and use it later or share it with someone, there is an utility target `make pack`.
 It packs files necessary to load the bitstream and run rowhammer scripts on it.
-Those files are:
- - `build/$TARGET/gateware/$TOP.bit`
- - `build/$TARGET/csr.csv`
- - `build/$TARGET/defs.csv`
- - `build/$TARGET/sdram_init.py`
- - `build/$TARGET/litedram_settings.json`
+These files are:
+
+* `build/$TARGET/gateware/$TOP.bit`
+* `build/$TARGET/csr.csv`
+* `build/$TARGET/defs.csv`
+* `build/$TARGET/sdram_init.py`
+* `build/$TARGET/litedram_settings.json`
 
 After running `make pack`, you should have a zip file named like `$TARGET-$BRANCH-$COMMIT.zip`.
 

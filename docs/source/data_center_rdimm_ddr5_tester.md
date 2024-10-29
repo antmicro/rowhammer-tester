@@ -9,12 +9,14 @@ The hardware is open and can be found on [GitHub](https://github.com/antmicro/rd
 
 The following instructions explain how to set up the board.
 
+For FPGA gateware documentation for this board, refer to the [Gateware Documentation chapter](build/ddr5_test_board/documentation/index.rst).
+
 ## IO map
 
 A map of on-board connectors, status LEDs, control buttons and I/O interfaces is provided in {numref}`rdimm-ddr5-tester-interface-map` below.
 
 :::{figure-md} rdimm-ddr5-tester-interface-map
-![](images/rdimm-ddr5-tester-descriptions.png)
+![DDR5 tester interface map](images/rdimm-ddr5-tester-descriptions.png)
 
 DDR5 tester interface map
 :::

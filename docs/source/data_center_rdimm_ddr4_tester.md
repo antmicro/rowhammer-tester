@@ -13,6 +13,8 @@ The hardware is open and can be found on GitHub:
 
 The following instructions explain how to set up the board.
 
+For FPGA gateware documentation for this board, refer to the [Gateware Documentation chapter](build/ddr4_datacenter_test_board/documentation/index.rst).
+
 ## IO map
 A map of on-board connectors, status LEDs, control buttons and I/O interfaces is provided in {numref}`data-center-rdimm-ddr4-tester-interface-map` below.
 

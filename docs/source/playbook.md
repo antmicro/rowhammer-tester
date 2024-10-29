@@ -1,4 +1,4 @@
-# Playbook
+# Test-writing playbook
 
 The [Playbook directory](https://github.com/antmicro/rowhammer-tester/tree/master/rowhammer_tester/scripts/playbook) contains a group of Python classes and scripts designed to simplify the process of writing various rowhammer-related tests.
 These tests can be executed against a hardware platform.
@@ -200,10 +200,9 @@ Then, we proceed as follows:
 3. Increase dilution level and record the number of bit flips in the victim until either the bit flips stop or maximum dilution level is reached.
 4. Once maximum dilution level is reached or bit flips stop, reduce hammer count by a step and reset dilution to initial level and retry step 3. Repeat until the lowest hammer count is reached.
 
-:::{note}
-
+```{note}
 The hammer count changes on a linear scale and dilution changes on an exponential scale.
-:::
+```
 
 Results are presented as a table of values with columns representing the hammer count and the rows representing dilution levels.
 See Tables 2 and 3 in the [Half-Double white paper](https://github.com/google/hammer-kit/blob/main/20210525_half_double.pdf) as examples.
@@ -268,9 +267,10 @@ First, a modulo `inversion_divisor` operation is performed on a row number.
 In this case, it's `mod 8`.
 Next, we check if the bit in `inversion_mask` in the position corresponding to our row number (after modulo) is "on" or "off".
 If it's "on", this whole row will be inverted.
-The results for our example are visible in the {numref}`inversion-example-table` table below.
+The results for our example are visible in {numref}`inversion-example-table` below.
 
-```{list-table} inversion-example-table
+```{list-table} Inversion example table
+:name: inversion-example-table
 :widths: 10 10 80
 :header-rows: 1
 
@@ -316,6 +316,4 @@ The results for our example are visible in the {numref}`inversion-example-table`
 * - 12
   - 4
   - inverted pattern
-
-Inversion example table
 ```

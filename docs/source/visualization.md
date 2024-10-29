@@ -1,4 +1,4 @@
-# Visualization
+# Result visualization
 
 When you executed some attacks on your board, you can use the results to draw a plot or visualize them with the [F4PGA Database Visualizer](https://github.com/chipsalliance/f4pga-database-visualizer).
 

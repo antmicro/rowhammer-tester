@@ -1,7 +1,10 @@
 # LPDDR4 Test Board with DDR5 Testbed
 
-```{image} images/lpddr4-test-board.jpg
-```
+:::{figure-md} lpddr4-test-board-with-ddr5-testbed
+![LPDDR4 Test Board with DDR5 Testbed](images/lpddr4-test-board.jpg)
+
+LPDDR4 Test Board with DDR5 Testbed
+:::
 
 The DDR5 test board is an open source hardware test platform that enables testing and experimenting with various x4/x8 DDR5 modules embedded on a DDR5 testbed.
 

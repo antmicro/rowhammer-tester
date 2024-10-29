@@ -1,222 +1,4 @@
-# User guide
-
-This tool can be run on real hardware (FPGAs) or in a simulation mode.
-As the rowhammer attack exploits physical properties of cells in DRAM (draining charges), no bit flips can be observed in simulation mode (see [Simulation section](#simulation)).
-However, the simulation mode is useful for testing command sequences during development.
-
-The Makefile can be configured using environmental variables to modify the network configuration used and to select the target.
-Currently, 6 boards are supported, each targeting a different memory type:
-
-:::
-
-| Board                      | Memory type      | TARGET                       |
-|----------------------------|------------------|------------------------------|
-| Arty A7                    | DDR3             | `arty`                       |
-| ZCU104                     | DDR4 (SO-DIMM)   | `zcu104`                     |
-| DDR Datacenter DRAM Tester | DDR4 (RDIMM)     | `ddr4_datacenter_test_board` |
-| LPDDR4 Test Board          | LPDDR4 (SO-DIMM) | `lpddr4_test_board`          |
-| DDR5 Tester                | DDR5 (RDIMM)     | `ddr5_tester`                |
-| DDR5 Test Board            | DDR5 (SO-DIMM)   | `ddr5_test_board`            |
-
-```{note}
-Although you choose a target board for the simulation, it doesn't require having a physical board.
-Simulation is done entirely on your computer.
-```
-
-For board-specific instructions refer to [Arty A7](arty.md), [ZCU104](zcu104.md), [DDR4 Datacenter DRAM Tester](ddr4_datacenter_dram_tester.md), [LPDDR4 Test Board](lpddr4_tb.md), [DDR5 Tester](ddr5_tester.md) and [DDR5 Test Board](ddr5_test_board.md) chapters.
-The rest of this chapter describes operations that are common for all supported boards.
-
-## Installing dependencies
-
-Make sure you have Python 3 installed with the `venv` module, and the dependencies required to build
-[verilator](https://github.com/verilator/verilator), [openFPGALoader](https://github.com/trabucayre/openFPGALoader)
-and [OpenOCD](https://github.com/openocd-org/openocd).
-To install the dependencies on Ubuntu 18.04 LTS, run:
-
-```sh
-apt install git build-essential autoconf cmake flex bison libftdi-dev libjson-c-dev libevent-dev libtinfo-dev uml-utilities python3 python3-venv python3-wheel protobuf-compiler libcairo2 libftdi1-2 libftdi1-dev libhidapi-hidraw0 libhidapi-dev libudev-dev pkg-config tree zlib1g-dev zip unzip help2man curl ethtool
-```
-
-````{note}
-On some Debian-based systems, there's a problem with a broken dependency:
-
-  ```sh
-  libc6-dev : Breaks: libgcc-9-dev (< 9.3.0-5~) but 9.2.1-19 is to be installed
-  ```
-
-`gcc-9-base` package installation solves the problem.
-````
-
-On Ubuntu 22.04 LTS the following dependencies may also be required:
-
-```sh
-apt install libtool libusb-1.0-0-dev pkg-config
-```
-
-### Install Rowhammer tester
-
-Clone the `rowhammer-tester` repository and install the rest of the required dependencies:
-
-```sh
-git clone --recursive https://github.com/antmicro/rowhammer-tester.git
-cd rowhammer-tester
-make deps
-```
-
-The last command will download and build all the dependencies (including a RISC-V GCC toolchain)
-and set up a [Python virtual environment](https://docs.python.org/3/library/venv.html) under
-the `./venv` directory with all the required packages installed.
-
-The virtual environment allows you to use Python without installing the packages system-wide.
-To enter the environment, you have to run `source venv/bin/activate` in each new shell.
-You can also use the provided `make env` target, which will start a new Bash shell with the virtualenv already sourced.
-You can install packages inside the virtual environment by entering the environment and then using `pip`.
-
-To build the bitstream, you will also need to have Vivado (version 2020.2 or newer) installed and the `vivado` command available in your `PATH`.
-To configure Vivado in the current shell, you need to `source /PATH/TO/Vivado/VERSION/settings64.sh`.
-Then include it in your `.bashrc` or other shell init script.
-
-To make the process automatic without hard-coding in the shell init script, you can use tools like [direnv](https://github.com/direnv/direnv).
-A sample `.envrc` file looks like so:
-
-```sh
-source venv/bin/activate
-source /PATH/TO/Vivado/VERSION/settings64.sh
-```
-
-All other commands assume that you run Python from the virtual environment with `vivado` in your `PATH`.
-
-## Packaging the bitstream
-
-To save the bitstream and use it later or share it, use the `make pack` utility target.
-It packs the files necessary to load the bitstream and run rowhammer scripts on it.
-These files are:
-
-* `build/$TARGET/gateware/$TOP.bit`
-* `build/$TARGET/csr.csv`
-* `build/$TARGET/defs.csv`
-* `build/$TARGET/sdram_init.py`
-* `build/$TARGET/litedram_settings.json`
-
-Running `make pack` creates a zip file named, for instance, `$TARGET-$BRANCH-$COMMIT.zip`.
-
-To use a bitstream packaged this way, run `unzip your-bitstream-file.zip`.
-
-## Local documentation build
-
-The gateware part of the documentation is auto-generated from source files.
-Other files are static and are located in the `doc/` directory.
-To build the documentation, enter:
-
-```sh
-source venv/bin/activate
-pip install -r requirements.txt
-python -m sphinx -b html doc build/documentation/html
-```
-
-The documentation will be located in `build/documentation/index.html`.
-
-```{note}
-For easier development one can use [sphinx-autobuild](https://pypi.org/project/sphinx-autobuild)
-using command `sphinx-autobuild -b html doc build/documentation/html --re-ignore 'doc/build/.*'`.
-You can then view the documentation in a browser at `http://127.0.0.1:8000`.
-```
-
-## Tests
-
-To run project tests use:
-
-```sh
-make test
-```
-
-## Network USB adapter setup
-
-In order to control the Rowhammer platform, an Ethernet connection is necessary.
-In case you want to use an USB Ethernet adapter for this purpose, follow the instructions below.
-
-1. Make sure you use a 1GbE USB network adapter.
-2. Determine the MAC address for the USB network adapter:
-   * Run `sudo lshw -class network -short` to get the list of all network interfaces
-   * Check which of the devices uses the r8152 driver by running `sudo ethtool -i <device>`
-   * Display the link information for the device running `sudo ip link show <device>` and look for the mac address next to the `link/ether` field.
-3. Configure the USB network adapter to appear as network device `fpga0` using systemd
-   * Create `/etc/systemd/network/10-fpga0.link` with the following contents:
-  
-    ```sh
-    [Match]
-    # Set this to the MAC address of the USB network adapter
-    MACAddress=XX:XX:XX:XX:XX
-    
-    [Link]
-    Name=fpga0
-    ```
-
-4. Configure the `fpga0` network device with a static IP address, always up (even when disconnected) and ignored by the network manager.
-   * Run the following command, assuming your system uses NetworkManager:
-  
-      ```sh
-      nmcli con add type ethernet con-name 'Rowhammer Tester' ifname fpga0 ipv4.method manual ipv4.addresses 192.168.100.100/24
-      ```
-  
-   * Alternatively, if your system supports the legacy `interfaces` configuration file:
-       1. Make sure your `/etc/network/interfaces` file contains the following line:
-  
-           ```sh
-           source /etc/network/interfaces.d/*
-           ```
-  
-       2. Create `/etc/network/interfaces.d/fpga0` with the following contents:
-  
-           ```sh
-           auto fpga0
-           allow-hotplug fpga0
-           iface fpga0 inet static
-                   address 192.168.100.100/24
-           ```
-  
-       3. Check that `nmcli device` says the state is `connected (externally)` otherwise run `sudo systemctl restart NetworkManager`
-   * Run `ifup fpga0`
-5. Run `sudo udevadm control --reload` and then unplug the USB Ethernet device and plug it back in
-6. Check whether an `fpga0` interface is present with the correct IP address by running `networkctl status`
-
-```{note}
-In case you see `libusb_open() failed with LIBUSB_ERROR_ACCESS` when trying to use the rowhammer tester scripts with the USB Ethernet adapter, it indicates a permissions issue.
-To remedy it, allow access to the FTDI USB to serial port chip. 
-Run `ls -l /dev/ttyUSB*`, check the listed group for tty's and add the current user to this group by running ``sudo adduser <username> <group>``.
-```
-
-(controlling-the-board)=
-## Controlling the board
-
-Boards are controlled the same way for both simulation and hardware runs.
-In order to communicate with the board via EtherBone, start `litex_server` with the following command:
-
-```sh
-export IP_ADDRESS=192.168.100.50  # optional, should match the one used during build
-make srv
-```
-
-```{warning}
-To run the simulation and the rowhammer scripts on a physical board at the same time, change the ``IP_ADDRESS`` variable, otherwise the simulation can conflict with the communication with your board.
-```
-
-The build files (CSRs address list) must be up-to-date.
-The build files can be re-generated with `make` without arguments.
-
-Then, in another terminal, you can use the Python scripts provided.
-*Remember to enter the Python virtual environment before running the scripts!*
-Also, the `TARGET` variable should be set to load configuration for the given target.
-For example, to use the `leds.py` script, run the following:
-
-```sh
-source ./venv/bin/activate
-export TARGET=arty  # (or zcu104) required to load target configuration
-cd rowhammer_tester/scripts/
-python leds.py  # stop with Ctrl-C
-```
-
-## Hammering
+# Performing attacks (hammering)
 
 Rowhammer attacks can be run against a DRAM module.
 It can be then used for measuring cell retention.
@@ -229,7 +11,7 @@ There are two versions of the rowhammer script:
 
 BIST blocks are faster and are the intended way of running Rowhammer tester.
 
-Hammering of a row is done by reading it. 
+Hammering of a row is done by reading it.
 There are two ways to specify a number of reads:
 
 * `--read_count N` - one pass of `N` reads
@@ -241,7 +23,7 @@ If a user specifies `--read_count 1000`, then each row will be hammered 500 time
 As standard, hammering is performed via DMA, but there is an alternative way with `--payload-executor` which bypasses the DMA and talks directly with the PHY.
 That allows the user to issue specific activation, refresh and precharge commands.
 
-### Attack modes
+## Attack modes
 
 Several attack and row selection modes are available, but only one mode can be specified at a time.
 
@@ -263,9 +45,11 @@ Several attack and row selection modes are available, but only one mode can be s
   Row pairs generated from the `range(start-row, nrows - row-pair-distance, row-jump)` expression will be hammered.
 
   The generated pairs come in the format of `(i, i + row-pair-distance)`.
-  Table {numref}`default-all-rows-arguments` shows default values for arguments:
+  {numref}`default-all-rows-arguments` shows default values for arguments:
 
-:::{table} default-all-rows-arguments
+:::{table} Default values for arguments
+:name: default-all-rows-arguments
+:header-rows: 1
 
   | argument              | default |
   | --------------------- | ------- |
@@ -306,7 +90,7 @@ Several attack and row selection modes are available, but only one mode can be s
 
   The command above will hammer the following set of row pairs:
 
-  ```  
+  ```
   (4, 4 + 0)
   (4, 4 + 1)
   ...
@@ -340,7 +124,7 @@ Several attack and row selection modes are available, but only one mode can be s
   (venv) $ python hw_rowhammer.py --no-attack-time 100e9 --no-refresh
   ```
 
-### Patterns
+## Patterns
 
 You can choose a pattern that memory will be initially filled with:
 
@@ -350,7 +134,7 @@ You can choose a pattern that memory will be initially filled with:
 * `01_per_row` - all 0s in odd-numbered rows, all 1s in even rows
 * `rand_per_row` - random values for all rows
 
-### Example output
+## Example output
 
 ```sh
 (venv) $ python hw_rowhammer.py --nrows 512 --read_count 10e6 --pattern 01_in_row --row-pairs const --const-rows-pair 54 133 --no-refresh
@@ -374,7 +158,7 @@ Bit-flips for row   132: 12
 Bit-flips for row   134: 3
 ```
 
-### Row selection examples
+## Row selection examples
 
 ```{warning}
 Attacks are performed on a single bank - bank 0 by default.
@@ -422,7 +206,7 @@ Since for a single ended attack row activation needs to be triggered the `--payl
 The size of the payload memory is set by default to 1024 bytes and can be changed using the `--payload-size` switch.
 ```
 
-### Cell retention measurement examples
+## Cell retention measurement examples
 
 * Select all row pairs (from 0 to nrows - 1) and perform a set of tests for different read count values, starting from 10e4 and ending at 10e5 with a step of 20e4 (`--read_count_range [start stop step]`):
 
@@ -454,12 +238,73 @@ The size of the payload memory is set by default to 1024 bytes and can be change
   (venv) $ python hw_rowhammer.py --pattern 01_in_row --row-pairs sequential --start-row 40 --nrows 512 --no-refresh --read_count_range 10e4 10e5 20e4
   ```
 
+## DRAM modules
+
+When building one of the targets available in [rowhammer_tester/targets](https://github.com/antmicro/rowhammer-tester/tree/master/rowhammer_tester/targets), you can specify a custom DRAM module using the `--module` argument.
+To find the default modules for each target, check the output of `--help`.
+
+```{note}
+Specifying different DRAM module makes most sense on boards that allow to easily replace the DRAM module,
+such as on ZCU104. On other boards it would be necessary to desolder the DRAM chip and solder a new one.
+```
+
+### Adding new modules
+
+The [LiteDRAM](https://github.com/enjoy-digital/litedram) controller provides out-of-the-box support for various DRAM modules.
+The supported modules are listed in [litedram/modules.py](https://github.com/enjoy-digital/litedram/blob/master/litedram/modules.py).
+If a module is not listed there, you can add a new definition.
+
+To make development more convenient, modules can be added in the rowhammer-tester repository directly in file [rowhammer_tester/targets/modules.py](https://github.com/antmicro/rowhammer-tester/blob/master/rowhammer_tester/targets/modules.py).
+These definitions will be used before definitions in LiteDRAM.
+
+```{note}
+After ensuring that the module works correctly, a Pull Request to LiteDRAM should be created to add support for the module.
+```
+
+To add a new module definition, use the existing ones as a reference.
+A new module class should derive from `SDRAMModule` (or the helper classes, e.g. `DDR4Module`).
+Timing/geometry values for a module have to be obtained from the relevant DRAM module's datasheet.
+The timings in classes deriving from `SDRAMModule` are specified in nanoseconds.
+The timing value can also be specified as a 2-element tuple `(ck, ns)`, in which case `ck` is the number of clock cycles and `ns` is the number of nanoseconds (and can be `None`).
+The highest of the resulting timing values will be used.
+
+### SPD EEPROM
+
+For boards that use DIMM/SO-DIMM modules (e.g. ZCU104), it is possible to read the contents of DRAM module [SPD EEPROM memory](https://en.wikipedia.org/wiki/Serial_presence_detect).
+SPD contains several essential module parameters that the memory controller needs in order to use the DRAM module.
+SPD EEPROM can be read over an I2C bus.
+
+#### Reading SPD EEPROM
+
+To read the SPD memory, use the `rowhammer_tester/scripts/spd_eeprom.py` script.
+First, prepare the environment as described in the [Controlling the board](usage.md#controlling-the-board) section.
+Then, use the following command to read the contents of SPD EEPROM and save it to a file, for example:
+
+```sh
+python rowhammer_tester/scripts/spd_eeprom.py read MTA4ATF51264HZ-3G2J1.bin
+```
+
+The contents of the file can then be used to get DRAM module parameters.
+Use the following command to examine the parameters:
+
+```sh
+python rowhammer_tester/scripts/spd_eeprom.py show MTA4ATF51264HZ-3G2J1.bin 125e6
+```
+
+Note that system clock frequency must be passed as an argument to determine timing values in controller clock cycles.
+
+#### Using SPD data
+
+The memory controller is able to set the timings read from an SPD EEPROM during system boot.
+The only requirement here is that the SoC is built with an I2C controller and the I2C pins are routed to the (R)DIMM module.
+There is no additional action required and the timings will be set automatically.
+
 ## Utilities
 
 Some scripts are simple and do not take command line arguments, others will provide help via `<script_name>.py --help` or `<script_name>.py -h`.
 
 Few of the scripts accept a `--srv` option.
-With this option enabled, a program will start its own instance of `litex_server` (the user doesn't need to run `make srv` to [control the board](#controlling-the-board)).
+With this option enabled, a program will start its own instance of `litex_server` (the user doesn't need to run `make srv` to [control the board](board_control.md)).
 
 ### Run LEDs demo - `leds.py`
 
@@ -694,19 +539,19 @@ To build the `arty_litescope` sample and upload it to device, follow the instruc
 
    the `analyzer.csv` file will be created in the root directory.
 
-2. Copy it to the target's build directory before using `analyzer.py`.
+1. Copy it to the target's build directory before using `analyzer.py`.
 
    ```sh
    cp analyzer.csv build/arty_litescope/
    ```
 
-3. Start `litex-server` with:
+1. Start `litex-server` with:
 
    ```sh
    make srv
    ```
 
-4. Execute the analyzer script in a separate shell:
+1. Execute the analyzer script in a separate shell:
 
    ```sh
    export TARGET=arty_litescope
@@ -718,48 +563,3 @@ To build the `arty_litescope` sample and upload it to device, follow the instruc
    ```sh
    gtkwave dump.vcd
    ```
-
-## Simulation
-
-Select `TARGET`, generate intermediate files & run the simulation:
-
-```sh
-export TARGET=arty # (or zcu104)
-make sim
-```
-
-This command will generate intermediate files & simulate them with Verilator.
-After simulation has finished, a signal dump can be investigated using [gtkwave](http://gtkwave.sourceforge.net/):
-
-```sh
-gtkwave build/$TARGET/gateware/sim.fst
-```
-
-```{warning}
-The repository contains a wrapper script around `sudo` which disallows LiteX to interfere with
-the host network configuration. This forces the user to manually configure a TUN interface for valid
-communication with the simulated device.
-```
-
-1. Create the TUN interface:
-
-   ```sh
-   tunctl -u $USER -t litex-sim
-   ```
-
-2. Configure the IP address of the interface:
-
-   ```sh
-   ifconfig litex-sim 192.168.100.1/24 up
-   ```
-
-3. Optionally allow network traffic on this interface:
-
-   ```sh
-   iptables -A INPUT -i litex-sim -j ACCEPT
-   iptables -A OUTPUT -o litex-sim -j ACCEPT
-   ```
-
-```{note}
-Typing `make ARGS="--sim"` will cause LiteX to only generate intermediate files and stop right after.
-```
