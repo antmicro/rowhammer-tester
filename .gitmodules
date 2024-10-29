@@ -3,7 +3,7 @@
 	url = https://github.com/antmicro/litedram.git
 [submodule "liteeth"]
 	path = third_party/liteeth
-	url = https://github.com/enjoy-digital/liteeth.git
+	url = https://github.com/antmicro/liteeth.git
 [submodule "liteiclink"]
 	path = third_party/liteiclink
 	url = https://github.com/enjoy-digital/liteiclink.git
