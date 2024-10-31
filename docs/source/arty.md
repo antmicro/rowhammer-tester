@@ -42,7 +42,7 @@ make upload
 Running `make` (without `build`) will generate build files without invoking Vivado.
 ```
 
-To save a bitstream in flash memory, use:
+To load the bitstream into the flash memory, use:
 
 ```sh
 export TARGET=arty
