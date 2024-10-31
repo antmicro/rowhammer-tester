@@ -97,8 +97,8 @@ Configure power-up of I2C on board:
 
 Connect power supply (7-15VDC) to [`J7`](#sodimm-ddr5-tester_J7) barrel jack.
 Then connect the board's USB-C [`J3`](#sodimm-ddr5-tester_J3) and Ethernet [`J6`](#sodimm-ddr5-tester_J6) interfaces to your computer, insert the memory module into the [`J2`](#sodimm-ddr5-tester_J2) socket and turn it on using power switch [`SW5`](#sodimm-ddr5-tester_SW5).
-Then configure the network. 
-The board's IP address will be `192.168.100.50` (you can use e.g. `192.168.100.2/24`).
+Then configure the network.
+The board's default IP address is `192.168.100.50` and you need to ensure the device are registered within the same subnet (so, for example, you can use `192.168.100.2/24`).
 The `IP_ADDRESS` environment variable can be used to modify the board's address.
 Next, generate the FPGA bitstream:
 

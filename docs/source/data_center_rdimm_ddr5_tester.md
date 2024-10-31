@@ -52,8 +52,8 @@ LEDs:
 Connect power supply (12-15VDC) to the [`J1`](#ddr5-tester_J1) barrel jack.
 Then connect the board USB cable ([`J6`](#ddr5-tester_J6)) and Ethernet cable ([`J4`](#ddr5-tester_J4)) to your computer and insert the memory module to the socket [`U12`](#ddr5-tester_U12).
 To turn on the board, use the power switch [`S1`](#ddr5-tester_S1).
-After power is up, configure the network. 
-The board's IP address will be `192.168.100.50` (you can use e.g. `192.168.100.2/24`).
+After power is up, configure the network.
+The board's default IP address is `192.168.100.50` and you need to ensure the device are registered within the same subnet (so, for example, you can use `192.168.100.2/24`).
 The `IP_ADDRESS` environment variable can be used to modify the board's address.
 Next, generate the FPGA bitstream:
 

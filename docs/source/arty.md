@@ -15,8 +15,8 @@ For FPGA gateware documentation for this board, refer to the [Gateware Documenta
 
 ## Board configuration
 
-Connect the board USB and Ethernet cables to your computer and configure the network. 
-The board's IP address will be `192.168.100.50` (so, for example, you can use `192.168.100.2/24`). 
+Connect the board USB and Ethernet cables to your computer and configure the network.
+The board's default IP address is `192.168.100.50` and you need to ensure the device are registered within the same subnet (so, for example, you can use `192.168.100.2/24`).
 The `IP_ADDRESS` environment variable can be used to modify the board's address.
 Next, generate the FPGA bitstream:
 

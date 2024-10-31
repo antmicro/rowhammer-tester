@@ -18,7 +18,7 @@ For FPGA gateware documentation for this board, refer to the [Gateware Documenta
 A map of on-board connectors, status LEDs, control buttons and I/O interfaces is provided in {numref}`lpddr4-test-board-interface-map` below.
 
 :::{figure-md} lpddr4-test-board-interface-map
-![](images/lpddr4-test-board-descriptions.png)
+![LPDDR4 test board interface map](images/lpddr4-test-board-descriptions.png)
 
 LPDDR4 test board interface map
 :::
@@ -59,7 +59,7 @@ Connect power supply (7-15VDC) to [`J6`](#lpddr4-test-board_J6) barrel jack.
 Then connect the board's USB-C [`J1`](#lpddr4-test-board_J1) and Ethernet [`J5`](#lpddr4-test-board_J5) interfaces to your computer.
 Turn on the board using power switch [`S1`](#lpddr4-test-board_S1).
 Then configure the network.
-The board's IP address will be `192.168.100.50` (you can use e.g. `192.168.100.2/24`).
+The board's default IP address is `192.168.100.50` and you need to ensure the device are registered within the same subnet (so, for example, you can use `192.168.100.2/24`).
 The `IP_ADDRESS` environment variable can be used to modify the board's address.
 Next, generate the FPGA bitstream:
 
