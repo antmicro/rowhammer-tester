@@ -251,7 +251,7 @@ such as on ZCU104. On other boards it would be necessary to desolder the DRAM ch
 ### Adding new modules
 
 The [LiteDRAM](https://github.com/enjoy-digital/litedram) controller provides out-of-the-box support for various DRAM modules.
-The supported modules are listed in [litedram/modules.py](https://github.com/enjoy-digital/litedram/blob/master/litedram/modules.py).
+The supported modules are listed in [litedram/modules.py](https://github.com/antmicro/litedram/blob/rowhammer-tester/litedram/modules.py).
 If a module is not listed there, you can add a new definition.
 
 To make development more convenient, modules can be added in the rowhammer-tester repository directly in file [rowhammer_tester/targets/modules.py](https://github.com/antmicro/rowhammer-tester/blob/master/rowhammer_tester/targets/modules.py).
