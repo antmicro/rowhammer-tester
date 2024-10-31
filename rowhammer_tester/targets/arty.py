@@ -90,6 +90,7 @@ class SoC(common.RowHammerSoC):
             udp_port                = self.udp_port,
             buffer_depth            = 256,
             with_timing_constraints = False)
+        # Period constraint is specified in ns
         self.platform.add_period_constraint(clock_pads.rx, 1e9/self.ethphy.rx_clk_freq)
 
 # Build --------------------------------------------------------------------------------------------

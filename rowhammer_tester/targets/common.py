@@ -123,6 +123,7 @@ class RowHammerSoC(SoCCore):
         eth_tx_clk = getattr(phy, "crg", phy).cd_eth_tx.clk
         eth_rx_clk.attr.add("keep")
         eth_tx_clk.attr.add("keep")
+        # Period constraint is specified in ns
         self.platform.add_period_constraint(clock_pads.rx, 1e9/phy.rx_clk_freq)
         self.platform.add_false_path_constraints(self.crg.cd_sys.clk, eth_rx_clk, eth_tx_clk)
 
