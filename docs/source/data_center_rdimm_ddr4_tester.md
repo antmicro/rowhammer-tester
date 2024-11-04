@@ -71,7 +71,7 @@ make build
 ```
 
 ```{note}
-Running `make` (without `build`) will generate build files without invoking Vivado.
+Running `make`  will generate build files without invoking Vivado.
 ```
 
 The results will be located in: `build/ddr4_datacenter_test_board/gateware/antmicro_datacenter_ddr4_test_board.bit`. 

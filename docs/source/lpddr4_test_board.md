@@ -77,7 +77,7 @@ make upload
 ```
 
 ```{note}
-Running `make` (without `build`) will generate build files without invoking Vivado.
+Running `make`  will generate build files without invoking Vivado.
 ```
 
 To save bitstream in flash memory, use:

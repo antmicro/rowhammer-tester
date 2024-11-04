@@ -69,7 +69,7 @@ make build TARGET_ARGS="--l2-size 256 --build --iodelay-clk-freq 400e6 --bios-lt
 ```
 
 ```{note}
-Running `make` (without `build`) will generate build files without invoking Vivado.
+Running `make`  will generate build files without invoking Vivado.
 ```
 
 The results will be located in: `build/ddr5_tester/gateware/antmicro_ddr5_tester.bit`.
