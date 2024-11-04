@@ -42,7 +42,7 @@ For board-specific instructions, refer to the following sections:
 Select `TARGET`, generate intermediate files & run the simulation:
 
 ```sh
-export TARGET=arty # (or zcu104)
+export TARGET=arty
 make sim
 ```
 
