@@ -206,7 +206,7 @@ class RowHammerSoC(SoCCore):
                 module    = module,
                 settings  = phy_settings,
                 clk_freq  = sys_clk_freq,
-                verbosity = 3,
+                verbosity = 0,
             )
         else:  # hardware
             self.submodules.ddrphy = self.get_ddrphy()
@@ -225,6 +225,7 @@ class RowHammerSoC(SoCCore):
         controller_settings.with_refresh = self.controller_settings.refresh.storage
         controller_settings.refresh_cls = SyncableRefresher
         controller_settings.cmd_buffer_buffered = True
+        controller_settings.address_mapping = args.address_mapping
 
         assert self.ddrphy.settings.memtype == module.memtype, \
             'Wrong DRAM module type: {} vs {}'.format(self.ddrphy.settings.memtype, module.memtype)
@@ -238,6 +239,9 @@ class RowHammerSoC(SoCCore):
             controller_settings     = controller_settings,
             with_bist               = not args.no_sdram_hw_test
         )
+        if args.sim and args.trace_dram_phy_dfi:
+            for sig, _ in self.sdram.dfii.master.iter_flat():
+                sig.attr.add("trace")
 
         if controller_settings.phy.memtype == "DDR5":
             prefixes = [""] if not controller_settings.phy.with_sub_channels else ["A_", "B_"]
@@ -296,8 +300,13 @@ class RowHammerSoC(SoCCore):
             self.logger.info('{}: Length: {}, Data Width: {}-bit, Address width: {}-bit'.format(
                 colorer('Reader BIST pattern'), colorer(pattern_length), colorer(pattern_data_width), colorer(32)))
 
-            assert controller_settings.address_mapping == 'ROW_BANK_COL'
-            row_offset = controller_settings.geom.bankbits + controller_settings.geom.colbits
+            if controller_settings.address_mapping == 'ROW_BANK_COL':
+                row_offset = controller_settings.geom.bankbits + controller_settings.geom.colbits
+            elif controller_settings.address_mapping == 'BANK_ROW_COL':
+                row_offset = controller_settings.geom.colbits
+            else:
+                assert False, f"Unknown address_mapping: {controller_settings.address_mapping}"
+
             inversion_kwargs = dict(
                 rowbits   = int(self.args.bist_inversion_rowbits, 0),
                 row_shift = row_offset - self.sdram.controller.interface.address_align,
@@ -440,10 +449,20 @@ class ArgumentParser(argparse.ArgumentParser):
         self.add(g, "--docs",  action="store_true", help="Generate documentation")
         self.add(g, "--sim", action="store_true", help="Build and run in simulation mode")
 
+        # Trace args
+        g = self.add_argument_group(title="Sim tracing",
+            description="Select the parts of the the design to be traced during the simulation."
+                        "Selecting any option will disable tracing of all other signals.")
+        self.add(g, "--trace-dram-phy-dfi", action="store_true", help="Trace communication to and from PHY over DFI")
+
         # Target args
         g = self.add_argument_group(title="Row Hammer tester")
         self.add(g, "--sys-clk-freq", default=sys_clk_freq, help="System clock frequency")
         self.add(g, "--rw-bios-mem", action="store_true", help="(debug) Make BIOS memory writable")
+        self.add(g, "--address-mapping",
+            default="ROW_BANK_COL",
+            help="Selects linear to DRAM address translation.\n"
+                 "Available options are: ROW_BANK_COL, BANK_ROW_COL.")
         self.add(g, "--module", default=module, help="DRAM module")
         self.add(g, "--from-spd", required=False, help="Use DRAM module data from given file. Overwrites --module")
         self.add(g, "--speedgrade", default=None, help="DRAM module speedgrade, default value depends on module")
@@ -521,9 +540,12 @@ def get_builder_kwargs(args, target_name):
 def get_sim_kwargs(args, interface='litex-sim'):
     sim_config = SimConfig()
     sim_config.add_clocker("sys_clk", freq_hz=int(float(args.sys_clk_freq)))
+    tun_ip_addr = args.ip_address.split(".")
+    tun_ip_addr[-1] = "1" if tun_ip_addr[-1] != "1" else "2"
+    tun_ip_addr = ".".join(tun_ip_addr)
     sim_config.add_module("ethernet", "eth", args={
         "interface": interface,
-        "ip": args.ip_address,
+        "ip": tun_ip_addr,
     })
     return dict(sim_config=sim_config, trace=True, trace_fst=True)
 

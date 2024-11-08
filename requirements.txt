@@ -24,4 +24,5 @@ wheel == 0.41.2
 pyvcd == 0.4.0
 matplotlib == 3.7.3
 ninja == 1.11.1
+parameterized == 0.9.0
 
