@@ -66,29 +66,25 @@ PYTHON_FILES := $(shell find rowhammer_tester tests -name '*.py')
 all:
 	python rowhammer_tester/targets/$(TARGET).py $(TARGET_ARGS)
 
-FORCE:
-
-build: FORCE
+build:
 	python rowhammer_tester/targets/$(TARGET).py --build $(TARGET_ARGS)
 
-lint: FORCE python-deps
+lint: python-deps
 	ruff format
 
-lint-check: FORCE python-deps  ## Run RTL lint and check lint on tests source code without fixing errors
+lint-check: python-deps  ## Run RTL lint and check lint on tests source code without fixing errors
 	ruff check
 
-sim: sim-deps FORCE
+sim: sim-deps
 	python rowhammer_tester/targets/$(TARGET).py --build --sim $(TARGET_ARGS)
 
-sim-analyze: sim-deps FORCE
+sim-analyze: sim-deps
 	python rowhammer_tester/scripts/sim_runner.py python rowhammer_tester/targets/$(TARGET).py --build --sim $(TARGET_ARGS)
 
 reset_FTDI:
 	openocd -f openocd_scripts/openocd_xc7_ft4232_reset.cfg
 
-.PHONY: reset_FTDI
-
-upload up load: FORCE
+upload up load:
 ifeq ($(TARGET),zcu104)
 	@echo "For ZCU104 please copy the file build/zcu104/gateware/zcu104.bit to the boot partition on microSD card"
 	@exit 1
@@ -96,7 +92,7 @@ else
 	openFPGALoader --board $(OFL_BOARD) $(OFL_EXTRA_ARGS) build/$(TARGET)/gateware/$(TOP).bit
 endif
 
-flash: FORCE
+flash:
 ifeq ($(TARGET),zcu104)
 	@echo "For ZCU104 please copy the file build/zcu104/gateware/zcu104.bit to the boot partition on microSD card"
 	@exit 1
@@ -108,13 +104,13 @@ else
 	openFPGALoader --board $(OFL_BOARD) build/$(TARGET)/gateware/$(TOP).bit --write-flash
 endif
 
-srv: FORCE
+srv:
 	litex_server --udp --udp-ip $(IP_ADDRESS) --udp-port $(UDP_PORT)
 
-doc: FORCE
+doc:
 	$(MAKE) -C docs html
 
-test: FORCE
+test:
 	python -m unittest -v
 
 clean::
@@ -123,14 +119,14 @@ clean::
 ### Utils ###
 
 # FIXME: should this be generating the files in top level directory?
-protoc: FORCE
+protoc:
 	protoc -I rowhammer_tester/payload/ --python_out . rowhammer_tester/payload/*.proto
 
 env: venv/bin/activate
 	@env bash --init-file "$(PWD)/venv/bin/activate"
 
 # Exclude directories that use Migen, as it doesn't play well with autoformatting
-format: FORCE
+format:
 	@yapf -i \
 		--exclude "tests/*" \
 		--exclude "rowhammer_tester/gateware/*" \
@@ -141,7 +137,6 @@ BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr '/' '_')
 COMMIT := $(shell git rev-parse HEAD | head -c8)
 ZIP_CONTENTS ?= $(addprefix build/$(TARGET)/,csr.csv defs.csv sdram_init.py litedram_settings.json gateware/$(TOP).bit)
 
-.PHONY: pack
 pack: $(ZIP_CONTENTS)
 	zip -r "$(TARGET)-$(BRANCH)-$(COMMIT).zip" $^
 
@@ -190,3 +185,5 @@ venv/bin/openocd: third_party/openocd/bootstrap
 	cd third_party/openocd && ./configure --enable-ftdi --prefix=$(PWD)/venv
 	make -C third_party/openocd -j`nproc`
 	make -C third_party/openocd install
+
+.PHONY: build flash load lint lint-check pack protoc reset_FTDI sim sim-analyze srv test up upload
