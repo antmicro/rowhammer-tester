@@ -107,9 +107,6 @@ endif
 srv:
 	litex_server --udp --udp-ip $(IP_ADDRESS) --udp-port $(UDP_PORT)
 
-doc:
-	$(MAKE) -C docs html
-
 test:
 	python -m unittest -v
 
@@ -124,14 +121,6 @@ protoc:
 
 env: venv/bin/activate
 	@env bash --init-file "$(PWD)/venv/bin/activate"
-
-# Exclude directories that use Migen, as it doesn't play well with autoformatting
-format:
-	@yapf -i \
-		--exclude "tests/*" \
-		--exclude "rowhammer_tester/gateware/*" \
-		--exclude "rowhammer_tester/targets/*" \
-		$(PYTHON_FILES)
 
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr '/' '_')
 COMMIT := $(shell git rev-parse HEAD | head -c8)
