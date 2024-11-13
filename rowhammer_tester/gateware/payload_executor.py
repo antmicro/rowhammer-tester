@@ -90,7 +90,7 @@ class Decoder(Module):
         self.op_code = Signal(self.OP_CODE)
         # DFI-mappable instructions
         self.timeslice   = Signal(self.TIMESLICE_NOOP)
-        self.address     = Signal(self.ADDRESS)  # TODO: NOOP could resuse it as timeslice
+        self.address     = Signal(self.ADDRESS)  # TODO: NOOP could reuse it as timeslice
         self.cas         = Signal()
         self.ras         = Signal()
         self.we          = Signal()
@@ -349,13 +349,14 @@ class DFISwitch(Module, AutoCSR):
         )
 
     def add_csrs(self):
-        self._refresh_count = CSRStatus(len(self.refresh_counter.counter), description=
-            "Count of all refresh commands issued (both by Memory Controller and Payload Executor)."
-            " Value is latched from internal counter on mode trasition: MC -> PE or by writing to"
+        self._refresh_count = CSRStatus(
+            len(self.refresh_counter.counter),
+            description="Count of all refresh commands issued (both by Memory Controller and the Payload Executor)."
+            " Value is latched from internal counter on mode transition: MC -> PE or by writing to"
             " the `refresh_update` CSR."
         )
         self._at_refresh = CSRStorage(len(self.at_refresh), reset=0, description=
-            "If set to a value different than 0 the mode transition MC -> PE will be peformed only"
+            "If set to a value different than 0 the mode transition MC -> PE will be performed only"
             " when the value of this register matches the current refresh commands count."
         )
         self._refresh_update = CSR()
@@ -394,7 +395,7 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         self.submodules.scratchpad = Scratchpad(mem_scratchpad, dfi_switch.dfi)
 
         # Fetcher
-        # uses synchronious port, instruction is ready 1 cycle after fetch_address is asserted
+        # uses synchronous port, instruction is ready 1 cycle after fetch_address is asserted
         assert mem_payload.width == Decoder.INSTRUCTION, \
                 'Wrong payload memory word width: {} vs {}'.format(mem_payload.width, Decoder.INSTRUCTION)
         instruction = Signal(Decoder.INSTRUCTION)

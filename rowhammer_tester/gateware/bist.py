@@ -276,7 +276,7 @@ after each error encountered, so that it can be examined. Wait until
 the `error_ready` CSR is 1. Then use the CSRs `error_offset`,
 `error_data` and `error_expected` to examine the errors in the current
 transfer. To continue reading, write 1 to `error_continue` CSR.
-Setting `skip_fifo` to 1 will disable this behaviour entirely.
+Setting `skip_fifo` to 1 will disable this behavior entirely.
 
 The final number of errors can be read from `error_count`.
 NOTE: This value represents the number of erroneous *DMA transfers*.

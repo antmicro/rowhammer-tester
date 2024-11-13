@@ -80,7 +80,7 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(help='Benchmark type subcommands', dest='subcommand')
     etherbone = subparsers.add_parser('etherbone', help='Measure EtherBone bridge performance')
     etherbone.add_argument('rw', choices=['read', 'write'], help='Transfer type')
-    etherbone.add_argument('n', help='Number of 32-bit words transfered')
+    etherbone.add_argument('n', help='Number of 32-bit words transferred')
     etherbone.add_argument('--burst', required=True, help='Burst size')
     etherbone.add_argument('--profile', action='store_true', help='Profile the code with cProfile')
     bist = subparsers.add_parser('bist', help='Measure BIST transfer performance')

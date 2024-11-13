@@ -51,7 +51,7 @@ TARGET_ARGS := $(NET_ARGS) $(ARGS)
 OFL_EXTRA_ARGS ?=
 
 # Update PATH to activate the Python venv and include all required binaries
-# Adding vnev/bin to PATH forces usage of the Python binary from venv,
+# Adding venv/bin to PATH forces usage of the Python binary from venv,
 # which is roughly equivalent to `source venv/bin/activate`
 PATH := $(PWD)/venv/bin:$(PATH)
 # other binaries
@@ -123,7 +123,7 @@ protoc: FORCE
 env: venv/bin/activate
 	@env bash --init-file "$(PWD)/venv/bin/activate"
 
-# Exclude directoires that use Migen, as it doesn't play well with autoformatting
+# Exclude directories that use Migen, as it doesn't play well with autoformatting
 format: FORCE
 	@yapf -i \
 		--exclude "tests/*" \

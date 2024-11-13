@@ -94,7 +94,7 @@ def main():
     ddr5_tester_args(parser)
     VexRiscvSMP.args_fill(parser)
 
-    # Overide defaults; don't generate memory bist or payload executor by default
+    # Override defaults; don't generate memory bist or payload executor by default
     parser.set_defaults(no_memory_bist=True, no_payload_executor=True)
 
     args = parser.parse_args()

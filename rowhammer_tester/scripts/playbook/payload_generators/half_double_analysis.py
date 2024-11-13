@@ -76,7 +76,7 @@ class HalfDoubleAnalysisPayloadGenerator(PayloadGenerator):
         self.victim_list = defaultdict(empty_list_func)
 
     def get_memset_range(self, wb, settings):
-        # Keep the default behaviour the same as it may have subtle consequences
+        # Keep the default behavior the same as it may have subtle consequences
         # in terms of bit flip counts.
         if not self.fill_local:
             return PayloadGenerator.get_memset_range(self, wb, settings)

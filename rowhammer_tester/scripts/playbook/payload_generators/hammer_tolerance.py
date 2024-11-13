@@ -101,7 +101,7 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
     # instead.  The row layouts that we have encountered so far allow us to do this
     # in a reasonably sized operation.
     def get_memset_range(self, wb, settings):
-        # Keep the default behaviour the same as it may have subtle consequences
+        # Keep the default behavior the same as it may have subtle consequences
         # in terms of bit flip counts.
         if not self.fill_local:
             return PayloadGenerator.get_memset_range(self, wb, settings)

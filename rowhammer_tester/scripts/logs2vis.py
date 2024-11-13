@@ -99,7 +99,7 @@ def process_standard(data: dict, cols: int, col_step: int = 32):
                 col_errors = row_errors["col"].get(col_str, [])
                 flips_in_chunk += len(col_errors)
 
-                # If bitflips occured, calculate affected DQs and add these to description
+                # If bitflips occurred, calculate affected DQs and add these to description
                 # formatted as [dq[X], dq[Y]]
                 if len(col_errors):
                     dq_flips = get_dqs_on_col(col_errors)
@@ -163,7 +163,7 @@ def get_vis_data(
         vis_data, rows_affected, cols_affected = process_standard(data, cols, col_step)
 
     # If we want to omit empty rows, pass `rows_affected` unchanged since it's prepared
-    # as that fromat. Otherwise take lowest and highest of all rows as a range.
+    # as that format. Otherwise take lowest and highest of all rows as a range.
     rows_affected = sorted(rows_affected)
     if not no_empty_rows:
         rows_affected = [[rows_affected[0], rows_affected[-1]]]

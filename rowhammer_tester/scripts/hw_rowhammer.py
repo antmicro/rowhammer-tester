@@ -124,7 +124,7 @@ class HwRowHammer(RowHammer):
                 s = 'Iter {:{n}} / {:{n}}'.format(i, len(row_pairs), n=len(str(len(row_pairs))))
                 if self.payload_executor:
                     # 1 read count maps to 1 ACT sent to all selected rows
-                    # To keep read_count consistent with BIST behaviour read_count
+                    # To keep read_count consistent with BIST behavior read_count
                     # must be divided by number of rows, and rounded up
                     self.payload_executor_attack(
                         read_count=(read_count + len(row_tuple) - 1) // len(row_tuple),

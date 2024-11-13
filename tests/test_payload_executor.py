@@ -529,7 +529,7 @@ class TestPayloadExecutor(unittest.TestCase):
             Encoder(bankbits=3)(OpCode.ACT, timeslice=0)
 
     def test_payload_simple(self):
-        # Check that DFI instuctions in a simple payload are sent in correct order
+        # Check that DFI instructions in a simple payload are sent in correct order
         encoder = Encoder(bankbits=3)
         payload = [
             encoder(OpCode.ACT,  timeslice=10, address=encoder.address(bank=1, row=100)),

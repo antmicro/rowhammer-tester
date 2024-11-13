@@ -101,7 +101,7 @@ def plot_aggressors_vs_victims(data: dict, annotate: str):
     victims: list[int] = []
     bitflips: list[int] = []
 
-    # Agressors (a) with victims (v) and bitflips (b) packed into tuple (a, v, b)
+    # Aggressors (a) with victims (v) and bitflips (b) packed into tuple (a, v, b)
     avb_packed: list[tuple(int, int, int)] = []
 
     # Put aggressors and its victims into lists for hist2d
