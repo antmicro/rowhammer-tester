@@ -12,13 +12,13 @@ jobs:
           access_token: ${{ github.token }}
 
       - name: Checkout rowhammer-tester
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
           submodules: true
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.7'
 
