@@ -1,16 +1,27 @@
 from collections import defaultdict
+
 from rowhammer_tester.scripts.playbook.row_generators import RowGenerator
 from rowhammer_tester.scripts.playbook.row_mappings import (
-    RowMapping, TrivialRowMapping, TypeARowMapping, TypeBRowMapping)
+    RowMapping,
+    TrivialRowMapping,
+    TypeARowMapping,
+    TypeBRowMapping,
+)
 from rowhammer_tester.scripts.utils import validate_keys
 
 
 class HalfDoubleRowGenerator(RowGenerator):
     _valid_module_keys = set(
         [
-            "nr_rows", "distance_one", "double_sided", "distance_two", "attack_rows_start",
-            "max_attack_row_idx", "decoy_rows_start"
-        ])
+            "nr_rows",
+            "distance_one",
+            "double_sided",
+            "distance_two",
+            "attack_rows_start",
+            "max_attack_row_idx",
+            "decoy_rows_start",
+        ]
+    )
     _updateable_module_keys = set(["nr_rows", "distance_one", "double_sided", "distance_two"])
 
     def load_params(self):
@@ -50,10 +61,12 @@ class HalfDoubleRowGenerator(RowGenerator):
             elif self.distance_two:
                 if i % 2 != 0 and self.double_sided:
                     row_list.append(
-                        self.attack_rows_start + (iteration + 4) % self.max_attack_row_idx)
+                        self.attack_rows_start + (iteration + 4) % self.max_attack_row_idx
+                    )
                 else:
                     row_list.append(
-                        self.attack_rows_start + iteration % (self.max_attack_row_idx - 4))
+                        self.attack_rows_start + iteration % (self.max_attack_row_idx - 4)
+                    )
             else:
                 if not self.double_sided or i % 2 == 0:
                     row_list.append(self.decoy_rows_start + 1)
@@ -62,10 +75,12 @@ class HalfDoubleRowGenerator(RowGenerator):
 
         if self.distance_one:
             row_list.append(
-                self.attack_rows_start + (iteration + 1) % (self.max_attack_row_idx - 3))
+                self.attack_rows_start + (iteration + 1) % (self.max_attack_row_idx - 3)
+            )
             if self.double_sided:
                 row_list.append(
-                    self.attack_rows_start + (iteration + 3) % (self.max_attack_row_idx - 1))
+                    self.attack_rows_start + (iteration + 3) % (self.max_attack_row_idx - 1)
+                )
 
         def default_zero():
             return 0
@@ -74,8 +89,8 @@ class HalfDoubleRowGenerator(RowGenerator):
         for row in row_list:
             row_dict[row] += 1
 
-        print('Constructed:')
+        print("Constructed:")
         for row in sorted(row_dict.keys()):
-            print('\tRow {} x {}'.format(row, row_dict[row]))
+            print("\tRow {} x {}".format(row, row_dict[row]))
 
         return list(map(self.row_mapping.logical_to_physical, row_list))

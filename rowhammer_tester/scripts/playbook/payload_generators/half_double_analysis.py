@@ -1,17 +1,22 @@
-from collections import defaultdict
-from enum import Enum
 import math
-from collections import (OrderedDict, defaultdict)
-from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
-from rowhammer_tester.scripts.playbook.payload_generators import PayloadGenerator
-from rowhammer_tester.scripts.playbook.lib import (
-    generate_payload_from_row_list, get_range_from_rows)
-from rowhammer_tester.scripts.utils import (get_expected_execution_cycles, validate_keys)
+from collections import OrderedDict, defaultdict
+from enum import Enum
 
+from rowhammer_tester.gateware.payload_executor import Decoder, Encoder, OpCode
+from rowhammer_tester.scripts.playbook.lib import (
+    generate_payload_from_row_list,
+    get_range_from_rows,
+)
+from rowhammer_tester.scripts.playbook.payload_generators import PayloadGenerator
 from rowhammer_tester.scripts.playbook.row_generators import RowGenerator
 from rowhammer_tester.scripts.playbook.row_generators.half_double import HalfDoubleRowGenerator
 from rowhammer_tester.scripts.playbook.row_mappings import (
-    RowMapping, TrivialRowMapping, TypeARowMapping, TypeBRowMapping)
+    RowMapping,
+    TrivialRowMapping,
+    TypeARowMapping,
+    TypeBRowMapping,
+)
+from rowhammer_tester.scripts.utils import get_expected_execution_cycles, validate_keys
 
 
 class HalfDoubleAnalysisState(Enum):
@@ -24,10 +29,19 @@ class HalfDoubleAnalysisState(Enum):
 class HalfDoubleAnalysisPayloadGenerator(PayloadGenerator):
     _valid_module_keys = set(
         [
-            "max_total_read_count", "read_count_steps", "initial_dilution", "dilution_multiplier",
-            "verbose", "row_mapping", "attack_rows_start", "max_attack_row_idx", "decoy_rows_start",
-            "max_dilution", "fill_local"
-        ])
+            "max_total_read_count",
+            "read_count_steps",
+            "initial_dilution",
+            "dilution_multiplier",
+            "verbose",
+            "row_mapping",
+            "attack_rows_start",
+            "max_attack_row_idx",
+            "decoy_rows_start",
+            "max_dilution",
+            "fill_local",
+        ]
+    )
 
     def initialize(self, config):
         self.module_config = config["payload_generator_config"]
@@ -106,11 +120,12 @@ class HalfDoubleAnalysisPayloadGenerator(PayloadGenerator):
             payload_mem_size=payload_mem_size,
             refresh=False,
             verbose=self.verbose,
-            sys_clk_freq=sys_clk_freq)
+            sys_clk_freq=sys_clk_freq,
+        )
 
     @staticmethod
     def bitcount(x):
-        return bin(x).count('1')  # seems faster than operations on integers
+        return bin(x).count("1")  # seems faster than operations on integers
 
     @classmethod
     def bitflips(cls, val, ref):
@@ -139,7 +154,10 @@ class HalfDoubleAnalysisPayloadGenerator(PayloadGenerator):
             self.next_row()
 
     def find_hammer_tolerance(self, victim_flipped):
-        if not victim_flipped or self.total_read_count <= self.max_total_read_count // self.read_count_steps:
+        if (
+            not victim_flipped
+            or self.total_read_count <= self.max_total_read_count // self.read_count_steps
+        ):
             self.next_row()
         else:
             self.dilution *= self.dilution_multiplier
@@ -192,7 +210,8 @@ class HalfDoubleAnalysisPayloadGenerator(PayloadGenerator):
                         dilution = self.dilution
                     self.row_count[(dilution, self.total_read_count)] += 1
                     victim_errors += sum(
-                        self.bitflips(value, expected) for addr, value, expected in errors)
+                        self.bitflips(value, expected) for addr, value, expected in errors
+                    )
                     self.bit_count[(dilution, self.total_read_count)] += victim_errors
                     self.victim_list[(dilution, self.total_read_count)].append(logical_victim)
             if len(errors) > 0:
@@ -200,7 +219,9 @@ class HalfDoubleAnalysisPayloadGenerator(PayloadGenerator):
                     "Bit-flips for row {:{n}}: {}".format(
                         logical_row,
                         sum(self.bitflips(value, expected) for addr, value, expected in errors),
-                        n=len(str(2**settings.geom.rowbits - 1))))
+                        n=len(str(2**settings.geom.rowbits - 1)),
+                    )
+                )
         if self.state == HalfDoubleAnalysisState.NOFLIP_DISTANCE_ONE:
             self.noflip_distance_one(victim_flipped)
         elif self.state == HalfDoubleAnalysisState.NOFLIP_DISTANCE_TWO:

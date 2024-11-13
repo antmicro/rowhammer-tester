@@ -15,5 +15,5 @@ setup(
         "sphinxcontrib-wavedrom",
         "protobuf",
     ],
-    packages=['rowhammer_tester'],
+    packages=["rowhammer_tester"],
 )

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
+import argparse
 import os
 import pty
-import threading
-import argparse
-import subprocess
 import shutil
+import subprocess
+import threading
 
 from litex.tools.litex_term import LiteXTerm
 
@@ -26,16 +26,17 @@ def crossover2pty(m, stop):
 
 
 if __name__ == "__main__":
-    term_priority = ['picocom', 'minicom', 'litex_term']
+    term_priority = ["picocom", "minicom", "litex_term"]
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--srv', action='store_true', help='Start litex server in background')
-    parser.add_argument('-b', '--baudrate', default='1e6', help='Serial baud rate')
+    parser.add_argument("--srv", action="store_true", help="Start litex server in background")
+    parser.add_argument("-b", "--baudrate", default="1e6", help="Serial baud rate")
     parser.add_argument(
-        '-t',
-        '--term',
-        choices=['auto', *term_priority],
-        default='auto',
-        help='Select serial terminal emulator')
+        "-t",
+        "--term",
+        choices=["auto", *term_priority],
+        default="auto",
+        help="Select serial terminal emulator",
+    )
     args = parser.parse_args()
 
     if args.srv:
@@ -60,25 +61,26 @@ if __name__ == "__main__":
     baudrate = int(float(args.baudrate))
 
     term = args.term
-    if term == 'auto':
+    if term == "auto":
         try:
             term = next(filter(lambda t: shutil.which(t) is not None, term_priority))
         except StopIteration:
-            term = 'litex_term'
+            term = "litex_term"
 
-    print('Using serial backend: {}'.format(args.term))
-    if term == 'litex_term':
+    print("Using serial backend: {}".format(args.term))
+    if term == "litex_term":
         # installed with latex so no additional dependencies, but it is slow
         term = LiteXTerm(
-            serial_boot=False, kernel_image=None, kernel_address=None, json_images=None, safe=True)
+            serial_boot=False, kernel_image=None, kernel_address=None, json_images=None, safe=True
+        )
         term.open(tty, baudrate)
         term.console.configure()
         term.start()
         term.join()
-    elif term == 'picocom':
-        subprocess.run(['picocom', '-b', str(baudrate), tty])
-    elif term == 'minicom':
-        subprocess.run(['minicom', '-b', str(baudrate), '-D', tty])
+    elif term == "picocom":
+        subprocess.run(["picocom", "-b", str(baudrate), tty])
+    elif term == "minicom":
+        subprocess.run(["minicom", "-b", str(baudrate), "-D", tty])
     else:
         raise ValueError(term)
 

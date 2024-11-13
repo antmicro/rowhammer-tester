@@ -1,23 +1,28 @@
 #!/usr/bin/env python3
 
-import time
-import random
 import argparse
-from math import ceil
+import random
+import time
 from collections import defaultdict
+from math import ceil
 
-from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
-from rowhammer_tester.scripts.utils import (
-    hw_memset, hw_memtest, DRAMAddressConverter, litex_server, memwrite, RemoteClient,
-    setup_inverters)
+from rowhammer_tester.gateware.payload_executor import Decoder, Encoder, OpCode
 from rowhammer_tester.scripts.rowhammer import RowHammer, main
+from rowhammer_tester.scripts.utils import (
+    DRAMAddressConverter,
+    RemoteClient,
+    hw_memset,
+    hw_memtest,
+    litex_server,
+    memwrite,
+    setup_inverters,
+)
 
 ################################################################################
 
 
 class HwRowHammer(RowHammer):
-
-    def attack(self, row_tuple, read_count, progress_header=''):
+    def attack(self, row_tuple, read_count, progress_header=""):
         assert len(row_tuple) <= 32
         addresses = [
             self.converter.encode_dma(bank=self.bank, col=self.column, row=r) for r in row_tuple
@@ -40,14 +45,14 @@ class HwRowHammer(RowHammer):
         self.wb.regs.reader_mem_mask.write(0x00000000)
         self.wb.regs.reader_modulo.write(1)
         self.wb.regs.reader_data_div.write(len(row_tuple) - 1)
-        #self.wb.regs.reader_data_mask.write(len(row_tuple) - 1)
+        # self.wb.regs.reader_data_mask.write(len(row_tuple) - 1)
 
         # Attacked addresses
         memwrite(self.wb, addresses, base=self.wb.mems.reader_pattern_addr.base)
-        memwrite(self.wb, ([0xaaaaaaaa] * 16), base=self.wb.mems.reader_pattern_data.base)
+        memwrite(self.wb, ([0xAAAAAAAA] * 16), base=self.wb.mems.reader_pattern_data.base)
 
         # how many
-        print('read_count: ' + str(int(read_count)))
+        print("read_count: " + str(int(read_count)))
         self.wb.regs.reader_count.write(int(read_count))
 
         self.wb.regs.reader_start.write(1)
@@ -56,10 +61,11 @@ class HwRowHammer(RowHammer):
         # FIXME: --------------------------- move to utils ------------------
 
         def progress(count):
-            s = '  {}'.format(progress_header + ' ' if progress_header else '')
-            s += 'Rows = {}, Count = {:5.2f}M / {:5.2f}M'.format(
-                row_tuple, count / 1e6, read_count / 1e6, n=row_strw)
-            print(s, end='  \r')
+            s = "  {}".format(progress_header + " " if progress_header else "")
+            s += "Rows = {}, Count = {:5.2f}M / {:5.2f}M".format(
+                row_tuple, count / 1e6, read_count / 1e6, n=row_strw
+            )
+            print(s, end="  \r")
 
         while True:
             r_count = self.wb.regs.reader_done.read()
@@ -96,39 +102,40 @@ class HwRowHammer(RowHammer):
         setup_inverters(self.wb, divisor, mask)
 
         assert len(row_pairs) > 0, "No pairs to hammer"
-        print('\nPreparing ...')
+        print("\nPreparing ...")
         row_pattern = list(pattern_generator([row_pairs[0][0]]).values())[0]
-        print('WARNING: only single word patterns supported, using: 0x{:08x}'.format(row_pattern))
-        print('\nFilling memory with data ...')
+        print("WARNING: only single word patterns supported, using: 0x{:08x}".format(row_pattern))
+        print("\nFilling memory with data ...")
         hw_memset(self.wb, 0x0, self.wb.mems.main_ram.size, [row_pattern])
 
         if verify_initial:
-            print('\nVerifying written memory ...')
+            print("\nVerifying written memory ...")
             errors = self.check_errors(row_pattern)
             if self.errors_count(errors) == 0:
-                print('OK')
+                print("OK")
             else:
                 print()
                 self.display_errors(errors, read_count)
                 return
 
         if self.no_refresh:
-            print('\nDisabling refresh ...')
+            print("\nDisabling refresh ...")
             self.wb.regs.controller_settings_refresh.write(0)
 
         if self.no_attack_time is not None:
             self.no_attack_sleep()
         else:
-            print('\nRunning Rowhammer attacks ...')
+            print("\nRunning Rowhammer attacks ...")
             for i, row_tuple in enumerate(row_pairs, start=1):
-                s = 'Iter {:{n}} / {:{n}}'.format(i, len(row_pairs), n=len(str(len(row_pairs))))
+                s = "Iter {:{n}} / {:{n}}".format(i, len(row_pairs), n=len(str(len(row_pairs))))
                 if self.payload_executor:
                     # 1 read count maps to 1 ACT sent to all selected rows
                     # To keep read_count consistent with BIST behavior read_count
                     # must be divided by number of rows, and rounded up
                     self.payload_executor_attack(
                         read_count=(read_count + len(row_tuple) - 1) // len(row_tuple),
-                        row_tuple=row_tuple)
+                        row_tuple=row_tuple,
+                    )
                 else:
                     if len(row_tuple) & (len(row_tuple) - 1) != 0:
                         print("ERROR: BIST only supports power of 2 rows\n")
@@ -137,13 +144,13 @@ class HwRowHammer(RowHammer):
                     self.attack(row_tuple, read_count=read_count, progress_header=s)
 
         if self.no_refresh:
-            print('\nReenabling refresh ...')
+            print("\nReenabling refresh ...")
             self.wb.regs.controller_settings_refresh.write(1)
 
-        print('\nVerifying attacked memory ...')
+        print("\nVerifying attacked memory ...")
         errors = self.check_errors(row_pattern)
         if self.errors_count(errors) == 0:
-            print('OK')
+            print("OK")
             self.bitflip_found = False
             return {}
         else:

@@ -7,10 +7,10 @@ Bars represent DQ pads and are colored to differentiate modules.
 
 import argparse
 import json
-
 from pathlib import Path
-from matplotlib import pyplot as plt
+
 import numpy as np
+from matplotlib import pyplot as plt
 
 DQ_PADS = 64
 DQ_RATIO = 4

@@ -4,20 +4,19 @@ This script generates plots from rowhammer attack logs using matplotlib.
 Depending on chosen mode, it will generate one or many separate plots.
 """
 
-import os
 import argparse
 import json
-
-from pathlib import Path
-from matplotlib import cm
-from matplotlib import colors
-from matplotlib import pyplot as plt
-import numpy as np
+import os
 from math import floor
+from pathlib import Path
+
+import numpy as np
+from logs2dq import DQ_PADS
+from logs2dq import plot as plot_dqs
+from matplotlib import cm, colors
+from matplotlib import pyplot as plt
 
 from rowhammer_tester.scripts.utils import get_generated_file
-
-from logs2dq import plot as plot_dqs, DQ_PADS
 
 dq_data: dict = {}
 
@@ -49,7 +48,7 @@ def plot_single_attack(data: dict, _rows: int, cols: int, col_step=32, max_row_c
         last_row = row
         last_num = i
         if row_step > 1 and count == row_step - 1:
-            row_labels.append(f'{begin_row}...{last_row}')
+            row_labels.append(f"{begin_row}...{last_row}")
         elif row_step == 1:
             row_labels.append(row)
         if count == row_step - 1:
@@ -62,12 +61,11 @@ def plot_single_attack(data: dict, _rows: int, cols: int, col_step=32, max_row_c
     if row_step > 1:
         y_edges.append(last_num + 1)
         if count > -1:
-            row_labels.append(f'{begin_row}...{last_row}')
+            row_labels.append(f"{begin_row}...{last_row}")
 
     bins = [
         range(0, cols + 1, col_step),
-        np.arange(min(row_vals) - 0.5,
-                  max(row_vals) + 1, 1) if row_step == 1 else y_edges
+        np.arange(min(row_vals) - 0.5, max(row_vals) + 1, 1) if row_step == 1 else y_edges,
     ]
 
     # custom cmap with white color for 0
@@ -78,12 +76,13 @@ def plot_single_attack(data: dict, _rows: int, cols: int, col_step=32, max_row_c
         row_vals,
         bins=bins,
         range=[[0, cols // col_step], [min(row_vals), max(row_vals)]],
-        cmap=custom_cmap)
+        cmap=custom_cmap,
+    )
 
-    plt.xlabel('Column')
+    plt.xlabel("Column")
     plt.xticks(range(0, cols + 1, col_step))
 
-    plt.ylabel('Row')
+    plt.ylabel("Row")
     plt.yticks(range(0, affected_rows_count, row_step), row_labels)
 
     # limit number of colorbar ticks
@@ -136,7 +135,7 @@ def plot_aggressors_vs_victims(data: dict, annotate: str):
     custom_cmap = colors.ListedColormap(["white", *cm.get_cmap("viridis").colors])
 
     fig, ax = plt.subplots()
-    fig.canvas.mpl_connect('button_press_event', on_click)
+    fig.canvas.mpl_connect("button_press_event", on_click)
 
     h, _, _, qm = ax.hist2d(
         victims,
@@ -152,12 +151,13 @@ def plot_aggressors_vs_victims(data: dict, annotate: str):
     if annotate == "bitflips":
         for a, v, b in avb_packed:
             ax.text(
-                v + 0.5, a + 0.5, f"{b}", color="w", ha="center", va="center", fontweight="bold")
+                v + 0.5, a + 0.5, f"{b}", color="w", ha="center", va="center", fontweight="bold"
+            )
 
-    ax.set_xlabel('Victim')
+    ax.set_xlabel("Victim")
     ax.set_xticks(range(min_victim, max_victim + 1))
 
-    ax.set_ylabel('Aggressor')
+    ax.set_ylabel("Aggressor")
     ax.set_yticks(range(min_aggressor, max_aggressor + 1))
 
     # Limit number of colorbar ticks
@@ -169,7 +169,8 @@ def plot_aggressors_vs_victims(data: dict, annotate: str):
 
     plt.colorbar(qm, ticks=range(0, max_errors + 1, ticks_step))
     plt.title(
-        f"Aggressors ({min_aggressor}, {max_aggressor}) vs victims ({min_victim}, {max_victim})")
+        f"Aggressors ({min_aggressor}, {max_aggressor}) vs victims ({min_victim}, {max_victim})"
+    )
 
     plt.show()
 
@@ -186,7 +187,7 @@ def count_bitflips_per_dq(data: dict):
 
 
 def on_click(event):
-    if plt.get_current_fig_manager().toolbar.mode != '':
+    if plt.get_current_fig_manager().toolbar.mode != "":
         return
     try:
         x = floor(event.xdata)
@@ -206,19 +207,21 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("log_file", help="file with log output")
     parser.add_argument(
-        "--plot-columns", type=int, default=32, help="how many columns to show in resulting grid")
+        "--plot-columns", type=int, default=32, help="how many columns to show in resulting grid"
+    )
     parser.add_argument(
-        "--aggressors-vs-victims",
-        action="store_true",
-        help="Plot agressors against their victims.")
+        "--aggressors-vs-victims", action="store_true", help="Plot agressors against their victims."
+    )
     parser.add_argument(
         "--annotate",
         type=str,
         default="color",
         choices=["color", "bitflips"],
-        help="Annotate heat map with number of bitflips or just a color (default: color).")
+        help="Annotate heat map with number of bitflips or just a color (default: color).",
+    )
     parser.add_argument(
-        "--plot-max-rows", type=int, default=128, help="how many rows to show in resulting grid")
+        "--plot-max-rows", type=int, default=128, help="how many rows to show in resulting grid"
+    )
     # TODO: add option to save plots to files without showing GUI
     args = parser.parse_args()
 
@@ -226,8 +229,8 @@ if __name__ == "__main__":
     with settings_file.open() as fd:
         settings = json.load(fd)
 
-    COLS = 2**settings["geom"]["colbits"]
-    ROWS = 2**settings["geom"]["rowbits"]
+    COLS = 2 ** settings["geom"]["colbits"]
+    ROWS = 2 ** settings["geom"]["rowbits"]
 
     log_file = Path(args.log_file)
     with log_file.open() as fd:

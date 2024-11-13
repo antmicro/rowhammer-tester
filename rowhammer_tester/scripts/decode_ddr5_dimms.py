@@ -10,7 +10,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("binary", help="binary dump of the SPD")
 parser.add_argument("--speedgrade", type=int, default=4800, help="data speed in MT/s")
 parser.add_argument(
-    "--print-bytes", action="store_true", help="print hex representation of decoded bytes")
+    "--print-bytes", action="store_true", help="print hex representation of decoded bytes"
+)
 
 args = parser.parse_args()
 
@@ -29,7 +30,7 @@ def print_bytes(first: int, last: int, name: str = args.binary):
     """Helper function to reduce common code"""
 
     if args.print_bytes:
-        print(f"\n{name}[{first}:{last+1}] = 0x{b[first:last+1][::-1].hex()}")
+        print(f"\n{name}[{first}:{last + 1}] = 0x{b[first:last + 1][::-1].hex()}")
 
 
 def get_bits(bits: int, first_bit: int, last_bit: int) -> int:
@@ -253,17 +254,23 @@ timings_2b = {
 is_3ds = get_bits(b[4], 5, 7) or get_bits(b[8], 5, 7)
 if is_3ds:
     timings_2b |= {
-        48:
-        ("Minimum Refresh Recovery Delay Time, 3DS Different Logical Rank (tRFC1_dlr_min)", "ns"),
-        50:
-        ("Minimum Refresh Recovery Delay Time, 3DS Different Logical Rank (tRFC2_dlr_min)", "ns"),
-        52:
-        ("Minimum Refresh Recovery Delay Time, 3DS Different Logical Rank (tRFCsb_dlr_min)", "ns"),
+        48: (
+            "Minimum Refresh Recovery Delay Time, 3DS Different Logical Rank (tRFC1_dlr_min)",
+            "ns",
+        ),
+        50: (
+            "Minimum Refresh Recovery Delay Time, 3DS Different Logical Rank (tRFC2_dlr_min)",
+            "ns",
+        ),
+        52: (
+            "Minimum Refresh Recovery Delay Time, 3DS Different Logical Rank (tRFCsb_dlr_min)",
+            "ns",
+        ),
     }
 
 for offset, (desc, unit) in timings_2b.items():
     print_bytes(offset, offset + 2)
-    lsb, msb = b[offset:offset + 2]
+    lsb, msb = b[offset : offset + 2]
     value = word(lsb, msb)
     nominal = value if unit == "ps" else value * 1000
     target_nck = rounding_algorithm(nominal)
@@ -286,8 +293,7 @@ timings_3b = {
     70: "Minimum Active to Active Command Delay Time, Same Bank Group (tRRD_L_min)",
     73: "Minimum Read to Read Command Delay Time, Same Bank Group (tCCD_L_min)",
     76: "Minimum Write to Write Command Delay Time, Same Bank Group (tCCD_L_WR_min)",
-    79:
-    "Minimum Write to Write Command Delay Time, Second Write not RMW, Same Bank Group (tCCD_L_WR2_min)",
+    79: "Minimum Write to Write Command Delay Time, Second Write not RMW, Same Bank Group (tCCD_L_WR2_min)",
     82: "Minimum Four Activate Window (tFAW_min)",
     85: "Minimum Write to Read Command Delay Time, Same Bank Group (tCCD_L_WTR_min)",
     88: "Minimum Write to Read Command Delay Time, Different Bank Group (tCCD_S_WTR_min)",
@@ -296,7 +302,7 @@ timings_3b = {
 
 for offset, desc in timings_3b.items():
     print_bytes(offset, offset + 3)
-    lsb, msb, min_nck = b[offset:offset + 3]
+    lsb, msb, min_nck = b[offset : offset + 3]
     value = word(lsb, msb)
     nck = rounding_algorithm(value)
     print(f"{desc}: {value} ps (nCK: max({min_nck}, {nck}) = {max(min_nck, nck)})")

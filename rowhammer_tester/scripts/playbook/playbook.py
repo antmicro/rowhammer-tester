@@ -1,15 +1,28 @@
 #!/usr/bin/env python3
 
 import argparse
-from collections import defaultdict
 import json
+from collections import defaultdict
+
 from rowhammer_tester.scripts.playbook.payload_generators import PayloadGenerator
+from rowhammer_tester.scripts.playbook.payload_generators.half_double_analysis import (
+    HalfDoubleAnalysisPayloadGenerator,
+)
+from rowhammer_tester.scripts.playbook.payload_generators.hammer_tolerance import (
+    HammerTolerancePayloadGenerator,
+)
 from rowhammer_tester.scripts.playbook.payload_generators.row_list import RowListPayloadGenerator
-from rowhammer_tester.scripts.playbook.payload_generators.hammer_tolerance import HammerTolerancePayloadGenerator
-from rowhammer_tester.scripts.playbook.payload_generators.half_double_analysis import HalfDoubleAnalysisPayloadGenerator
 from rowhammer_tester.scripts.utils import (
-    RemoteClient, setup_inverters, get_litedram_settings, hw_memset, hw_memtest, validate_keys,
-    execute_payload, DRAMAddressConverter, get_generated_defs)
+    DRAMAddressConverter,
+    RemoteClient,
+    execute_payload,
+    get_generated_defs,
+    get_litedram_settings,
+    hw_memset,
+    hw_memtest,
+    setup_inverters,
+    validate_keys,
+)
 
 _addresses_per_row = {}
 
@@ -42,19 +55,23 @@ def decode_errors(wb, settings, converter, bank, errors):
 def main():
     valid_keys = set(
         [
-            "payload_generator", "payload_generator_config", "inversion_divisor", "inversion_mask",
-            "row_pattern"
-        ])
+            "payload_generator",
+            "payload_generator_config",
+            "inversion_divisor",
+            "inversion_mask",
+            "row_pattern",
+        ]
+    )
     parser = argparse.ArgumentParser()
     parser.add_argument("config_file", type=open)
     args = parser.parse_args()
     config_string = ""
     config_lines = args.config_file.readlines()
     for line in config_lines:
-        index = line.find('#')
+        index = line.find("#")
         if index >= 0:
             line = line[0:index]
-            line += '\n'
+            line += "\n"
         config_string += line
     config = json.loads(config_string)
     assert validate_keys(config, valid_keys)
@@ -75,12 +92,13 @@ def main():
         hw_memset(wb, offset, size, [row_pattern])
         converter = DRAMAddressConverter.load()
         bank = 0
-        sys_clk_freq = float(get_generated_defs()['SYS_CLK_FREQ'])
+        sys_clk_freq = float(get_generated_defs()["SYS_CLK_FREQ"])
         payload = pg.get_payload(
             settings=settings,
             bank=bank,
             payload_mem_size=wb.mems.payload.size,
-            sys_clk_freq=sys_clk_freq)
+            sys_clk_freq=sys_clk_freq,
+        )
 
         execute_payload(wb, payload)
         offset, size = pg.get_memtest_range(wb, settings)

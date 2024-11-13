@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-import time
 import argparse
+import time
 
 from rowhammer_tester.scripts.utils import RemoteClient, litex_server, read_ident
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--time-ms', type=int, default=150)
-    parser.add_argument('--srv', action='store_true')
+    parser.add_argument("-t", "--time-ms", type=int, default=150)
+    parser.add_argument("--srv", action="store_true")
     args = parser.parse_args()
 
     if args.srv:

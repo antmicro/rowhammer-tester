@@ -1,20 +1,32 @@
-from collections import (OrderedDict, defaultdict)
-from rowhammer_tester.scripts.playbook.payload_generators import PayloadGenerator
+from collections import OrderedDict, defaultdict
+
 from rowhammer_tester.scripts.playbook.lib import generate_payload_from_row_list
-from rowhammer_tester.scripts.utils import validate_keys
+from rowhammer_tester.scripts.playbook.payload_generators import PayloadGenerator
 from rowhammer_tester.scripts.playbook.row_generators import RowGenerator
 from rowhammer_tester.scripts.playbook.row_generators.even_rows import EvenRowGenerator
 from rowhammer_tester.scripts.playbook.row_generators.half_double import HalfDoubleRowGenerator
 from rowhammer_tester.scripts.playbook.row_mappings import (
-    RowMapping, TrivialRowMapping, TypeARowMapping, TypeBRowMapping)
+    RowMapping,
+    TrivialRowMapping,
+    TypeARowMapping,
+    TypeBRowMapping,
+)
+from rowhammer_tester.scripts.utils import validate_keys
 
 
 class RowListPayloadGenerator(PayloadGenerator):
     _valid_module_keys = set(
         [
-            "row_generator", "read_count", "refresh", "verbose", "row_generator_config",
-            "row_mapping", "max_iteration", "fill_local"
-        ])
+            "row_generator",
+            "read_count",
+            "refresh",
+            "verbose",
+            "row_generator_config",
+            "row_mapping",
+            "max_iteration",
+            "fill_local",
+        ]
+    )
 
     def initialize(self, config):
         self.module_config = config["payload_generator_config"]
@@ -58,11 +70,12 @@ class RowListPayloadGenerator(PayloadGenerator):
             payload_mem_size=payload_mem_size,
             refresh=self.refresh,
             verbose=self.verbose,
-            sys_clk_freq=sys_clk_freq)
+            sys_clk_freq=sys_clk_freq,
+        )
 
     @staticmethod
     def bitcount(x):
-        return bin(x).count('1')  # seems faster than operations on integers
+        return bin(x).count("1")  # seems faster than operations on integers
 
     @classmethod
     def bitflips(cls, val, ref):
@@ -79,7 +92,9 @@ class RowListPayloadGenerator(PayloadGenerator):
                     "Bit-flips for row {:{n}}: {}".format(
                         logical_row,
                         sum(self.bitflips(value, expected) for addr, value, expected in errors),
-                        n=len(str(2**settings.geom.rowbits - 1))))
+                        n=len(str(2**settings.geom.rowbits - 1)),
+                    )
+                )
         self.iteration += 1
 
     def done(self):

@@ -1,5 +1,5 @@
-import math
 import collections
+import math
 
 import payload_ddr4_pb2
 
@@ -10,7 +10,7 @@ Payload = payload_ddr4_pb2.Payload
 
 
 def VerifyInstr(ip: int, instr: Instr) -> bool:
-    if instr.HasField('mem'):
+    if instr.HasField("mem"):
         mem = instr.mem
         if mem.opcode not in {Opcode.RD, Opcode.ACT, Opcode.PRE, Opcode.REF}:
             return False
@@ -30,14 +30,14 @@ def VerifyInstr(ip: int, instr: Instr) -> bool:
             # We only ever want sequential (non-permuted) bursts.
             return False
         return True
-    if instr.HasField('nop'):
+    if instr.HasField("nop"):
         nop = instr.nop
         if nop.opcode != Opcode.NOP:
             return False
         if not (0 < nop.timeslice < (1 << Instr.NopInstr.Bits.TIMESLICE)):
             return False
         return True
-    if instr.HasField('jmp'):
+    if instr.HasField("jmp"):
         jmp = instr.jmp
         if jmp.opcode != Opcode.JMP:
             return False
@@ -52,7 +52,6 @@ def VerifyInstr(ip: int, instr: Instr) -> bool:
 
 
 class Rank:
-
     def __init__(self, timing: Timing):
         self.parameters = {
             Opcode.ACT: {
@@ -78,8 +77,10 @@ class Rank:
     def Execute(self, tick: int, instr: Instr.MemInstr) -> bool:
         if tick < self.next_tick.get(instr.opcode, 0):
             print(
-                'Rank timing violation for {}: {} < {}'.format(
-                    Opcode.Name(instr.opcode), tick, self.next_tick[instr.opcode]))
+                "Rank timing violation for {}: {} < {}".format(
+                    Opcode.Name(instr.opcode), tick, self.next_tick[instr.opcode]
+                )
+            )
             return False
 
         # Special-case handling for tFAW.
@@ -87,8 +88,10 @@ class Rank:
             if len(self.prev_acts) == self.prev_acts.maxlen:
                 if tick - self.prev_acts[0] < self.faw:
                     print(
-                        'tFAW timing violation for {}: {} < {}'.format(
-                            Opcode.Name(instr.opcode), tick - self.prev_acts[0], self.faw))
+                        "tFAW timing violation for {}: {} < {}".format(
+                            Opcode.Name(instr.opcode), tick - self.prev_acts[0], self.faw
+                        )
+                    )
                     return False
             self.prev_acts.append(tick)
 
@@ -109,15 +112,10 @@ class Rank:
 
 
 class BankGroup:
-
     def __init__(self, timing: Timing):
         self.parameters = {
-            Opcode.RD: {
-                Opcode.RD: [timing.ccd_l, timing.ccd_s]
-            },
-            Opcode.ACT: {
-                Opcode.ACT: [timing.rrd_l, timing.rrd_s]
-            },
+            Opcode.RD: {Opcode.RD: [timing.ccd_l, timing.ccd_s]},
+            Opcode.ACT: {Opcode.ACT: [timing.rrd_l, timing.rrd_s]},
         }
         self.next_tick = {Opcode.RD: 0, Opcode.ACT: 0}
 
@@ -126,8 +124,10 @@ class BankGroup:
     def Execute(self, tick: int, instr: Instr.MemInstr) -> bool:
         if tick < self.next_tick.get(instr.opcode, 0):
             print(
-                'Bank group timing violation for {}: {} < {}'.format(
-                    Opcode.Name(instr.opcode), tick, self.next_tick[instr.opcode]))
+                "Bank group timing violation for {}: {} < {}".format(
+                    Opcode.Name(instr.opcode), tick, self.next_tick[instr.opcode]
+                )
+            )
             return False
 
         if not self.banks[instr.bank].Execute(tick, instr):
@@ -143,7 +143,6 @@ class BankGroup:
 
 
 class Bank:
-
     def __init__(self, timing: Timing):
         self.parameters = {
             Opcode.RD: {
@@ -154,18 +153,17 @@ class Bank:
                 Opcode.ACT: math.inf,
                 Opcode.PRE: timing.ras,
             },
-            Opcode.PRE: {
-                Opcode.RD: math.inf,
-                Opcode.ACT: timing.rp
-            }
+            Opcode.PRE: {Opcode.RD: math.inf, Opcode.ACT: timing.rp},
         }
         self.next_tick = {Opcode.RD: math.inf, Opcode.ACT: 0, Opcode.PRE: 0, Opcode.REF: 0}
 
     def Execute(self, tick: int, instr: Instr.MemInstr) -> bool:
         if tick < self.next_tick.get(instr.opcode, 0):
             print(
-                'Bank timing violation for {}: {} < {}'.format(
-                    Opcode.Name(instr.opcode), tick, self.next_tick[instr.opcode]))
+                "Bank timing violation for {}: {} < {}".format(
+                    Opcode.Name(instr.opcode), tick, self.next_tick[instr.opcode]
+                )
+            )
             return False
 
         for opcode, parameter in self.parameters.get(instr.opcode, {}).items():

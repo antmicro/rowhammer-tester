@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 
+import itertools
 import os
 import sys
 import time
-import itertools
 
-from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
-from rowhammer_tester.scripts.utils import memdump, memread, memwrite, DRAMAddressConverter, RemoteClient, read_ident
+from rowhammer_tester.gateware.payload_executor import Decoder, Encoder, OpCode
+from rowhammer_tester.scripts.utils import (
+    DRAMAddressConverter,
+    RemoteClient,
+    memdump,
+    memread,
+    memwrite,
+    read_ident,
+)
 
 # Sample program
 encoder = Encoder(bankbits=3)
@@ -27,8 +34,9 @@ PAYLOAD = [
     encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=248)),
     encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=256)),
     encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=264)),
-    encoder(OpCode.READ, timeslice=30,
-            address=encoder.address(bank=0, col=300 | (1 << 10))),  # auto precharge
+    encoder(
+        OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=300 | (1 << 10))
+    ),  # auto precharge
     encoder(OpCode.ACT, timeslice=60, address=encoder.address(bank=2, row=150)),
     encoder(OpCode.PRE, timeslice=20, address=encoder.address(col=1 << 10)),  # all
     encoder(OpCode.REF, timeslice=200),
@@ -68,22 +76,22 @@ def execute(wb):
     data = list(itertools.islice(word_gen(3), 128))
     memwrite(wb, data, base=converter.encode_bus(bank=0, row=100, col=200))
 
-    print('\nTransferring the payload ...')
+    print("\nTransferring the payload ...")
     memwrite(wb, program, base=wb.mems.payload.base)
 
     def ready():
         status = wb.regs.payload_executor_status.read()
         return (status & 1) != 0
 
-    print('\nExecuting ...')
+    print("\nExecuting ...")
     assert ready()
     wb.regs.payload_executor_start.write(1)
     while not ready():
         time.sleep(0.001)
 
-    print('Finished')
+    print("Finished")
 
-    print('\nScratchpad contents:')
+    print("\nScratchpad contents:")
     scratchpad = memread(wb, n=512 // 4, base=wb.mems.scratchpad.base)
     memdump(scratchpad, base=0)
 

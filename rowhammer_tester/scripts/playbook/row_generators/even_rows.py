@@ -1,7 +1,11 @@
 from rowhammer_tester.scripts.playbook.lib import get_range_from_rows
 from rowhammer_tester.scripts.playbook.row_generators import RowGenerator
 from rowhammer_tester.scripts.playbook.row_mappings import (
-    RowMapping, TrivialRowMapping, TypeARowMapping, TypeBRowMapping)
+    RowMapping,
+    TrivialRowMapping,
+    TypeARowMapping,
+    TypeBRowMapping,
+)
 from rowhammer_tester.scripts.utils import validate_keys
 
 
@@ -19,7 +23,8 @@ class EvenRowGenerator(RowGenerator):
         row_list = []
         for i in range(0, self.nr_rows):
             row_list.append(
-                self.row_mapping.logical_to_physical((iteration + 2 * i) % self.max_row))
+                self.row_mapping.logical_to_physical((iteration + 2 * i) % self.max_row)
+            )
 
         return row_list
 

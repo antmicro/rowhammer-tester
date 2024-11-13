@@ -4,11 +4,10 @@ This script generates visualization from rowhammer attack logs using F4PGA Datab
 Each attack is a separate visualization
 """
 
-import os
 import argparse
-import json
 import datetime
-
+import json
+import os
 from pathlib import Path
 
 from rowhammer_tester.scripts.utils import get_generated_file
@@ -63,7 +62,7 @@ def process_aggr_vs_vict(data: dict, dq_pads: int = 64):
                 dq_flips = get_dqs_on_col(flips)
 
                 # Add bitflips to description formatted as [dq[X], dq[Y]]
-                desc.append({f"Column {col}": "%s" % ', '.join(map(str, dq_flips))})
+                desc.append({f"Column {col}": "%s" % ", ".join(map(str, dq_flips))})
                 vis_data.append(
                     [
                         victim_row,
@@ -73,7 +72,8 @@ def process_aggr_vs_vict(data: dict, dq_pads: int = 64):
                         str(bitflip_amount),
                         f"Aggressor ({aggressor}) vs victim ({victim_row})",
                         desc,
-                    ])
+                    ]
+                )
     # Victims are in grid columns so calculate cols_range from all victims
     cols_range = [[min(sorted(all_victims)), max(sorted(all_victims))]]
 
@@ -103,7 +103,7 @@ def process_standard(data: dict, cols: int, col_step: int = 32):
                 # formatted as [dq[X], dq[Y]]
                 if len(col_errors):
                     dq_flips = get_dqs_on_col(col_errors)
-                    desc.append({f"Column {col_str}": "%s" % ', '.join(map(str, dq_flips))})
+                    desc.append({f"Column {col_str}": "%s" % ", ".join(map(str, dq_flips))})
 
             if flips_in_chunk > 0:
                 cell_type = "FLIP"
@@ -119,9 +119,10 @@ def process_standard(data: dict, cols: int, col_step: int = 32):
                     1,
                     cell_type,
                     cell_label,
-                    f"Columns {col} to {col+col_step-1}",
+                    f"Columns {col} to {col + col_step - 1}",
                     desc,
-                ])
+                ]
+            )
 
     # Add hammered rows to all rows
     if "hammer_row_1" in data and "hammer_row_2" in data:
@@ -137,12 +138,13 @@ def process_standard(data: dict, cols: int, col_step: int = 32):
 
 
 def get_vis_data(
-        data: dict,
-        no_empty_rows: bool,
-        aggressors_vs_victims: bool,
-        cols: int,
-        col_step: int = 32,
-        dq_pads: int = 64) -> tuple[list, list, list]:
+    data: dict,
+    no_empty_rows: bool,
+    aggressors_vs_victims: bool,
+    cols: int,
+    col_step: int = 32,
+    dq_pads: int = 64,
+) -> tuple[list, list, list]:
     """
     Generates ``vis_data``, which is a list of cell descriptions
     Each cell is a list of parameters:
@@ -173,49 +175,51 @@ def get_vis_data(
 
 def get_vis_config(entries: list[Path]) -> dict[str, list[dict[str, str]]]:
     return {
-        'dataFilesList': [{
-            "name": e.stem,
-            "url": e.name
-        } for e in entries],
+        "dataFilesList": [{"name": e.stem, "url": e.name} for e in entries],
     }
 
 
 def get_vis_metadata(rows: list[int], cols: int, data_file: str, rows_name: str = "rowsRange"):
     return {
-        'buildDate': datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
-        'grids': {
-            'rowhammer': {
-                'name': 'Rowhammer',
-                'colsRange': cols,
+        "buildDate": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+        "grids": {
+            "rowhammer": {
+                "name": "Rowhammer",
+                "colsRange": cols,
                 rows_name: rows,
-                'cells': {
-                    'fieldOrder':
-                    ['col', 'row', 'width', 'type', 'name', 'fullName', 'description'],
-                    'fieldTemplates': {
-                        'color': '{get(COLORS, type)}'
-                    },
-                    'templateConsts': {
-                        'COLORS': {
-                            'OK': 19,
-                            'FLIP': 1,
-                            'TGT': 3
-                        }
-                    },
-                    'data': {
-                        '@import': data_file
-                    }
-                }
+                "cells": {
+                    "fieldOrder": [
+                        "col",
+                        "row",
+                        "width",
+                        "type",
+                        "name",
+                        "fullName",
+                        "description",
+                    ],
+                    "fieldTemplates": {"color": "{get(COLORS, type)}"},
+                    "templateConsts": {"COLORS": {"OK": 19, "FLIP": 1, "TGT": 3}},
+                    "data": {"@import": data_file},
+                },
             }
-        }
+        },
     }
 
 
 def generate_output_files(
-        data: dict, no_empty_rows: bool, aggressors_vs_victims: bool, dq_pads: int, cols: int,
-        cols_step: int, vis_dir: str, output_name: str):
+    data: dict,
+    no_empty_rows: bool,
+    aggressors_vs_victims: bool,
+    dq_pads: int,
+    cols: int,
+    cols_step: int,
+    vis_dir: str,
+    output_name: str,
+):
     # generate visualization data from logs of all attacks
     vis_data, rows, cols = get_vis_data(
-        data, no_empty_rows, aggressors_vs_victims, cols, cols_step, dq_pads=dq_pads)
+        data, no_empty_rows, aggressors_vs_victims, cols, cols_step, dq_pads=dq_pads
+    )
 
     # write data file
     data_file = (vis_dir / output_name).with_suffix(".data.json")
@@ -237,13 +241,16 @@ if __name__ == "__main__":
     parser.add_argument("log_file", help="file with log output")
     parser.add_argument("vis_dir", help="directory where to put visualization json files")
     parser.add_argument(
-        "--vis-columns", type=int, default=32, help="how many columns to show in resulting grid")
+        "--vis-columns", type=int, default=32, help="how many columns to show in resulting grid"
+    )
     parser.add_argument(
-        "--no-empty-rows", action="store_true", help="exclude empty rows from visualizer")
+        "--no-empty-rows", action="store_true", help="exclude empty rows from visualizer"
+    )
     parser.add_argument(
         "--aggressors-vs-victims",
         action="store_true",
-        help="visualize single aggressor attacks and their victims")
+        help="visualize single aggressor attacks and their victims",
+    )
     parser.add_argument("--dq-pads", type=int, default=64, help="number of memory DQ pads")
     args = parser.parse_args()
 
@@ -252,8 +259,8 @@ if __name__ == "__main__":
     with settings_file.open() as fd:
         settings = json.load(fd)
 
-    COLS = 2**settings["geom"]["colbits"]
-    ROWS = 2**settings["geom"]["rowbits"]
+    COLS = 2 ** settings["geom"]["colbits"]
+    ROWS = 2 ** settings["geom"]["rowbits"]
 
     log_file = Path(args.log_file)
     with log_file.open() as fd:
@@ -311,7 +318,8 @@ if __name__ == "__main__":
                     COLS,
                     COLS // args.vis_columns,
                     vis_dir,
-                    output_name=f"{read_count}_{attack}")
+                    output_name=f"{read_count}_{attack}",
+                )
 
     if args.aggressors_vs_victims:
         meta_files = generate_output_files(
@@ -322,7 +330,8 @@ if __name__ == "__main__":
             COLS,
             cols_step=1,
             vis_dir=vis_dir,
-            output_name=f"{read_count}_aggressors_vs_victims")
+            output_name=f"{read_count}_aggressors_vs_victims",
+        )
 
     # write config file
     vis_config = get_vis_config(meta_files)

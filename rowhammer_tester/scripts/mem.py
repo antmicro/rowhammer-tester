@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-import random
 import argparse
 import itertools
+import os
+import random
+import sys
 
+from rowhammer_tester.scripts.read_level import (
+    Settings,
+    read_level,
+    read_level_hardcoded,
+    write_level_hardcoded,
+)
 from rowhammer_tester.scripts.utils import *
-from rowhammer_tester.scripts.read_level import read_level, Settings
-from rowhammer_tester.scripts.read_level import read_level_hardcoded, write_level_hardcoded
 
 
 # Perform a memory test using a random data pattern and linear addressing
@@ -37,13 +41,14 @@ def memtest(wb, length, *, generator, base=None, verbose=None, burst=255):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--srv', action='store_true', help='Start litex server')
-    parser.add_argument('--size', default='0x2000', help='Memtest size')
-    parser.add_argument('--memspeed', action='store_true', help='Run memroy speed test')
+    parser.add_argument("--srv", action="store_true", help="Start litex server")
+    parser.add_argument("--size", default="0x2000", help="Memtest size")
+    parser.add_argument("--memspeed", action="store_true", help="Run memroy speed test")
     parser.add_argument(
-        '--no-cpu-uart',
-        action='store_true',
-        help='Do not print the stdout of CPU during DRAM initialization')
+        "--no-cpu-uart",
+        action="store_true",
+        help="Do not print the stdout of CPU during DRAM initialization",
+    )
     args = parser.parse_args()
 
     if args.srv:
@@ -53,7 +58,7 @@ if __name__ == "__main__":
     wb.open()
     print("Board info:", read_ident(wb))
 
-    print(' === Waiting for CPU to initialize DRAM ===')
+    print(" === Waiting for CPU to initialize DRAM ===")
     if hasattr(wb.regs, "uart_xover_rxempty"):
         while wb.regs.ddrctrl_init_done.read() != 1:
             if wb.regs.uart_xover_rxempty.read() == 0:
@@ -66,20 +71,20 @@ if __name__ == "__main__":
             time.sleep(0.001)
 
     if wb.regs.ddrctrl_init_error.read() == 1:
-        print(' === Initialization failed ===')
+        print(" === Initialization failed ===")
         sys.exit(1)
     else:
-        print(' === Initialization succeeded. ===')
-        print('Proceeding ...')
+        print(" === Initialization succeeded. ===")
+        print("Proceeding ...")
 
     memtest_size = int(args.size, 0)
     ret = 0
 
     def run_memtest(name, generator, **kwargs):
         global ret
-        print('\nMemtest ({})'.format(name))
+        print("\nMemtest ({})".format(name))
         errors = memtest(wb, length=memtest_size, generator=generator, **kwargs)
-        print('OK' if errors == 0 else 'FAIL: errors = {}'.format(errors))
+        print("OK" if errors == 0 else "FAIL: errors = {}".format(errors))
         if errors != 0:
             ret = 1
 
@@ -88,12 +93,12 @@ if __name__ == "__main__":
         while True:
             yield rng.randint(0, 2**32 - 1)
 
-    run_memtest('basic', itertools.cycle([0xaaaaaaaa, 0x55555555]))
-    run_memtest('random', rand_generator(42))
+    run_memtest("basic", itertools.cycle([0xAAAAAAAA, 0x55555555]))
+    run_memtest("random", rand_generator(42))
 
     if args.memspeed:
         for n in [0x1000 // 4, 0x10000 // 4, 0x100000 // 4]:
-            print('Size = 0x{:08x}'.format(n * 4))
+            print("Size = 0x{:08x}".format(n * 4))
             memspeed(wb, n)
         # Example results:
         #  Size = 0x00001000

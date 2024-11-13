@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-import time
 import random
-from operator import or_
-from functools import reduce
+import time
 from collections import defaultdict
+from functools import reduce
+from operator import or_
 
 from rowhammer_tester.scripts.utils import *
 
@@ -30,7 +30,8 @@ def dfii_write(wb, phase_datas, wrphase):
     dfii_px(wb, wrphase, "address").write(0)
     dfii_px(wb, wrphase, "baddress").write(0)
     dfii_px(wb, wrphase, "command").write(
-        dfii_command_cas | dfii_command_we | dfii_command_cs | dfii_command_wrdata)
+        dfii_command_cas | dfii_command_we | dfii_command_cs | dfii_command_wrdata
+    )
     dfii_px(wb, wrphase, "command_issue").write(1)
 
 
@@ -82,11 +83,10 @@ def read_delay_set(wb, value):
 
 
 def get_byte(i, data):
-    return (data & (0xff << (8 * i))) >> (8 * i)
+    return (data & (0xFF << (8 * i))) >> (8 * i)
 
 
 class Settings:
-
     def __init__(self, nmodules, bitslips, delays, nphases, wrphase, rdphase):
         # Defined by:
         # `#define SDRAM_PHY_MODULES` in sdram_phy.h
@@ -137,7 +137,8 @@ def read_level_test(wb, settings, module, seed=42, verbose=None):
     # generate pattern
     data_pattern = []
     phase_bytes = (
-        wb.regs.sdram_dfii_pi0_wrdata.data_width * wb.regs.sdram_dfii_pi0_wrdata.length) // 8
+        wb.regs.sdram_dfii_pi0_wrdata.data_width * wb.regs.sdram_dfii_pi0_wrdata.length
+    ) // 8
     for p in range(settings.nphases):
         for b in range(phase_bytes):
             data_pattern.append(rng.randint(0, 256))
@@ -180,7 +181,8 @@ def read_level_test(wb, settings, module, seed=42, verbose=None):
         0,
         0,
         dfii_command_ras | dfii_command_we | dfii_command_cs,
-        enable_software_control=False)
+        enable_software_control=False,
+    )
     time.sleep(0.001)
 
     return errors
@@ -268,7 +270,7 @@ def read_level(wb, settings, **kwargs):
 
 def read_level_hardcoded(wb, config):
     for module, (bitslip, delay) in enumerate(config):
-        print('Module {}: bitslip={}, delay={}'.format(module, bitslip, delay))
+        print("Module {}: bitslip={}, delay={}".format(module, bitslip, delay))
         delay_select_modules(wb, [module])
         read_bitslip_set(wb, bitslip)
         read_delay_set(wb, delay)
@@ -314,25 +316,29 @@ DDRX_MR1 = 769
 
 def write_leveling_on(wb):
     sdram_cmd(
-        wb, DDRX_MR1 | (1 << 7), 1,
-        dfii_command_ras | dfii_command_cas | dfii_command_we | dfii_command_cs)
+        wb,
+        DDRX_MR1 | (1 << 7),
+        1,
+        dfii_command_ras | dfii_command_cas | dfii_command_we | dfii_command_cs,
+    )
     wb.regs.ddrphy_wlevel_en.write(1)
 
 
 def write_leveling_off(wb):
     sdram_cmd(
-        wb, DDRX_MR1, 1, dfii_command_ras | dfii_command_cas | dfii_command_we | dfii_command_cs)
+        wb, DDRX_MR1, 1, dfii_command_ras | dfii_command_cas | dfii_command_we | dfii_command_cs
+    )
     wb.regs.ddrphy_wlevel_en.write(0)
 
 
 # TODO: proper leveling, now use hardcoded results
 def write_level_hardcoded(wb, cdly, delays):
     sdram_software_control(wb)
-    print('Cmd/Clk delay: {}'.format(cdly))
+    print("Cmd/Clk delay: {}".format(cdly))
     cdly_set(wb, cdly)
 
     for i, delay in enumerate(delays):
-        print('Module {}: delay {}'.format(i, delay))
+        print("Module {}: delay {}".format(i, delay))
         delay_select_modules(wb, [i])
         write_delay_set(wb, delay)
 

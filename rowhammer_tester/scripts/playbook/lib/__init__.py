@@ -1,12 +1,14 @@
-from math import ceil
-from rowhammer_tester.gateware.payload_executor import Encoder, OpCode, Decoder
-from rowhammer_tester.scripts.utils import (get_expected_execution_cycles, DRAMAddressConverter)
 import sys
+from math import ceil
+
+from rowhammer_tester.gateware.payload_executor import Decoder, Encoder, OpCode
+from rowhammer_tester.scripts.utils import DRAMAddressConverter, get_expected_execution_cycles
 
 
 # returns the number of refreshes issued
 def encode_one_loop(
-        *, unrolled, rolled, row_sequence, timings, encoder, bank, rank, refresh_op, payload):
+    *, unrolled, rolled, row_sequence, timings, encoder, bank, rank, refresh_op, payload
+):
     tras = timings.tRAS
     trp = timings.tRP
     trefi = timings.tREFI
@@ -29,11 +31,13 @@ def encode_one_loop(
                     encoder.I(
                         OpCode.ACT,
                         timeslice=tras,
-                        address=encoder.address(bank=bank, row=row, rank=rank)),
+                        address=encoder.address(bank=bank, row=row, rank=rank),
+                    ),
                     encoder.I(
-                        OpCode.PRE, timeslice=trp, address=encoder.address(col=1 << 10,
-                                                                           rank=rank)),  # all
-                ])
+                        OpCode.PRE, timeslice=trp, address=encoder.address(col=1 << 10, rank=rank)
+                    ),  # all
+                ]
+            )
     jump_target = 2 * unrolled * len(row_sequence) + local_refreshes
     assert jump_target < 2**Decoder.LOOP_JUMP
     payload.append(encoder.I(OpCode.LOOP, count=rolled, jump=jump_target))
@@ -65,25 +69,26 @@ def encode_long_loop(*, unrolled, rolled, **kwargs):
 def least_common_multiple(x, y):
     gcd = x
     rem = y
-    while (rem):
+    while rem:
         gcd, rem = rem, gcd % rem
 
     return (x * y) // gcd
 
 
 def generate_payload_from_row_list(
-        *,
-        read_count,
-        row_sequence,
-        timings,
-        bankbits,
-        bank,
-        nranks,
-        rank,
-        payload_mem_size,
-        refresh=False,
-        verbose=False,
-        sys_clk_freq=None):
+    *,
+    read_count,
+    row_sequence,
+    timings,
+    bankbits,
+    bank,
+    nranks,
+    rank,
+    payload_mem_size,
+    refresh=False,
+    verbose=False,
+    sys_clk_freq=None
+):
     encoder = Encoder(bankbits=bankbits, nranks=nranks)
 
     tras = timings.tRAS
@@ -91,14 +96,15 @@ def generate_payload_from_row_list(
     trefi = timings.tREFI
     trfc = timings.tRFC
     if verbose:
-        print('Generating payload:')
-        for t in ['tRAS', 'tRP', 'tREFI', 'tRFC']:
-            print('  {} = {}'.format(t, getattr(timings, t)))
+        print("Generating payload:")
+        for t in ["tRAS", "tRP", "tREFI", "tRFC"]:
+            print("  {} = {}".format(t, getattr(timings, t)))
 
     acts_per_interval = (trefi - trfc) // (trp + tras)
     max_acts_in_loop = (2**Decoder.LOOP_JUMP - 1) // 2
     repeatable_unit = min(
-        least_common_multiple(acts_per_interval, len(row_sequence)), max_acts_in_loop)
+        least_common_multiple(acts_per_interval, len(row_sequence)), max_acts_in_loop
+    )
     assert repeatable_unit >= len(row_sequence)
     repetitions = repeatable_unit // len(row_sequence)
     print("  Repeatable unit: {}".format(repeatable_unit))
@@ -121,7 +127,8 @@ def generate_payload_from_row_list(
         bank=bank,
         rank=rank,
         refresh_op=refresh_op,
-        payload=payload)
+        payload=payload,
+    )
     refreshes += encode_long_loop(
         unrolled=1,
         rolled=read_count_remainder,
@@ -131,7 +138,8 @@ def generate_payload_from_row_list(
         bank=bank,
         rank=rank,
         refresh_op=refresh_op,
-        payload=payload)
+        payload=payload,
+    )
 
     # MC refresh timer is reset on mode transition, so issue REF now, this way it will be in sync with MC
     payload.append(encoder.I(refresh_op, timeslice=1))
@@ -140,18 +148,25 @@ def generate_payload_from_row_list(
     if verbose:
         expected_cycles = get_expected_execution_cycles(payload)
         print(
-            '  Payload size = {:5.2f}KB / {:5.2f}KB'.format(
-                4 * len(payload) / 2**10, payload_mem_size / 2**10))
-        count = '{:.3f}M'.format(read_count /
-                                 1e6) if read_count > 1e6 else '{:.3f}K'.format(read_count / 1e3)
-        print('  Payload per-row toggle count = {}  x{} rows'.format(count, len(row_sequence)))
+            "  Payload size = {:5.2f}KB / {:5.2f}KB".format(
+                4 * len(payload) / 2**10, payload_mem_size / 2**10
+            )
+        )
+        count = (
+            "{:.3f}M".format(read_count / 1e6)
+            if read_count > 1e6
+            else "{:.3f}K".format(read_count / 1e3)
+        )
+        print("  Payload per-row toggle count = {}  x{} rows".format(count, len(row_sequence)))
         print(
-            '  Payload refreshes (if enabled) = {} ({})'.format(
-                refreshes, 'enabled' if refresh else 'disabled'))
-        time = ''
+            "  Payload refreshes (if enabled) = {} ({})".format(
+                refreshes, "enabled" if refresh else "disabled"
+            )
+        )
+        time = ""
         if sys_clk_freq is not None:
-            time = ' = {:.3f} ms'.format(1 / sys_clk_freq * expected_cycles * 1e3)
-        print('  Expected execution time = {} cycles'.format(expected_cycles) + time)
+            time = " = {:.3f} ms".format(1 / sys_clk_freq * expected_cycles * 1e3)
+        print("  Expected execution time = {} cycles".format(expected_cycles) + time)
 
         for instruction in payload:
             op, *args = map(lambda p: p[1], instruction._parts)
@@ -159,9 +174,11 @@ def generate_payload_from_row_list(
 
     if len(payload) > payload_mem_size // 4:
         print(
-            'Memory required for payload executor instructions ({} bytes) exceeds available payload memory ({} bytes)'
-            .format(len(payload) * 4, payload_mem_size))
-        print('The payload memory size can be changed with \'--payload-size \' option.')
+            "Memory required for payload executor instructions ({} bytes) exceeds available payload memory ({} bytes)".format(
+                len(payload) * 4, payload_mem_size
+            )
+        )
+        print("The payload memory size can be changed with '--payload-size ' option.")
         sys.exit(1)
 
     return encoder(payload)
