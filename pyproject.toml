@@ -1,0 +1,22 @@
+[tool.black]
+line-length = 100
+extend-exclude = '''
+(
+  /(
+    | \.github
+    | __pycache__
+    | firmware
+    | openocd_scripts
+    | third_party
+  )/
+  | docs/source/conf.py
+)
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip = ["docs/source/conf.py"]
+skip_glob = ["third_party/*"]
+
+

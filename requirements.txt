@@ -16,7 +16,10 @@ git+https://github.com/litex-hub/pythondata-software-picolibc.git
 git+https://github.com/litex-hub/pythondata-software-compiler_rt.git
 
 # PyPi packages
+black == 24.10.0
+flake8 == 7.0.0
 gitpython == 3.1.36
+isort == 5.13.2
 matplotlib == 3.7.3
 meson == 0.63.0
 ninja == 1.11.1
