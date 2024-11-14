@@ -129,7 +129,7 @@ class Settings:
         elif settings.phy.phytype in ["A7DDRPHY", "K7DDRPHY", "V7DDRPHY"]:
             bitslips = 8
             delays = 32
-        elif phytype in ["ECP5DDRPHY"]:
+        elif settings.phy.phytype in ["ECP5DDRPHY"]:
             bitslips = 4
             delays = 8
         return cls(
