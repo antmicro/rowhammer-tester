@@ -64,8 +64,6 @@ def word_gen(offset):
 
 
 def execute(wb):
-    depth = wb.mems.payload.size // 4  # bytes to 32-bit instructions
-
     program = [w for w in PAYLOAD]
     program += [0] * (wb.mems.payload.size // 4 - len(program))  # fill with NOOPs
 

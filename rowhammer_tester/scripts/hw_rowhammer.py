@@ -15,7 +15,7 @@ class HwRowHammer(RowHammer):
         addresses = [
             self.converter.encode_dma(bank=self.bank, col=self.column, row=r) for r in row_tuple
         ]
-        row_strw = len(str(2**self.settings.geom.rowbits - 1))
+        # row_strw = len(str(2**self.settings.geom.rowbits - 1))
 
         # FIXME: ------------------ move to utils ----------------------------
         # Flush error fifo
@@ -51,7 +51,7 @@ class HwRowHammer(RowHammer):
         def progress(count):
             s = "  {}".format(progress_header + " " if progress_header else "")
             s += "Rows = {}, Count = {:5.2f}M / {:5.2f}M".format(
-                row_tuple, count / 1e6, read_count / 1e6, n=row_strw
+                row_tuple, count / 1e6, read_count / 1e6
             )
             print(s, end="  \r")
 

@@ -406,7 +406,7 @@ class PayloadExecutorDUT(Module):
                 ras = 1 - (yield phase.ras_n)
                 we = 1 - (yield phase.we_n)
                 entry = None
-                for op, desc in DFI_COMMANDS.items():
+                for _, desc in DFI_COMMANDS.items():
                     if (cas, ras, we) == (desc["cas"], desc["ras"], desc["we"]):
                         cmd = DFICmd(cas=cas, ras=ras, we=we)
                         entry = HistoryEntry(time=time, phase=i, cmd=cmd)
@@ -829,7 +829,6 @@ class TestPayloadExecutor(unittest.TestCase):
 class TestPayloadExecutorDDR5(unittest.TestCase):
     def run_payload(self, dut, **kwargs):
         def generator(dut):
-            count = 0
             yield dut.dfii._control.fields.mode_2n.eq(0)
             yield dut.dfii._control.fields.reset_n.eq(1)
             yield dut.payload_executor.start.eq(1)
@@ -1037,7 +1036,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         dut = PayloadExecutorDDR5DUT(encoder(payload), refresh_delay=10 - 1)
         dut.dfi_switch.add_csrs()
         run_simulation(
-            dut, [generator(dut), *dut.get_generators()], vcd_name=f"test_refresh_counter.vcd"
+            dut, [generator(dut), *dut.get_generators()], vcd_name="test_refresh_counter.vcd"
         )
 
     def test_switch_at_refresh(self):

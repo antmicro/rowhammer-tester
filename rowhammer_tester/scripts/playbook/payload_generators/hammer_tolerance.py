@@ -100,7 +100,7 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
     def extract_bits(self, bit_string, first_bit, group_stride, group_size, nr_groups):
         idx = first_bit
         bits = ""
-        for group in range(nr_groups):
+        for _ in range(nr_groups):
             bits += bit_string[idx : (idx + group_size)]
             idx += group_stride
 

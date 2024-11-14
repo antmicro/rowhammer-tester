@@ -86,7 +86,6 @@ class AsyncFIFOWraperDUT(Module, AutoCSR):
         r_cnt.attr.add("keep")
         re = Signal()
         re.attr.add("keep")
-        rd = Signal()
 
         i_cd = getattr(self.sync, i_cd_name)
         i_cd += [

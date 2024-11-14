@@ -57,7 +57,7 @@ def run_etherbone(wb, is_write, n, *, burst, profile, profile_dir="profiling"):
             if is_write:
                 memwrite(wb, datas, burst=burst)
             else:
-                x = len(memread(wb, n, burst=burst))
+                _ = memread(wb, n, burst=burst)
 
     measure(runner, 4 * n)
 

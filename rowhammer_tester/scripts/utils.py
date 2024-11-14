@@ -457,7 +457,6 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     wb.regs.reader_data_mask.write(0x00000000)
 
     count = size // nbytes
-    count_w = len(str(count))
     wb.regs.reader_count.write(count)
 
     wb.regs.reader_start.write(1)

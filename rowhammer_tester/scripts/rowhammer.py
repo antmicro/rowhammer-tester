@@ -102,12 +102,12 @@ class RowHammer:
         self.wb.regs.rowhammer_address2.write(addresses[1])
         self.wb.regs.rowhammer_enabled.write(1)
 
-        row_strw = len(str(2**self.settings.geom.rowbits - 1))
+        # row_strw = len(str(2**self.settings.geom.rowbits - 1))
 
         def progress(count):
             s = "  {}".format(progress_header + " " if progress_header else "")
             s += "Rows = {}, Count = {:5.2f}M / {:5.2f}M".format(
-                row_tuple, count / 1e6, read_count / 1e6, n=row_strw
+                row_tuple, count / 1e6, read_count / 1e6
             )
             print(s, end="  \r")
 

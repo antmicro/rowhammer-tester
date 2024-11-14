@@ -66,7 +66,7 @@ def parse_line(line):
     match = PATTERN.search(line)
     if not match:
         return None
-    groups = match.groupdict()
+    # groups = match.groupdict()
 
 
 def run(argv, **kwargs):

@@ -278,8 +278,6 @@ class TestWriter(unittest.TestCase):
         # specification
         rowbits = 5
         row_shift = 12  # assuming just 2 bits for column+bank
-        divisor_mask = 0b00111  # modulo divisor = 8
-        selection_mask = 0b00000000000000000000000010010010  # rows: 1, 4, 7
 
         # fill whole memory with the same data
         pattern = [
