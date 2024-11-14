@@ -17,7 +17,7 @@ def memtest(wb, length, *, generator, base=None, verbose=None, burst=255):
     if base is None:
         base = wb.mems.main_ram.base
 
-    refdata = [next(generator) for _ in range(length)]
+    refdata = list(itertools.islice(generator,length))
     memwrite(wb, refdata, base=base, burst=burst)
 
     data = memread(wb, length, base=base, burst=burst)
