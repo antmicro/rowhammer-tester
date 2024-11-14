@@ -132,6 +132,8 @@ class Settings:
         elif settings.phy.phytype in ["ECP5DDRPHY"]:
             bitslips = 4
             delays = 8
+        else:
+            raise Exception(f"Unsupported PHY type: {settings.phy.phytype}")
         return cls(
             nmodules=settings.phy.databits // 8,
             bitslips=bitslips,
