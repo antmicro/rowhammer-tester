@@ -230,10 +230,8 @@ class RowHammer:
 
         print()
 
-    def prepare_memory(self):
+    def prepare_memory(self, row_patterns, read_count, row_progress=16, verify_initial=False):
         print("\nPreparing ...")
-        row_patterns = pattern_generator(self.rows)
-
         print("\nFilling memory with data ...")
         for row, n, base in self.row_access_iterator():
             memfill(self.wb, n, pattern=row_patterns[row], base=base, burst=255)
@@ -268,7 +266,8 @@ class RowHammer:
         if self.data_inversion:
             raise NotImplementedError("Currently only HW rowhammer supports data inversion")
 
-        self.prepare_memory()
+        row_patterns = pattern_generator(self.rows)
+        self.prepare_memory(row_patterns, read_count, row_progress, verify_initial)
 
         if self.no_refresh:
             print("\nDisabling refresh ...")
