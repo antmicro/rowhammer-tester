@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 
-import math
-
 from litedram.phy import ddr5
 from litedram.phy.ddr5.s7phy import Xilinx7SeriesAsyncFIFOWrap
-from liteeth.phy import LiteEthS7PHYRGMII
 from litex.build.xilinx.vivado import vivado_build_argdict, vivado_build_args
 from litex.soc.cores.clock import S7IDELAYCTRL, S7MMCM, S7PLL
 from litex.soc.integration.builder import Builder
-from litex.soc.interconnect.csr import CSR, AutoCSR, CSRStatus, CSRStorage
+from litex.soc.interconnect.csr import AutoCSR, CSRStorage
 from litex_boards.platforms import antmicro_ddr5_test_board
-from migen import *
+from migen import ClockDomain, ClockSignal, If, Instance, Module, Signal
 
 from rowhammer_tester.targets import common
 

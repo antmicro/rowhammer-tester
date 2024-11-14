@@ -5,13 +5,17 @@ import json
 from collections import defaultdict
 
 from rowhammer_tester.scripts.playbook.payload_generators import PayloadGenerator
-from rowhammer_tester.scripts.playbook.payload_generators.half_double_analysis import (
+
+# The following imports allow to fetch an appropriate Payload Generator with `get_by_name` method
+from rowhammer_tester.scripts.playbook.payload_generators.half_double_analysis import (  # noqa: F401, E501
     HalfDoubleAnalysisPayloadGenerator,
 )
-from rowhammer_tester.scripts.playbook.payload_generators.hammer_tolerance import (
+from rowhammer_tester.scripts.playbook.payload_generators.hammer_tolerance import (  # noqa: F401
     HammerTolerancePayloadGenerator,
 )
-from rowhammer_tester.scripts.playbook.payload_generators.row_list import RowListPayloadGenerator
+from rowhammer_tester.scripts.playbook.payload_generators.row_list import (  # noqa: F401
+    RowListPayloadGenerator,
+)
 from rowhammer_tester.scripts.utils import (
     DRAMAddressConverter,
     RemoteClient,

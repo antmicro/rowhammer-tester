@@ -2,7 +2,7 @@ from litedram.frontend.dma import LiteDRAMDMAReader, LiteDRAMDMAWriter
 from litex.soc.integration.doc import AutoDoc, ModuleDoc
 from litex.soc.interconnect import stream
 from litex.soc.interconnect.csr import CSR, AutoCSR, CSRStatus, CSRStorage
-from migen import *
+from migen import FSM, READ_FIRST, If, Memory, Module, NextState, NextValue, Signal
 from migen.genlib.coding import Decoder as OneHotDecoder
 
 

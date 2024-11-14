@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
 import itertools
-import os
-import sys
 import time
 
-from rowhammer_tester.gateware.payload_executor import Decoder, Encoder, OpCode
+from rowhammer_tester.gateware.payload_executor import Encoder, OpCode
 from rowhammer_tester.scripts.utils import (
     DRAMAddressConverter,
     RemoteClient,

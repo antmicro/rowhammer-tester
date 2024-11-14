@@ -6,7 +6,19 @@ from collections import defaultdict
 from functools import reduce
 from operator import or_
 
-from rowhammer_tester.scripts.utils import *
+from rowhammer_tester.scripts.utils import (
+    RemoteClient,
+    compare,
+    get_litedram_settings,
+    read_ident,
+    sdram_software_control,
+)
+
+# Fetch DFII command signals form the generated sdram_init.py file
+try:
+    from sdram_init import *
+except ModuleNotFoundError:
+    raise ModuleNotFoundError("sdram_init not loaded")
 
 # DRAM commands ----------------------------------
 

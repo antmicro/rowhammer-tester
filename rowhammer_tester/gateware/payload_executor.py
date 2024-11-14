@@ -5,7 +5,18 @@ from operator import and_, or_
 from litedram.core.refresher import Refresher
 from litex.soc.integration.doc import AutoDoc, ModuleDoc
 from litex.soc.interconnect.csr import CSR, AutoCSR, CSRField, CSRStatus, CSRStorage
-from migen import *
+from migen import (
+    FSM,
+    Cat,
+    If,
+    Module,
+    NextState,
+    NextValue,
+    Replicate,
+    ResetInserter,
+    Signal,
+    log2_int,
+)
 from migen.genlib.coding import Decoder as OneHotDecoder
 
 

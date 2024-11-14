@@ -2,7 +2,8 @@ import itertools
 import unittest
 
 from litedram.common import LiteDRAMNativePort
-from migen import *
+from litex.gen.sim import passive, run_simulation
+from migen import Module
 
 from rowhammer_tester.gateware.bist import PatternMemory, Reader, Writer
 

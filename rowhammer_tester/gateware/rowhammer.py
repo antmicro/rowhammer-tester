@@ -1,6 +1,6 @@
 from litex.soc.integration.doc import AutoDoc, ModuleDoc
 from litex.soc.interconnect.csr import AutoCSR, CSRStatus, CSRStorage
-from migen import *
+from migen import Case, If, Module, Signal
 
 
 class RowHammerDMA(Module, AutoCSR, AutoDoc, ModuleDoc):

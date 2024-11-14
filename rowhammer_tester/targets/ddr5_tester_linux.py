@@ -7,7 +7,6 @@ from liteeth.phy import LiteEthS7PHYRGMII
 from litex.build.xilinx.vivado import vivado_build_argdict, vivado_build_args
 from litex.soc.cores.cpu.vexriscv_smp.core import VexRiscvSMP
 from litex.soc.integration.builder import Builder
-from migen import *
 
 
 # SoC ----------------------------------------------------------------------------------------------

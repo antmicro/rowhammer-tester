@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from litedram.phy import usddrphy
-from liteeth.phy.usrgmii import LiteEthPHYRGMII
 from litex.build.xilinx.vivado import vivado_build_argdict, vivado_build_args
 from litex.soc.cores.bitbang import I2CMaster
 from litex.soc.cores.clock import USIDELAYCTRL, USMMCM
@@ -9,8 +8,7 @@ from litex.soc.integration.builder import Builder
 from litex.soc.integration.soc_core import colorer
 from litex.soc.interconnect import axi, wishbone
 from litex_boards.platforms import xilinx_zcu104
-from migen import *
-from migen.genlib.resetsync import AsyncResetSynchronizer
+from migen import ClockDomain, ClockSignal, Instance, Module, Signal
 
 from rowhammer_tester.targets import common
 

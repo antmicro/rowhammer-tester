@@ -6,7 +6,6 @@ Depending on chosen mode, it will generate one or many separate plots.
 
 import argparse
 import json
-import os
 from math import floor
 from pathlib import Path
 

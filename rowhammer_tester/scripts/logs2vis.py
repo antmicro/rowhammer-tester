@@ -7,7 +7,6 @@ Each attack is a separate visualization
 import argparse
 import datetime
 import json
-import os
 from pathlib import Path
 
 from rowhammer_tester.scripts.utils import get_generated_file

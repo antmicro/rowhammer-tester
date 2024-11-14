@@ -5,7 +5,6 @@ import json
 import os
 import random
 import subprocess
-import sys
 import time
 from pathlib import Path
 
@@ -20,7 +19,6 @@ from rowhammer_tester.scripts.utils import (
     litex_server,
     memcheck,
     memfill,
-    memwrite,
     read_ident,
 )
 

@@ -6,7 +6,7 @@ from litex.build.xilinx.vivado import vivado_build_argdict, vivado_build_args
 from litex.soc.cores.clock import S7IDELAYCTRL, S7PLL
 from litex.soc.integration.builder import Builder
 from litex_boards.platforms import digilent_arty
-from migen import *
+from migen import ClockDomain, Module
 
 from rowhammer_tester.targets import common
 

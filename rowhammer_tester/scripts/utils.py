@@ -12,7 +12,7 @@ from operator import or_
 
 from migen import log2_int
 
-from rowhammer_tester.gateware.payload_executor import Decoder, Encoder, OpCode
+from rowhammer_tester.gateware.payload_executor import OpCode
 
 # ###########################################################################
 

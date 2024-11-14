@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 
-import argparse
 import sys
 
-from litescope.software.litescope_cli import *
+from litescope.software.litescope_cli import (
+    LiteScopeAnalyzerDriver,
+    add_triggers,
+    get_signals,
+    parse_args,
+)
 
 from rowhammer_tester.scripts.utils import RemoteClient, get_generated_file, read_ident
 

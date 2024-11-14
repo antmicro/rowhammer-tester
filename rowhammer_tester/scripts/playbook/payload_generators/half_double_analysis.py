@@ -1,22 +1,23 @@
 import math
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 from enum import Enum
 
-from rowhammer_tester.gateware.payload_executor import Decoder, Encoder, OpCode
 from rowhammer_tester.scripts.playbook.lib import (
     generate_payload_from_row_list,
     get_range_from_rows,
 )
 from rowhammer_tester.scripts.playbook.payload_generators import PayloadGenerator
-from rowhammer_tester.scripts.playbook.row_generators import RowGenerator
+
+# The following imports allow to fetch appropriate classes via `get_by_name` method
+from rowhammer_tester.scripts.playbook.row_generators import RowGenerator  # noqa: F401
 from rowhammer_tester.scripts.playbook.row_generators.half_double import HalfDoubleRowGenerator
-from rowhammer_tester.scripts.playbook.row_mappings import (
+from rowhammer_tester.scripts.playbook.row_mappings import (  # noqa: F401
     RowMapping,
     TrivialRowMapping,
     TypeARowMapping,
     TypeBRowMapping,
 )
-from rowhammer_tester.scripts.utils import get_expected_execution_cycles, validate_keys
+from rowhammer_tester.scripts.utils import validate_keys
 
 
 class HalfDoubleAnalysisState(Enum):

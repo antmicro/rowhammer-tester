@@ -1,11 +1,15 @@
-from collections import OrderedDict, defaultdict
-
 from rowhammer_tester.scripts.playbook.lib import generate_payload_from_row_list
 from rowhammer_tester.scripts.playbook.payload_generators import PayloadGenerator
 from rowhammer_tester.scripts.playbook.row_generators import RowGenerator
-from rowhammer_tester.scripts.playbook.row_generators.even_rows import EvenRowGenerator
-from rowhammer_tester.scripts.playbook.row_generators.half_double import HalfDoubleRowGenerator
-from rowhammer_tester.scripts.playbook.row_mappings import (
+
+# The following imports allow to fetch appropriate classes via `get_by_name` method
+from rowhammer_tester.scripts.playbook.row_generators.even_rows import (  # noqa: F401
+    EvenRowGenerator,
+)
+from rowhammer_tester.scripts.playbook.row_generators.half_double import (  # noqa: F401
+    HalfDoubleRowGenerator,
+)
+from rowhammer_tester.scripts.playbook.row_mappings import (  # noqa: F401
     RowMapping,
     TrivialRowMapping,
     TypeARowMapping,

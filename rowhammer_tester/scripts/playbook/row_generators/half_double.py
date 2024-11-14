@@ -1,12 +1,6 @@
 from collections import defaultdict
 
 from rowhammer_tester.scripts.playbook.row_generators import RowGenerator
-from rowhammer_tester.scripts.playbook.row_mappings import (
-    RowMapping,
-    TrivialRowMapping,
-    TypeARowMapping,
-    TypeBRowMapping,
-)
 from rowhammer_tester.scripts.utils import validate_keys
 
 

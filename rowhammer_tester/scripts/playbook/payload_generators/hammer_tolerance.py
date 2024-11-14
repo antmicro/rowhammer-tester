@@ -5,7 +5,9 @@ from rowhammer_tester.scripts.playbook.lib import (
     get_range_from_rows,
 )
 from rowhammer_tester.scripts.playbook.payload_generators import PayloadGenerator
-from rowhammer_tester.scripts.playbook.row_mappings import (
+
+# The following imports allow to fetch appropriate Row Mapping class via `get_by_name` method
+from rowhammer_tester.scripts.playbook.row_mappings import (  # noqa: F401
     RowMapping,
     TrivialRowMapping,
     TypeARowMapping,

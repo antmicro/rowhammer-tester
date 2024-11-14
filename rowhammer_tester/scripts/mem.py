@@ -2,17 +2,20 @@
 
 import argparse
 import itertools
-import os
 import random
 import sys
+import time
 
-from rowhammer_tester.scripts.read_level import (
-    Settings,
-    read_level,
-    read_level_hardcoded,
-    write_level_hardcoded,
+from rowhammer_tester.scripts.utils import (
+    RemoteClient,
+    compare,
+    litex_server,
+    memread,
+    memspeed,
+    memwrite,
+    read_ident,
+    sdram_hardware_control,
 )
-from rowhammer_tester.scripts.utils import *
 
 
 # Perform a memory test using a random data pattern and linear addressing

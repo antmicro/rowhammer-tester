@@ -3,11 +3,19 @@ from collections import namedtuple
 
 from litedram.dfii import DFIInjector
 from litedram.phy import dfi
-from litex.gen.sim import *
-from migen import *
+from litex.gen.sim import passive, run_simulation
+from migen import Memory, Module, Signal
 from migen.genlib.coding import Decoder as OneHotDecoder
 
-from rowhammer_tester.gateware.payload_executor import *
+from rowhammer_tester.gateware.payload_executor import (
+    Decoder,
+    DFIExecutor,
+    DFISwitch,
+    Encoder,
+    OpCode,
+    PayloadExecutor,
+    Scratchpad,
+)
 
 
 class Hex:

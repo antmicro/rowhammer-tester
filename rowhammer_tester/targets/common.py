@@ -4,7 +4,6 @@ import json
 import logging
 import math
 import os
-import time
 
 import git
 import litedram.modules as litedram_modules
@@ -19,7 +18,8 @@ from liteeth.core import LiteEthUDPIPCore
 from liteeth.frontend.etherbone import LiteEthEtherbone
 from liteeth.phy import LiteEthS7PHYRGMII
 from liteeth.phy.model import LiteEthPHYModel
-from litex.build.generic_platform import *
+from litex.build.generic_platform import Pins, Subsignal
+from litex.build.io import CRG
 from litex.build.sim import SimPlatform as _SimPlatform
 from litex.build.sim.config import SimConfig
 from litex.soc import doc
@@ -29,9 +29,9 @@ from litex.soc.integration.doc import AutoDoc, ModuleDoc
 from litex.soc.integration.soc import SoCRegion
 from litex.soc.integration.soc_core import SoCCore, colorer, soc_core_argdict, soc_core_args
 from litex.soc.interconnect import wishbone
-from litex.soc.interconnect.csr import AutoCSR, CSRStatus, CSRStorage
+from litex.soc.interconnect.csr import AutoCSR, CSRStorage
 from litex.tools.litex_sim import get_sdram_phy_settings
-from migen import *
+from migen import READ_FIRST, Constant, Memory, Module, Signal
 
 import rowhammer_tester.targets.modules as local_modules
 from rowhammer_tester.gateware.bist import PatternMemory, Reader, Writer

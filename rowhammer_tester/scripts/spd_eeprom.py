@@ -2,14 +2,11 @@
 
 import argparse
 import itertools
-import math
 import os
-import sys
 import time
 
 import pexpect
-from litedram.modules import SDRAMModule, parse_spd_hexdump
-from pexpect import replwrap
+from litedram.modules import SDRAMModule
 
 from rowhammer_tester.scripts.utils import (
     RemoteClient,

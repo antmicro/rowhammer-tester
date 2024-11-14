@@ -1,22 +1,10 @@
 #!/usr/bin/env python3
 
-import argparse
-import random
 import time
 from collections import defaultdict
-from math import ceil
 
-from rowhammer_tester.gateware.payload_executor import Decoder, Encoder, OpCode
 from rowhammer_tester.scripts.rowhammer import RowHammer, main
-from rowhammer_tester.scripts.utils import (
-    DRAMAddressConverter,
-    RemoteClient,
-    hw_memset,
-    hw_memtest,
-    litex_server,
-    memwrite,
-    setup_inverters,
-)
+from rowhammer_tester.scripts.utils import hw_memset, hw_memtest, memwrite, setup_inverters
 
 ################################################################################
 
