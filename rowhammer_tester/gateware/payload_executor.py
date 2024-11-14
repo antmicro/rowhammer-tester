@@ -377,7 +377,8 @@ class DFISwitch(Module, AutoCSR):
                 self.wants_dfi,
                 If(
                     with_refresh,
-                    # FIXME: sometimes ZQCS needs to be sent after refresh, currently it will be missed
+                    # FIXME: sometimes ZQCS needs to be sent after refresh,
+                    # currently it will be missed
                     If(
                         self.refresh_counter.refresh & refresh_matches,
                         NextState("PAYLOAD-EXECUTION"),
@@ -400,15 +401,17 @@ class DFISwitch(Module, AutoCSR):
     def add_csrs(self):
         self._refresh_count = CSRStatus(
             len(self.refresh_counter.counter),
-            description="Count of all refresh commands issued (both by Memory Controller and the Payload Executor)."
-            " Value is latched from internal counter on mode transition: MC -> PE or by writing to"
-            " the `refresh_update` CSR.",
+            description="Count of all refresh commands issued "
+            "(both by Memory Controller and the Payload Executor)."
+            " Value is latched from internal counter on mode transition: MC -> PE "
+            "or by writing to the `refresh_update` CSR.",
         )
         self._at_refresh = CSRStorage(
             len(self.at_refresh),
             reset=0,
-            description="If set to a value different than 0 the mode transition MC -> PE will be performed only"
-            " when the value of this register matches the current refresh commands count.",
+            description="If set to a value different than 0 the mode transition MC -> PE"
+            " will be performed only when the value of this register matches the current"
+            " refresh commands count.",
         )
         self._refresh_update = CSR()
         self._refresh_update.description = "Force an update of the `refresh_count` CSR."

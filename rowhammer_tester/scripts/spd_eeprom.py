@@ -18,7 +18,8 @@ from rowhammer_tester.scripts.utils import (
 SCRIPT_DIR = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
 
 SPD_COMMANDS = {
-    # on ZCU104 first configure the I2C switch to select DDR4 SPD EEPROM, which than has base address 0b001
+    # on ZCU104 first configure the I2C switch to select DDR4 SPD EEPROM,
+    # which than has base address 0b001
     "zcu104": (1, ["i2c_write 0x74 0x80"]),
     "ddr4_datacenter_test_board": (0, None),
     "ddr5_tester": (0, None, True),

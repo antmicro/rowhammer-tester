@@ -175,9 +175,8 @@ def generate_payload_from_row_list(
 
     if len(payload) > payload_mem_size // 4:
         print(
-            "Memory required for payload executor instructions ({} bytes) exceeds available payload memory ({} bytes)".format(
-                len(payload) * 4, payload_mem_size
-            )
+            "Memory required for payload executor instructions ({len(payload) * 4} bytes)"
+            " exceeds available payload memory ({payload_mem_size} bytes)"
         )
         print("The payload memory size can be changed with '--payload-size ' option.")
         sys.exit(1)

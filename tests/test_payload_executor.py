@@ -685,7 +685,8 @@ class TestPayloadExecutor(unittest.TestCase):
         self.assertEqual(dut.execution_cycles, 4)
 
     def test_execution_cycles_default_stop(self):
-        # Check execution time with no explicit STOP, but rest of memory is filled with zeros (=STOP)
+        # Check execution time with no explicit STOP,
+        # but rest of memory is filled with zeros (=STOP)
         encoder = Encoder(bankbits=3)
         payload = [
             encoder(OpCode.ACT, timeslice=1, address=encoder.address(bank=1, row=100)),
@@ -928,7 +929,8 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         self.assertEqual(dut.execution_cycles, 4)
 
     def test_execution_cycles_default_stop(self):
-        # Check execution time with no explicit STOP, but rest of memory is filled with zeros (=STOP)
+        # Check execution time with no explicit STOP,
+        # but rest of memory is filled with zeros (=STOP)
         encoder = Encoder(bankbits=5)
         payload = [
             encoder(OpCode.ACT, timeslice=1, address=encoder.address(bank=1, row=100)),

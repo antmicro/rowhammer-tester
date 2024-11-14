@@ -575,7 +575,8 @@ def execute_payload(wb, payload):
                 print("Transition registered")
                 if first:
                     print(
-                        "WARNING: possibly switching refresh number set to value smaller than current count"
+                        "WARNING: possibly switching refresh number set to value"
+                        " smaller than current count"
                     )
         time.sleep(0.001)
         first = False

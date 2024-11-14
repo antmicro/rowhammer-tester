@@ -293,7 +293,10 @@ timings_3b = {
     70: "Minimum Active to Active Command Delay Time, Same Bank Group (tRRD_L_min)",
     73: "Minimum Read to Read Command Delay Time, Same Bank Group (tCCD_L_min)",
     76: "Minimum Write to Write Command Delay Time, Same Bank Group (tCCD_L_WR_min)",
-    79: "Minimum Write to Write Command Delay Time, Second Write not RMW, Same Bank Group (tCCD_L_WR2_min)",
+    79: (
+        "Minimum Write to Write Command Delay Time,"
+        " Second Write not RMW, Same Bank Group (tCCD_L_WR2_min)"
+    ),
     82: "Minimum Four Activate Window (tFAW_min)",
     85: "Minimum Write to Read Command Delay Time, Same Bank Group (tCCD_L_WTR_min)",
     88: "Minimum Write to Read Command Delay Time, Different Bank Group (tCCD_S_WTR_min)",

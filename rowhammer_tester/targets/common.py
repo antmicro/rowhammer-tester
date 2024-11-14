@@ -488,7 +488,8 @@ class ArgumentParser(argparse.ArgumentParser):
 
         super().__init__(**kwargs)
 
-        # Print defaults only for the arguments added here, as Litex has defaults embedded in help messages
+        # Print defaults only for the arguments added here,
+        # as Litex has defaults embedded in help messages
         class CustomArgumentDefaultHelpFormatter(argparse.HelpFormatter):
             ARG_NAMES = []
 
@@ -742,7 +743,7 @@ def run(args, builder, build_kwargs, target_name):
         prog.load_bitstream(os.path.join(builder.gateware_dir, builder.soc.build_name + ".bit"))
 
     if args.load_bios:
-        assert args.rw_bios_mem, "BIOS memory must be writible"
+        assert args.rw_bios_mem, "BIOS memory must be writable"
 
         from rowhammer_tester.scripts.utils import RemoteClient, memwrite
 

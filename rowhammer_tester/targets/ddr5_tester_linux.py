@@ -47,14 +47,16 @@ class SoC(ddr5_tester.SoC):
         self.platform.add_platform_command("set_property CLOCK_BUFFER_TYPE BUFG [get_nets sys_rst]")
         self.platform.add_platform_command(
             "set_disable_timing -from WRCLK -to RST "
-            "[get_cells -filter {{(REF_NAME == FIFO18E1 || REF_NAME == FIFO36E1) && EN_SYN == FALSE}}]"
+            "[get_cells -filter"
+            " {{(REF_NAME == FIFO18E1 || REF_NAME == FIFO36E1) && EN_SYN == FALSE}}]"
         )
         self.platform.add_platform_command(
             "set_max_delay -quiet -to [get_pins -hierarchical -regexp BUFR.*/CLR] 10.0"
         )
         self.platform.add_platform_command(
             "set_max_delay -quiet -from [get_clocks -of_objects [get_pins rst_domain/O]] "
-            "-to [list [get_pins -hierarchical -regexp .*CLR.*] [get_pins -hierarchical -regexp .*PRE.*]] 10.0"
+            "-to [list [get_pins -hierarchical -regexp .*CLR.*]"
+            " [get_pins -hierarchical -regexp .*PRE.*]] 10.0"
         )
         self.platform.toolchain.pre_synthesis_commands.append(
             "set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]"

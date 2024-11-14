@@ -48,7 +48,7 @@ class SoC(common.RowHammerSoC):
         self.variant = variant
         super().__init__(**kwargs)
 
-        # # Analyzer ---------------------------------------------------------------------------------
+        # # Analyzer -------------------------------------------------------------------------------
         # analyzer_signals = [
         #     self.sdram.dfii.ext_dfi_sel,
         #     *[p.rddata for p in self.ddrphy.dfi.phases],

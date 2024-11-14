@@ -58,12 +58,10 @@ class RowDataInverter(Module, AutoCSR):
 
     def __init__(self, addr, data_in, data_out, rowbits, row_shift):
         nrows = 2**rowbits
-        assert (
-            rowbits <= 6
-        ), "High rowbits={} leads to {}-bit selection_mask, this is most likely not desired.".format(
-            rowbits, nrows
-        ) + " See:\n{}".format(
-            self.__doc__
+        assert rowbits <= 6, (
+            f"High rowbits={rowbits} leads to {nrows}-bit selection_mask, "
+            "this is most likely not desired."
+            f" See:\n{self.__doc__}"
         )
 
         self.submodules.selector = selector = AddressSelector(nbits=rowbits)

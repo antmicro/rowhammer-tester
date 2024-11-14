@@ -263,7 +263,8 @@ class RowHammer:
         It checks for errors, and if any were found, displays them.
         """
 
-        # TODO: need to invert data when writing/reading, make sure Python integer inversion works correctly
+        # TODO: need to invert data when writing/reading,
+        # make sure Python integer inversion works correctly
         if self.data_inversion:
             raise NotImplementedError("Currently only HW rowhammer supports data inversion")
 
@@ -358,7 +359,8 @@ def main(row_hammer_cls):
         "--read_count_range",
         type=float,
         nargs=3,
-        help="Range of how many reads to perform for single address pair in a set of tests, given as [start] [stop] [step]",
+        help="Range of how many reads to perform for single address pair in a set of tests,"
+        " given as [start] [stop] [step]",
     )
     parser.add_argument(
         "--no-refresh", action="store_true", help="Disable refresh commands during the attacks"
@@ -430,7 +432,8 @@ def main(row_hammer_cls):
     )
     parser.add_argument(
         "--log-dir",
-        help="Directory for output files. If not given, the output files (e.g. error summary) won't be written",
+        help="Directory for output files."
+        " If not given, the output files (e.g. error summary) won't be written",
     )
     args = parser.parse_args()
 

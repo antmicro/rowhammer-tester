@@ -253,7 +253,8 @@ if __name__ == "__main__":
 
                 if args.aggressors_vs_victims:
                     print(
-                        "ERROR: Sequential attacks are not hammering a single row. Unable to compare aggressors against victims."
+                        "ERROR: Sequential attacks are not hammering a single row."
+                        " Unable to compare aggressors against victims."
                     )
                     exit()
 
@@ -269,8 +270,9 @@ if __name__ == "__main__":
 
                 if hammered_rows[0] != hammered_rows[1]:
                     print(
-                        "ERROR: Attacks are not hammering single rows. Unable to plot aggressors "
-                        "against their victims. Use `--row-pair-distance 0` to target single row at once."
+                        "ERROR: Attacks are not hammering single rows. "
+                        "Unable to plot aggressors against their victims. "
+                        "Use `--row-pair-distance 0` to target single row at once."
                     )
                     exit()
             # Otherwise plot single attack immediately

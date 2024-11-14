@@ -53,14 +53,16 @@ class CRG(Module):
         ]
 
         fmin, fmax = self.IODELAYCTRL_REFCLK_RANGE
-        assert (
-            fmin <= iodelay_clk_freq <= fmax
-        ), f"IDELAYCTRL refclk must be in range ({fmin / 1e6}, {fmax / 1e6}) MHz, got {iodelay_clk_freq / 1e6} MHz"
+        assert fmin <= iodelay_clk_freq <= fmax, (
+            f"IDELAYCTRL refclk must be in range ({fmin / 1e6}, {fmax / 1e6}) MHz,"
+            f" got {iodelay_clk_freq / 1e6} MHz"
+        )
         self.submodules.idelayctrl = USIDELAYCTRL(cd_ref=self.cd_idelay, cd_sys=self.cd_sys)
 
     @classmethod
     def find_iodelay_clk_freq(cls, sys_clk_freq):
-        # try to find IODELAYCTRL refclk as a multiple of sysclk so that a PLL config almost always is found
+        # try to find IODELAYCTRL refclk as a multiple of sysclk
+        # so that a PLL config almost always is found
         fmin, fmax = cls.IODELAYCTRL_REFCLK_RANGE
         mul = 4
         while sys_clk_freq * mul < fmin:

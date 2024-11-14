@@ -193,13 +193,18 @@ def main():
     soc.platform.add_platform_command(
         "set_max_delay -quiet "
         "-from [get_clocks -of_objects [get_pins rst_domain/O]] "
-        "-to [list [get_pins -hierarchical -regexp .*CLR.*] [get_pins -hierarchical -regexp .*PRE.*]] 10.0"
+        "-to [list [get_pins -hierarchical -regexp .*CLR.*]"
+        " [get_pins -hierarchical -regexp .*PRE.*]] 10.0"
     )
 
     soc.platform.toolchain.pre_synthesis_commands.append(
         "set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]"
     )
-    #    soc.platform.toolchain.pre_synthesis_commands.append("set_property -name {{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}} -value {{-merge_equivalent_drivers -hier_fanout_limit 1000}} -objects [get_runs impl_1]")
+    # soc.platform.toolchain.pre_synthesis_commands.append(
+    #     "set_property -name {{STEPS.OPT_DESIGN.ARGS.MORE OPTIONS}}"
+    #     " -value {{-merge_equivalent_drivers -hier_fanout_limit 1000}}"
+    #     " -objects [get_runs impl_1]"
+    # )
 
     target_name = "ddr5_tester"
     builder_kwargs = common.get_builder_kwargs(args, target_name=target_name)

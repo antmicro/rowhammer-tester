@@ -58,7 +58,11 @@ if __name__ == "__main__":
         # offsets.append((mem_range - 4)//16)
         # wb.write(mem_base + mem_range - 4, wb.read(mem_base + mem_range - 4) ^ 0x00100000)
         # if args.dbg:
-        #    print('dbg: 0x{:08x}: 0x{:08x}'.format(mem_base + mem_range - 4, wb.read(mem_base + mem_range - 4)))
+        #    print(
+        #        "dbg: 0x{:08x}: 0x{:08x}".format(
+        #            mem_base + mem_range - 4, wb.read(mem_base + mem_range - 4)
+        #        )
+        #    )
 
         print("dbg: offsets: {:d}".format(len(offsets)))
         # --------------------------------------------------------------------
