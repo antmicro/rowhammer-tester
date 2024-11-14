@@ -16,7 +16,7 @@ class HalfDoubleRowGenerator(RowGenerator):
             "decoy_rows_start",
         ]
     )
-    _updateable_module_keys = set(["nr_rows", "distance_one", "double_sided", "distance_two"])
+    _updatable_module_keys = set(["nr_rows", "distance_one", "double_sided", "distance_two"])
 
     def load_params(self):
         self.nr_rows = self.row_generator_config["nr_rows"]
@@ -34,7 +34,7 @@ class HalfDoubleRowGenerator(RowGenerator):
         self.row_mapping = row_mapping
 
     def update_param(self, param, value):
-        assert param in self._updateable_module_keys
+        assert param in self._updatable_module_keys
         self.row_generator_config[param] = value
         self.load_params()
 

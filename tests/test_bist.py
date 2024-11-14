@@ -238,7 +238,7 @@ class TestWriter(unittest.TestCase):
         "writer", mem_inc=False, pattern=PATTERNS_ADDR_INC, count=13
     )
 
-    def test_row_data_invertion(self):
+    def test_row_data_inversion(self):
         # specification
         rowbits = 5
         row_shift = 2  # assuming just 2 bits for column+bank
@@ -433,7 +433,7 @@ class TestReader(unittest.TestCase):
         expected = [(addr, we, 0) for _, addr in zip(range(count), itertools.cycle(row_addresses))]
         self.assertEqual(dut.commands, expected)
 
-    def test_row_data_invertion(self):
+    def test_row_data_inversion(self):
         # specification
         rowbits = 5
         row_shift = 2  # assuming just 2 bits for column+bank
