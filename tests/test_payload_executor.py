@@ -722,11 +722,11 @@ class TestPayloadExecutor(unittest.TestCase):
         # Check execution time with timeslices longer than 1
         encoder = Encoder(bankbits=3)
         payload = [
-            encoder.I(OpCode.ACT, timeslice=7, address=encoder.address(bank=1, row=100)),
-            encoder.I(OpCode.READ, timeslice=3, address=encoder.address(bank=1, col=20)),
-            encoder.I(OpCode.PRE, timeslice=5, address=encoder.address(bank=1)),
-            encoder.I(OpCode.REF, timeslice=10),
-            encoder.I(OpCode.NOOP, timeslice=0),  # STOP
+            encoder.Instruction(OpCode.ACT, timeslice=7, address=encoder.address(bank=1, row=100)),
+            encoder.Instruction(OpCode.READ, timeslice=3, address=encoder.address(bank=1, col=20)),
+            encoder.Instruction(OpCode.PRE, timeslice=5, address=encoder.address(bank=1)),
+            encoder.Instruction(OpCode.REF, timeslice=10),
+            encoder.Instruction(OpCode.NOOP, timeslice=0),  # STOP
         ]
 
         dut = PayloadExecutorDUT(encoder(payload))
@@ -740,9 +740,9 @@ class TestPayloadExecutor(unittest.TestCase):
         # Check that payload execution is started after refresh command
         encoder = Encoder(bankbits=3)
         payload = [
-            encoder.I(OpCode.ACT, timeslice=9, address=encoder.address(bank=1, row=100)),
-            encoder.I(OpCode.PRE, timeslice=10, address=encoder.address(bank=1)),
-            encoder.I(OpCode.NOOP, timeslice=0),  # STOP
+            encoder.Instruction(OpCode.ACT, timeslice=9, address=encoder.address(bank=1, row=100)),
+            encoder.Instruction(OpCode.PRE, timeslice=10, address=encoder.address(bank=1)),
+            encoder.Instruction(OpCode.NOOP, timeslice=0),  # STOP
         ]
         switch_latency = 1
         for refresh_delay in [0, 2, 4, 11]:
@@ -783,11 +783,11 @@ class TestPayloadExecutor(unittest.TestCase):
 
         encoder = Encoder(bankbits=3)
         payload = [
-            encoder.I(OpCode.NOOP, timeslice=2),
-            encoder.I(OpCode.REF, timeslice=8),
-            encoder.I(OpCode.REF, timeslice=8),
-            encoder.I(OpCode.REF, timeslice=8),
-            encoder.I(OpCode.NOOP, timeslice=0),  # STOP
+            encoder.Instruction(OpCode.NOOP, timeslice=2),
+            encoder.Instruction(OpCode.REF, timeslice=8),
+            encoder.Instruction(OpCode.REF, timeslice=8),
+            encoder.Instruction(OpCode.REF, timeslice=8),
+            encoder.Instruction(OpCode.NOOP, timeslice=0),  # STOP
         ]
 
         dut = PayloadExecutorDUT(encoder(payload), refresh_delay=10 - 1)
@@ -813,10 +813,10 @@ class TestPayloadExecutor(unittest.TestCase):
 
         encoder = Encoder(bankbits=3)
         payload = [
-            encoder.I(OpCode.NOOP, timeslice=10),
-            encoder.I(OpCode.REF, timeslice=8),
-            encoder.I(OpCode.NOOP, timeslice=10),
-            encoder.I(OpCode.NOOP, timeslice=0),  # STOP
+            encoder.Instruction(OpCode.NOOP, timeslice=10),
+            encoder.Instruction(OpCode.REF, timeslice=8),
+            encoder.Instruction(OpCode.NOOP, timeslice=10),
+            encoder.Instruction(OpCode.NOOP, timeslice=0),  # STOP
         ]
 
         for switch_at in [5, 7, 10]:
@@ -965,11 +965,11 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         # Check execution time with timeslices longer than 1
         encoder = Encoder(bankbits=5)
         payload = [
-            encoder.I(OpCode.ACT, timeslice=7, address=encoder.address(bank=1, row=100)),
-            encoder.I(OpCode.READ, timeslice=3, address=encoder.address(bank=1, col=20)),
-            encoder.I(OpCode.PRE, timeslice=5, address=encoder.address(bank=1)),
-            encoder.I(OpCode.REF, timeslice=10),
-            encoder.I(OpCode.NOOP, timeslice=0),  # STOP
+            encoder.Instruction(OpCode.ACT, timeslice=7, address=encoder.address(bank=1, row=100)),
+            encoder.Instruction(OpCode.READ, timeslice=3, address=encoder.address(bank=1, col=20)),
+            encoder.Instruction(OpCode.PRE, timeslice=5, address=encoder.address(bank=1)),
+            encoder.Instruction(OpCode.REF, timeslice=10),
+            encoder.Instruction(OpCode.NOOP, timeslice=0),  # STOP
         ]
 
         dut = PayloadExecutorDDR5DUT(encoder(payload))
@@ -983,9 +983,9 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         # Check that payload execution is started after refresh command
         encoder = Encoder(bankbits=5)
         payload = [
-            encoder.I(OpCode.ACT, timeslice=9, address=encoder.address(bank=1, row=100)),
-            encoder.I(OpCode.PRE, timeslice=10, address=encoder.address(bank=1)),
-            encoder.I(OpCode.NOOP, timeslice=0),  # STOP
+            encoder.Instruction(OpCode.ACT, timeslice=9, address=encoder.address(bank=1, row=100)),
+            encoder.Instruction(OpCode.PRE, timeslice=10, address=encoder.address(bank=1)),
+            encoder.Instruction(OpCode.NOOP, timeslice=0),  # STOP
         ]
         switch_latency = 1
         for refresh_delay in [0, 2, 4, 11]:
@@ -1026,11 +1026,11 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
 
         encoder = Encoder(bankbits=5)
         payload = [
-            encoder.I(OpCode.NOOP, timeslice=2),
-            encoder.I(OpCode.REF, timeslice=8),
-            encoder.I(OpCode.REF, timeslice=8),
-            encoder.I(OpCode.REF, timeslice=8),
-            encoder.I(OpCode.NOOP, timeslice=0),  # STOP
+            encoder.Instruction(OpCode.NOOP, timeslice=2),
+            encoder.Instruction(OpCode.REF, timeslice=8),
+            encoder.Instruction(OpCode.REF, timeslice=8),
+            encoder.Instruction(OpCode.REF, timeslice=8),
+            encoder.Instruction(OpCode.NOOP, timeslice=0),  # STOP
         ]
 
         dut = PayloadExecutorDDR5DUT(encoder(payload), refresh_delay=10 - 1)
@@ -1058,10 +1058,10 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
 
         encoder = Encoder(bankbits=5)
         payload = [
-            encoder.I(OpCode.NOOP, timeslice=10),
-            encoder.I(OpCode.REF, timeslice=8),
-            encoder.I(OpCode.NOOP, timeslice=10),
-            encoder.I(OpCode.NOOP, timeslice=0),  # STOP
+            encoder.Instruction(OpCode.NOOP, timeslice=10),
+            encoder.Instruction(OpCode.REF, timeslice=8),
+            encoder.Instruction(OpCode.NOOP, timeslice=10),
+            encoder.Instruction(OpCode.NOOP, timeslice=0),  # STOP
         ]
 
         for switch_at in [5, 7, 10]:

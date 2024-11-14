@@ -149,8 +149,10 @@ class Encoder:
     def __init__(self, bankbits, nranks=1):
         self.nranks = nranks
         self.bankbits = bankbits
+        # Allow to use Encoder.I as a backwards compatibility
+        self.I = self.Instruction  # noqa E741
 
-    class I:
+    class Instruction:
         """Instruction specification without encoding the value yet"""
 
         def __init__(self, op_code, **kwargs):
@@ -191,21 +193,22 @@ class Encoder:
     def __call__(self, target, **kwargs):
         if isinstance(target, OpCode):
             return self.encode(target, **kwargs)
-        elif isinstance(target, self.I):
-            assert len(kwargs) == 0, "No kwargs expected for Encoder.I"
+        elif isinstance(target, self.Instruction):
+            assert len(kwargs) == 0, "No kwargs expected for Encoder.Instruction"
             return self.encode_spec(target)
         elif hasattr(target, "__iter__"):
             assert len(kwargs) == 0, "No kwargs expected for iterable"
             return self.encode_payload(target)
         raise TypeError(
-            "One of the following is expected: OpCode+kwargs, Encoder.I, list[Encoder.I]"
+            "One of the following is expected: OpCode+kwargs, "
+            "Encoder.Instruction, list[Encoder.Instruction]"
         )
 
     def encode(self, op_code, **kwargs):
-        return self.encode_spec(self.I(op_code, **kwargs))
+        return self.encode_spec(self.Instruction(op_code, **kwargs))
 
     def encode_spec(self, spec):
-        assert isinstance(spec, self.I)
+        assert isinstance(spec, self.Instruction)
         instr = 0
         n = 0
         for width, val in spec._parts:

@@ -14,13 +14,13 @@ def encode_one_loop(
     trefi = timings.tREFI
     trfc = timings.tRFC
     local_refreshes = 1
-    payload.append(encoder.I(refresh_op, timeslice=trfc))
+    payload.append(encoder.Instruction(refresh_op, timeslice=trfc))
     # Accumulate an extra cycle for the jump at the end to be conservative
     accum = trfc + 1
     for idx in range(unrolled):
         for row in row_sequence:
             if accum + tras + trp > trefi:
-                payload.append(encoder.I(refresh_op, timeslice=trfc))
+                payload.append(encoder.Instruction(refresh_op, timeslice=trfc))
                 # Invariant: time between the beginning of two refreshes
                 # is is less than tREFI.
                 accum = trfc
@@ -28,19 +28,19 @@ def encode_one_loop(
             accum += tras + trp
             payload.extend(
                 [
-                    encoder.I(
+                    encoder.Instruction(
                         OpCode.ACT,
                         timeslice=tras,
                         address=encoder.address(bank=bank, row=row, rank=rank),
                     ),
-                    encoder.I(
+                    encoder.Instruction(
                         OpCode.PRE, timeslice=trp, address=encoder.address(col=1 << 10, rank=rank)
                     ),  # all
                 ]
             )
     jump_target = 2 * unrolled * len(row_sequence) + local_refreshes
     assert jump_target < 2**Decoder.LOOP_JUMP
-    payload.append(encoder.I(OpCode.LOOP, count=rolled, jump=jump_target))
+    payload.append(encoder.Instruction(OpCode.LOOP, count=rolled, jump=jump_target))
 
     return local_refreshes * (rolled + 1)
 
@@ -116,7 +116,7 @@ def generate_payload_from_row_list(
 
     # First instruction after mode transition should be a NOOP that waits until tRFC is satisfied
     # As we include REF as first instruction we actually wait tREFI here
-    payload = [encoder.I(OpCode.NOOP, timeslice=max(1, trfc - 2, trefi - 2))]
+    payload = [encoder.Instruction(OpCode.NOOP, timeslice=max(1, trfc - 2, trefi - 2))]
 
     refreshes = encode_long_loop(
         unrolled=repetitions,
@@ -141,9 +141,10 @@ def generate_payload_from_row_list(
         payload=payload,
     )
 
-    # MC refresh timer is reset on mode transition, so issue REF now, this way it will be in sync with MC
-    payload.append(encoder.I(refresh_op, timeslice=1))
-    payload.append(encoder.I(OpCode.NOOP, timeslice=0))  # STOP
+    # MC refresh timer is reset on mode transition, so issue REF now,
+    # this way it will be in sync with MC
+    payload.append(encoder.Instruction(refresh_op, timeslice=1))
+    payload.append(encoder.Instruction(OpCode.NOOP, timeslice=0))  # STOP
 
     if verbose:
         expected_cycles = get_expected_execution_cycles(payload)
