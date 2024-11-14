@@ -68,13 +68,19 @@ class BISTDUT(Module):
 
     @passive
     def read_handler(self, rdata_callback=None, read_delay=0):
+        def default_rdata_callback(data: int):
+            def callback(addr):
+                return data
+
+            return callback
+
         if not self.has_reader:
             return
         if rdata_callback is None:
-            rdata_callback = lambda addr: 0xBAADC0DE
+            rdata_callback = default_rdata_callback(0xBAADC0DE)
         if not callable(rdata_callback):  # passed a single value to always be returned
             data = rdata_callback
-            rdata_callback = lambda addr: data
+            rdata_callback = default_rdata_callback(data)
 
         while True:
             yield self.read_port.cmd.ready.eq(1)
