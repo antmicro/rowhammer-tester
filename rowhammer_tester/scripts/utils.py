@@ -588,7 +588,7 @@ def execute_payload(wb, payload):
 
 def validate_keys(config_dict, valid_keys_set):
     for key in config_dict:
-        if not key in valid_keys_set:
+        if key not in valid_keys_set:
             print("Invalid key: {}".format(key))
             return False
         return True

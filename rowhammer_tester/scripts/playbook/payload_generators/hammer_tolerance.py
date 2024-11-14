@@ -190,7 +190,7 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
 
         if self.baseline:
             self.run_baseline = not self.run_baseline
-        if not row_num in row_errors.keys():
+        if row_num not in row_errors.keys():
             return
 
         errors = row_errors[row_num]
