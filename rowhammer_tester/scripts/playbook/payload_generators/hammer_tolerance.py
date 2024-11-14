@@ -91,6 +91,8 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
             timings=settings.timing,
             bankbits=settings.geom.bankbits,
             bank=bank,
+            nranks=settings.phy.nranks,
+            rank=0,
             payload_mem_size=payload_mem_size,
             refresh=False,
             verbose=self.verbose,

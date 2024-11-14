@@ -71,6 +71,8 @@ class RowListPayloadGenerator(PayloadGenerator):
             timings=settings.timing,
             bankbits=settings.geom.bankbits,
             bank=bank,
+            nranks=settings.phy.nranks,
+            rank=0,
             payload_mem_size=payload_mem_size,
             refresh=self.refresh,
             verbose=self.verbose,
