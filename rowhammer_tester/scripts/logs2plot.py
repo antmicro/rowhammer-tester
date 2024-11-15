@@ -20,7 +20,7 @@ from rowhammer_tester.scripts.utils import get_generated_file
 dq_data: dict = {}
 
 
-def plot_single_attack(data: dict, _rows: int, cols: int, col_step=32, max_row_cnt=128, title=""):
+def plot_single_attack(data: dict, rows: int, cols: int, col_step=32, max_row_cnt=128, title=""):
     affected_rows_count = len(data["errors_in_rows"])
 
     # row_labels correspond to actual row numbers, but row_vals
@@ -32,7 +32,6 @@ def plot_single_attack(data: dict, _rows: int, cols: int, col_step=32, max_row_c
     col_vals: list[int] = []
 
     row_step = 1 if affected_rows_count <= max_row_cnt else affected_rows_count // max_row_cnt
-
     last_row = None
     last_num = 0
     begin_row = None
@@ -62,19 +61,22 @@ def plot_single_attack(data: dict, _rows: int, cols: int, col_step=32, max_row_c
         if count > -1:
             row_labels.append(f"{begin_row}...{last_row}")
 
+    # Set to 0 if no errors encountered
+    min_row_val = min(row_vals) if row_vals else 0
+    max_row_val = max(row_vals) if row_vals else rows - 1
+
     bins = [
         range(0, cols + 1, col_step),
-        np.arange(min(row_vals) - 0.5, max(row_vals) + 1, 1) if row_step == 1 else y_edges,
+        np.arange(min_row_val - 0.5, max_row_val + 1, 1) if row_step == 1 else y_edges,
     ]
 
     # custom cmap with white color for 0
     custom_cmap = colors.ListedColormap(["white", *cm.get_cmap("viridis").colors])
-
     h, _, _, _ = plt.hist2d(
         col_vals,
         row_vals,
         bins=bins,
-        range=[[0, cols // col_step], [min(row_vals), max(row_vals)]],
+        range=[[0, cols // col_step], [min_row_val, max_row_val]],
         cmap=custom_cmap,
     )
 
@@ -88,7 +90,10 @@ def plot_single_attack(data: dict, _rows: int, cols: int, col_step=32, max_row_c
     # if left unchanged they can be floats, which looks bad
     max_errors = int(h.max())
     ticks_step = max(1, int(max_errors // 20))
-    plt.colorbar(ticks=range(0, max_errors + 1, ticks_step))
+    plt.colorbar(
+        mappable=cm.ScalarMappable(norm=colors.Normalize(0, max_errors + 1)),
+        ticks=range(0, max_errors + 1, ticks_step),
+    )
 
     plt.title(title)
     plt.show()
@@ -122,10 +127,10 @@ def plot_aggressors_vs_victims(data: dict, annotate: str):
             dq_counters = count_bitflips_per_dq(cols)
             dq_data[f"{aggressor}_{row_number}"] = dq_counters
 
-    min_victim = min(sorted(victims))
-    max_victim = max(sorted(victims))
-    min_aggressor = min(sorted(aggressors))
-    max_aggressor = max(sorted(aggressors))
+    min_victim = min(sorted(victims)) if victims else 0
+    max_victim = max(sorted(victims)) if victims else 0
+    min_aggressor = min(sorted(aggressors)) if aggressors else 0
+    max_aggressor = max(sorted(aggressors)) if aggressors else 0
 
     bins = [max_victim - min_victim + 1, max_aggressor - min_aggressor + 1]
     hist_range = [[min_victim, max_victim + 1], [min_aggressor, max_aggressor + 1]]
@@ -136,7 +141,7 @@ def plot_aggressors_vs_victims(data: dict, annotate: str):
     fig, ax = plt.subplots()
     fig.canvas.mpl_connect("button_press_event", on_click)
 
-    h, _, _, qm = ax.hist2d(
+    h, _, _, _ = ax.hist2d(
         victims,
         aggressors,
         bins=bins,
@@ -166,7 +171,10 @@ def plot_aggressors_vs_victims(data: dict, annotate: str):
 
     ax.grid(visible=True, which="both", color="gray", alpha=0.2, linestyle="-")
 
-    plt.colorbar(qm, ticks=range(0, max_errors + 1, ticks_step))
+    plt.colorbar(
+        mappable=cm.ScalarMappable(norm=colors.Normalize(0, max_errors + 1)),
+        ticks=range(0, max_errors + 1, ticks_step),
+    )
     plt.title(
         f"Aggressors ({min_aggressor}, {max_aggressor}) vs victims ({min_victim}, {max_victim})"
     )
