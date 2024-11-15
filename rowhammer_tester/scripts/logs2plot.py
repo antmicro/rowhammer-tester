@@ -203,11 +203,11 @@ def on_click(event):
         title = f"Bitflips per DQ pads for aggressor({y}) vs victim({x})."
         plot_dqs(dq_counters, title=title)
     except KeyError:
-        return
         print(f"No data about attack - aggressor({y}) vs victim({x}).")
-    except TypeError:
         return
+    except TypeError:
         print("Press detected out of bounds.")
+        return
 
 
 if __name__ == "__main__":
@@ -280,7 +280,8 @@ if __name__ == "__main__":
                     print(
                         "ERROR: Attacks are not hammering single rows. "
                         "Unable to plot aggressors against their victims. "
-                        "Use `--row-pair-distance 0` to target single row at once."
+                        "Repeat the attack experiment using `--row-pair-distance 0` option"
+                        " to target single row at once."
                     )
                     exit()
             # Otherwise plot single attack immediately
