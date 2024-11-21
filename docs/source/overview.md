@@ -52,27 +52,3 @@ It temporarily disconnects the DRAM controller from PHY; executes the instructio
 
 The application side consists of a set of Python scripts communicating with the FPGA using the LiteX EtherBone bridge.
 
-## Documentation structure
-
-* [Introduction](introduction.md) - (current chapter) provides a description of the rowhammer tester suite and its architecture
-* [Installation and setup](setup.md) - an installation guide and instructions on bitstream packaging and network adapter setup
-* Board configuration and control
-    * [General board configuration and control](board_control.md) - general board configuration and control instructions, including simulation setups
-    * Board-specific chapters:
-        * [Arty-A7](arty.md)
-        * [LPDDR4 Test Board](lpddr4_test_board.md)
-        * [LPDDR4 Test Board with DDR5 Testbed](lpddr4_test_board_with_ddr5_testbed.md)
-        * [Data Center RDIMM DDR4 Tester](data_center_rdimm_ddr4_tester.md)
-        * [Data Center RDIMM DDR5 Tester](data_center_rdimm_ddr5_tester.md)
-        * [SO-DIMM DDR5 Tester](so_dimm_ddr5_tester.md)
-        * [ZCU104](zcu104.md)
-* [Performing attacks (hammering)](hammering.md) - instructions for performing rowhammer attacks, examples, DRAM config guide and Python utility overview
-* [Result visualization](visualization.md) - instructions for generating plots and visualizations
-* [Test-writing playbook](playbook.md) - guide for using dedicated Python classes and scripts for writing rowhammer-related tests
-* Digital design- FPGA digital design documented per-board:
-    * [Arty-A7 board](build/arty/documentation/index.rst)
-    * [LPDDR4 Test Board](build/lpddr4_test_board/documentation/index.rst)
-    * [Data Center RDIMM DDR4 Tester](build/ddr4_datacenter_test_board/documentation/index.rst)
-    * [Data Center RDIMM DDR5 Tester](build/ddr5_test_board/documentation/index.rst)
-    * [SO-DIMM DDR5 Tester](build/ddr5_tester/documentation/index.rst)
-    * [ZCU104 board](build/zcu104/documentation/index.rst)

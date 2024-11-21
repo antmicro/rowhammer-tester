@@ -1,4 +1,4 @@
-# General board control
+# Building the design targets
 
 Boards are controlled the same way for both simulation and hardware runs.
 In order to communicate with the board via EtherBone, start `litex_server` with the following command:

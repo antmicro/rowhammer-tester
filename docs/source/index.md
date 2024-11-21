@@ -3,20 +3,15 @@
 ```{toctree}
 :maxdepth: 2
 
-introduction.md
-```
-
-```{toctree}
-:maxdepth: 2
-
+overview.md
 setup.md
+building.md
 ```
 
 ```{toctree}
-:caption: Board configuration and control
+:caption: Supported hardware
 :maxdepth: 2
 
-board_control.md
 arty.md
 zcu104.md
 lpddr4_test_board.md
@@ -30,17 +25,7 @@ so_dimm_ddr5_tester.md
 :maxdepth: 2
 
 hammering.md
-```
-
-```{toctree}
-:maxdepth: 2
-
 visualization.md
-```
-
-```{toctree}
-:maxdepth: 2
-
 playbook.md
 ```
 
