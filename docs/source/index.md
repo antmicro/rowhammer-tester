@@ -40,3 +40,8 @@ build/lpddr4_test_board/documentation/index.rst
 build/ddr5_test_board/documentation/index.rst
 build/ddr5_tester/documentation/index.rst
 ```
+
+```{toctree}
+:hidden:
+references.md
+```
