@@ -11,7 +11,7 @@ The hardware is open and can be found on GitHub:
 - Test board: <https://github.com/antmicro/lpddr4-test-board>
 - Testbed: <https://github.com/antmicro/lpddr4-testbed>
 
-For FPGA gateware documentation for this board, refer to the [Gateware Documentation chapter](build/lpddr4_test_board/documentation/index.rst).
+For FPGA digital design documentation for this board, refer to the [Digital design](build/lpddr4_test_board/documentation/index.rst) chapter.
 
 ## IO map
 

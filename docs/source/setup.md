@@ -78,7 +78,7 @@ To use a bitstream packaged this way, run `unzip your-bitstream-file.zip`.
 
 ## Local documentation build
 
-The gateware part of the documentation is auto-generated from source files.
+The part of the documentation related to the ditital design is auto-generated from source files.
 Other files are static and are located in the `doc/` directory.
 To build the documentation, enter:
 

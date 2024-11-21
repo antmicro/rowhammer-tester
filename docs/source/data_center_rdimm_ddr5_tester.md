@@ -9,7 +9,7 @@ The hardware is open and can be found on [GitHub](https://github.com/antmicro/rd
 
 The following instructions explain how to set up the board.
 
-For FPGA gateware documentation for this board, refer to the [Gateware Documentation chapter](build/ddr5_test_board/documentation/index.rst).
+For FPGA digital design documentation for this board, refer to the [Digital design](build/ddr5_test_board/documentation/index.rst) chapter.
 
 ## IO map
 

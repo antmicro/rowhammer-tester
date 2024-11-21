@@ -69,7 +69,7 @@ The application side consists of a set of Python scripts communicating with the 
 * [Performing attacks (hammering)](hammering.md) - instructions for performing rowhammer attacks, examples, DRAM config guide and Python utility overview
 * [Result visualization](visualization.md) - instructions for generating plots and visualizations
 * [Test-writing playbook](playbook.md) - guide for using dedicated Python classes and scripts for writing rowhammer-related tests
-* Gateware documentation - FPGA gateware documented per-board:
+* Digital design- FPGA digital design documented per-board:
     * [Arty-A7 board](build/arty/documentation/index.rst)
     * [LPDDR4 Test Board](build/lpddr4_test_board/documentation/index.rst)
     * [Data Center RDIMM DDR4 Tester](build/ddr4_datacenter_test_board/documentation/index.rst)

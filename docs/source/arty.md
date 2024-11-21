@@ -11,7 +11,7 @@ Arty-A7 board
 
 The following instructions explain how to set up the board.
 
-For FPGA gateware documentation for this board, refer to the [Gateware Documentation chapter](build/arty/documentation/index.rst).
+For FPGA digital design documentation for this board, refer to the [Digital design](build/arty/documentation/index.rst) chapter.
 
 ## Board configuration
 

@@ -4,7 +4,7 @@ The aim of this project is to provide a platform for testing [DRAM vulnerability
 
 ## Architecture
 
-The setup consists of FPGA gateware and application side software.
+The setup consists of FPGA digital design and application side software.
 The following diagram illustrates the general system architecture.
 
 ```{image} ./images/architecture.png
@@ -102,7 +102,7 @@ Next time you want to use a bitstream packaged in such way, all you need to do i
 
 ## Local documentation build
 
-The gateware part of the documentation is auto-generated from source files.
+The digital design part of the documentation is auto-generated from source files.
 Other files are static and are located in the `doc/` directory.
 To build the documentation, enter:
 
