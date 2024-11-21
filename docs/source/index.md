@@ -45,7 +45,7 @@ playbook.md
 ```
 
 ```{toctree}
-:caption: Gateware documentation
+:caption: Digital design
 :maxdepth: 2
 
 build/arty/documentation/index.rst
