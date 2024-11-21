@@ -20,8 +20,6 @@ Currently, 6 boards are supported, each targeting a different memory type:
 | Data Center RDIMM DDR5 Tester | DDR5 (RDIMM)     | `ddr5_tester`                |
 | DDR5 Test Board               | DDR5 (SO-DIMM)   | `ddr5_test_board`            |
 
-For board-specific instructions refer to [Arty A7](arty.md), [ZCU104](zcu104.md), [DDR4 Datacenter DRAM Tester](ddr4_datacenter_dram_tester.md), [LPDDR4 Test Board](lpddr4_tb.md), [DDR5 Tester](ddr5_tester.md) and [DDR5 Test Board](ddr5_test_board.md) chapters.
-
 Read more about particular aspects of the framework in dedicated blog articles:
 
 * [Rowhammer tester platform overview](https://antmicro.com/blog/2021/08/open-source-ddr-test-framework-for-rowhammer/)

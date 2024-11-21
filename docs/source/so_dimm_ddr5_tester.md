@@ -27,7 +27,7 @@ Connectors:
 
 * [`J7`](#sodimm-ddr5-tester_J7) - main DC barrel jack power connector, voltage between 7-15 V is supported
 * [`J3`](#sodimm-ddr5-tester_J3) - USB-C debug connector used for programming FPGA or Flash memory
-* [`J1`](#sodimm-ddr5-tester_J1) - standard 14-pin JTAG connector used for programming FPGA or Flash memory
+* `J1`#sodimm-ddr5-tester_J1 - standard 14-pin JTAG connector used for programming FPGA or Flash memory
 * [`J4`](#sodimm-ddr5-tester_J4) - HDMI connector
 * [`J6`](#sodimm-ddr5-tester_J6) - Ethernet connector used for data exchange with on-board FPGA
 * [`J2`](#sodimm-ddr5-tester_J2) - 262-pin SO-DIMM connector for connecting DDR5 memory modules

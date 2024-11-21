@@ -68,7 +68,7 @@ extensions = list(
 suppress_warnings = ["autosectionlabel.*"]
 
 myst_enable_extensions = default_myst_enable_extensions
-
+myst_heading_anchors = 3
 myst_substitutions = {"project": project}
 
 today_fmt = "%Y-%m-%d"

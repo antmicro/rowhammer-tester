@@ -32,7 +32,7 @@ Connectors:
 * [`MODE1`](#ddr5-tester_MODE1) - configuration mode selector, short proper pins with jumper to specify programming mode
 * [`J2`](#ddr5-tester_J2) - optional 5V fan connector
 * [`J7`](#ddr5-tester_J7) - socket for SD card
-* [`J8`](#ddr5-tester_J8) - 2.54mm goldpin connector with exposed I2C and I3C signals
+* `J8` - 2.54mm goldpin connector with exposed I2C and I3C signals
 
 Switches and buttons:
 

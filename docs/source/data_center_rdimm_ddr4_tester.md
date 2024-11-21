@@ -29,11 +29,11 @@ Connectors:
 
 * [`J3`](#data-center-dram-tester_J3) - main DC barrel jack power connector, voltage between 7-15V is supported
 * [`J9`](#data-center-dram-tester_J9) - USB-C debug connector used for programming FPGA or Flash memory
-* [`J1`](#data-center-dram-tester_J1) - standard 14-pin JTAG connector used for programming FPGA or Flash memory
+* `J1` - standard 14-pin JTAG connector used for programming FPGA or Flash memory
 * [`J6`](#data-center-dram-tester_J6) - HDMI connector
 * [`J2`](#data-center-dram-tester_J2) - Ethernet connector used for data exchange with on-board FPGA and power supply via PoE
 * [`U14`](#data-center-dram-tester_U14) - 288-pin RDIMM connector for connecting DDR4 memory modules
-* [`J8`](#data-center-dram-tester_J8) - optional 5V fan connector
+* `J8` - optional 5V fan connector
 * [`J7`](#data-center-dram-tester_J7) - socket for SD card
 * [`J5`](#data-center-dram-tester_J5) - FMC HPC connector reserved for future use
 
@@ -41,7 +41,7 @@ Switches and buttons:
 
 * Power ON/OFF button [`S3`](#data-center-dram-tester_S3) - push button to power up the device, hold for 8s to turn off the device
 * FPGA programming button [`PROG_B1`](#data-center-dram-tester_PROG_B1) - push button to start programming from Flash
-* Configuration mode selector [`S2`](#data-center-dram-tester_S2) - Switch left/right to specify SPI/JTAG programming mode
+* Configuration mode selector `S2` - Switch left/right to specify SPI/JTAG programming mode
 * HOT SWAP eject button [`S1`](#data-center-dram-tester_S1) - reserved for future use to turn off DDR memory and allow hot swapping it
 
 LEDs:
@@ -89,6 +89,6 @@ export TARGET=ddr4_datacenter_test_board
 make flash
 ```
 
-A JTAG/SPI switch [`S2`](#data-center-rdimm-ddr4-tester_S2) on the right side of the board (near the JTAG connector) defines whether the bitstream is loaded via JTAG or SPI Flash memory.
+A JTAG/SPI switch `S2` on the right side of the board (near the JTAG connector) defines whether the bitstream is loaded via JTAG or SPI Flash memory.
 
 Bitstream will be loaded from flash memory upon device power-on or after pressing the [`PROG_B1`](#data-center-dram-tester_PROG_B1) button.

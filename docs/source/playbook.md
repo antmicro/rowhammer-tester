@@ -9,7 +9,7 @@ Tests are generated as `payload` data.
 After generation, this data is transferred to a memory area in the device reserved for this purpose called `payload memory`.
 The payload contains an instruction list that can be interpreted by the `payload executor` module on hardware.
 The payload executor translates these instructions into DRAM commands.
-The payload executor connects directly to the DRAM PHY, bypassing the DRAM controller, as explained in the [Architecture section](introduction.md#tester-suite-architecture).
+The payload executor connects directly to the DRAM PHY, bypassing the DRAM controller, as explained in the [Architecture section](overview.md#tester-suite-architecture).
 
 ### Changing payload memory size
 
@@ -40,7 +40,8 @@ Currently, one instance of this class is available.
 
 ### EvenRowGenerator
 
-Generates a list of even numbered rows. Uses the row mapping specified by the [payload generator class](#payload-generator-class) used.
+Generates a list of even numbered rows. 
+Uses the row mapping specified by the [payload generator class](playbook.md#payload-generator-class) used.
 Two configuration parameters are needed for EvenRowGenerator:
 
 * `nr_rows` - number of rows to be generated

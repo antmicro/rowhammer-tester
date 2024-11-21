@@ -49,7 +49,6 @@ Several attack and row selection modes are available, but only one mode can be s
 
 :::{table} Default values for arguments
 :name: default-all-rows-arguments
-:header-rows: 1
 
   | argument              | default |
   | --------------------- | ------- |
@@ -277,7 +276,7 @@ SPD EEPROM can be read over an I2C bus.
 #### Reading SPD EEPROM
 
 To read the SPD memory, use the `rowhammer_tester/scripts/spd_eeprom.py` script.
-First, prepare the environment as described in the [Controlling the board](usage.md#controlling-the-board) section.
+First, prepare the environment as described in the {doc}`building` chapter.
 Then, use the following command to read the contents of SPD EEPROM and save it to a file, for example:
 
 ```sh
@@ -304,7 +303,7 @@ There is no additional action required and the timings will be set automatically
 Some scripts are simple and do not take command line arguments, others will provide help via `<script_name>.py --help` or `<script_name>.py -h`.
 
 Few of the scripts accept a `--srv` option.
-With this option enabled, a program will start its own instance of `litex_server` (the user doesn't need to run `make srv` to [control the board](board_control.md)).
+With this option enabled, a program will start its own instance of `litex_server` (the user doesn't need to run `make srv` to control the board).
 
 ### Run LEDs demo - `leds.py`
 
