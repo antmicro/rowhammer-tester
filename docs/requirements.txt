@@ -1,3 +1,4 @@
 -r ../requirements.txt
 https://github.com/antmicro/antmicro-sphinx-utils/archive/main.zip
+sphinx-inline-tabs
 sphinx-tippy

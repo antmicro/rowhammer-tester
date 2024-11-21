@@ -56,7 +56,7 @@ extensions = list(
     set(
         default_extensions
         + [
-            "sphinx_tabs.tabs",
+            "sphinx_inline_tabs",
             "sphinx.ext.autosectionlabel",
             "sphinxcontrib.wavedrom",
             "sphinx_tippy",

@@ -3,63 +3,159 @@
 As the rowhammer attack exploits physical properties of cells in DRAM (draining charges), no bit flips can be observed in simulation mode (see [Simulation section](#simulation)).
 However, the simulation mode is useful for testing command sequences during development.
 
-The Makefile can be configured using environmental variables to modify the network configuration used and to select the target.
-Currently, 6 boards are supported, each targeting a different DRAM type and form factor:
-
 This chapter provides building instructions for synthesising the digital design for physical DRAM testers and simulation models.
-The building process is coordinated with a `Makefile` located in the main folder of the Rowhammer tester repository.
 
-Table below combines the build target names with specific physical hardware platforms used for testing the DRAM memories.
+## Building and uploading the bitstreams
 
-:::
+The bitstream building process is coordinated with a `Makefile` located in the main folder of the Rowhammer tester repository.
+Currently, 6 main targets are provided, each targeting a different DRAM type and memory form factor.
+Use the tab view below to select a DRAM memory type of interest.
+You will be provided with a name of the built target, building instruction and a link to the relevant hardware platform.
 
-| Hardware Platform             | Memory type      | TARGET                       |
-|-------------------------------|------------------|------------------------------|
-| Arty A7                       | DDR3             | `arty`                       |
-| ZCU104                        | DDR4 (SO-DIMM)   | `zcu104`                     |
-| Data Center RDIMM DDR4 Tester | DDR4 (RDIMM)     | `ddr4_datacenter_test_board` |
-| LPDDR4 Test Board             | LPDDR4 (SO-DIMM) | `lpddr4_test_board`          |
-| Data Center RDIMM DDR5 Tester | DDR5 (RDIMM)     | `ddr5_tester`                |
-| DDR5 Test Board               | DDR5 (SO-DIMM)   | `ddr5_test_board`            |
-
-In order to build or write a bistream for a particular board please export a `TARGET` variable pointing to a certain target name from the table above.
-
+````{tab} DDR3 (IC)
+This is supported by the Digilent [Arty](arty.md) boards.
+In this setup the Rowhammer Tester targets a single DDR3 IC installed on board.
+For Arty A7-100T with the XC7A100TCSG324-1 FPGA use:
 ```sh
-export TARGET=<target-name>
+export TARGET=arty
+make build TARGET_ARGS="--variant a7-100"
 ```
-
-Then use the make command for building the bitstream.
-
+For Arty A7-35T with the XC7A35TICSG324-1L FPGA use:
 ```sh
+export TARGET=arty
 make build
 ```
-The generated bitstream will be stored in a `./build/<target-name>/gateware/` folder located in the root folder of the cloned `rowhammer-tester` repository.
-
-To upload the bitstream to the FPGA configuration RAM on board:
-
+To upload the bitstream to volatile FPGA configuration RAM use:
 ```sh
+export TARGET=arty
 make upload
 ```
-The FPGA configuration RAM is a volatile memory so you would need to write the generated bitstream every time you power-cycle the board or reset the configuration state of the FPGA.
-
-To load the bitstream into the FPGA configuration flash memory:
-
+To write the bitstream into non-volatile (Q)SPI Flash memory use:
 ```sh
+export TARGET=arty
 make flash
 ```
+````
+````{tab} DDR4 (SO-DIMM)
+This targets an off-the-shelf DDR4 SO-DIMMs installed on AMD-Xilinx [ZCU104](zcu104.md).
+You can build the target with:
+```sh
+export TARGET=zcu104
+make build
+```
+To upload the bitstream to volatile FPGA configuration RAM use:
+```sh
+export TARGET=zcu104
+make upload
+```
+To write the bitstream into non-volatile (Q)SPI Flash memory use:
+```sh
+export TARGET=zcu104
+make flash
+```
+````
+````{tab} DDR4 (RDIMM)
+This targets an off-the-shelf DDR4 RDIMMs installed on Antmicro [RDIMM DDR4 Tester](rdimm_ddr4_tester.md).
+You can build the target with:
+```sh
+export TARGET=ddr4_datacenter_test_board
+make build
+```
+To upload the bitstream to volatile FPGA configuration RAM use:
+```sh
+export TARGET=ddr4_datacenter_test_board
+make upload
+```
+To write the bitstream into non-volatile (Q)SPI Flash memory use:
+```sh
+export TARGET=ddr4_datacenter_test_board
+make flash
+```
+````
+````{tab} LPDDR4 (IC)
+This targets single LPDDR4 ICs soldered to interchangeable testbeds installed on Antmicro [LPDDR4 Test Board](lpddr4_test_board.md).
+You can build the target with:
+```sh
+export TARGET=lpddr4_test_board
+make build
+```
+To upload the bitstream to volatile FPGA configuration RAM use:
+```sh
+export TARGET=lpddr4_test_board
+make upload
+```
+To write the bitstream into non-volatile (Q)SPI Flash memory use:
+```sh
+export TARGET=lpddr4_test_board
+make flash
+```
+````
+````{tab} DDR5 (RDIMM)
+This targets an off-the-shelp DDR5 RDIMMs installed on Antmicro [RDIMM DDR5 Tester](rdimm_ddr5_tester.md).
+A typical building command is:
+```sh
+export TARGET=ddr5_tester
+make build TARGET_ARGS="--l2-size 256 --build --iodelay-clk-freq 400e6 --bios-lto --rw-bios --module MTC10F1084S1RC --no-sdram-hw-test"
+```
+The target can be customized with the following build parameters
+* ``--l2-size`` sets L2 cache size
+* ``--iodelayclk-freq`` specifies IODELAY clock frequency
+* ``--module`` specifies RDIMM DDR5 module family
+* ``--no-sdram-hw-test`` disables hardware accelerated memory test
 
-This will write the bistream into a non-volatile (Q)SPI Flash memory located on board.
-The on-board FPGA will get automatically configured with a bistream stored in the Flash memory on power-on. 
+To upload the bitstream to volatile FPGA configuration RAM use:
+```sh
+export TARGET=ddr5_tester
+make upload
+```
+To write the bitstream into non-volatile (Q)SPI Flash memory use:
+```sh
+export TARGET=ddr5_tester
+make flash
+```
+````
+````{tab} DDR5 (SO-DIMM)
+This targets an off-the-shelp DDR5 SO-DIMMs installed on Antmicro [SO-DIMM DDR5 Tester](so_dimm_ddr5_tester.md).
+A typical building command is:
+```sh
+export TARGET=sodimm_ddr5_tester
+make build TARGET_ARGS="--l2-size 256 --build --iodelay-clk-freq 400e6 --bios-lto --rw-bios --no-sdram-hw-test"
+```
+The target can be customized with the following build parameters
+* ``--l2-size`` sets L2 cache size
+* ``--iodelayclk-freq`` specifies IODELAY clock frequency
+* ``--no-sdram-hw-test`` disables hardware accelerated memory test
 
-Please refer to the board-specific chapters for further information on how to connect the board and configure it for uploading the bitstream.
+To upload the bitstream to volatile FPGA configuration RAM use:
+```sh
+export TARGET=sodimm_ddr5_tester
+make upload
+```
+To write the bitstream into non-volatile (Q)SPI Flash memory use:
+```sh
+export TARGET=sodimm_ddr5_tester
+make flash
+```
+````
 
 ```{note}
 Running `make` will generate build files without invoking Vivado.
 ```
+The generated bitstreams are stored in the `./build/<target-name>/gateware/` folder named after respective target name used for building.
+```{note}
+The FPGA configuration RAM is a volatile memory so you would need to write the generated bitstream every time you power-cycle the board or reset the configuration state of the FPGA.
+The on-board FPGA will get automatically configured with a bitstream stored in the Flash memory on power-on. 
+Please refer to the board-specific chapters (provided along with build instructions) for further information on how to connect the board to a host PC and and how to configure it for uploading the bitstream.
+```
 
+## Ethernet connection
 
+The hardware platforms flashed with a generated bitstream can be accessed via Ethernet connection.
+The board's default IP address is `192.168.100.50` and you need to ensure the board and a host PC are registered within the same subnet (so, for example, you can use `192.168.100.2/24`).
 
-
+```{note}
+In order to change the default IP address assigned to the board please set the `IP_ADDRESS` environment variable, rebuild the bitstream and re-upload it to the board.
+```
 Boards are controlled the same way for both simulation and hardware runs.
 In order to communicate with the board via EtherBone, start `litex_server` with the following command:
 
@@ -83,17 +179,7 @@ cd rowhammer_tester/scripts/
 python leds.py  # stop with Ctrl-C
 ```
 
-For board-specific instructions, refer to the following sections:
-
-* [Arty-A7](arty.md)
-* [LPDDR4 Test Board](lpddr4_test_board.md)
-* [LPDDR4 Test Board with DDR5 Testbed](lpddr4_test_board_with_ddr5_testbed.md)
-* [Data Center RDIMM DDR4 Tester](data_center_rdimm_ddr4_tester.md)
-* [Data Center RDIMM DDR5 Tester](data_center_rdimm_ddr5_tester.md)
-* [SO-DIMM DDR5 Tester](so_dimm_ddr5_tester.md)
-* [ZCU104](zcu104.md)
-
-## Simulation setup
+## Building for simulation
 
 Select `TARGET`, generate intermediate files & run the simulation:
 

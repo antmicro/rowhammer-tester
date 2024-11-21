@@ -16,8 +16,8 @@ arty.md
 zcu104.md
 lpddr4_test_board.md
 lpddr4_test_board_with_ddr5_testbed.md
-data_center_rdimm_ddr4_tester.md
-data_center_rdimm_ddr5_tester.md
+rdimm_ddr4_tester.md
+rdimm_ddr5_tester.md
 so_dimm_ddr5_tester.md
 ```
 
@@ -41,7 +41,3 @@ build/ddr5_test_board/documentation/index.rst
 build/ddr5_tester/documentation/index.rst
 ```
 
-```{toctree}
-:hidden:
-references.md
-```
