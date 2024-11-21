@@ -3,22 +3,6 @@
 The aim of this project is to provide a platform for testing [DRAM vulnerability to rowhammer attacks](https://users.ece.cmu.edu/~yoonguk/papers/kim-isca14.pdf).
 
 This suite can be run on real hardware (FPGAs) or in a simulation mode.
-As the rowhammer attack exploits physical properties of cells in DRAM (draining charges), no bit flips can be observed in simulation mode (see [Simulation section](#simulation)).
-However, the simulation mode is useful for testing command sequences during development.
-
-The Makefile can be configured using environmental variables to modify the network configuration used and to select the target.
-Currently, 6 boards are supported, each targeting a different memory type:
-
-:::
-
-| Board                         | Memory type      | TARGET                       |
-|-------------------------------|------------------|------------------------------|
-| Arty A7                       | DDR3             | `arty`                       |
-| ZCU104                        | DDR4 (SO-DIMM)   | `zcu104`                     |
-| Data Center RDIMM DDR4 Tester | DDR4 (RDIMM)     | `ddr4_datacenter_test_board` |
-| LPDDR4 Test Board             | LPDDR4 (SO-DIMM) | `lpddr4_test_board`          |
-| Data Center RDIMM DDR5 Tester | DDR5 (RDIMM)     | `ddr5_tester`                |
-| DDR5 Test Board               | DDR5 (SO-DIMM)   | `ddr5_test_board`            |
 
 Read more about particular aspects of the framework in dedicated blog articles:
 
