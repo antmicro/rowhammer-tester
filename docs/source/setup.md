@@ -79,10 +79,11 @@ To use a bitstream packaged this way, run `unzip your-bitstream-file.zip`.
 ## Local documentation build
 
 The part of the documentation related to the ditital design is auto-generated from source files.
-Other files are static and are located in the `doc/` directory.
+Other files are static and are located in the `docs/` directory.
 To build the documentation, enter:
 
 ```sh
+
 source venv/bin/activate
 pip install -r requirements.txt
 python -m sphinx -b html doc build/documentation/html
@@ -92,7 +93,7 @@ The documentation will be located in `build/documentation/index.html`.
 
 ```{note}
 For easier development one can use [sphinx-autobuild](https://pypi.org/project/sphinx-autobuild)
-using command `sphinx-autobuild -b html doc build/documentation/html --re-ignore 'doc/build/.*'`.
+using command `sphinx-autobuild -b html docs build/documentation/html --re-ignore 'docs/build/.*'`.
 You can then view the documentation in a browser at `http://127.0.0.1:8000`.
 ```
 
