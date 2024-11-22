@@ -59,7 +59,7 @@ def read_spd(console, spd_addr, init_commands=None, ddr5=False):
         for cmd in init_commands or []:
             console.sendline(cmd)
             console.expect(prompt)
-        console.sendline("sdram_spd {}".format(spd_addr))
+        console.sendline(f"sdram_spd {spd_addr}")
         console.expect("Memory dump:")
         console.expect(prompt)
         spd_data = console.after.decode()
@@ -90,12 +90,12 @@ def dump_object(obj, show_hidden=False, header=True):
     bold = "\033[1m"
     clear = "\033[0m"
     if header:
-        print("{}{}:{}".format(bold, obj.__class__.__name__, clear))
+        print(f"{bold}{obj.__class__.__name__}:{clear}")
     d = obj if isinstance(obj, dict) else vars(obj)
     for var, val in d.items():
         if var == "self" or (var.startswith("_") and not show_hidden):
             continue
-        print("  {}: {}".format(var, val))
+        print(f"  {var}: {val}")
 
 
 def show_module(spd_data, clk_freq):
@@ -126,7 +126,7 @@ if __name__ == "__main__":
         defs = get_generated_defs()
         target = defs["TARGET"]
         if target not in SPD_COMMANDS:
-            raise NotImplementedError("SPD commands not available for target: {}".format(target))
+            raise NotImplementedError(f"SPD commands not available for target: {target}")
 
         print("Reading SPD EEPROM ...")
         console = pexpect.spawn("python bios_console.py -t litex_term", cwd=SCRIPT_DIR, timeout=30)
@@ -151,7 +151,7 @@ if __name__ == "__main__":
         with open(args.output_file, "wb") as f:
             f.write(bytes(spd_data))
 
-        print("SPD saved to file: {}".format(args.output_file))
+        print(f"SPD saved to file: {args.output_file}")
     elif args.cmd == "show":
         with open(args.input_file, "rb") as f:
             spd_data = f.read()

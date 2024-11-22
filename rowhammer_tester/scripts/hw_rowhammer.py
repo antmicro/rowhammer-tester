@@ -49,10 +49,8 @@ class HwRowHammer(RowHammer):
         # FIXME: --------------------------- move to utils ------------------
 
         def progress(count):
-            s = "  {}".format(progress_header + " " if progress_header else "")
-            s += "Rows = {}, Count = {:5.2f}M / {:5.2f}M".format(
-                row_tuple, count / 1e6, read_count / 1e6
-            )
+            s = f"  {progress_header}{' ' if progress_header else ''}"
+            s += f"Rows = {row_tuple}, Count = {count / 1e6:5.2f}M / {read_count / 1e6:5.2f}M"
             print(s, end="  \r")
 
         while True:
@@ -92,7 +90,7 @@ class HwRowHammer(RowHammer):
         assert len(row_pairs) > 0, "No pairs to hammer"
         print("\nPreparing ...")
         row_pattern = list(pattern_generator([row_pairs[0][0]]).values())[0]
-        print("WARNING: only single word patterns supported, using: 0x{:08x}".format(row_pattern))
+        print(f"WARNING: only single word patterns supported, using: 0x{row_pattern:08x}")
         print("\nFilling memory with data ...")
         hw_memset(self.wb, 0x0, self.wb.mems.main_ram.size, [row_pattern])
 
@@ -115,7 +113,8 @@ class HwRowHammer(RowHammer):
         else:
             print("\nRunning Rowhammer attacks ...")
             for i, row_tuple in enumerate(row_pairs, start=1):
-                s = "Iter {:{n}} / {:{n}}".format(i, len(row_pairs), n=len(str(len(row_pairs))))
+                n = len(str(len(row_pairs)))
+                s = f"Iter {i:{n}} / {len(row_pairs):{n}}"
                 if self.payload_executor:
                     # 1 read count maps to 1 ACT sent to all selected rows
                     # To keep read_count consistent with BIST behavior read_count

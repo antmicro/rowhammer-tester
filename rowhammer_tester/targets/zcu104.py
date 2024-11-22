@@ -129,7 +129,7 @@ class ZynqUSPS(Module):
     def _append_axi(self, attr, maxn, name, **kwargs):
         axis = getattr(self, attr)
         n = len(axis)
-        assert n < maxn, "Maximum number of AXIs for {} is {}".format(attr, maxn)
+        assert n < maxn, f"Maximum number of AXIs for {attr} is {maxn}"
         ax = self._add_axi(name=name.format(n=n), **kwargs)
         axis.append(ax)
         return ax
@@ -230,7 +230,7 @@ class SoC(common.RowHammerSoC):
             for i in range(0, len(lst), n):
                 yield lst[i : i + n]
 
-        addr_str = "_".join(chunks("{:012x}".format(base_address), 4))
+        addr_str = "_".join(chunks(f"{base_address:012x}", 4))
         self.logger.info(
             "Connecting PS AXI master from PS address {}.".format(colorer("0x" + addr_str))
         )

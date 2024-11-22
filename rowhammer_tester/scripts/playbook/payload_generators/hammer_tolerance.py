@@ -84,7 +84,7 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
             self.row_mapping.logical_to_physical(logical_row_num),
             self.row_mapping.logical_to_physical(logical_row_num + 2 * self.distance),
         ]
-        print("Rows: {}".format(row_sequence))
+        print(f"Rows: {row_sequence}")
         return generate_payload_from_row_list(
             read_count=self.initial_read_count + self.read_count_step * step,
             row_sequence=row_sequence,
@@ -221,38 +221,38 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
     def summarize(self):
         print("Row error summary:\n")
         for step in sorted(self.row_errors.keys()):
-            print("{} : {}".format(step, self.row_errors[step]))
+            print(f"{step} : {self.row_errors[step]}")
         print("\nBit error summary:\n")
         for step in sorted(self.bit_errors.keys()):
-            print("{} : {}".format(step, self.bit_errors[step]))
+            print(f"{step} : {self.bit_errors[step]}")
 
         if self.baseline:
             return
 
         print("\nBeat error summary:\n")
         for step in sorted(self.beat_errors.keys()):
-            print("Bit errors/beat histogram for {} hammers:".format(step))
+            print(f"Bit errors/beat histogram for {step} hammers:")
             for bits in sorted(self.beat_errors[step].keys()):
-                print("\t{} : {}".format(bits, self.beat_errors[step][bits]))
+                print(f"\t{bits} : {self.beat_errors[step][bits]}")
 
         for step in sorted(self.chip_errors_per_read.keys()):
-            print("\nPer-chip bit errors / read command histograms for {} hammers:".format(step))
+            print(f"\nPer-chip bit errors / read command histograms for {step} hammers:")
             for chip in sorted(self.chip_errors_per_read[step].keys()):
-                print("\tChip {}:".format(chip))
+                print(f"\tChip {chip}:")
                 for count in sorted(self.chip_errors_per_read[step][chip].keys()):
-                    print("\t\t{} : {}".format(count, self.chip_errors_per_read[step][chip][count]))
+                    print(f"\t\t{count} : {self.chip_errors_per_read[step][chip][count]}")
 
         for step in sorted(self.chip_errors_per_beat.keys()):
-            print("\nPer-chip bit errors / beat histograms for {} hammers:".format(step))
+            print(f"\nPer-chip bit errors / beat histograms for {step} hammers:")
             for chip in sorted(self.chip_errors_per_beat[step].keys()):
-                print("\tChip {}:".format(chip))
+                print("\tChip {chip}:")
                 for count in sorted(self.chip_errors_per_beat[step][chip].keys()):
-                    print("\t\t{} : {}".format(count, self.chip_errors_per_beat[step][chip][count]))
+                    print(f"\t\t{count} : {self.chip_errors_per_beat[step][chip][count]}")
 
         for step in sorted(self.chips_with_errors_per_beat.keys()):
-            print("Chips w/ errors/beat histogram for {} hammers:".format(step))
+            print(f"Chips w/ errors/beat histogram for {step} hammers:")
             for chips in sorted(self.chips_with_errors_per_beat[step].keys()):
-                print("\t{} : {}".format(chips, self.chips_with_errors_per_beat[step][chips]))
+                print(f"\t{chips} : {self.chips_with_errors_per_beat[step][chips]}")
 
     def done(self):
         return self.iteration >= self.max_iteration

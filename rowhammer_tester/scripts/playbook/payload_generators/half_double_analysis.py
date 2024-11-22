@@ -219,11 +219,8 @@ class HalfDoubleAnalysisPayloadGenerator(PayloadGenerator):
                     self.victim_list[(dilution, self.total_read_count)].append(logical_victim)
             if len(errors) > 0:
                 print(
-                    "Bit-flips for row {:{n}}: {}".format(
-                        logical_row,
-                        sum(self.bitflips(value, expected) for addr, value, expected in errors),
-                        n=len(str(2**settings.geom.rowbits - 1)),
-                    )
+                    f"Bit-flips for row {logical_row:{len(str(2**settings.geom.rowbits - 1))}}:"
+                    f" {sum(self.bitflips(value, expected) for _, value, expected in errors)}"
                 )
         if self.state == HalfDoubleAnalysisState.NOFLIP_DISTANCE_ONE:
             self.noflip_distance_one(victim_flipped)

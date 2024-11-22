@@ -44,7 +44,7 @@ if __name__ == "__main__":
         rng = random.Random(datetime.now())
         offsets = []
         for i, n in enumerate(range(0, 5000)):
-            print("Generated {:d} offsets".format(i), end="\r")
+            print(f"Generated {i:d} offsets", end="\r")
             offset = rng.randrange(0x0, mem_range - 4)
             offset &= ~0b11  # must be 32-bit aligned
             if offset // nbytes not in offsets:
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         #        )
         #    )
 
-        print("dbg: offsets: {:d}".format(len(offsets)))
+        print(f"dbg: offsets: {len(offsets):d}")
         # --------------------------------------------------------------------
 
         start_time = time.time()
@@ -72,9 +72,9 @@ if __name__ == "__main__":
         end_time = time.time()
 
         if args.dbg:
-            print("dbg: errors: {:d}, offsets: {:d}".format(len(errors), len(offsets)))
+            print(f"dbg: errors: {len(errors):d}, offsets: {len(offsets):d}")
 
-        print("dbg: errors: {:d}, offsets: {:d}".format(len(errors), len(offsets)))
+        print(f"dbg: errors: {len(errors):d}, offsets: {len(offsets):d}")
         if len(errors) != len(offsets):
             missing = []
             for off in offsets:
@@ -82,19 +82,18 @@ if __name__ == "__main__":
                     missing.append(off)
 
             for off in missing:
-                print("dbg: Missing offsets: 0x{:08x}".format(off))
+                print(f"dbg: Missing offsets: 0x{off:08x}")
 
         assert len(errors) == len(offsets)
 
         for off, err in zip(sorted(offsets), errors):  # errors should be already sorted
             if args.dbg:
-                print("dbg: 0x{:08x} == 0x{:08x}".format(off, err.offset))
+                print(f"dbg: 0x{off:08x} == 0x{err.offset:08x}")
             assert off == err.offset
 
         print(
-            "Execution time: {:.3f} s ({:.3f} errors / s)".format(
-                end_time - start_time, len(offsets) / (end_time - start_time)
-            )
+            f"Execution time: {end_time - start_time:.3f} s"
+            f" ({len(offsets) / (end_time - start_time):.3f} errors / s)"
         )
         print("Test OK!")
 
@@ -121,20 +120,19 @@ if __name__ == "__main__":
             0xFFFFFFFF,
             0x00000000,
         ]:
-            print("Testing with 0x{:08x} pattern".format(p))
+            print("Testing with 0x{p:08x} pattern")
             hw_memset(wb, 0x0, mem_range, [p], args.dbg)
             # if p == 0x77777777: wb.write(mem_base + mem_range - 32, 0x77787777) # Inject error
             errors = hw_memtest(wb, 0x0, mem_range, [p], args.dbg)
             if len(errors) > 0:
-                print("!!! Failed pattern: {:08x} !!!".format(p))
+                print(f"!!! Failed pattern: {p:08x} !!!")
                 for e in errors:
                     print(
-                        "Failed: 0x{:08x} == 0x{:08x}".format(
-                            mem_base + e.offset * nbytes, wb.read(mem_base + e.offset * nbytes)
-                        )
+                        f"Failed: 0x{mem_base + e.offset * nbytes:08x}"
+                        f" == 0x{wb.read(mem_base + e.offset * nbytes):08x}"
                     )
-                    print("  data     = 0x{:x}".format(e.data))
-                    print("  expected = 0x{:x}".format(e.expected))
+                    print(f"  data     = 0x{e.data:x}")
+                    print(f"  expected = 0x{e.expected:x}")
             else:
                 print("Test pattern OK!")
 

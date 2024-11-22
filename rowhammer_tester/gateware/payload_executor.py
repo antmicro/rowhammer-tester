@@ -39,14 +39,14 @@ class OpCode(IntEnum):
         t += "+ Op   + Value +\n"
         t += div.replace("-", "=")
         for op_code in cls:
-            t += "+ {:4} | 0b{:03b} +\n".format(op_code.name, op_code.value)
+            t += f"+ {op_code.name:4} | 0b{op_code.value:03b} +\n"
             t += div
         t = t.rstrip()
         return t
 
 
 class Decoder(Module):
-    __doc__ = """
+    __doc__ = f"""
     **Instruction decoder**
 
     All instructions are 32-bit. The format of most instructions is the same,
@@ -65,7 +65,7 @@ class Decoder(Module):
 
     Op codes:
 
-{op_codes}
+{OpCode.table()}
 
     Instruction format::
 
@@ -80,7 +80,7 @@ class Decoder(Module):
         LSB              MSB
         RANK | BANK | COLUMN
         RANK | BANK | ROW
-    """.format(op_codes=OpCode.table())
+    """
 
     # TODO: Load widths from .proto file
     INSTRUCTION = 32
@@ -181,7 +181,7 @@ class Encoder:
                 no_address = [OpCode.REF]  # PRE requires bank address
                 assert (
                     "address" in kwargs or op_code in no_address
-                ), "{} instruction requires `address`".format(op_code.name)
+                ), "{op_code.name} instruction requires `address`"
                 self._parts = [
                     (Decoder.OP_CODE, op_code),
                     (Decoder.TIMESLICE, timeslice),
@@ -443,11 +443,11 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         rdphase,
     ):
         self.description = ModuleDoc(
-            """
+            f"""
         Executes the DRAM payload from memory
 
-        {}
-        """.format(Decoder.__doc__)
+        {Decoder.__doc__}
+        """
         )
 
         self.start = Signal()
@@ -464,9 +464,8 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         # uses synchronous port, instruction is ready 1 cycle after fetch_address is asserted
         assert (
             mem_payload.width == Decoder.INSTRUCTION
-        ), "Wrong payload memory word width: {} vs {}".format(
-            mem_payload.width, Decoder.INSTRUCTION
-        )
+        ), f"Wrong payload memory word width: {mem_payload.width} vs {Decoder.INSTRUCTION}"
+
         instruction = Signal(Decoder.INSTRUCTION)
         fetch_address = Signal.like(self.program_counter)
         payload_port = mem_payload.get_port(write_capable=False)

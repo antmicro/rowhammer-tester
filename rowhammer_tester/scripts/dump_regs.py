@@ -9,6 +9,6 @@ if __name__ == "__main__":
 
     # Dump all CSR registers of the SoC
     for name, reg in wb.regs.__dict__.items():
-        print("0x{:08x}: 0x{:08x} {}".format(reg.addr, reg.read(), name))
+        print(f"0x{reg.addr:08x}: 0x{reg.read():08x} {name}")
 
     wb.close()

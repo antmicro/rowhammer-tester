@@ -33,7 +33,7 @@ def sdram_cmd(wb, a, ba, command, enable_software_control=True):
 
 
 def dfii_px(wb, phase, signal):
-    return getattr(wb.regs, "sdram_dfii_pi{}_{}".format(phase, signal))
+    return getattr(wb.regs, f"sdram_dfii_pi{phase}_{signal}")
 
 
 def dfii_write(wb, phase_datas, wrphase):
@@ -248,7 +248,7 @@ def read_level_module(wb, settings, module, delays_step=1, **kwargs):
     scores = defaultdict(dict)  # {bitslip: {delay: errors}, ...}
     for bs in range(settings.bitslips):
         read_delay_rst(wb)
-        print("Bitslip {:02d}: |".format(bs), end="", flush=True)
+        print(f"Bitslip {bs:02d}: |", end="", flush=True)
 
         for dly in range(settings.delays):
             if dly % delays_step == 0:
@@ -266,7 +266,7 @@ def read_level_module(wb, settings, module, delays_step=1, **kwargs):
         return
 
     best_bs, best_dly, best_len = best
-    print("Best: bitslip = {}, delay = {} (+-{})".format(best_bs, best_dly, best_len // 2))
+    print(f"Best: bitslip = {best_bs}, delay = {best_dly} (+-{best_len // 2})")
     read_bitslip_set(wb, best_bs)
     read_delay_set(wb, best_dly)
 
@@ -275,14 +275,14 @@ def read_level_module(wb, settings, module, delays_step=1, **kwargs):
 def read_level(wb, settings, **kwargs):
     sdram_software_control(wb)
     for module in range(settings.nmodules):
-        print("Module {}".format(module))
+        print(f"Module {module}")
         delay_select_modules(wb, [module])
         read_level_module(wb, settings, module, **kwargs)
 
 
 def read_level_hardcoded(wb, config):
     for module, (bitslip, delay) in enumerate(config):
-        print("Module {}: bitslip={}, delay={}".format(module, bitslip, delay))
+        print(f"Module {module}: bitslip={bitslip}, delay={delay}")
         delay_select_modules(wb, [module])
         read_bitslip_set(wb, bitslip)
         read_delay_set(wb, delay)
@@ -346,11 +346,11 @@ def write_leveling_off(wb):
 # TODO: proper leveling, now use hardcoded results
 def write_level_hardcoded(wb, cdly, delays):
     sdram_software_control(wb)
-    print("Cmd/Clk delay: {}".format(cdly))
+    print(f"Cmd/Clk delay: {cdly}")
     cdly_set(wb, cdly)
 
     for i, delay in enumerate(delays):
-        print("Module {}: delay {}".format(i, delay))
+        print(f"Module {i}: delay {delay}")
         delay_select_modules(wb, [i])
         write_delay_set(wb, delay)
 

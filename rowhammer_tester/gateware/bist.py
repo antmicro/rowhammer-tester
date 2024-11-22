@@ -158,7 +158,7 @@ class Writer(BISTModule, AutoCSR, AutoDoc):
         super().__init__(pattern_mem)
 
         self.doc = ModuleDoc(
-            """
+            f"""
 DMA DRAM writer.
 
 Allows to fill DRAM with a predefined pattern using DMA.
@@ -166,8 +166,8 @@ Allows to fill DRAM with a predefined pattern using DMA.
 Pattern
 -------
 
-{common}
-        """.format(common=BISTModule.__doc__)
+{BISTModule.__doc__}
+        """
         )
 
         dma = LiteDRAMDMAWriter(dram_port, fifo_depth=4, fifo_buffered=True)
@@ -267,7 +267,7 @@ class Reader(BISTModule, AutoCSR, AutoDoc):
         super().__init__(pattern_mem)
 
         self.doc = ModuleDoc(
-            """
+            f"""
 DMA DRAM reader.
 
 Allows to check DRAM contents against a predefined pattern using DMA.
@@ -275,7 +275,7 @@ Allows to check DRAM contents against a predefined pattern using DMA.
 Pattern
 -------
 
-{common}
+{BISTModule.__doc__}
 
 Reading errors
 --------------
@@ -293,7 +293,7 @@ The final number of errors can be read from `error_count`.
 NOTE: This value represents the number of erroneous *DMA transfers*.
 
 The current progress can be read from the `done` CSR.
-        """.format(common=BISTModule.__doc__)
+        """
         )
 
         error_desc = [

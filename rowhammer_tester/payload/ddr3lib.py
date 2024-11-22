@@ -78,9 +78,8 @@ class Rank:
     def Execute(self, tick: int, instr: Instr.MemInstr) -> bool:
         if tick < self.next_tick.get(instr.opcode, 0):
             print(
-                "Rank timing violation for {}: {} < {}".format(
-                    Opcode.Name(instr.opcode), tick, self.next_tick[instr.opcode]
-                )
+                f"Rank timing violation for {Opcode.Name(instr.opcode)}:"
+                f" {tick} < {self.next_tick[instr.opcode]}"
             )
             return False
 
@@ -89,9 +88,8 @@ class Rank:
             if len(self.prev_acts) == self.prev_acts.maxlen:
                 if tick - self.prev_acts[0] < self.faw:
                     print(
-                        "tFAW timing violation for {}: {} < {}".format(
-                            Opcode.Name(instr.opcode), tick - self.prev_acts[0], self.faw
-                        )
+                        f"tFAW timing violation for {Opcode.Name(instr.opcode)}:"
+                        f" {tick - self.prev_acts[0]} < {self.faw}"
                     )
                     return False
             self.prev_acts.append(tick)
@@ -125,9 +123,8 @@ class Bank:
     def Execute(self, tick: int, instr: Instr.MemInstr) -> bool:
         if tick < self.next_tick.get(instr.opcode, 0):
             print(
-                "Bank timing violation for {}: {} < {}".format(
-                    Opcode.Name(instr.opcode), tick, self.next_tick[instr.opcode]
-                )
+                f"Bank timing violation for {Opcode.Name(instr.opcode)}:"
+                f" {tick} < {self.next_tick[instr.opcode]}"
             )
             return False
 

@@ -95,11 +95,8 @@ class RowListPayloadGenerator(PayloadGenerator):
             row, errors = row_errors_logical[logical_row]
             if len(errors) > 0:
                 print(
-                    "Bit-flips for row {:{n}}: {}".format(
-                        logical_row,
-                        sum(self.bitflips(value, expected) for addr, value, expected in errors),
-                        n=len(str(2**settings.geom.rowbits - 1)),
-                    )
+                    f"Bit-flips for row {logical_row:{len(str(2**settings.geom.rowbits - 1))}}:"
+                    f" {sum(self.bitflips(value, expected) for addr, value, expected in errors)}"
                 )
         self.iteration += 1
 

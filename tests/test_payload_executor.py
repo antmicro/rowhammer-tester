@@ -22,7 +22,7 @@ class Hex:
     # Helper for constructing readable hex integers, e.g. 0x11111111
     def __init__(self, num, width):
         num %= 16
-        self.string = "{:x}".format(num) * (width // 4)
+        self.string = f"{num:x}" * (width // 4)
 
     def __add__(self, other):
         new = Hex(0, 0)
@@ -30,7 +30,7 @@ class Hex:
         return new
 
     def int(self):
-        return int("0x{}".format(self.string), 16)
+        return int(f"0x{self.string}", 16)
 
     @staticmethod
     def error(int1, int2, width):
@@ -357,7 +357,7 @@ class PayloadExecutorDUT(Module):
         self.params = locals()
         self.payload = payload
 
-        assert len(payload) <= payload_depth, "{} vs {}".format(len(payload), payload_depth)
+        assert len(payload) <= payload_depth, f"{len(payload)} vs {payload_depth}"
         self.mem_scratchpad = Memory(data_width, scratchpad_depth)
         self.mem_payload = Memory(instruction_width, payload_depth, init=payload)
         self.specials += self.mem_scratchpad, self.mem_payload
@@ -408,9 +408,7 @@ class PayloadExecutorDUT(Module):
                     if (cas, ras, we) == (desc["cas"], desc["ras"], desc["we"]):
                         cmd = DFICmd(cas=cas, ras=ras, we=we)
                         entry = HistoryEntry(time=time, phase=i, cmd=cmd)
-                assert entry is not None, "Unknown DFI command: cas={}, ras={}, we={}".format(
-                    cas, ras, we
-                )
+                assert entry is not None, f"Unknown DFI command: cas={cas}, ras={ras}, we={we}"
                 if entry.cmd.op_code != OpCode.NOOP:  # omit NOOPs
                     self.dfi_history.append(entry)
             yield
@@ -478,7 +476,7 @@ class PayloadExecutorDDR5DUT(Module):
         self.params = locals()
         self.payload = payload
 
-        assert len(payload) <= payload_depth, "{} vs {}".format(len(payload), payload_depth)
+        assert len(payload) <= payload_depth, f"{len(payload)} vs {payload_depth}"
         self.mem_scratchpad = Memory(data_width, scratchpad_depth)
         self.mem_payload = Memory(instruction_width, payload_depth, init=payload)
         self.specials += self.mem_scratchpad, self.mem_payload
@@ -535,9 +533,7 @@ class PayloadExecutorDDR5DUT(Module):
                     if (cas, ras, we) == (desc["cas"], desc["ras"], desc["we"]):
                         cmd = DFICmd(cas=cas, ras=ras, we=we)
                         entry = HistoryEntry(time=time, phase=i, cmd=cmd)
-                assert entry is not None, "Unknown DFI command: cas={}, ras={}, we={}".format(
-                    cas, ras, we
-                )
+                assert entry is not None, f"Unknown DFI command: cas={cas}, ras={ras}, we={we}"
                 if entry.cmd.op_code != OpCode.NOOP:  # omit NOOPs
                     self.dfi_history.append(entry)
             yield
@@ -1093,7 +1089,7 @@ def run_payload_executor(dut: PayloadExecutorDUT, *, print_period=1):
                 pc = yield dut.payload_executor.program_counter
                 lc = yield dut.payload_executor.loop_counter
                 # ic = (yield dut.payload_executor.idle_counter)
-                print("PC = {:6}  LC = {:6}   ".format(pc, lc), end="\r")
+                print(f"PC = {pc:6}  LC = {lc:6}   ", end="\r")
             yield
             cycles += 1
 
@@ -1101,7 +1097,7 @@ def run_payload_executor(dut: PayloadExecutorDUT, *, print_period=1):
         info["read_count"] = yield dut.payload_executor.scratchpad.counter
         info["overflow"] = yield dut.payload_executor.scratchpad.overflow
 
-    print("Payload length = {}".format(len(dut.payload)))
+    print(f"Payload length = {len(dut.payload)}")
 
     print("\nSimulating payload execution ...")
     run_simulation(dut, [generator(dut), dut.dfi_monitor()])
@@ -1109,7 +1105,7 @@ def run_payload_executor(dut: PayloadExecutorDUT, *, print_period=1):
 
     print("\nInfo:")
     for k, v in info.items():
-        print("  {} = {}".format(k, v))
+        print(f"  {k} = {v}")
 
     # merge same commands in history
     Group = namedtuple("Group", ["op_code", "entries"])
@@ -1130,9 +1126,8 @@ def run_payload_executor(dut: PayloadExecutorDUT, *, print_period=1):
         if i + 1 < len(groups):
             group_time = groups[i + 1].entries[0].time - start_time
         print(
-            "{:4} x {:3}: start_time = {} group_time = {}".format(
-                group.op_code.name, len(group.entries), start_time, group_time
-            )
+            f"{group.op_code.name:4} x {len(group.entries):3}:"
+            f" start_time = {start_time} group_time = {group_time}"
         )
         cumtime += group_time or 0
     print("Total execution cycles = {}".format(info["cycles"]))

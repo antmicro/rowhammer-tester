@@ -163,7 +163,7 @@ def wait_or_timeout(timeout, check_ready):
         yield
         cycles += 1
         if cycles > timeout:
-            raise TimeoutError("Timeout after {} cycles".format(timeout))
+            raise TimeoutError(f"Timeout after {timeout} cycles")
 
 
 def access_pattern_test(bist_name, mem_inc, pattern, count):

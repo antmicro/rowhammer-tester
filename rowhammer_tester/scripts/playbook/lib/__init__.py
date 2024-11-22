@@ -98,7 +98,7 @@ def generate_payload_from_row_list(
     if verbose:
         print("Generating payload:")
         for t in ["tRAS", "tRP", "tREFI", "tRFC"]:
-            print("  {} = {}".format(t, getattr(timings, t)))
+            print(f"  {t} = {getattr(timings, t)}")
 
     acts_per_interval = (trefi - trfc) // (trp + tras)
     max_acts_in_loop = (2**Decoder.LOOP_JUMP - 1) // 2
@@ -107,8 +107,8 @@ def generate_payload_from_row_list(
     )
     assert repeatable_unit >= len(row_sequence)
     repetitions = repeatable_unit // len(row_sequence)
-    print("  Repeatable unit: {}".format(repeatable_unit))
-    print("  Repetitions: {}".format(repetitions))
+    print(f"  Repeatable unit: {repeatable_unit}")
+    print(f"  Repetitions: {repetitions}")
     read_count_quotient = read_count // repetitions
     read_count_remainder = read_count % repetitions
 
@@ -149,25 +149,19 @@ def generate_payload_from_row_list(
     if verbose:
         expected_cycles = get_expected_execution_cycles(payload)
         print(
-            "  Payload size = {:5.2f}KB / {:5.2f}KB".format(
-                4 * len(payload) / 2**10, payload_mem_size / 2**10
-            )
+            f"  Payload size = {4 * len(payload) / 2**10:5.2f}KB"
+            f" / {payload_mem_size / 2**10:5.2f}KB"
         )
-        count = (
-            "{:.3f}M".format(read_count / 1e6)
-            if read_count > 1e6
-            else "{:.3f}K".format(read_count / 1e3)
-        )
-        print("  Payload per-row toggle count = {}  x{} rows".format(count, len(row_sequence)))
+        count = f"{read_count / 1e6:.3f}M" if read_count > 1e6 else f"{read_count / 1e3:.3f}K"
+        print(f"  Payload per-row toggle count = {count}  x{len(row_sequence)} rows")
         print(
-            "  Payload refreshes (if enabled) = {} ({})".format(
-                refreshes, "enabled" if refresh else "disabled"
-            )
+            f"  Payload refreshes (if enabled) = {refreshes}"
+            f" ({'enabled' if refresh else 'disabled'})"
         )
         time = ""
         if sys_clk_freq is not None:
-            time = " = {:.3f} ms".format(1 / sys_clk_freq * expected_cycles * 1e3)
-        print("  Expected execution time = {} cycles".format(expected_cycles) + time)
+            time = f" = {1 / sys_clk_freq * expected_cycles * 1e3:.3f} ms"
+        print(f"  Expected execution time = {expected_cycles} cycles" + time)
 
         for instruction in payload:
             op, *args = map(lambda p: p[1], instruction._parts)

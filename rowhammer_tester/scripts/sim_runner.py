@@ -11,7 +11,7 @@ import sys
 
 def ng(name, regex):
     "Constructs python regex named group"
-    return r"(?P<{}>{})".format(name, regex)
+    return rf"(?P<{name}>{regex})"
 
 
 class Command:
@@ -72,8 +72,9 @@ def run(argv, **kwargs):
             if cmd is not None:
                 commands.append(cmd)
             if len(commands) % 100 == 0:
-                s = "Commands: {:6}  Time: {:14} ps".format(
-                    len(commands), commands[-1].time if len(commands) else 0
+                s = (
+                    f"Commands: {len(commands):6} "
+                    f" Time: {commands[-1].time if len(commands) else 0:14} ps"
                 )
                 print(s, end=4 * " " + "\r", flush=True)
     except KeyboardInterrupt:
@@ -138,18 +139,18 @@ def print_stats(counts):
     counts = filter_counts(counts)
     print()
     print("### STATS ###")
-    print("Data from {} REF periods".format(len(counts)))
+    print(f"Data from {len(counts)} REF periods")
     print("Count of ACT between two REFs:")
-    print("  mean   = {:.2f} +/- {:.2f}".format(statistics.mean(counts), statistics.stdev(counts)))
-    print("  median = {:.2f}".format(statistics.median(counts)))
+    print(f"  mean   = {statistics.mean(counts):.2f} +/- {statistics.stdev(counts):.2f}")
+    print(f"  median = {statistics.median(counts):.2f}")
 
     # count number of commands per refresh period
     tREF = 64e-3
     nREF = 8192
     per_period = statistics.median(counts) * nREF
     freq = per_period / tREF
-    print("ACTs per REF period = {:.3f} M".format(per_period / 1e6))
-    print("ACTs frequency = {:.2f} Mps".format(freq / 1e6))
+    print(f"ACTs per REF period = {per_period / 1e6:.3f} M")
+    print(f"ACTs frequency = {freq / 1e6:.2f} Mps")
     print()
 
 

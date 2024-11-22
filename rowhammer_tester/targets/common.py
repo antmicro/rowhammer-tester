@@ -163,7 +163,7 @@ class RowHammerSoC(SoCCore):
             self,
             self.platform,
             sys_clk_freq,
-            ident="Row Hammer Tester SoC on {}, git: {}".format(self.platform.device, githash),
+            ident=f"Row Hammer Tester SoC on {self.platform.device}, git: {githash}",
             integrated_rom_mode="rw" if args.rw_bios_mem else "r",
             **kwargs,
         )
@@ -195,9 +195,7 @@ class RowHammerSoC(SoCCore):
         else:
             ratio = self.get_sdram_ratio()
             self.logger.info(
-                "Using DRAM module {} ratio {}".format(
-                    colorer(sdram_module_cls.__name__), colorer(ratio)
-                )
+                f"Using DRAM module {colorer(sdram_module_cls.__name__)} ratio {colorer(ratio)}"
             )
             module = sdram_module_cls(self.sys_clk_freq, ratio, speedgrade=sdram_module_speedgrade)
 
@@ -253,7 +251,7 @@ class RowHammerSoC(SoCCore):
 
         assert (
             self.ddrphy.settings.memtype == module.memtype
-        ), "Wrong DRAM module type: {} vs {}".format(self.ddrphy.settings.memtype, module.memtype)
+        ), f"Wrong DRAM module type: {self.ddrphy.settings.memtype} vs {module.memtype}"
         self.add_sdram(
             "sdram",
             phy=self.ddrphy,
@@ -319,9 +317,7 @@ class RowHammerSoC(SoCCore):
 
             assert (
                 pattern_data_size % (pattern_data_width // 8) == 0
-            ), "Pattern data memory size must be multiple of {} bytes".format(
-                pattern_data_width // 8
-            )
+            ), f"Pattern data memory size must be multiple of {pattern_data_width // 8} bytes"
 
             self.submodules.writer_pattern_mem = PatternMemory(
                 data_width=pattern_data_width, mem_depth=pattern_length
@@ -401,7 +397,7 @@ class RowHammerSoC(SoCCore):
             assert payload_size % 4 == 0, "Payload memory size must be multiple of 4 bytes"
             assert (
                 scratchpad_size % (scratchpad_width // 8) == 0
-            ), "Scratchpad memory size must be multiple of {} bytes".format(scratchpad_width // 8)
+            ), f"Scratchpad memory size must be multiple of {scratchpad_width // 8} bytes"
 
             scratchpad_depth = scratchpad_size // (scratchpad_width // 8)
             payload_mem = Memory(32, payload_size // 4)

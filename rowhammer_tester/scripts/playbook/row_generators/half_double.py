@@ -85,6 +85,6 @@ class HalfDoubleRowGenerator(RowGenerator):
 
         print("Constructed:")
         for row in sorted(row_dict.keys()):
-            print("\tRow {} x {}".format(row, row_dict[row]))
+            print(f"\tRow {row} x {row_dict[row]}")
 
         return list(map(self.row_mapping.logical_to_physical, row_list))

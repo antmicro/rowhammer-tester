@@ -30,9 +30,11 @@ def measure(runner, nbytes):
     elapsed = time.time() - start
 
     bytes_per_sec = nbytes / elapsed
-    print("Elapsed = {:.3f} sec".format(elapsed))
-    print("Size    = {:.3f} {}B".format(*human_size(nbytes)))
-    print("Speed   = {:.3f} {}Bps".format(*human_size(bytes_per_sec)))
+    size, size_si = human_size(nbytes)
+    speed, speed_si = human_size(bytes_per_sec)
+    print(f"Elapsed = {elapsed:.3f} sec")
+    print(f"Size    = {size:.3f} {size_si}B")
+    print(f"Speed   = {speed:.3f} {speed_si}Bps")
 
 
 def run_etherbone(wb, is_write, n, *, burst, profile, profile_dir="profiling"):
@@ -43,7 +45,7 @@ def run_etherbone(wb, is_write, n, *, burst, profile, profile_dir="profiling"):
     ctx["memread"] = memread
     ctx["memwrite"] = memwrite
 
-    fname = "{}/{}_0x{:x}_b{}.profile".format(profile_dir, "wr" if is_write else "rd", n, burst)
+    fname = f"{profile_dir}/{'wr' if is_write else 'rd'}_0x{n:x}_b{burst}.profile"
     os.makedirs(os.path.dirname(fname), exist_ok=True)
     command = {
         False: "memread(wb, n, burst=burst)",
@@ -62,7 +64,7 @@ def run_etherbone(wb, is_write, n, *, burst, profile, profile_dir="profiling"):
     measure(runner, 4 * n)
 
     if profile:
-        print("Profiling results saved to: {}".format(fname))
+        print(f"Profiling results saved to: {fname}")
 
 
 def run_bist(wb, is_write, pattern):

@@ -105,10 +105,8 @@ class RowHammer:
         # row_strw = len(str(2**self.settings.geom.rowbits - 1))
 
         def progress(count):
-            s = "  {}".format(progress_header + " " if progress_header else "")
-            s += "Rows = {}, Count = {:5.2f}M / {:5.2f}M".format(
-                row_tuple, count / 1e6, read_count / 1e6
-            )
+            s = f"  {progress_header}{' ' if progress_header else ''}"
+            s += f"Rows = {row_tuple}, Count = {count / 1e6:5.2f}M / {read_count / 1e6:5.2f}M"
             print(s, end="  \r")
 
         # Wait for hammering to finish
@@ -196,26 +194,19 @@ class RowHammer:
                 flips = sum(
                     self.bitflips(value, expected) for addr, value, expected in row_errors[row]
                 )
-                print(
-                    "Bit-flips for row {:{n}}: {}".format(
-                        row, flips, n=len(str(2**self.settings.geom.rowbits - 1))
-                    )
-                )
+                n = len(str(2**self.settings.geom.rowbits - 1))
+                print(f"Bit-flips for row {row:{n}}: {flips}")
             if self.verbose or do_error_summary:
                 for i, word, expected in row_errors[row]:
                     base_addr = min(self.addresses_per_row(row))
                     addr = base_addr + 4 * i
                     bank, _row, col = self.converter.decode_bus(addr)
                     if self.verbose:
-                        print(
-                            "Error: 0x{:08x}: 0x{:08x} (row={}, col={})".format(
-                                addr, word, _row, col
-                            )
-                        )
+                        print(f"Error: 0x{addr:08x}: 0x{word:08x} (row={_row}, col={col})")
                     bitflips = self.bitflip_list(word, expected)
                     cols[col] = bitflips
             if do_error_summary:
-                err_dict["{}".format(row)] = {"row": _row, "col": cols, "bitflips": flips}
+                err_dict[str(row)] = {"row": _row, "col": cols, "bitflips": flips}
 
         if do_error_summary:
             return err_dict
@@ -278,7 +269,8 @@ class RowHammer:
         else:
             print("\nRunning Rowhammer attacks ...")
             for i, row_tuple in enumerate(row_pairs, start=1):
-                s = "Iter {:{n}} / {:{n}}".format(i, len(row_pairs), n=len(str(len(row_pairs))))
+                n = len(str(len(row_pairs)))
+                s = f"Iter {i:{n}} / {len(row_pairs):{n}}"
                 if self.payload_executor:
                     self.payload_executor_attack(read_count=read_count, row_tuple=row_tuple)
                 else:
@@ -557,7 +549,7 @@ def main(row_hammer_cls):
                     row_pairs=[pair], read_count=count, pattern_generator=pattern
                 )
 
-                row_hammer.err_summary[str(count)]["pair_{}_{}".format(*pair)] = {
+                row_hammer.err_summary[str(count)][f"pair_{pair[0]}_{pair[1]}"] = {
                     "hammer_row_1": pair[0],
                     "hammer_row_2": pair[1],
                     "errors_in_rows": err_in_rows,
@@ -580,7 +572,7 @@ def main(row_hammer_cls):
             )
             if args.row_pairs == "const":
                 pair = row_pairs[0]
-                row_hammer.err_summary[str(count)]["pair_{}_{}".format(*pair)] = {
+                row_hammer.err_summary[str(count)][f"pair_{pair[0]}_{pair[1]}"] = {
                     "hammer_row_1": pair[0],
                     "hammer_row_2": pair[1],
                     "errors_in_rows": err_in_rows,
@@ -596,7 +588,7 @@ def main(row_hammer_cls):
 
     if row_hammer.log_directory:
         with open(
-            "{}/error_summary_{}.json".format(row_hammer.log_directory, time.time()), "w"
+            f"{row_hammer.log_directory}/error_summary_{time.time()}.json", "w"
         ) as write_file:
             json.dump(row_hammer.err_summary, write_file, indent=4)
 

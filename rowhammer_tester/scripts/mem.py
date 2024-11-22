@@ -85,9 +85,9 @@ if __name__ == "__main__":
 
     def run_memtest(name, generator, **kwargs):
         global ret
-        print("\nMemtest ({})".format(name))
+        print(f"\nMemtest ({name})")
         errors = memtest(wb, length=memtest_size, generator=generator, **kwargs)
-        print("OK" if errors == 0 else "FAIL: errors = {}".format(errors))
+        print("OK" if errors == 0 else f"FAIL: errors = {errors}")
         if errors != 0:
             ret = 1
 
@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
     if args.memspeed:
         for n in [0x1000 // 4, 0x10000 // 4, 0x100000 // 4]:
-            print("Size = 0x{:08x}".format(n * 4))
+            print(f"Size = 0x{n * 4:08x}")
             memspeed(wb, n)
         # Example results:
         #  Size = 0x00001000

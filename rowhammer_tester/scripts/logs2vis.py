@@ -61,7 +61,7 @@ def process_aggr_vs_vict(data: dict, dq_pads: int = 64):
                 dq_flips = get_dqs_on_col(flips)
 
                 # Add bitflips to description formatted as [dq[X], dq[Y]]
-                desc.append({f"Column {col}": "%s" % ", ".join(map(str, dq_flips))})
+                desc.append({f"Column {col}": ", ".join(map(str, dq_flips))})
                 vis_data.append(
                     [
                         victim_row,
@@ -102,7 +102,7 @@ def process_standard(data: dict, cols: int, col_step: int = 32):
                 # formatted as [dq[X], dq[Y]]
                 if len(col_errors):
                     dq_flips = get_dqs_on_col(col_errors)
-                    desc.append({f"Column {col_str}": "%s" % ", ".join(map(str, dq_flips))})
+                    desc.append({f"Column {col_str}": ", ".join(map(str, dq_flips))})
 
             if flips_in_chunk > 0:
                 cell_type = "FLIP"

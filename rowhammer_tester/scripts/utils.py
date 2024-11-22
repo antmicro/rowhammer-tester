@@ -44,7 +44,7 @@ def discover_generated_files_dir():
 
 
 GENERATED_DIR = discover_generated_files_dir()
-print("Using generated target files in: {}".format(os.path.relpath(GENERATED_DIR)))
+print(f"Using generated target files in: {os.path.relpath(GENERATED_DIR)}")
 
 # Import sdram_init.py
 sys.path.append(GENERATED_DIR)
@@ -59,9 +59,7 @@ def get_generated_file(name):
     # For getting csr.csv/analyzer.csv
     filename = os.path.join(GENERATED_DIR, name)
     if not os.path.isfile(filename):
-        raise ImportError(
-            'Generated file "{}" not found in directory "{}"'.format(name, GENERATED_DIR)
-        )
+        raise ImportError(f'Generated file "{name}" not found in directory "{GENERATED_DIR}"')
     return filename
 
 
@@ -161,13 +159,12 @@ def sdram_init(wb):
 def compare(val, ref, fmt, nbytes=4):
     assert fmt in ["bin", "hex"]
     if fmt == "hex":
-        print(
-            "0x{:0{n}x} {cmp} 0x{:0{n}x}".format(
-                val, ref, n=nbytes * 2, cmp="==" if val == ref else "!="
-            )
-        )
+        n = nbytes * 2
+        cmp = "==" if val == ref else "!="
+        print(f"0x{val:0{n}x} {cmp} 0x{ref:0{n}x}")
     if fmt == "bin":
-        print("{:0{n}b} xor {:0{n}b} = {:0{n}b}".format(val, ref, val ^ ref, n=nbytes * 8))
+        n = nbytes * 8
+        print(f"{val:0{n}b} xor {ref:0{n}b} = {val ^ ref:0{n}b}")
 
 
 def memwrite(wb, data, base=0x40000000, burst=0xFF):
@@ -197,9 +194,7 @@ def memspeed(wb, n, **kwargs):
         start = time.time()
         ret = fun(wb, n, **kwargs)
         elapsed = time.time() - start
-        print(
-            "{:5} speed: {:6.2f} KB/s ({:.1f} sec)".format(name, (n * 4) / elapsed / 1e3, elapsed)
-        )
+        print(f"{name:5} speed: {(n * 4) / elapsed / 1e3:6.2f} KB/s ({elapsed:.1f} sec)")
         return ret
 
     measure(memfill, "Write")
@@ -229,7 +224,7 @@ def memdump(data, base=0x40000000, chunk_len=16):
             "{:2}".format(f"{chunk[i]:02x}" if i < len(chunk) else "") for i in range(chunk_len)
         )
         c = "".join(tochar(chunk[i]) if i < len(chunk) else " " for i in range(chunk_len))
-        print("0x{addr:08x}:  {bytes}  {chars}".format(addr=base + chunk_len * i, bytes=b, chars=c))
+        print(f"0x{base + chunk_len * i:08x}:  {b}  {c}")
 
 
 def read_ident(wb) -> str:
@@ -359,7 +354,7 @@ def _progress(current, max, bar_w=40, last=False, name="Progress", opt=None):
         n=len(str(max)),
         bar="=" * int(current / max * bar_w),
         bw=bar_w,
-        opt="" if opt is None else " ({})".format(opt),
+        opt="" if opt is None else f" ({opt})",
     )
     print(s + " ", end="\n" if last else "\r")
 
@@ -375,17 +370,13 @@ def hw_memset(wb, offset, size, patterns, dbg=False):
     dma_data_width = settings.phy.dfi_databits * settings.phy.nphases
     nbytes = dma_data_width // 8
 
-    assert size % nbytes == 0, "DMA data width is {} bits".format(dma_data_width)
+    assert size % nbytes == 0, f"DMA data width is {dma_data_width} bits"
     assert len(patterns) == 1  # FIXME: Support more patterns
 
     pattern = patterns[0] & 0xFFFFFFFF
 
     if dbg:
-        print(
-            "hw_memset: offset: 0x{:08x}, size: 0x{:08x}, pattern: 0x{:08x}".format(
-                offset, size, pattern
-            )
-        )
+        print(f"hw_memset: offset: 0x{offset:08x}, size: 0x{size:08x}, pattern: 0x{pattern:08x}")
 
     assert wb.regs.writer_ready.read() == 1
 
@@ -424,17 +415,13 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     dma_data_width = settings.phy.dfi_databits * settings.phy.nphases
     nbytes = dma_data_width // 8
 
-    assert size % nbytes == 0, "DMA data width is {} bits".format(dma_data_width)
+    assert size % nbytes == 0, f"DMA data width is {dma_data_width} bits"
     assert len(patterns) == 1  # FIXME: Support more patterns
 
     pattern = patterns[0] & 0xFFFFFFFF
 
     if dbg:
-        print(
-            "hw_memtest: offset: 0x{:08x}, size: 0x{:08x}, pattern: 0x{:08x}".format(
-                offset, size, pattern
-            )
-        )
+        print(f"hw_memtest: offset: 0x{offset:08x}, size: 0x{size:08x}, pattern: 0x{pattern:08x}")
 
     # Flush error fifo
     wb.regs.reader_skip_fifo.write(1)
@@ -463,9 +450,7 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     errors = []
 
     def progress(last=False):
-        _progress(
-            wb.regs.reader_done.read(), count, last=last, opt="Errors: {}".format(len(errors))
-        )
+        _progress(wb.regs.reader_done.read(), count, last=last, opt=f"Errors: {len(errors)}")
 
     # Read unmatched offset
     def append_errors(wb, err):
@@ -497,7 +482,7 @@ def hw_memtest(wb, offset, size, patterns, dbg=False):
     assert wb.regs.reader_error_ready.read() == 0
 
     if dbg:
-        print("hw_memtest: errors: {:d}".format(len(errors)))
+        print(f"hw_memtest: errors: {len(errors):d}")
 
     return errors
 
@@ -548,7 +533,7 @@ def execute_payload(wb, payload):
             wb.regs.dfi_switch_refresh_update.write(1)
             now = wb.regs.dfi_switch_refresh_count.read()
             if force or at >= now:
-                print("\rWaiting for refresh, remaining {:10} ...".format(at - now), end=" ")
+                print(f"\rWaiting for refresh, remaining {at - now:10} ...", end=" ")
             if at < now:
                 return True
         return False
@@ -581,15 +566,15 @@ def execute_payload(wb, payload):
         first = False
 
     finished = time.time()
-    print("\nTotal elapsed time: {:.3f} ms".format((finished - start) * 1e3))
+    print(f"\nTotal elapsed time: {(finished - start) * 1e3:.3f} ms")
     if start_transition is not None:
-        print("Registered execution time: {:.3f} ms\n".format((finished - start_transition) * 1e3))
+        print(f"Registered execution time: {(finished - start_transition) * 1e3:.3f} ms\n")
 
 
 def validate_keys(config_dict, valid_keys_set):
     for key in config_dict:
         if key not in valid_keys_set:
-            print("Invalid key: {}".format(key))
+            print(f"Invalid key: {key}")
             return False
         return True
 

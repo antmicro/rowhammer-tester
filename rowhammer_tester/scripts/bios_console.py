@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     m, s = pty.openpty()
     tty = os.ttyname(s)
-    print("LiteX Crossover UART created: {}".format(tty))
+    print(f"LiteX Crossover UART created: {tty}")
 
     stop_event = threading.Event()
     threads = [
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         except StopIteration:
             term = "litex_term"
 
-    print("Using serial backend: {}".format(args.term))
+    print(f"Using serial backend: {args.term}")
     if term == "litex_term":
         # installed with latex so no additional dependencies, but it is slow
         term = LiteXTerm(

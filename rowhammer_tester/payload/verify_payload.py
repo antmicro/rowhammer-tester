@@ -23,11 +23,11 @@ class State:
         self.dramlib = dramlib
 
     def __str__(self):
-        string = "ip: {}\ntick: {}\nloop: {}".format(self.ip, self.tick, self.loop)
+        string = f"ip: {self.ip}\ntick: {self.tick}\nloop: {self.loop}"
         for opcode, count in enumerate(self.executed):
             if count == 0:
                 continue
-            string += "\n{}: {}".format(self.dramlib.Opcode.Name(opcode), count)
+            string += f"\n{self.dramlib.Opcode.Name(opcode)}: {count}"
         return string
 
 
@@ -54,13 +54,13 @@ def main() -> int:
     for field in payload.timing.DESCRIPTOR.fields:
         t = getattr(payload.timing, field.name)
         if t <= 0:
-            print("Timing parameter {} is not positive: {}".format(field.name, t))
+            print(f"Timing parameter {field.name} is not positive: {t}")
             return -1
 
     # Verify each instruction.
     for ip, instr in enumerate(payload.instr):
         if not dramlib.VerifyInstr(ip, instr):
-            print("Illegal instruction ({}) at ip ({})".format(" ".join(str(instr).split()), ip))
+            print(f"Illegal instruction ({' '.join(str(instr).split())}) at ip ({ip})")
             return -1
 
     # Run through the payload.
@@ -71,9 +71,8 @@ def main() -> int:
         if instr.HasField("mem"):
             if not rank.Execute(state.tick, instr.mem):
                 print(
-                    "Failed to execute ({}) at ip ({}) on tick ({})".format(
-                        " ".join(str(instr).split()), state.ip, state.tick
-                    )
+                    f"Failed to execute ({' '.join(str(instr).split())})"
+                    f" at ip ({state.ip}) on tick ({state.tick})"
                 )
                 return -1
             state.tick += instr.mem.timeslice
@@ -95,9 +94,8 @@ def main() -> int:
             state.executed[instr.jmp.opcode] += 1
         else:
             print(
-                "Illegal instruction ({}) at ip ({}) on tick ({})".format(
-                    " ".join(str(instr).split()), state.ip, state.tick
-                )
+                f"Illegal instruction ({' '.join(str(instr).split())})"
+                f" at ip ({state.ip}) on tick ({state.tick})"
             )
             return -1
 
