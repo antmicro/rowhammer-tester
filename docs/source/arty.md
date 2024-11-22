@@ -4,7 +4,7 @@ The [Arty-A7 board](https://reference.digilentinc.com/reference/programmable-log
 The board is designed around the Artix-7 Field Programmable Gate Array (FPGA) from AMD(Xilinx).
 
 :::{figure-md} arty-a7
-![arty-a7](images/arty-a7.jpg)
+![arty-a7](images/arty-a7.png)
 
 Arty-A7 board
 :::
