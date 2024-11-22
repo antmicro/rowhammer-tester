@@ -26,6 +26,7 @@ ninja == 1.11.1
 parameterized == 0.9.0
 pexpect == 4.8.0
 pyvcd == 0.4.0
+ruff == 0.8.0
 wheel == 0.41.2
 yapf == 0.32.0
 

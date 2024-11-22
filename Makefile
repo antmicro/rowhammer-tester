@@ -72,13 +72,10 @@ build: FORCE
 	python rowhammer_tester/targets/$(TARGET).py --build $(TARGET_ARGS)
 
 lint: FORCE python-deps
-	isort rowhammer_tester tests
-	black --config=pyproject.toml .
+	ruff format
 
 lint-check: FORCE python-deps  ## Run RTL lint and check lint on tests source code without fixing errors
-	isort --check rowhammer_tester tests
-	black --check --config=pyproject.toml .
-	flake8 .
+	ruff check
 
 sim: sim-deps FORCE
 	python rowhammer_tester/targets/$(TARGET).py --build --sim $(TARGET_ARGS)

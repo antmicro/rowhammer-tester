@@ -1,22 +1,49 @@
-[tool.black]
+[tool.ruff]
+target-version = "py38"
 line-length = 100
-extend-exclude = '''
-(
-  /(
-    | \.github
-    | __pycache__
-    | firmware
-    | openocd_scripts
-    | third_party
-  )/
-  | docs/source/conf.py
-)
-'''
+extend-exclude = [
+  ".github",
+  "__pycache__",
+  "firmware",
+  "openocd_scripts",
+  "third_party",
+  "docs/source/conf.py"
+]
 
-[tool.isort]
-profile = "black"
-line_length = 100
-skip = ["docs/source/conf.py"]
-skip_glob = ["third_party/*"]
+[tool.ruff.lint]
+select = [
+    "A",   # flake8-builtins
+    "ARG", # flake8-unused-arguments
+    "B",   # flake8-bugbear
+    "E",   # pycodestyle
+    "EM",  # flake8-errmsg
+    "F",   # Pyflakes
+    "I",   # isort
+    "ICN", # flake8-import-conventions
+    "ISC", # flake8-implicit-str-concat
+    "N",   # pep8-naming
+    "Q",   # flake8-quotes
+    "TID", # flake8-tidy-imports
+    "UP",  # pyupgrade
+    "W",   # pycodestyle
+    "YTT", # flake8-2020
+]
+ignore = [
+    "B011",   # Do not `assert False` #FIXME
+    "E203",   # Whitespace before ':'
+    "D105",   # Missing docstring in magic method
+    "D204",   # 1 blank line required after class docstring
+    "D205",   # 1 blank line required between summary line and description
+    "D200",   # One-line docstring should fit on one line
+    "ISC001", # Single-line-implicit-string-concatenation
+    "EM101",  # Checks for the use of string literals in exception constructors
+    "EM102",  # Checks for the use of f-strings in exception constructors
+    "N802",   # Checks for functions names that do not follow the `snake_case` naming convention
+    "N805"    # Checks for instance methods that use a name other than `self` for their first argument
+]
 
+[tool.ruff.lint.isort]
+known-first-party = ["rowhammer-tester"]
 
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
