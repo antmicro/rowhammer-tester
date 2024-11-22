@@ -138,9 +138,12 @@ class Encoder:
             for k, v in kwargs.items():
                 setattr(self, k, v)
             if op_code == OpCode.LOOP:
+                count = kwargs["count"]
+                assert count < 2**Decoder.LOOP_COUNT, \
+                    f'LOOP count value:{count} exceeded max value:{2**Decoder.LOOP_COUNT}'
                 self._parts = [
                     (Decoder.OP_CODE,    op_code),
-                    (Decoder.LOOP_COUNT, kwargs['count']),
+                    (Decoder.LOOP_COUNT, count),
                     (Decoder.LOOP_JUMP,  kwargs['jump']),
                 ]
             elif op_code == OpCode.NOOP:
@@ -149,13 +152,16 @@ class Encoder:
                     (Decoder.TIMESLICE_NOOP, kwargs['timeslice']),
                 ]
             else:
-                assert kwargs['timeslice'] != 0, 'Timeslice for instructions other than NOOP should be > 0'
+                timeslice = kwargs['timeslice']
+                assert timeslice != 0, 'Timeslice for instructions other than NOOP should be > 0'
+                assert timeslice < 2**Decoder.TIMESLICE, \
+                    f'Timeslice value:{timeslice} exceeded max value:{2**Decoder.TIMESLICE}'
                 no_address = [OpCode.REF]  # PRE requires bank address
                 assert 'address' in kwargs or op_code in no_address, \
                     '{} instruction requires `address`'.format(op_code.name)
                 self._parts = [
                     (Decoder.OP_CODE,   op_code),
-                    (Decoder.TIMESLICE, kwargs['timeslice']),
+                    (Decoder.TIMESLICE, timeslice),
                     (Decoder.ADDRESS,   kwargs.get('address', 0)),
                 ]
 
