@@ -1,7 +1,4 @@
-# Building the design targets
-
-As the rowhammer attack exploits physical properties of cells in DRAM (draining charges), no bit flips can be observed in simulation mode (see [Simulation section](#simulation)).
-However, the simulation mode is useful for testing command sequences during development.
+# Building Rowhammer designs
 
 This chapter provides building instructions for synthesising the digital design for physical DRAM testers and simulation models.
 

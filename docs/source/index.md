@@ -5,7 +5,7 @@
 
 overview.md
 setup.md
-building.md
+building_rowhammer.md
 ```
 
 ```{toctree}
@@ -27,6 +27,7 @@ so_dimm_ddr5_tester.md
 hammering.md
 visualization.md
 playbook.md
+building_linux.md
 ```
 
 ```{toctree}

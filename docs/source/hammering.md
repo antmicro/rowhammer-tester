@@ -276,7 +276,7 @@ SPD EEPROM can be read over an I2C bus.
 #### Reading SPD EEPROM
 
 To read the SPD memory, use the `rowhammer_tester/scripts/spd_eeprom.py` script.
-First, prepare the environment as described in the {doc}`building` chapter.
+First, prepare the environment as described in the {doc}`building_rowhammer` chapter.
 Then, use the following command to read the contents of SPD EEPROM and save it to a file, for example:
 
 ```sh
