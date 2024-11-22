@@ -43,16 +43,8 @@ You can build the target with:
 export TARGET=zcu104
 make build
 ```
-To upload the bitstream to volatile FPGA configuration RAM use:
-```sh
-export TARGET=zcu104
-make upload
-```
-To write the bitstream into non-volatile (Q)SPI Flash memory use:
-```sh
-export TARGET=zcu104
-make flash
-```
+The generated bitstream file must be named `zcu104.bit` and written to an SD card used for booting the board.
+Please refer to the [Loading the bitstream](zcu104.md#loading-the-bitstream) section for more details.
 ````
 ````{tab} DDR4 (RDIMM)
 This targets an off-the-shelf DDR4 RDIMMs installed on Antmicro [RDIMM DDR4 Tester](rdimm_ddr4_tester.md).
