@@ -80,7 +80,7 @@ make flash
 ```
 ````
 ````{tab} DDR5 (RDIMM)
-This targets an off-the-shelp DDR5 RDIMMs installed on Antmicro [RDIMM DDR5 Tester](rdimm_ddr5_tester.md).
+This targets an off-the-shelf DDR5 RDIMMs installed on Antmicro [RDIMM DDR5 Tester](rdimm_ddr5_tester.md).
 A typical building command is:
 ```sh
 export TARGET=ddr5_tester
@@ -104,7 +104,7 @@ make flash
 ```
 ````
 ````{tab} DDR5 (SO-DIMM)
-This targets an off-the-shelp DDR5 SO-DIMMs installed on Antmicro [SO-DIMM DDR5 Tester](so_dimm_ddr5_tester.md).
+This targets an off-the-shelf DDR5 SO-DIMMs installed on Antmicro [SO-DIMM DDR5 Tester](so_dimm_ddr5_tester.md).
 A typical building command is:
 ```sh
 export TARGET=sodimm_ddr5_tester
