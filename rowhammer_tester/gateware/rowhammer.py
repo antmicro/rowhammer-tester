@@ -33,7 +33,8 @@ class RowHammerDMA(Module, AutoCSR, AutoDoc, ModuleDoc):
         self.sync += If(
             self.enabled.storage, If(dma.sink.valid & dma.sink.ready, counter.eq(counter + 1))
         ).Elif(
-            self.count.we, counter.eq(0)  # clear on read when not enabled
+            self.count.we,
+            counter.eq(0),  # clear on read when not enabled
         )
 
         address = Signal(address_width)

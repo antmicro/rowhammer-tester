@@ -149,7 +149,7 @@ class SoC(common.RowHammerSoC):
             clock_domains=["sys_io", "sys2x_io", "sys2x_90_io", "sys4x_io", "sys4x_90_io"],
             io_banks=["bank32", "bank33", "bank34"],
         )
-        setattr(PHYCRG, "get_module_documentation", ddr5_tester_CRGDOC)
+        PHYCRG.get_module_documentation = ddr5_tester_CRGDOC
         return ddr5.K7DDR5PHY(
             self.platform.request("ddr5"),
             crg=PHYCRG,

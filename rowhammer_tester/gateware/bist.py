@@ -167,9 +167,7 @@ Pattern
 -------
 
 {common}
-        """.format(
-                common=BISTModule.__doc__
-            )
+        """.format(common=BISTModule.__doc__)
         )
 
         dma = LiteDRAMDMAWriter(dram_port, fifo_depth=4, fifo_buffered=True)
@@ -295,9 +293,7 @@ The final number of errors can be read from `error_count`.
 NOTE: This value represents the number of erroneous *DMA transfers*.
 
 The current progress can be read from the `done` CSR.
-        """.format(
-                common=BISTModule.__doc__
-            )
+        """.format(common=BISTModule.__doc__)
         )
 
         error_desc = [

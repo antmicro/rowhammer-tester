@@ -142,9 +142,7 @@ class TestDecoder(unittest.TestCase):
                 kwargs = {
                     OpCode.LOOP: dict(count=1, jump=1),
                     OpCode.NOOP: dict(timeslice=1),
-                }.get(
-                    op, dict(timeslice=1, address=0)
-                )  # others
+                }.get(op, dict(timeslice=1, address=0))  # others
                 yield dut.instruction.eq(encoder(op, **kwargs))
                 yield
                 self.assertEqual((yield dut.decoder.op_code), op)

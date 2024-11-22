@@ -80,9 +80,7 @@ class Decoder(Module):
         LSB              MSB
         RANK | BANK | COLUMN
         RANK | BANK | ROW
-    """.format(
-        op_codes=OpCode.table()
-    )
+    """.format(op_codes=OpCode.table())
 
     # TODO: Load widths from .proto file
     INSTRUCTION = 32
@@ -449,9 +447,7 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         Executes the DRAM payload from memory
 
         {}
-        """.format(
-                Decoder.__doc__
-            )
+        """.format(Decoder.__doc__)
         )
 
         self.start = Signal()

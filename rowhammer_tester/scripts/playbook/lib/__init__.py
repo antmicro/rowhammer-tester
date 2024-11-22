@@ -87,7 +87,7 @@ def generate_payload_from_row_list(
     payload_mem_size,
     refresh=False,
     verbose=False,
-    sys_clk_freq=None
+    sys_clk_freq=None,
 ):
     encoder = Encoder(bankbits=bankbits, nranks=nranks)
 

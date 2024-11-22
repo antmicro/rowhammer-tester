@@ -128,7 +128,7 @@ def sdram_init(wb):
     # so this is hardcoded for now
     # update: Hacky but works
     control_cmds = []
-    with open(sdram_init_defs.__file__, "r") as f:
+    with open(sdram_init_defs.__file__) as f:
         n = 0
         while True:
             line = f.readline()
@@ -226,8 +226,7 @@ def memdump(data, base=0x40000000, chunk_len=16):
     data_bytes = list(word2byte(data))
     for i, chunk in enumerate(chunks(data_bytes, chunk_len)):
         b = " ".join(
-            "{:2}".format("{:02x}".format(chunk[i]) if i < len(chunk) else "")
-            for i in range(chunk_len)
+            "{:2}".format(f"{chunk[i]:02x}" if i < len(chunk) else "") for i in range(chunk_len)
         )
         c = "".join(tochar(chunk[i]) if i < len(chunk) else " " for i in range(chunk_len))
         print("0x{addr:08x}:  {bytes}  {chars}".format(addr=base + chunk_len * i, bytes=b, chars=c))
@@ -258,7 +257,7 @@ class DRAMAddressConverter:
         bankbits,
         address_align,
         dram_port_width,
-        address_mapping="ROW_BANK_COL"
+        address_mapping="ROW_BANK_COL",
     ):
         self.colbits = colbits
         self.rowbits = rowbits

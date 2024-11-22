@@ -7,7 +7,7 @@ from collections import defaultdict
 from rowhammer_tester.scripts.playbook.payload_generators import PayloadGenerator
 
 # The following imports allow to fetch an appropriate Payload Generator with `get_by_name` method
-from rowhammer_tester.scripts.playbook.payload_generators.half_double_analysis import (  # noqa: F401, E501
+from rowhammer_tester.scripts.playbook.payload_generators.half_double_analysis import (  # noqa: F401
     HalfDoubleAnalysisPayloadGenerator,
 )
 from rowhammer_tester.scripts.playbook.payload_generators.hammer_tolerance import (  # noqa: F401
