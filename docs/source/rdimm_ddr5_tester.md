@@ -52,45 +52,10 @@ LEDs:
 Connect power supply (12-15VDC) to the [`J1`](#ddr5-tester_J1) barrel jack.
 Then connect the board USB cable ([`J6`](#ddr5-tester_J6)) and Ethernet cable ([`J4`](#ddr5-tester_J4)) to your computer and insert the memory module to the socket [`U12`](#ddr5-tester_U12).
 To turn on the board, use the power switch [`S1`](#ddr5-tester_S1).
-After power is up, configure the network.
-The board's default IP address is `192.168.100.50` and you need to ensure the device are registered within the same subnet (so, for example, you can use `192.168.100.2/24`).
-The `IP_ADDRESS` environment variable can be used to modify the board's address.
-Next, generate the FPGA bitstream:
+After power is up, configure the network and upload the bitstream.
 
-```sh
-export TARGET=ddr5_tester
-make build TARGET_ARGS="--l2-size 256 --build --iodelay-clk-freq 400e6 --bios-lto --rw-bios --module MTC10F1084S1RC --no-sdram-hw-test"
-```
-
-```{note}
-`--l2-size 256` sets L2 cache size to 256 bytes
-
-`--no-sdram-hw-test` disables hw accelerated memory test
-```
-
-```{note}
-Running `make`  will generate build files without invoking Vivado.
-```
-
-The results will be located in: `build/ddr5_tester/gateware/antmicro_ddr5_tester.bit`.
-To upload the bitstream, use:
-
-```sh
-export TARGET=ddr5_tester
-make upload
-```
-
-To save bitstream in flash memory, use:
-
-```sh
-export TARGET=ddr5_tester
-make flash
-```
-
-```{warning}
 There is a JTAG/SPI switch ([`MODE1`](#ddr5-tester_MODE1)) on the right-hand side of the board.
 Unless it's set to the SPI setting, the FPGA will load the bitstream received via JTAG ([`J3`](#ddr5-tester_J3)).
-```
 
 The bitstream will be loaded from flash memory upon device power-on or after pressing the [`PROG_B1`](#ddr5-tester_PROG_B1) button.
 
