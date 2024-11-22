@@ -59,36 +59,7 @@ Connect power supply (7-15VDC) to [`J3`](#data-center-dram-tester_J3) barrel jac
 Then connect the board USB cable ([`J9`](#data-center-dram-tester_J9)) and Ethernet cable ([`J2`](#data-center-dram-tester_J2)) to your computer and insert the memory module to the socket [`U14`](#data-center-dram-tester_U14).
 To turn the board on, use power switch [`S3`](#data-center-dram-tester_S3).
 
-After power is up, configure the network.
-The board's default IP address is `192.168.100.50` and you need to ensure the device are registered within the same subnet (so, for example, you can use `192.168.100.2/24`).
-The `IP_ADDRESS` environment variable can be used to modify the board's address.
-
-Next, generate the FPGA bitstream:
-
-```sh
-export TARGET=ddr4_datacenter_test_board
-make build
-```
-
-```{note}
-Running `make`  will generate build files without invoking Vivado.
-```
-
-The results will be located in: `build/ddr4_datacenter_test_board/gateware/antmicro_datacenter_ddr4_test_board.bit`. 
-To upload the bitstream, use:
-
-```sh
-export TARGET=ddr4_datacenter_test_board
-make upload
-```
-
-To save the bitstream in flash memory, use:
-
-```sh
-export TARGET=ddr4_datacenter_test_board
-make flash
-```
+After power is up, configure the network and prepare the board for uploading the bitstream.
 
 A JTAG/SPI switch `S2` on the right side of the board (near the JTAG connector) defines whether the bitstream is loaded via JTAG or SPI Flash memory.
-
 Bitstream will be loaded from flash memory upon device power-on or after pressing the [`PROG_B1`](#data-center-dram-tester_PROG_B1) button.
