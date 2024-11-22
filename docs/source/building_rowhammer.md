@@ -167,6 +167,21 @@ export TARGET=arty  # (or zcu104) required to load target configuration
 cd rowhammer_tester/scripts/
 python leds.py  # stop with Ctrl-C
 ```
+## Packaging the bitstream
+
+To save the bitstream and use it later or share it, use the `make pack` utility target.
+It packs the files necessary to load the bitstream and run rowhammer scripts on it.
+These files are:
+
+* `build/$TARGET/gateware/$TOP.bit`
+* `build/$TARGET/csr.csv`
+* `build/$TARGET/defs.csv`
+* `build/$TARGET/sdram_init.py`
+* `build/$TARGET/litedram_settings.json`
+
+Running `make pack` creates a zip file named, for instance, `$TARGET-$BRANCH-$COMMIT.zip`.
+
+To use a bitstream packaged this way, run `unzip your-bitstream-file.zip`.
 
 ## Building for simulation
 

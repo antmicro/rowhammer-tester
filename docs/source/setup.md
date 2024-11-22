@@ -60,22 +60,6 @@ source /PATH/TO/Vivado/VERSION/settings64.sh
 
 All other commands assume that you run Python from the virtual environment with `vivado` in your `PATH`.
 
-## Packaging the bitstream
-
-To save the bitstream and use it later or share it, use the `make pack` utility target.
-It packs the files necessary to load the bitstream and run rowhammer scripts on it.
-These files are:
-
-* `build/$TARGET/gateware/$TOP.bit`
-* `build/$TARGET/csr.csv`
-* `build/$TARGET/defs.csv`
-* `build/$TARGET/sdram_init.py`
-* `build/$TARGET/litedram_settings.json`
-
-Running `make pack` creates a zip file named, for instance, `$TARGET-$BRANCH-$COMMIT.zip`.
-
-To use a bitstream packaged this way, run `unzip your-bitstream-file.zip`.
-
 ## Local documentation build
 
 The part of the documentation related to the ditital design is auto-generated from source files.
