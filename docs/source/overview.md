@@ -19,7 +19,7 @@ This section provides an overview of the Rowhammer tester suite architecture.
 System architecture is presented in {numref}`tester-architecture` below:
 
 :::{figure-md} tester-architecture
-![Rowhammer tester architecture](images/architecture.png)
+![Rowhammer tester architecture](images/rowhammer_tester_architecture.png)
 
 Rowhammer tester suite architecture
 :::
