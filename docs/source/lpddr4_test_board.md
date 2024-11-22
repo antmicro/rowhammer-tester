@@ -50,7 +50,7 @@ LEDs:
 
 ## Board configuration
 
-First insert the LPDDR4 DRAM module into the socket [`J9`](#lpddr4-test-board_J9) and make sure that jumpers are set in correct positions:
+First insert the LPDDR4 testbed into the socket [`J9`](#lpddr4-test-board_J9) and make sure that jumpers are set in correct positions:
 
 * the VDDQ switch ([`J7`](#lpddr4-test-board_J7)) should be set in the `1V1` position
 * [`MODE1`](#lpddr4-test-board_MODE1) switch should be set in the FLASH position
@@ -59,35 +59,6 @@ Connect power supply (7-15VDC) to [`J6`](#lpddr4-test-board_J6) barrel jack.
 Then connect the board's USB-C [`J1`](#lpddr4-test-board_J1) and Ethernet [`J5`](#lpddr4-test-board_J5) interfaces to your computer.
 Turn on the board using power switch [`S1`](#lpddr4-test-board_S1).
 Then configure the network.
-The board's default IP address is `192.168.100.50` and you need to ensure the device are registered within the same subnet (so, for example, you can use `192.168.100.2/24`).
-The `IP_ADDRESS` environment variable can be used to modify the board's address.
-Next, generate the FPGA bitstream:
-
-```sh
-export TARGET=lpddr4_test_board
-make build
-```
-
-The results will be located in: `build/lpddr4_test_board/gateware/antmicro_lpddr4_test_board.bit`. 
-To upload the bitstream, use:
-
-```sh
-export TARGET=lpddr4_test_board
-make upload
-```
-
-```{note}
-Running `make`  will generate build files without invoking Vivado.
-```
-
-To save bitstream in flash memory, use:
-
-```sh
-export TARGET=lpddr4_test_board
-make flash
-```
-
 There is a JTAG/FLASH jumper [`MODE1`](#lpddr4-test-board_MODE1) on the right-hand side of the board.
 It defines whether the bitstream is be loaded via JTAG or FLASH memory.
-
 The bitstream will be loaded from flash memory upon device power-on or after the FPGA programming [`PROG_B1`](#lpddr4-test-board_PROG_B1) button is pressed.
