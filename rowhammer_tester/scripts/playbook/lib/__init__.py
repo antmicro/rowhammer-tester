@@ -17,7 +17,7 @@ def encode_one_loop(
     payload.append(encoder.Instruction(refresh_op, timeslice=trfc))
     # Accumulate an extra cycle for the jump at the end to be conservative
     accum = trfc + 1
-    for idx in range(unrolled):
+    for _ in range(unrolled):
         for row in row_sequence:
             if accum + tras + trp > trefi:
                 payload.append(encoder.Instruction(refresh_op, timeslice=trfc))

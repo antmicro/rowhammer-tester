@@ -62,7 +62,7 @@ class Command:
         )
 
 
-def run(argv, **kwargs):
+def run(argv, **_kwargs):
     commands = []
     proc = subprocess.Popen(argv, stdout=subprocess.PIPE)
 

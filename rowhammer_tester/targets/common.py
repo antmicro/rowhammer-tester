@@ -269,7 +269,7 @@ class RowHammerSoC(SoCCore):
 
         if controller_settings.phy.memtype == "DDR5":
             prefixes = [""] if not controller_settings.phy.with_sub_channels else ["A_", "B_"]
-            for i, prefix in enumerate(prefixes):
+            for _i, prefix in enumerate(prefixes):
                 setattr(
                     self,
                     prefix + "DQ_remapping",

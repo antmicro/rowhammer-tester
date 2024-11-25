@@ -120,7 +120,7 @@ class RowHammer:
         progress(self.wb.regs.rowhammer_count.read())  # also clears the value
         print()
 
-    def row_access_iterator(self, burst=16):
+    def row_access_iterator(self, _burst=16):
         """
         Generates a sequence of tuples of three:
 
@@ -184,7 +184,7 @@ class RowHammer:
         expr = f"{val ^ exp:#0{len(bin(exp))}b}"
         return [i for i, c in enumerate(expr[2:]) if c == "1"]
 
-    def display_errors(self, row_errors, read_count, do_error_summary=False):
+    def display_errors(self, row_errors, _read_count, do_error_summary=False):
         # FIXME: add docstring
 
         err_dict = {}

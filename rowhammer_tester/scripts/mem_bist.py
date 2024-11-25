@@ -43,7 +43,7 @@ if __name__ == "__main__":
         # --------------------------- Introduce error ------------------------
         rng = random.Random(datetime.now())
         offsets = []
-        for i, n in enumerate(range(0, 5000)):
+        for i, _n in enumerate(range(0, 5000)):
             print(f"Generated {i:d} offsets", end="\r")
             offset = rng.randrange(0x0, mem_range - 4)
             offset &= ~0b11  # must be 32-bit aligned

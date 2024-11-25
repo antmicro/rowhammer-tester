@@ -27,7 +27,7 @@ def get_dqs_on_col(data: dict, dq_pads: int = 64):
     return dq_flips
 
 
-def process_aggr_vs_vict(data: dict, dq_pads: int = 64):
+def process_aggr_vs_vict(data: dict, _dq_pads: int = 64):
     vis_data: list = []
     rows_affected: list(int) = []
     aggressors: list[int] = []

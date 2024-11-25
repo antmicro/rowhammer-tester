@@ -529,7 +529,7 @@ class PayloadExecutorDDR5DUT(Module):
                 ras = 1 - (yield phase.ras_n)
                 we = 1 - (yield phase.we_n)
                 entry = None
-                for op, desc in DFI_COMMANDS.items():
+                for _op, desc in DFI_COMMANDS.items():
                     if (cas, ras, we) == (desc["cas"], desc["ras"], desc["we"]):
                         cmd = DFICmd(cas=cas, ras=ras, we=we)
                         entry = HistoryEntry(time=time, phase=i, cmd=cmd)
@@ -1110,7 +1110,7 @@ def run_payload_executor(dut: PayloadExecutorDUT, *, print_period=1):
     # merge same commands in history
     Group = namedtuple("Group", ["op_code", "entries"])
     groups = []
-    for i, entry in enumerate(dut.dfi_history):
+    for _i, entry in enumerate(dut.dfi_history):
         op_code = entry.cmd.op_code
         prev = groups[-1] if len(groups) > 0 else None
         if prev is not None and prev.op_code == op_code:

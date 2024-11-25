@@ -14,7 +14,7 @@ class RowGenerator:
     def generate_rows(self, iteration):
         raise NotImplementedError("Return a list of rows based on the iteration count")
 
-    def get_memory_range(self, wb, settings):
+    def get_memory_range(self, wb, _settings):
         return 0x0, wb.mems.main_ram.size
 
     def update_param(self, param, value):

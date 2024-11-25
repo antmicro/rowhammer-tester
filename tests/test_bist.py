@@ -69,7 +69,7 @@ class BISTDUT(Module):
     @passive
     def read_handler(self, rdata_callback=None, read_delay=0):
         def default_rdata_callback(data: int):
-            def callback(addr):
+            def callback(_addr):
                 return data
 
             return callback

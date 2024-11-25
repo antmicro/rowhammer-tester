@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     all_dq_counters = np.zeros((0, DQ_PADS))
     # read_count / read_count_range level
-    for read_count, attack_set_results in log_data.items():
+    for _read_count, attack_set_results in log_data.items():
         # remove read_count as it's only interrupting here
         if "read_count" in attack_set_results:
             attack_set_results.pop("read_count")

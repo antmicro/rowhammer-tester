@@ -130,14 +130,14 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
             return PayloadGenerator.get_memset_range(self, wb, settings)
         row_nums = []
         for i in range(1 + 2 * self.distance):
-            logical_row_num, row_num = self.get_row_for_iter(i)
+            _logical_row_num, row_num = self.get_row_for_iter(i)
             row_nums.append(row_num)
         return get_range_from_rows(wb, settings, row_nums)
 
     # This payload generator is only looking at flips in the intended victim row
     # of a double sided hammer.  Don't bother testing anything else.
     def get_memtest_range(self, wb, settings):
-        logical_row_num, row_num = self.get_row_for_iter(self.distance)
+        _logical_row_num, row_num = self.get_row_for_iter(self.distance)
         return get_range_from_rows(wb, settings, [row_num])
 
     @staticmethod
@@ -150,7 +150,7 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
 
     def gather_full_stats(self, step, errors):
         dq_bits = 64 // self.nr_chips
-        for addr, value, expected in errors:
+        for _addr, value, expected in errors:
             flips = value ^ expected
             flips_bin = format(flips, "512b")[::-1]
             assert len(flips_bin) == 512
@@ -180,9 +180,9 @@ class HammerTolerancePayloadGenerator(PayloadGenerator):
                     self.chip_errors_per_read[step][chip][chip_flips_count] += 1
             self.bit_errors[step] += total_flip_count
 
-    def process_errors(self, settings, row_errors):
+    def process_errors(self, _settings, row_errors):
         step = ((self.iteration % self.iters_per_row) + 1) * self.read_count_step
-        logical_row_num, row_num = self.get_row_for_iter(self.distance)
+        _logical_row_num, row_num = self.get_row_for_iter(self.distance)
 
         run_baseline = self.run_baseline
         if not self.run_baseline:

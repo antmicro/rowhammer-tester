@@ -151,8 +151,8 @@ def read_level_test(wb, settings, module, seed=42, verbose=None):
     phase_bytes = (
         wb.regs.sdram_dfii_pi0_wrdata.data_width * wb.regs.sdram_dfii_pi0_wrdata.length
     ) // 8
-    for p in range(settings.nphases):
-        for b in range(phase_bytes):
+    for _p in range(settings.nphases):
+        for _b in range(phase_bytes):
             data_pattern.append(rng.randint(0, 256))
 
     def per_phase(data):

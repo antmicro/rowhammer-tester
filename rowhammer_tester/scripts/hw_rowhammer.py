@@ -79,7 +79,7 @@ class HwRowHammer(RowHammer):
 
         return dict(row_errors)
 
-    def run(self, row_pairs, pattern_generator, read_count, row_progress=16, verify_initial=True):
+    def run(self, row_pairs, pattern_generator, read_count, _row_progress=16, verify_initial=True):
         divisor, mask = 0, 0
         if self.data_inversion:
             divisor, mask = self.data_inversion
