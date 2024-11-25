@@ -53,9 +53,9 @@ def word_gen(offset):
     gen = byte_gen()
     while True:
         for _ in range(4):
-            bytes = [next(gen) for _ in range(4)]
+            data = [next(gen) for _ in range(4)]
             word = 0
-            for byte in reversed(bytes):
+            for byte in reversed(data):
                 word <<= 8
                 word |= byte
             yield word  # 0x33221100, 0x77665544, ...

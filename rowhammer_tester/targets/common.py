@@ -490,13 +490,13 @@ class ArgumentParser(argparse.ArgumentParser):
             ARG_NAMES = []
 
             def add_default(self, action):  # logic from argparse.ArgumentDefaultsHelpFormatter
-                help = action.help
+                help_string = action.help
                 if "%(default)" not in action.help:
                     if action.default is not argparse.SUPPRESS:
                         defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
                         if action.option_strings or action.nargs in defaulting_nargs:
-                            help += " (default: %(default)s)"
-                return help
+                            help_string += " (default: %(default)s)"
+                return help_string
 
             def _get_help_string(self, action):
                 for s in action.option_strings:

@@ -346,13 +346,13 @@ class DRAMAddressConverter:
 # ######################### HW (accel) memory utils #############################
 
 
-def _progress(current, max, bar_w=40, last=False, name="Progress", opt=None):
+def _progress(current, max_count, bar_w=40, last=False, name="Progress", opt=None):
     s = "{name}: [{bar:{bw}}] {cur:{n}} / {max:{n}}{opt}".format(
         name=name,
         cur=current,
-        max=max,
-        n=len(str(max)),
-        bar="=" * int(current / max * bar_w),
+        max=max_count,
+        n=len(str(max_count)),
+        bar="=" * int(current / max_count * bar_w),
         bw=bar_w,
         opt="" if opt is None else f" ({opt})",
     )
