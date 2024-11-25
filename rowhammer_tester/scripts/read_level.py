@@ -17,8 +17,8 @@ from rowhammer_tester.scripts.utils import (
 # Fetch DFII command signals form the generated sdram_init.py file
 try:
     from sdram_init import *  # noqa: F403
-except ModuleNotFoundError:
-    raise ModuleNotFoundError("sdram_init not loaded")
+except ModuleNotFoundError as e:
+    raise ModuleNotFoundError("sdram_init not loaded") from e
 
 # DRAM commands ----------------------------------
 
