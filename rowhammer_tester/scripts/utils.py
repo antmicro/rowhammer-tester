@@ -50,7 +50,7 @@ print(f"Using generated target files in: {os.path.relpath(GENERATED_DIR)}")
 sys.path.append(GENERATED_DIR)
 try:
     import sdram_init as sdram_init_defs
-    from sdram_init import *
+    from sdram_init import *  # noqa F403
 except ModuleNotFoundError:
     print("WARNING: sdram_init not loaded")
 
@@ -88,7 +88,7 @@ def get_litedram_settings():
 def RemoteClient(*args, **kwargs):
     from litex import RemoteClient as _RemoteClient
 
-    return _RemoteClient(csr_csv=get_generated_file("csr.csv"), *args, **kwargs)
+    return _RemoteClient(csr_csv=get_generated_file("csr.csv"), *args, **kwargs)  # noqa B026
 
 
 def litex_server():
@@ -107,14 +107,14 @@ def litex_server():
 
 def sdram_software_control(wb):
     reg_value = wb.regs.sdram_dfii_control.read()
-    wb.regs.sdram_dfii_control.write(reg_value & (~dfii_control_sel))
+    wb.regs.sdram_dfii_control.write(reg_value & (~dfii_control_sel))  # noqa F405
     if hasattr(wb.regs, "ddrphy_en_vtc"):
         wb.regs.ddrphy_en_vtc.write(0)
 
 
 def sdram_hardware_control(wb):
     reg_value = wb.regs.sdram_dfii_control.read()
-    wb.regs.sdram_dfii_control.write(reg_value | dfii_control_sel)
+    wb.regs.sdram_dfii_control.write(reg_value | dfii_control_sel)  # noqa F405
     if hasattr(wb.regs, "ddrphy_en_vtc"):
         wb.regs.ddrphy_en_vtc.write(1)
 
@@ -138,7 +138,7 @@ def sdram_init(wb):
                     control_cmds.append(n)
                 n = n + 1
 
-    for i, (comment, a, ba, cmd, delay) in enumerate(init_sequence):
+    for i, (comment, a, ba, cmd, delay) in enumerate(init_sequence):  # noqa F405
         wb.regs.sdram_dfii_pi0_address.write(a)
         wb.regs.sdram_dfii_pi0_baddress.write(ba)
         if i in control_cmds:

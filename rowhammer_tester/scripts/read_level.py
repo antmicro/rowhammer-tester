@@ -16,7 +16,7 @@ from rowhammer_tester.scripts.utils import (
 
 # Fetch DFII command signals form the generated sdram_init.py file
 try:
-    from sdram_init import *
+    from sdram_init import *  # noqa: F403
 except ModuleNotFoundError:
     raise ModuleNotFoundError("sdram_init not loaded")
 
@@ -42,7 +42,7 @@ def dfii_write(wb, phase_datas, wrphase):
     dfii_px(wb, wrphase, "address").write(0)
     dfii_px(wb, wrphase, "baddress").write(0)
     dfii_px(wb, wrphase, "command").write(
-        dfii_command_cas | dfii_command_we | dfii_command_cs | dfii_command_wrdata
+        dfii_command_cas | dfii_command_we | dfii_command_cs | dfii_command_wrdata  # noqa F405
     )
     dfii_px(wb, wrphase, "command_issue").write(1)
 
@@ -50,7 +50,7 @@ def dfii_write(wb, phase_datas, wrphase):
 def dfii_read(wb, nphases, rdphase):
     dfii_px(wb, rdphase, "address").write(0)
     dfii_px(wb, rdphase, "baddress").write(0)
-    dfii_px(wb, rdphase, "command").write(dfii_command_cas | dfii_command_cs | dfii_command_rddata)
+    dfii_px(wb, rdphase, "command").write(dfii_command_cas | dfii_command_cs | dfii_command_rddata)  # noqa F405
     dfii_px(wb, rdphase, "command_issue").write(1)
     return [dfii_px(wb, p, "rddata").read() for p in range(nphases)]
 
@@ -164,7 +164,7 @@ def read_level_test(wb, settings, module, seed=42, verbose=None):
             yield val
 
     # activate row
-    sdram_cmd(wb, 0, 0, dfii_command_ras | dfii_command_cs, enable_software_control=False)
+    sdram_cmd(wb, 0, 0, dfii_command_ras | dfii_command_cs, enable_software_control=False)  # noqa F405
     time.sleep(0.001)
 
     # send write command
@@ -192,7 +192,7 @@ def read_level_test(wb, settings, module, seed=42, verbose=None):
         wb,
         0,
         0,
-        dfii_command_ras | dfii_command_we | dfii_command_cs,
+        dfii_command_ras | dfii_command_we | dfii_command_cs,  # noqa F405
         enable_software_control=False,
     )
     time.sleep(0.001)
@@ -331,14 +331,17 @@ def write_leveling_on(wb):
         wb,
         DDRX_MR1 | (1 << 7),
         1,
-        dfii_command_ras | dfii_command_cas | dfii_command_we | dfii_command_cs,
+        dfii_command_ras | dfii_command_cas | dfii_command_we | dfii_command_cs,  # noqa F405
     )
     wb.regs.ddrphy_wlevel_en.write(1)
 
 
 def write_leveling_off(wb):
     sdram_cmd(
-        wb, DDRX_MR1, 1, dfii_command_ras | dfii_command_cas | dfii_command_we | dfii_command_cs
+        wb,
+        DDRX_MR1,
+        1,
+        dfii_command_ras | dfii_command_cas | dfii_command_we | dfii_command_cs,  # noqa F405
     )
     wb.regs.ddrphy_wlevel_en.write(0)
 
