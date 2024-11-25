@@ -213,21 +213,21 @@ class SoC(common.RowHammerSoC):
         )
 
     def get_ddrphy(self):
-        PHYCRG = ddr5.S7PHYCRG(
+        phycrg = ddr5.S7PHYCRG(
             reset_clock_domain="sys2x_rst",
             reset_clock_90_domain="sys2x_90_rst",
             source_4x=ClockSignal("sys4x_raw"),
             source_4x_90=ClockSignal("sys4x_90_raw"),
         )
-        self.submodules.PHYCRG = PHYCRG
-        PHYCRG.create_clock_domains(
+        self.submodules.PHYCRG = phycrg
+        phycrg.create_clock_domains(
             clock_domains=["sys_io", "sys2x_io", "sys2x_90_io", "sys4x_io", "sys4x_90_io"],
             io_banks=["bank34"],
         )
 
         return ddr5.K7DDR5PHY(
             self.platform.request("ddr5"),
-            crg=PHYCRG,
+            crg=phycrg,
             iodelay_clk_freq=float(self.args.iodelay_clk_freq),
             sys_clk_freq=self.sys_clk_freq,
             masked_write=False,

@@ -145,10 +145,10 @@ def print_stats(counts):
     print(f"  median = {statistics.median(counts):.2f}")
 
     # count number of commands per refresh period
-    tREF = 64e-3
-    nREF = 8192
-    per_period = statistics.median(counts) * nREF
-    freq = per_period / tREF
+    t_ref = 64e-3
+    n_ref = 8192
+    per_period = statistics.median(counts) * n_ref
+    freq = per_period / t_ref
     print(f"ACTs per REF period = {per_period / 1e6:.3f} M")
     print(f"ACTs frequency = {freq / 1e6:.2f} Mps")
     print()
