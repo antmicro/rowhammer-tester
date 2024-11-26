@@ -14,5 +14,5 @@ For FPGA digital design documentation for this board, refer to the [Digital desi
 
 ## Board configuration
 
-Connect the board USB and Ethernet cables to your computer and configure the netiwork.
+Connect the board USB and Ethernet cables to your computer and configure the network.
 The bitstream will be loaded from flash memory upon device power-on or after pressing the PROG button.

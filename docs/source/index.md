@@ -1,4 +1,4 @@
-# Rowhammer tester
+# Rowhammer Tester
 
 ```{toctree}
 :maxdepth: 2

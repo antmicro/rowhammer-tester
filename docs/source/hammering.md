@@ -1,7 +1,7 @@
 # Performing attacks (hammering)
 
 Rowhammer attacks can be run against a DRAM module.
-It can be then used for measuring cell retention.
+The results can be then used for measuring cell retention.
 For the complete list of script modifiers, see `--help`.
 
 There are two versions of the rowhammer script:
@@ -20,7 +20,7 @@ There are two ways to specify a number of reads:
 Regardless of which one is used, the number of reads in one pass is divided equally between the hammered rows.
 If a user specifies `--read_count 1000`, then each row will be hammered 500 times.
 
-As standard, hammering is performed via DMA, but there is an alternative way with `--payload-executor` which bypasses the DMA and talks directly with the PHY.
+By default, hammering is performed via DMA, but there is an alternative way with `--payload-executor` which bypasses the DMA and talks directly with the PHY.
 That allows the user to issue specific activation, refresh and precharge commands.
 
 ## Attack modes
@@ -239,7 +239,7 @@ The size of the payload memory is set by default to 1024 bytes and can be change
 
 ## DRAM modules
 
-When building one of the targets available in [rowhammer_tester/targets](https://github.com/antmicro/rowhammer-tester/tree/master/rowhammer_tester/targets), you can specify a custom DRAM module using the `--module` argument.
+When building one of the targets available in [rowhammer_tester/targets](https://github.com/antmicro/rowhammer-tester/tree/main/rowhammer_tester/targets), you can specify a custom DRAM module using the `--module` argument.
 To find the default modules for each target, check the output of `--help`.
 
 ```{note}
@@ -253,7 +253,7 @@ The [LiteDRAM](https://github.com/enjoy-digital/litedram) controller provides ou
 The supported modules are listed in [litedram/modules.py](https://github.com/antmicro/litedram/blob/rowhammer-tester/litedram/modules.py).
 If a module is not listed there, you can add a new definition.
 
-To make development more convenient, modules can be added in the rowhammer-tester repository directly in file [rowhammer_tester/targets/modules.py](https://github.com/antmicro/rowhammer-tester/blob/master/rowhammer_tester/targets/modules.py).
+To make development more convenient, modules can be added in the rowhammer-tester repository directly in file [rowhammer_tester/targets/modules.py](https://github.com/antmicro/rowhammer-tester/blob/main/rowhammer_tester/targets/modules.py).
 These definitions will be used before definitions in LiteDRAM.
 
 ```{note}

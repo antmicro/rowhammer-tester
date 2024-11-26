@@ -14,7 +14,7 @@ The payload executor connects directly to the DRAM PHY, bypassing the DRAM contr
 ### Changing payload memory size
 
 Payload memory size can be changed up to the limit of memory available on the hardware platform used.
-The payload memory size is defined in [common.py](https://github.com/antmicro/rowhammer-tester/blob/master/rowhammer_tester/targets/common.py), as an argument to LiteX:
+The payload memory size is defined in [common.py](https://github.com/antmicro/rowhammer-tester/blob/main/rowhammer_tester/targets/common.py), as an argument to LiteX:
 
 ```python
 add_argument("--payload-size", default="1024", help="Payload memory size in bytes")
@@ -31,7 +31,7 @@ There are several mapping strategies that can be implemented to deal with the pr
 
 * `TrivialRowMapping` - logical address is the same as physical address
 * `TypeARowMapping` - a more complex mapping method, reverse-engineered as a part of the [*Defeating Software Mitigations against Rowhammer: a Surgical Precision Hammer* paper](https://download.vusec.net/papers/hammertime_raid18.pdf)
-* `TypeBRowMapping` - logical address is the physical one multiplied by 2, taken from [this paper](https://arxiv.org/pdf/2005.13121.pdf)
+* `TypeBRowMapping` - logical address is the physical one multiplied by 2, taken from [Revisiting RowHammer: An Experimental Analysis of Modern DRAM Devices and Mitigation Techniques](https://arxiv.org/pdf/2005.13121.pdf)
 
 ## Row Generator class
 
@@ -59,13 +59,13 @@ Used by `HalfDoubleAnalysisPayloadGenerator`.
 * `distance_two` - indicates whether the attack has a distance two component
 * `attack_rows_start` - the index of the first attack row
 * `max_attack_row_idx` - the position of the last attack row relative to `attack_rows_start`
-* `decoy_rows_start` - the index of the first decoy row. There are 3 decoy rows that are used as placebos in various situations: to hammer away from the victim but to keep the number of hammers and timing constant.
+* `decoy_rows_start` - the index of the first decoy row; there are 3 decoy rows that are used as placebos in various situations: to hammer away from the victim but to keep the number of hammers and timing constant
 
 ## Payload generator class
 
 The purpose of the payload generator is to prepare a payload and process the test outcome.
 It is a class that can be reused in different tests [configurations](#configurations).
-Payload generators are located in the [payload_generators directory](https://github.com/antmicro/rowhammer-tester/tree/master/rowhammer_tester/scripts/playbook/payload_generators)
+Payload generators are located in the [payload_generators directory](https://github.com/antmicro/rowhammer-tester/tree/main/rowhammer_tester/scripts/playbook/payload_generators)
 
 ### Available payload generators
 
@@ -87,7 +87,7 @@ The configs that can be used in *payload_generator_config* for this payload gene
 * `read_count` - number of hammers (reads) per row
 * `refresh` - should refresh be enabled (true or false)
 
-Examples of [configurations](#configurations) for this test are provided as `configs/example_row_list_*.cfg` files.
+Examples of [configurations](#configurations) for this test are provided as `configs/example_row_list_*.json` files.
 Some of them require a significant amount of memory declared as `payload memory`.
 To execute a minimalistic example from within the rowhammer-tester repo, execute:
 
@@ -95,7 +95,7 @@ To execute a minimalistic example from within the rowhammer-tester repo, execute
 source venv/bin/activate
 export TARGET=arty # change accordingly
 cd rowhammer_tester/scripts/playbook/
-python playbook.py configs/example_row_list_minimal.cfg
+python playbook.py configs/example_row_list_minimal.json
 ```
 
 Expected output:
@@ -140,19 +140,19 @@ Here are the parameters that can be specified in *payload_generator_config* for 
 * `row_generator_config` - parameters for the row generator
 * `verbose` - should verbose output be generated (true or false)
 * `fill_local` - when enabled, permits shrinking the filled memory area to just the aggressors and the victim
-* `nr_rows` - number of rows to conduct the experiment over. This is the number of aggressor rows.
-  * The number of victim rows will be lower by 2. For example, to perform hammering for 32 victim rows, use 34 as the parameter value
-* `read_count_step` - this is how much to increment the hammer count between multiple tests for the same row.
+* `nr_rows` - number of rows to conduct the experiment over. This is the number of aggressor rows
+  * The number of victim rows will be lower by 2; for example, to perform hammering for 32 victim rows, use 34 as the parameter value
+* `read_count_step` - this is how much to increment the hammer count between multiple tests for the same row
   * This is the number of hammers on a single side (total number of hammers on both sides is 2x this value)
 * `initial_read_count` - hammer count for the first test for a given row. Defaults to `read_count_step` if unspecified
 * `distance` - distance between aggressors and victim. Defaults to 1
 * `baseline` - when enabled, a retention effect baseline is collected by hammering distant rows for the same amount of time as the aggressor rows
-* `first_dummy_row` - location of the first of two dummy rows used for baselining.
+* `first_dummy_row` - location of the first of two dummy rows used for baselining
 * `iters_per_row` - number of times the hammer count is incremented for each row
 
 The results are a series of histograms with appropriate labeling.
 
-Example [configurations](#configurations) for this test ar provided as `configs/example_hammer_*.cfg` files.
+Example [configurations](#configurations) for this test ar provided as `configs/example_hammer_*.json` files.
 Some of them require a significant amount of memory declared as `payload memory`.
 To execute a minimalistic example from within the rowhammer-tester repo, execute:
 
@@ -160,7 +160,7 @@ To execute a minimalistic example from within the rowhammer-tester repo, execute
 source venv/bin/activate
 export TARGET=arty # change accordingly
 cd rowhammer_tester/scripts/playbook/
-python playbook.py configs/example_hammer_minimal.cfg
+python playbook.py configs/example_hammer_minimal.json
 ```
 
 Expected output:
@@ -218,7 +218,7 @@ See Tables 2 and 3 in the [Half-Double white paper](https://github.com/google/ha
 * `max_attack_row_idx` - index measured from `attack_rows_start` for the last attack row
 * `decoy_rows_start` - the position of the first decoy row. There are three decoy rows. They are used as placebos during pure distance-one portions of the experiment to make the number of hammers and their timing comparable
 * `max_dilution` - maximum value for dilution
-* `fill_local` - only reinitialize affected rows between experiments, as an optimization.
+* `fill_local` - only reinitialize affected rows between experiments, as an optimization
 
 ## Configurations
 
@@ -250,7 +250,7 @@ The following parameters are supported:
 * `payload_generator` - name of the [payload generator class](#payload-generator-class) to use
 * `row_pattern` - pattern that will be stored in rows
 * inversion_divisor and inversion_mask - controls which rows get the inverted pattern described in the [inversion section](#inversion)
-* `payload_generator_config` - these parameters are specific for the [payload generator class](#payload-generator-class) used.
+* `payload_generator_config` - these parameters are specific for the [payload generator class](#payload-generator-class) used
 
 ### Inversion
 

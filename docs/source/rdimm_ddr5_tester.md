@@ -61,8 +61,8 @@ The bitstream will be loaded from flash memory upon device power-on or after pre
 
 ## Simulation
 
-The simulation is based on a DDR5 DRAM model ([sdram_simulation_model.py](../../third_party/litedram/litedram/phy/ddr5/sdram_simulation_model.py)) and a DDR5 PHY simulation model ([simphy.py](../../third_party/litedram/litedram/phy/ddr5/simphy.py)). 
-These models are used by the SoC simulation model ([simsoc.py](../../third_party/litedram/litedram/phy/ddr5/simsoc.py)).
+The simulation is based on a DDR5 DRAM model ([sdram_simulation_model.py](https://github.com/antmicro/litedram/blob/rowhammer-tester/litedram/phy/ddr5/sdram_simulation_model.py)) and a DDR5 PHY simulation model ([simphy.py](https://github.com/antmicro/litedram/blob/rowhammer-tester/litedram/phy/ddr5/simphy.py)).
+These models are used by the SoC simulation model ([simsoc.py](https://github.com/antmicro/litedram/blob/rowhammer-tester/litedram/phy/ddr5/simsoc.py)).
 
 Start the simulation with:
 

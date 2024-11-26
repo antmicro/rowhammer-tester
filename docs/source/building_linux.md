@@ -92,7 +92,7 @@ TFTP_DIRECTORY="/srv/tftp"
 TFTP_ADDRESS="192.168.100.100:69"
 ```
 
-``TFTP_ADDRESS`` is the specified ``--remote-ip-address`` whilst building the target and the port is the default one for the TFTP server.
+``TFTP_ADDRESS`` is specified with the ``--remote-ip-address`` option whilst building the target and the port is the default one for the TFTP server.
 The ``TFTP_DIRECTORY`` is the TFTP's root directory.
 
 To start the TFTP service, run:
@@ -120,13 +120,13 @@ You will need the following binaries:
 * Opensbi's `fw_jump.bin`
 * rootfs.cpio
 
-All of these can be obtained with the use of provided `buildroot_ext` buildroot external configuration.
+All of these can be obtained with the use of provided `firmware/ddr5_tester/buildroot` buildroot external configuration.
 To build binaries with buildroot, run:
 
 ```sh
 git clone --single-branch -b 2023.05.x https://github.com/buildroot/buildroot.git
 pushd buildroot
-make BR2_EXTERNAL="$(pwd)/../buildroot_ext" ddr5_vexriscv_defconfig
+make BR2_EXTERNAL="$(pwd)/../firmware/ddr5_tester/buildroot" ddr5_vexriscv_defconfig
 ```
 
 Then, transfer the binaries to the TFTP root directory:

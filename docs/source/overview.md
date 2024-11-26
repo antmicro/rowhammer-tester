@@ -6,7 +6,7 @@ This suite can be run on real hardware (FPGAs) or in a simulation mode.
 
 Read more about particular aspects of the framework in dedicated blog articles:
 
-* [Rowhammer tester platform overview](https://antmicro.com/blog/2021/08/open-source-ddr-test-framework-for-rowhammer/)
+* [Rowhammer Tester platform overview](https://antmicro.com/blog/2021/08/open-source-ddr-test-framework-for-rowhammer/)
 * [LPDDR4 Test Board](https://antmicro.com/blog/2021/04/lpddr4-test-platform/)
 * [Data Center RDIMM DDR4 Tester](https://antmicro.com/blog/2021/12/open-source-data-center-rowhammer-tester/)
 * [Data Center RDIMM DDR5 Tester](https://antmicro.com/blog/2023/07/open-source-data-center-rdimm-ddr5-tester-for-memory-vulnerability-research/)
@@ -14,14 +14,14 @@ Read more about particular aspects of the framework in dedicated blog articles:
 
 ## Tester suite architecture
 
-This section provides an overview of the Rowhammer tester suite architecture.
+This section provides an overview of the Rowhammer Tester suite architecture.
 
 System architecture is presented in {numref}`tester-architecture` below:
 
 :::{figure-md} tester-architecture
-![Rowhammer tester architecture](images/rowhammer_tester_architecture.png)
+![Rowhammer Tester architecture](images/rowhammer_tester_architecture.png)
 
-Rowhammer tester suite architecture
+Rowhammer Tester suite architecture
 :::
 
 The DRAM is connected to [LiteDRAM](https://github.com/enjoy-digital/litedram), which provides swappable PHYs and a DRAM controller implementation.

@@ -62,23 +62,26 @@ All other commands assume that you run Python from the virtual environment with 
 
 ## Local documentation build
 
-The part of the documentation related to the ditital design is auto-generated from source files.
+The part of the documentation related to the digital design is auto-generated from source files.
 Other files are static and are located in the `docs/` directory.
 
 To build the documentation locally you may need to install additional requirements in your virtual Python environment.
 Those requirements are listed in `docs/requirements.txt'
 
-You can install them with: 
+You can install them with:
 
 ```sh
 pip install ./docs/requirements.txt
 ```
-Then you can build he local html documentation using:
+
+Then you can build the local HTML documentation using:
 
 ```sh
-make doc
+cd docs
+make html
 ```
-Once the building process finishes, you can open the `./docs/build/html/index.html` in your web browser.
+
+Once the building process finishes, you can open `./build/html/index.html` in your web browser.
 
 ## Unit tests
 
@@ -97,10 +100,10 @@ In case you want to use an USB Ethernet adapter for this purpose, follow the ins
 1. Determine the MAC address for the USB network adapter:
    * Run `sudo lshw -class network -short` to get the list of all network interfaces
    * Check which of the devices uses the r8152 driver by running `sudo ethtool -i <device>`
-   * Display the link information for the device running `sudo ip link show <device>` and look for the mac address next to the `link/ether` field.
+   * Display the link information for the device running `sudo ip link show <device>` and look for the mac address next to the `link/ether` field
 1. Configure the USB network adapter to appear as network device `fpga0` using systemd
    * Create `/etc/systemd/network/10-fpga0.link` with the following contents:
-  
+   * Display the link information for the device running `sudo ip link show <device>` and look for the mac address next to the `link/ether` field
     ```sh
     [Match]
     # Set this to the MAC address of the USB network adapter
