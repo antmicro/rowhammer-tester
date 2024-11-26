@@ -40,7 +40,7 @@ basic_filename = "rowhammer-tester"
 if "tags" in globals() and "internal" in tags:
     basic_filename = "INTERNAL--" + basic_filename
 authors = "Antmicro"
-copyright = authors + ", 2021-2023"
+copyright = authors + ", 2021-202"
 
 # The short X.Y version.
 version = ""
