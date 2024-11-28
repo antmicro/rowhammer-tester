@@ -552,9 +552,9 @@ class TestPayloadExecutor(unittest.TestCase):
             encoder(OpCode.ACT,  timeslice=10, address=encoder.address(bank=0, row=100)),
             encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=200)),
             encoder(OpCode.LOOP, count=8 - 1, jump=1),  # to READ col=200
-            encoder(OpCode.PRE,  timeslice=40, address=encoder.address(bank=0)),
-            encoder(OpCode.REF,  timeslice=50),
-            encoder(OpCode.REF,  timeslice=50),
+            encoder(OpCode.PRE,  timeslice=30, address=encoder.address(bank=0)),
+            encoder(OpCode.REF,  timeslice=30),
+            encoder(OpCode.REF,  timeslice=30),
             encoder(OpCode.LOOP, count=5 - 1, jump=2),  # to first REF
         ]
 
@@ -795,9 +795,9 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
             encoder(OpCode.ACT,  timeslice=10, address=encoder.address(bank=0, row=100)),
             encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=200)),
             encoder(OpCode.LOOP, count=8 - 1, jump=1),  # to READ col=200
-            encoder(OpCode.PRE,  timeslice=40, address=encoder.address(bank=0)),
-            encoder(OpCode.REF,  timeslice=50),
-            encoder(OpCode.REF,  timeslice=50),
+            encoder(OpCode.PRE,  timeslice=30, address=encoder.address(bank=0)),
+            encoder(OpCode.REF,  timeslice=30),
+            encoder(OpCode.REF,  timeslice=30),
             encoder(OpCode.LOOP, count=5 - 1, jump=2),  # to first REF
         ]
 
