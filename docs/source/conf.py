@@ -24,7 +24,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 from subprocess import run
-
+from datetime import date
 from antmicro_sphinx_utils.defaults import (
     extensions as default_extensions,
     myst_enable_extensions as default_myst_enable_extensions,
@@ -40,7 +40,7 @@ basic_filename = "rowhammer-tester"
 if "tags" in globals() and "internal" in tags:
     basic_filename = "INTERNAL--" + basic_filename
 authors = "Antmicro"
-copyright = authors + ", 2021-2024"
+copyright = authors + ", 2021-" + str(date.today().year)
 
 # The short X.Y version.
 version = ""
