@@ -69,10 +69,10 @@ all:
 build:
 	python rowhammer_tester/targets/$(TARGET).py --build $(TARGET_ARGS)
 
-lint: python-deps
+lint: venv/python-deps
 	ruff format
 
-lint-check: python-deps  ## Run RTL lint and check lint on tests source code without fixing errors
+lint-check: venv/python-deps  ## Run RTL lint and check lint on tests source code without fixing errors
 	ruff check
 
 sim: sim-deps
@@ -135,7 +135,7 @@ minimal-deps:: # Intentionally skipping --recursive as not needed (but doesn't b
 	git submodule update --init
 	(make --no-print-directory -C . \
 		venv/bin/openFPGALoader \
-		python-deps \
+		venv/python-deps \
 	)
 
 deps: minimal-deps sim-deps
@@ -146,8 +146,9 @@ deps: minimal-deps sim-deps
 
 sim-deps: venv/bin/verilator
 
-python-deps: venv/bin/activate  # installs python dependencies inside virtual environment
+venv/python-deps: venv/bin/activate  # installs python dependencies inside virtual environment
 	pip install -r requirements.txt
+	touch venv/python-deps
 
 venv/bin/activate:  # creates virtual environment if it does not exist
 	python3 -m venv venv
