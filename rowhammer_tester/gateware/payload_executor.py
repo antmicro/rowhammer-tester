@@ -356,10 +356,12 @@ class DFISwitch(Module, AutoCSR):
         # master (any refresh issued, both by MC and PayloadExecutor)
         if dfii.master.with_sub_channels:
             self.submodules.refresh_counter = RefreshCounter(
-                dfii.master.phases[0].A_, memtype=memtype
+                dfii.master.phases[0].A_, width=64, memtype=memtype
             )
         else:
-            self.submodules.refresh_counter = RefreshCounter(dfii.master.phases[0], memtype=memtype)
+            self.submodules.refresh_counter = RefreshCounter(
+                dfii.master.phases[0], width=64, memtype=memtype
+            )
 
         # If non-zero, we must wait until exactly that refresh count
         # Refresh counter is updated 1 cycle after refresh, so add +1 in the test
