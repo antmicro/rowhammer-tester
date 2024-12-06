@@ -581,6 +581,125 @@ def validate_keys(config_dict, valid_keys_set):
 
 # ###############################################################################
 
+
+def _i2c_oe_scl_sda(wb, oe, scl, sda):
+    value = scl & 1 | ((oe & 1) << 1) | ((sda & 1) << 2)
+    wb.regs.i2c_w.write(value)
+
+
+def _i2c_start(wb):
+    _i2c_oe_scl_sda(wb, 1, 1, 1)
+    time.sleep(5 / 10e6)
+    _i2c_oe_scl_sda(wb, 1, 1, 0)
+    time.sleep(5 / 10e6)
+    _i2c_oe_scl_sda(wb, 1, 0, 0)
+    time.sleep(5 / 10e6)
+
+
+def _i2c_stop(wb):
+    _i2c_oe_scl_sda(wb, 1, 0, 0)
+    time.sleep(5 / 10e6)
+    _i2c_oe_scl_sda(wb, 1, 1, 0)
+    time.sleep(5 / 10e6)
+    _i2c_oe_scl_sda(wb, 1, 1, 1)
+    time.sleep(5 / 10e6)
+    _i2c_oe_scl_sda(wb, 0, 1, 1)
+
+
+def _i2c_send_bit(wb, bit):
+    _i2c_oe_scl_sda(wb, 1, 0, bit)
+    time.sleep(5 / 10e6)
+    _i2c_oe_scl_sda(wb, 1, 1, bit)
+    time.sleep(10 / 10e6)
+    _i2c_oe_scl_sda(wb, 1, 0, bit)
+    time.sleep(5 / 10e6)
+
+
+def _i2c_get_bit(wb):
+    _i2c_oe_scl_sda(wb, 0, 0, 0)
+    time.sleep(5 / 10e6)
+    _i2c_oe_scl_sda(wb, 0, 1, 0)
+    time.sleep(5 / 10e6)
+    bit = wb.regs.i2c_r.read() & 1
+    time.sleep(5 / 10e6)
+    _i2c_oe_scl_sda(wb, 0, 0, 0)
+    time.sleep(5 / 10e6)
+    return bit
+
+
+def _i2c_send_byte(wb, value):
+    _i2c_oe_scl_sda(wb, 1, 0, 0)
+    for _ in range(8):
+        _i2c_send_bit(wb, (value & 0x80) != 0)
+        value = value << 1
+    _i2c_oe_scl_sda(wb, 0, 0, 0)
+    return _i2c_get_bit(wb) == 0
+
+
+def _i2c_get_byte(wb, ack):
+    ret = 0
+    for _ in range(8):
+        ret = ret << 1
+        ret = ret | _i2c_get_bit(wb)
+    _i2c_send_bit(wb, not ack)
+    _i2c_oe_scl_sda(wb, 0, 0, 0)
+    return ret
+
+
+def i2c_read(wb, slave_addr, reg_addr, length, send_stop=True, reg_addr_size=1):
+    _i2c_start(wb)
+    if not _i2c_send_byte(wb, slave_addr << 1):
+        _i2c_stop(wb)
+        return None
+    for i in range(reg_addr_size):
+        if not _i2c_send_byte(wb, (reg_addr >> (8 * i)) & 0xFF):
+            _i2c_stop(wb)
+            return None
+    if send_stop:
+        _i2c_stop(wb)
+    _i2c_start(wb)
+    if not _i2c_send_byte(wb, (slave_addr << 1) | 1):
+        _i2c_stop(wb)
+        return None
+    ret = []
+    for i in range(length):
+        ret.append(_i2c_get_byte(wb, i != (length - 1)))
+    _i2c_stop(wb)
+    return ret
+
+
+def i2c_write(wb, slave_addr, reg_addr, data, reg_addr_size=1):
+    _i2c_start(wb)
+    if not _i2c_send_byte(wb, slave_addr << 1):
+        _i2c_stop(wb)
+        return 0
+    for i in range(reg_addr_size):
+        if not _i2c_send_byte(wb, (reg_addr >> (8 * i)) & 0xFF):
+            _i2c_stop(wb)
+            return 0
+    for i, value in enumerate(data):
+        if not _i2c_send_byte(wb, value & 0xFF):
+            _i2c_stop(wb)
+            return i
+    _i2c_stop(wb)
+    return len(data)
+
+
+def i2c_poll(wb, slave_addr):
+    _i2c_start(wb)
+    if _i2c_send_byte(wb, slave_addr << 1):
+        _i2c_stop(wb)
+        return True
+    elif _i2c_send_byte(wb, (slave_addr << 1) | 1):
+        _i2c_start(wb)
+        _i2c_get_byte(wb, False)
+        _i2c_stop(wb)
+        return True
+    return False
+
+
+# ###############################################################################
+
 # Open a remote connection in an interactive session (e.g. when sourced as `ipython -i <thisfile>`)
 if __name__ == "__main__":
     if bool(getattr(sys, "ps1", sys.flags.interactive)):
