@@ -50,7 +50,9 @@ class SoC(common.RowHammerSoC):
             # we need to set SDA high, so the I2C controller gets NACK.
             self.comb += pads.sda_in.eq(1)
         else:
-            self.submodules.i2c = I2CMaster(pads)
+            self.submodules.i2c = I2CMaster(
+                pads, sys_freq=self.sys_clk_freq, bus_freq=400e3, fifo_depth=192
+            )
 
         self.add_csr("i2c")
 

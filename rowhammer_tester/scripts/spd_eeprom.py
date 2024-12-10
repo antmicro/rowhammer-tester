@@ -11,6 +11,8 @@ from litedram.modules import SDRAMModule
 from rowhammer_tester.scripts.utils import (
     RemoteClient,
     get_generated_defs,
+    i2c_read,
+    i2c_write,
     litex_server,
     read_ident,
 )
@@ -20,21 +22,41 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
 SPD_COMMANDS = {
     # on ZCU104 first configure the I2C switch to select DDR4 SPD EEPROM,
     # which than has base address 0b001
-    "zcu104": (1, ["i2c_write 0x74 0x80"]),
-    "ddr4_datacenter_test_board": (0, None),
+    "zcu104": (1, [(1, [0x74, 0x80])], False),
+    "ddr4_datacenter_test_board": (0, None, False),
     "ddr5_tester": (0, None, True),
     "sodimm_ddr5_tester": (0, None, True),
 }
 
 
-def read_spd(console, spd_addr, init_commands=None, ddr5=False):
+def read_spd_i2c(wb, spd_addr, init_commands=None, ddr5=False):
+    assert 0 <= spd_addr < 0b111, "SPD EEPROM max address is 0b111 (defined by A0, A1, A2 pins)"
+    if ddr5:
+        spd_data = []
+        for page in range(8):
+            print(f"Reading page {page}")
+            i2c_write(wb, 0x50, 0x0B, [page], 1)
+            page_data = i2c_read(wb, 0x50, 0x80, 128, False)
+            spd_data.extend(page_data)
+    else:
+        # TODO: Add support for other memory types
+        assert False
+        for write, args in init_commands or []:
+            if write == 1:
+                i2c_write(wb, *args)
+            else:
+                i2c_read(wb, *args)
+    return spd_data
+
+
+def read_spd_console(console, spd_addr, init_commands=None, ddr5=False):
     assert 0 <= spd_addr < 0b111, "SPD EEPROM max address is 0b111 (defined by A0, A1, A2 pins)"
     prompt = "^.*litex[^>]*> "  # '92;1mlitex\x1b[0m> '
     console.sendline()
     console.expect(prompt)
     if ddr5:
 
-        def add_page_to_address(dump):
+        def add_page_to_address(page, dump):
             ret = []
             for line in dump.splitlines():
                 if line.strip().startswith("0x"):
@@ -53,10 +75,15 @@ def read_spd(console, spd_addr, init_commands=None, ddr5=False):
             console.expect("Memory dump:")
             console.expect(prompt)
             text = console.after.decode()
-            modified_dump = add_page_to_address(text)
+            modified_dump = add_page_to_address(page, text)
             spd_data += "\n" + modified_dump
     else:
-        for cmd in init_commands or []:
+        for write, args in init_commands or []:
+            cmd = ""
+            if write == 1:
+                cmd = "i2c_write " + " ".join(args)
+            else:
+                cmd = "i2c_read " + " ".join(args)
             console.sendline(cmd)
             console.expect(prompt)
         console.sendline(f"sdram_spd {spd_addr}")
@@ -134,19 +161,20 @@ if __name__ == "__main__":
         wb.open()
         print("Board info:", read_ident(wb))
 
-        spinner = itertools.cycle("/-\\-")
-        spinner_fmt = "[{}] Waiting for CPU to finish memory training"
-        while hasattr(wb.regs, "ddrctrl_init_done") and not wb.regs.ddrctrl_init_done.read():
-            print(spinner_fmt.format(next(spinner)), end="\r")
-            time.sleep(1)
+        if SPD_COMMANDS[target][-1]:
+            spd_data = read_spd_i2c(wb, *SPD_COMMANDS[target])
+        else:
+            spinner = itertools.cycle("/-\\-")
+            spinner_fmt = "[{}] Waiting for CPU to finish memory training"
+            while hasattr(wb.regs, "ddrctrl_init_done") and not wb.regs.ddrctrl_init_done.read():
+                print(spinner_fmt.format(next(spinner)), end="\r")
+                time.sleep(1)
 
-        print("Ready", " " * len(spinner_fmt), flush=True)
-
+            print("Ready", " " * len(spinner_fmt), flush=True)
+            output = read_spd_console(console, *SPD_COMMANDS[target])
+            spd_data = list(parse_hexdump(output))
         time.sleep(2)
         wb.close()
-
-        output = read_spd(console, *SPD_COMMANDS[target])
-        spd_data = list(parse_hexdump(output))
 
         with open(args.output_file, "wb") as f:
             f.write(bytes(spd_data))

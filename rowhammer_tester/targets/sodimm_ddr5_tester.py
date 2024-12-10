@@ -106,9 +106,20 @@ class SoC(common.RowHammerSoC):
         super().__init__(**kwargs)
 
         # SPD EEPROM I2C ---------------------------------------------------------------------------
-        self.submodules.i2c = I2CMaster(self.platform.request("i2c_ddr"), True)
+        self.submodules.i2c = I2CMaster(
+            self.platform.request("i2c_ddr"),
+            True,
+            sys_freq=self.sys_clk_freq,
+            bus_freq=400e3,
+            fifo_depth=192,
+        )
         self.add_csr("i2c")
-        self.submodules.platform_i2c = I2CMaster(self.platform.request("i2c_platform"))
+        self.submodules.platform_i2c = I2CMaster(
+            self.platform.request("i2c_platform"),
+            sys_freq=self.sys_clk_freq,
+            bus_freq=400e3,
+            fifo_depth=192,
+        )
         self.add_csr("platform_i2c")
         # GPIO -------------------------------------------------------------------------------------
         in_pads = [

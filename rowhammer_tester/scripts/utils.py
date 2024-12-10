@@ -582,118 +582,172 @@ def validate_keys(config_dict, valid_keys_set):
 # ###############################################################################
 
 
-def _i2c_oe_scl_sda(wb, oe, scl, sda):
-    value = scl & 1 | ((oe & 1) << 1) | ((sda & 1) << 2)
-    wb.regs.i2c_w.write(value)
-
-
-def _i2c_start(wb):
-    _i2c_oe_scl_sda(wb, 1, 1, 1)
-    time.sleep(5 / 10e6)
-    _i2c_oe_scl_sda(wb, 1, 1, 0)
-    time.sleep(5 / 10e6)
-    _i2c_oe_scl_sda(wb, 1, 0, 0)
-    time.sleep(5 / 10e6)
-
-
-def _i2c_stop(wb):
-    _i2c_oe_scl_sda(wb, 1, 0, 0)
-    time.sleep(5 / 10e6)
-    _i2c_oe_scl_sda(wb, 1, 1, 0)
-    time.sleep(5 / 10e6)
-    _i2c_oe_scl_sda(wb, 1, 1, 1)
-    time.sleep(5 / 10e6)
-    _i2c_oe_scl_sda(wb, 0, 1, 1)
-
-
-def _i2c_send_bit(wb, bit):
-    _i2c_oe_scl_sda(wb, 1, 0, bit)
-    time.sleep(5 / 10e6)
-    _i2c_oe_scl_sda(wb, 1, 1, bit)
-    time.sleep(10 / 10e6)
-    _i2c_oe_scl_sda(wb, 1, 0, bit)
-    time.sleep(5 / 10e6)
-
-
-def _i2c_get_bit(wb):
-    _i2c_oe_scl_sda(wb, 0, 0, 0)
-    time.sleep(5 / 10e6)
-    _i2c_oe_scl_sda(wb, 0, 1, 0)
-    time.sleep(5 / 10e6)
-    bit = wb.regs.i2c_r.read() & 1
-    time.sleep(5 / 10e6)
-    _i2c_oe_scl_sda(wb, 0, 0, 0)
-    time.sleep(5 / 10e6)
-    return bit
-
-
-def _i2c_send_byte(wb, value):
-    _i2c_oe_scl_sda(wb, 1, 0, 0)
-    for _ in range(8):
-        _i2c_send_bit(wb, (value & 0x80) != 0)
-        value = value << 1
-    _i2c_oe_scl_sda(wb, 0, 0, 0)
-    return _i2c_get_bit(wb) == 0
-
-
-def _i2c_get_byte(wb, ack):
-    ret = 0
-    for _ in range(8):
-        ret = ret << 1
-        ret = ret | _i2c_get_bit(wb)
-    _i2c_send_bit(wb, not ack)
-    _i2c_oe_scl_sda(wb, 0, 0, 0)
-    return ret
-
-
 def i2c_read(wb, slave_addr, reg_addr, length, send_stop=True, reg_addr_size=1):
-    _i2c_start(wb)
-    if not _i2c_send_byte(wb, slave_addr << 1):
-        _i2c_stop(wb)
-        return None
+    w_state = wb.regs.i2c_i2c_worker_write_fifo_state.read()
+    w_depth = w_state & 0xFF
+    assert length + 3 + reg_addr_size <= w_depth
+    wb.regs.i2c_i2c_worker_i2c_ctrl.write(0)
+    wb.regs.i2c_worker.write(1)
+    wb.regs.i2c_i2c_worker_fifos_access_port.write(
+        slave_addr << 1 | 1 << 8 | 1 << 16 | 1 << 17 | 1 << 20
+    )
     for i in range(reg_addr_size):
-        if not _i2c_send_byte(wb, (reg_addr >> (8 * i)) & 0xFF):
-            _i2c_stop(wb)
-            return None
+        wb.regs.i2c_i2c_worker_fifos_access_port.write(
+            ((reg_addr >> (8 * i)) & 0xFF) | 1 << 8 | 1 << 17 | 1 << 20
+        )
     if send_stop:
-        _i2c_stop(wb)
-    _i2c_start(wb)
-    if not _i2c_send_byte(wb, (slave_addr << 1) | 1):
-        _i2c_stop(wb)
-        return None
+        wb.regs.i2c_i2c_worker_fifos_access_port.write(1 << 18 | 1 << 20)
+    wb.regs.i2c_i2c_worker_fifos_access_port.write(
+        slave_addr << 1 | 1 | 1 << 8 | 1 << 16 | 1 << 17 | 1 << 20
+    )
+    discard_reads = 2 + reg_addr_size
+    w_state = wb.regs.i2c_i2c_worker_write_fifo_state.read()
+    w_depth = w_state & 0xFF
+    w_entries = w_state >> 8
+    sent = 0
+    for i in range(min(w_depth - w_entries, length)):
+        flag = i == (length - 1)
+        wb.regs.i2c_i2c_worker_fifos_access_port.write(
+            0xFF | flag << 8 | 1 << 17 | flag << 18 | flag << 19 | (not flag) << 20
+        )
+        sent += 1
+    wb.regs.i2c_i2c_worker_start.write(1)
+
     ret = []
-    for i in range(length):
-        ret.append(_i2c_get_byte(wb, i != (length - 1)))
-    _i2c_stop(wb)
+    while len(ret) < length:
+        fsm_state = wb.regs.i2c_i2c_worker_i2c_state.read() >> 8
+        if fsm_state == 9:  # Aborted
+            print("Aborted")
+            wb.regs.i2c_i2c_worker_i2c_ctrl.write(0x100)  # Reset FSM
+            r_state = wb.regs.i2c_i2c_worker_read_fifo_state.read()
+            r_entries = r_state >> 8
+            for _ in range(r_entries):
+                resp = wb.regs.i2c_i2c_worker_fifos_access_port.read()
+
+            wb.regs.i2c_i2c_worker_i2c_ctrl.write(0x1)  # Setup for FIFO clear
+            wb.regs.i2c_i2c_worker_start.write(1)  # Clear FIFOs
+            while not (wb.regs.i2c_i2c_worker_i2c_state.read() & 1):
+                time.sleep(0.001)
+            ret = None
+            break
+        w_state = wb.regs.i2c_i2c_worker_write_fifo_state.read()
+        w_depth = w_state & 0xFF
+        w_entries = w_state >> 8
+        for _ in range(min(length - sent, w_depth - w_entries)):
+            flag = sent == (length - 1)
+            wb.regs.i2c_i2c_worker_fifos_access_port.write(
+                0xFF | flag << 8 | 1 << 17 | flag << 18 | flag << 19 | (not flag) << 20
+            )
+            sent += 1
+        r_state = wb.regs.i2c_i2c_worker_read_fifo_state.read()
+        r_entries = r_state >> 8
+        i = 0
+        while i < r_entries and discard_reads > 0:
+            resp = wb.regs.i2c_i2c_worker_fifos_access_port.read()
+            discard_reads -= 1
+            i += 1
+        if sent == length:
+            for _ in range(r_entries - i):
+                resp = wb.regs.i2c_i2c_worker_fifos_access_port.read()
+                ret.append(resp & 0xFF)
+        time.sleep(0.001)
+    while not (wb.regs.i2c_i2c_worker_i2c_state.read() & 1):
+        time.sleep(0.001)
+    wb.regs.i2c_worker.write(0)
     return ret
 
 
-def i2c_write(wb, slave_addr, reg_addr, data, reg_addr_size=1):
-    _i2c_start(wb)
-    if not _i2c_send_byte(wb, slave_addr << 1):
-        _i2c_stop(wb)
-        return 0
+def i2c_write(wb, slave_addr, reg_addr, data=None, reg_addr_size=1):
+    if data is None:
+        data = list()
+    length = len(data)
+    w_state = wb.regs.i2c_i2c_worker_write_fifo_state.read()
+    w_depth = w_state & 0xFF
+    assert length + 1 + reg_addr_size <= w_depth
+    wb.regs.i2c_i2c_worker_i2c_ctrl.write(0)
+    wb.regs.i2c_worker.write(1)
+    wb.regs.i2c_i2c_worker_fifos_access_port.write(
+        slave_addr << 1 | 1 << 8 | 1 << 16 | 1 << 17 | 1 << 20
+    )
     for i in range(reg_addr_size):
-        if not _i2c_send_byte(wb, (reg_addr >> (8 * i)) & 0xFF):
-            _i2c_stop(wb)
-            return 0
-    for i, value in enumerate(data):
-        if not _i2c_send_byte(wb, value & 0xFF):
-            _i2c_stop(wb)
-            return i
-    _i2c_stop(wb)
-    return len(data)
+        wb.regs.i2c_i2c_worker_fifos_access_port.write(
+            ((reg_addr >> (8 * i)) & 0xFF) | 1 << 8 | 1 << 17 | 1 << 20
+        )
+    discard_reads = 1 + reg_addr_size
+    w_state = wb.regs.i2c_i2c_worker_write_fifo_state.read()
+    w_depth = w_state & 0xFF
+    w_entries = w_state >> 8
+    sent = 0
+    for _ in range(min(w_depth - w_entries, length)):
+        flag = sent == (length - 1)
+        wb.regs.i2c_i2c_worker_fifos_access_port.write(
+            data[sent] | flag << 8 | 1 << 17 | flag << 18 | flag << 19 | (not flag) << 20
+        )
+        sent += 1
+    wb.regs.i2c_i2c_worker_start.write(1)
+
+    ret = []
+    while len(ret) < length:
+        fsm_state = wb.regs.i2c_i2c_worker_i2c_state.read() >> 8
+        if fsm_state == 9:  # Aborted
+            print("Aborted")
+            wb.regs.i2c_i2c_worker_i2c_ctrl.write(0x100)  # Reset FSM
+            r_state = wb.regs.i2c_i2c_worker_read_fifo_state.read()
+            r_entries = r_state >> 8
+            for _ in range(r_entries):
+                resp = wb.regs.i2c_i2c_worker_fifos_access_port.read()
+
+            wb.regs.i2c_i2c_worker_i2c_ctrl.write(0x1)  # Setup for FIFO clear
+            wb.regs.i2c_i2c_worker_start.write(1)  # Clear FIFOs
+            while not (wb.regs.i2c_i2c_worker_i2c_state.read() & 1):
+                time.sleep(0.001)
+            break
+        w_state = wb.regs.i2c_i2c_worker_write_fifo_state.read()
+        w_depth = w_state & 0xFF
+        w_entries = w_state >> 8
+        for _ in range(min(length - sent, w_depth - w_entries)):
+            flag = sent == (length - 1)
+            wb.regs.i2c_i2c_worker_fifos_access_port.write(
+                data[sent] | flag << 8 | 1 << 17 | flag << 18 | flag << 19 | (not flag) << 20
+            )
+            sent += 1
+        r_state = wb.regs.i2c_i2c_worker_read_fifo_state.read()
+        r_entries = r_state >> 8
+        for _ in range(r_entries):
+            resp = wb.regs.i2c_i2c_worker_fifos_access_port.read()
+            if discard_reads > 0:
+                discard_reads -= 1
+                continue
+            ret.append(resp & 0xFF)
+        time.sleep(0.001)
+    while not (wb.regs.i2c_i2c_worker_i2c_state.read() & 1):
+        time.sleep(0.001)
+    wb.regs.i2c_worker.write(0)
+    return len(ret)
 
 
 def i2c_poll(wb, slave_addr):
-    _i2c_start(wb)
-    if _i2c_send_byte(wb, slave_addr << 1):
-        _i2c_stop(wb)
+    wb.regs.i2c_i2c_worker_fifos_access_port.write(
+        slave_addr << 1 | 1 << 8 | 1 << 16 | 1 << 17 | 1 << 18 | 1 << 19
+    )
+    wb.regs.i2c_worker.write(1)
+    wb.regs.i2c_i2c_worker_start.write(1)
+    wb.regs.i2c_worker.write(0)
+    while not (wb.regs.i2c_i2c_worker_i2c_state.read() & 1):
+        time.sleep(0.001)
+    resp = wb.regs.i2c_i2c_worker_fifos_access_port.read()
+    if (resp & 0x100) == 0:
         return True
-    elif _i2c_send_byte(wb, (slave_addr << 1) | 1):
-        _i2c_start(wb)
-        _i2c_get_byte(wb, False)
-        _i2c_stop(wb)
+    wb.regs.i2c_i2c_worker_fifos_access_port.write(slave_addr << 1 | 1 | 1 << 8 | 1 << 16 | 1 << 17)
+    wb.regs.i2c_i2c_worker_fifos_access_port.write(0xFF | 1 << 8 | 1 << 17 | 1 << 18 | 1 << 19)
+    wb.regs.i2c_worker.write(1)
+    wb.regs.i2c_i2c_worker_start.write(1)
+    wb.regs.i2c_worker.write(0)
+    while not (wb.regs.i2c_i2c_worker_i2c_state.read() & 1):
+        time.sleep(0.001)
+    resp = wb.regs.i2c_i2c_worker_fifos_access_port.read()
+    wb.regs.i2c_i2c_worker_fifos_access_port.read()
+    if (resp & 0x100) == 0:
         return True
     return False
 
