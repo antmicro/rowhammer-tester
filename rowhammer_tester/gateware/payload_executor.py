@@ -168,25 +168,47 @@ class Encoder:
                     (Decoder.LOOP_JUMP, kwargs["jump"]),
                 ]
             elif op_code == OpCode.NOOP:
+                timeslice = kwargs["timeslice"]
+                assert (
+                    timeslice < 2**Decoder.TIMESLICE_NOOP
+                ), f"Timeslice value:{timeslice} exceeded max value:{2**Decoder.TIMESLICE_NOOP - 1}"
                 self._parts = [
                     (Decoder.OP_CODE, op_code),
-                    (Decoder.TIMESLICE_NOOP, kwargs["timeslice"]),
+                    (Decoder.TIMESLICE_NOOP, timeslice),
                 ]
             else:
                 timeslice = kwargs["timeslice"]
                 assert timeslice != 0, "Timeslice for instructions other than NOOP should be > 0"
-                assert (
-                    timeslice < 2**Decoder.TIMESLICE
-                ), f"Timeslice value:{timeslice} exceeded max value:{2**Decoder.TIMESLICE - 1}"
                 no_address = [OpCode.REF]  # PRE requires bank address
                 assert (
                     "address" in kwargs or op_code in no_address
                 ), "{op_code.name} instruction requires `address`"
+
+                base_timeslice = timeslice & (2**Decoder.TIMESLICE - 1)
                 self._parts = [
                     (Decoder.OP_CODE, op_code),
-                    (Decoder.TIMESLICE, timeslice),
+                    (Decoder.TIMESLICE, base_timeslice),
                     (Decoder.ADDRESS, kwargs.get("address", 0)),
                 ]
+                if base_timeslice != timeslice:
+                    print(
+                        f"WARNING: Timeslice value:{timeslice} exceeded max value:"
+                        "{2**Decoder.TIMESLICE - 1}"
+                    )
+                    print(
+                        f"INFO: Instruction:{op_code.name} with timeslice:{timeslice} "
+                        "will be encoded with extra NOOP(s) to allow for lager timedelay"
+                    )
+                    remaining = timeslice - base_timeslice
+                    self._noops = []
+                    for i in range(0, remaining, Decoder.TIMESLICE_NOOP - 1):
+                        wait = min(remaining - i, Decoder.TIMESLICE_NOOP - 1)
+                        self._noops.append(
+                            [
+                                (Decoder.OP_CODE, op_code),
+                                (Decoder.TIMESLICE_NOOP, wait),
+                            ]
+                        )
 
     def __call__(self, target, **kwargs):
         if isinstance(target, OpCode):
@@ -207,16 +229,25 @@ class Encoder:
 
     def encode_spec(self, spec):
         assert isinstance(spec, self.Instruction)
-        instr = 0
-        n = 0
-        for width, val in spec._parts:
-            mask = 2**width - 1
-            instr |= (val & mask) << n
-            n += width
-        return instr
+        _instrs_to_enc = [spec._parts]
+        if hasattr(spec, "_noops"):
+            _instrs_to_enc.extend(spec._noops)
+        instrs = []
+        for _instr_to_enc in _instrs_to_enc:
+            instr = 0
+            n = 0
+            for width, val in _instr_to_enc:
+                mask = 2**width - 1
+                instr |= (val & mask) << n
+                n += width
+            instrs.append(instr)
+        return instrs
 
     def encode_payload(self, payload):
-        return [self.encode_spec(i) for i in payload]
+        ret = []
+        for i in payload:
+            ret.extend(self.encode_spec(i))
+        return ret
 
     def address(self, *, rank=None, bank=0, row=None, col=None):
         assert not (row is not None and col is not None)

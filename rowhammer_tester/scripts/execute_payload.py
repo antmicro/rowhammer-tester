@@ -16,30 +16,30 @@ from rowhammer_tester.scripts.utils import (
 # Sample program
 encoder = Encoder(bankbits=3)
 PAYLOAD = [
-    encoder(OpCode.NOOP, timeslice=50),
-    encoder(OpCode.ACT, timeslice=20, address=encoder.address(bank=1, row=100)),
-    encoder(OpCode.READ, timeslice=20, address=encoder.address(bank=1, col=13)),
-    encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=1, col=20)),
-    encoder(OpCode.PRE, timeslice=20, address=encoder.address(bank=1)),
-    encoder(OpCode.ACT, timeslice=20, address=encoder.address(bank=0, row=100)),
-    encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=200)),
-    encoder(OpCode.LOOP, count=8 - 1, jump=1),  # to READ col=200
-    encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=208)),
-    encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=216)),
-    encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=224)),
-    encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=232)),
-    encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=240)),
-    encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=248)),
-    encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=256)),
-    encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=264)),
-    encoder(
+    *encoder(OpCode.NOOP, timeslice=50),
+    *encoder(OpCode.ACT, timeslice=20, address=encoder.address(bank=1, row=100)),
+    *encoder(OpCode.READ, timeslice=20, address=encoder.address(bank=1, col=13)),
+    *encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=1, col=20)),
+    *encoder(OpCode.PRE, timeslice=20, address=encoder.address(bank=1)),
+    *encoder(OpCode.ACT, timeslice=20, address=encoder.address(bank=0, row=100)),
+    *encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=200)),
+    *encoder(OpCode.LOOP, count=8 - 1, jump=1),  # to READ col=200
+    *encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=208)),
+    *encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=216)),
+    *encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=224)),
+    *encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=232)),
+    *encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=240)),
+    *encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=248)),
+    *encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=256)),
+    *encoder(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=264)),
+    *encoder(
         OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=300 | (1 << 10))
     ),  # auto precharge
-    encoder(OpCode.ACT, timeslice=60, address=encoder.address(bank=2, row=150)),
-    encoder(OpCode.PRE, timeslice=20, address=encoder.address(col=1 << 10)),  # all
-    encoder(OpCode.REF, timeslice=200),
-    encoder(OpCode.REF, timeslice=200),
-    encoder(OpCode.NOOP, timeslice=50),
+    *encoder(OpCode.ACT, timeslice=60, address=encoder.address(bank=2, row=150)),
+    *encoder(OpCode.PRE, timeslice=20, address=encoder.address(col=1 << 10)),  # all
+    *encoder(OpCode.REF, timeslice=200),
+    *encoder(OpCode.REF, timeslice=200),
+    *encoder(OpCode.NOOP, timeslice=50),
 ]
 
 
