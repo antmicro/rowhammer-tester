@@ -184,7 +184,7 @@ class Encoder:
                     "address" in kwargs or op_code in no_address
                 ), f"{op_code.name} instruction requires `address`"
 
-                base_timeslice = timeslice & (2**Decoder.TIMESLICE - 1)
+                base_timeslice = max(timeslice & (2**Decoder.TIMESLICE - 1), 1)
                 self._parts = [
                     (Decoder.OP_CODE, op_code),
                     (Decoder.TIMESLICE, base_timeslice),
@@ -205,7 +205,7 @@ class Encoder:
                         wait = min(remaining - i, Decoder.TIMESLICE_NOOP - 1)
                         self._noops.append(
                             [
-                                (Decoder.OP_CODE, op_code),
+                                (Decoder.OP_CODE, OpCode.NOOP),
                                 (Decoder.TIMESLICE_NOOP, wait),
                             ]
                         )
