@@ -1,5 +1,6 @@
 import unittest
 from collections import namedtuple
+from random import randint
 
 from litedram.dfii import DFIInjector
 from litedram.phy import dfi
@@ -1148,6 +1149,24 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
                     vcd_name=f"test_switch_at_refresh_{switch_at}.vcd",
                 )
 
+    def test_large_timeslice_ddr5(self):
+        # Check that a instruction with timeslice > 31 is broken down into
+        # the default instruction with max timeslice and fulfills the remaining
+        # delay with NOOPs
+        encoder = Encoder(bankbits=5)
+
+        for ref_timeslice in [31, 32, 63, 64, randint(65, 129)]:
+            with self.subTest():
+                payload = [
+                    encoder.Instruction(OpCode.NOOP, timeslice=10),
+                    encoder.Instruction(OpCode.REF, timeslice=ref_timeslice),
+                    encoder.Instruction(OpCode.NOOP, timeslice=0),  # STOP
+                ]
+                dut = PayloadExecutorDDR5DUT(encoder(payload))
+                self.run_payload(dut, vcd_name=f"test_large_timeslice_ddr5_{ref_timeslice}.vcd")
+
+                self.assert_history(dut.dfi_history, [OpCode.REF])
+                self.assertEqual(dut.execution_cycles, sum(max(1, i.timeslice) for i in payload))
 
 # Interactive tests --------------------------------------------------------------------------------
 
