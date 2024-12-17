@@ -182,7 +182,7 @@ class Encoder:
                 no_address = [OpCode.REF]  # PRE requires bank address
                 assert (
                     "address" in kwargs or op_code in no_address
-                ), "{op_code.name} instruction requires `address`"
+                ), f"{op_code.name} instruction requires `address`"
 
                 base_timeslice = timeslice & (2**Decoder.TIMESLICE - 1)
                 self._parts = [
@@ -192,12 +192,12 @@ class Encoder:
                 ]
                 if base_timeslice != timeslice:
                     print(
-                        f"WARNING: Timeslice value:{timeslice} exceeded max value:"
-                        "{2**Decoder.TIMESLICE - 1}"
+                        f"WARNING: Timeslice value:{timeslice} exceeded max value"
+                        f" intended for instruction: {2**Decoder.TIMESLICE - 1}"
                     )
                     print(
-                        f"INFO: Instruction:{op_code.name} with timeslice:{timeslice} "
-                        "will be encoded with extra NOOP(s) to allow for lager timedelay"
+                        f"INFO: Instruction:{op_code.name} with timeslice:{timeslice}"
+                        " will be encoded with extra NOOP(s) to grant a larger time delay"
                     )
                     remaining = timeslice - base_timeslice
                     self._noops = []
