@@ -1,0 +1,22 @@
+selector_to_html = {"a[href=\"zcu104.html\"]": "<h1 class=\"tippy-header\" id=\"zcu104-board\" style=\"margin-top: 0;\">ZCU104 board<a class=\"headerlink\" href=\"#zcu104-board\" title=\"Link to this heading\">\u00b6</a></h1><p>The <a class=\"reference external\" href=\"https://www.xilinx.com/products/boards-and-kits/zcu104.html\">ZCU104 board</a> enables testing DDR4 SO-DIMM modules.\nIt features a Zynq UltraScale+ MPSoC device consisting of a Processing System (PS) with quad-core ARM Cortex-A53 and programmable logic (PL).</p><p>On the ZCU104 board, the Ethernet PHY is connected to PS instead of PL.\nFor this reason, it is necessary to route the Ethernet/EtherBone traffic as follows :PC &lt;-&gt; PS &lt;-&gt; PL.\nA simple EtherBone server is implemented for this purpose (the source code can be found in the <code class=\"docutils literal notranslate\"><span class=\"pre\">firmware/zcu104/etherbone/</span></code> directory).</p>", "a[href=\"rdimm_ddr5_tester.html\"]": "<h1 class=\"tippy-header\" id=\"data-center-rdimm-ddr5-tester\" style=\"margin-top: 0;\">Data Center RDIMM DDR5 Tester<a class=\"headerlink\" href=\"#data-center-rdimm-ddr5-tester\" title=\"Link to this heading\">\u00b6</a></h1><p>The Data Center RDIMM DDR5 Tester is an open source hardware test platform that enables testing and experimenting with various DDR5 RDIMMs (Registered Dual In-Line Memory Module).</p><p>The hardware is open and can be found on <a class=\"reference external\" href=\"https://github.com/antmicro/rdimm-ddr5-tester\">GitHub</a>.</p>", "a[href=\"lpddr4_test_board.html\"]": "<h1 class=\"tippy-header\" id=\"lpddr4-test-board\" style=\"margin-top: 0;\">LPDDR4 Test Board<a class=\"headerlink\" href=\"#lpddr4-test-board\" title=\"Link to this heading\">\u00b6</a></h1><p>LPDDR4 Test Board is a platform developed by Antmicro for testing LPDDR4 memory.\nIt uses the Xilinx Kintex-7 FPGA (XC7K70T-FBG484) and by default includes a custom SO-DIMM module with Micron\u2019s MT53E256M16D1 LPDDR4 DRAM.</p><p>The hardware is open and can be found on GitHub:</p>", "a[href=\"rdimm_ddr4_tester.html\"]": "<h1 class=\"tippy-header\" id=\"data-center-rdimm-ddr4-tester\" style=\"margin-top: 0;\">Data Center RDIMM DDR4 Tester<a class=\"headerlink\" href=\"#data-center-rdimm-ddr4-tester\" title=\"Link to this heading\">\u00b6</a></h1><p>The Data Center RDIMM DDR4 Tester is an open source hardware test platform that enables testing and experimenting with various DDR4 RDIMMs (Registered Dual In-Line Memory Module).</p><p>The hardware is open and can be found on GitHub:\n<a class=\"reference external\" href=\"https://github.com/antmicro/rdimm-ddr4-tester\">https://github.com/antmicro/rdimm-ddr4-tester</a></p>", "a[href=\"arty.html\"]": "<h1 class=\"tippy-header\" id=\"arty-a7-board\" style=\"margin-top: 0;\">Arty-A7 board<a class=\"headerlink\" href=\"#arty-a7-board\" title=\"Link to this heading\">\u00b6</a></h1><p>The <a class=\"reference external\" href=\"https://reference.digilentinc.com/reference/programmable-logic/arty-a7/start\">Arty-A7 board</a> allows testing its on-board DDR3 module.\nThe board is designed around the Artix-7 Field Programmable Gate Array (FPGA) from AMD(Xilinx).</p>", "a[href=\"so_dimm_ddr5_tester.html\"]": "<h1 class=\"tippy-header\" id=\"so-dimm-ddr5-tester\" style=\"margin-top: 0;\">SO-DIMM DDR5 Tester<a class=\"headerlink\" href=\"#so-dimm-ddr5-tester\" title=\"Link to this heading\">\u00b6</a></h1><p>The SO-DIMM DDR5 tester is an open source hardware test platform that enables testing and experimenting with various DDR5 SO-DIMM modules and Antmicro LPDDR5 testbed.</p><p>The hardware is open and can be found on GitHub:\n<a class=\"reference external\" href=\"https://github.com/antmicro/sodimm-ddr5-tester\">https://github.com/antmicro/sodimm-ddr5-tester</a></p>"}
+skip_classes = ["headerlink", "sd-stretched-link"]
+
+window.onload = function () {
+    for (const [select, tip_html] of Object.entries(selector_to_html)) {
+        const links = document.querySelectorAll(`p ${select}`);
+        for (const link of links) {
+            if (skip_classes.some(c => link.classList.contains(c))) {
+                continue;
+            }
+
+            tippy(link, {
+                content: tip_html,
+                allowHTML: true,
+                arrow: true,
+                placement: 'auto-start', maxWidth: 500, interactive: false,
+
+            });
+        };
+    };
+    console.log("tippy tips loaded!");
+};

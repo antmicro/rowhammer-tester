@@ -1,0 +1,186 @@
+SDRAM_CHECKER
+=============
+
+Register Listing for SDRAM_CHECKER
+----------------------------------
+
++----------------------------------------------------+------------------------------------------+
+| Register                                           | Address                                  |
++====================================================+==========================================+
+| :ref:`SDRAM_CHECKER_RESET <SDRAM_CHECKER_RESET>`   | :ref:`0xf0007000 <SDRAM_CHECKER_RESET>`  |
++----------------------------------------------------+------------------------------------------+
+| :ref:`SDRAM_CHECKER_START <SDRAM_CHECKER_START>`   | :ref:`0xf0007004 <SDRAM_CHECKER_START>`  |
++----------------------------------------------------+------------------------------------------+
+| :ref:`SDRAM_CHECKER_DONE <SDRAM_CHECKER_DONE>`     | :ref:`0xf0007008 <SDRAM_CHECKER_DONE>`   |
++----------------------------------------------------+------------------------------------------+
+| :ref:`SDRAM_CHECKER_BASE <SDRAM_CHECKER_BASE>`     | :ref:`0xf000700c <SDRAM_CHECKER_BASE>`   |
++----------------------------------------------------+------------------------------------------+
+| :ref:`SDRAM_CHECKER_END <SDRAM_CHECKER_END>`       | :ref:`0xf0007010 <SDRAM_CHECKER_END>`    |
++----------------------------------------------------+------------------------------------------+
+| :ref:`SDRAM_CHECKER_LENGTH <SDRAM_CHECKER_LENGTH>` | :ref:`0xf0007014 <SDRAM_CHECKER_LENGTH>` |
++----------------------------------------------------+------------------------------------------+
+| :ref:`SDRAM_CHECKER_RANDOM <SDRAM_CHECKER_RANDOM>` | :ref:`0xf0007018 <SDRAM_CHECKER_RANDOM>` |
++----------------------------------------------------+------------------------------------------+
+| :ref:`SDRAM_CHECKER_TICKS <SDRAM_CHECKER_TICKS>`   | :ref:`0xf000701c <SDRAM_CHECKER_TICKS>`  |
++----------------------------------------------------+------------------------------------------+
+| :ref:`SDRAM_CHECKER_ERRORS <SDRAM_CHECKER_ERRORS>` | :ref:`0xf0007020 <SDRAM_CHECKER_ERRORS>` |
++----------------------------------------------------+------------------------------------------+
+
+SDRAM_CHECKER_RESET
+^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x0 = 0xf0007000`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CHECKER_RESET
+
+        {
+            "reg": [
+                {"name": "reset", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CHECKER_START
+^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x4 = 0xf0007004`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CHECKER_START
+
+        {
+            "reg": [
+                {"name": "start", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CHECKER_DONE
+^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x8 = 0xf0007008`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CHECKER_DONE
+
+        {
+            "reg": [
+                {"name": "done", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CHECKER_BASE
+^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0xc = 0xf000700c`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CHECKER_BASE
+
+        {
+            "reg": [
+                {"name": "base[30:0]", "bits": 31},
+                {"bits": 1},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CHECKER_END
+^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x10 = 0xf0007010`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CHECKER_END
+
+        {
+            "reg": [
+                {"name": "end[30:0]", "bits": 31},
+                {"bits": 1},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CHECKER_LENGTH
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x14 = 0xf0007014`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CHECKER_LENGTH
+
+        {
+            "reg": [
+                {"name": "length[30:0]", "bits": 31},
+                {"bits": 1},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CHECKER_RANDOM
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x18 = 0xf0007018`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CHECKER_RANDOM
+
+        {
+            "reg": [
+                {"name": "data",  "bits": 1},
+                {"name": "addr",  "bits": 1},
+                {"bits": 30}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++-------+------+-------------+
+| Field | Name | Description |
++=======+======+=============+
++-------+------+-------------+
++-------+------+-------------+
+
+SDRAM_CHECKER_TICKS
+^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x1c = 0xf000701c`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CHECKER_TICKS
+
+        {
+            "reg": [
+                {"name": "ticks[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CHECKER_ERRORS
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x20 = 0xf0007020`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CHECKER_ERRORS
+
+        {
+            "reg": [
+                {"name": "errors[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
