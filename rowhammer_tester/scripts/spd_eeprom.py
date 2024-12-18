@@ -40,7 +40,7 @@ def read_spd_i2c(wb, spd_addr, init_commands=None, ddr5=False):
             spd_data.extend(page_data)
     else:
         # TODO: Add support for other memory types
-        assert False
+        raise NotImplementedError("Reading the SPD over I2C is supported only for DDR5")
         for write, args in init_commands or []:
             if write == 1:
                 i2c_write(wb, *args)

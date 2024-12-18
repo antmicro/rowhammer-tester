@@ -585,7 +585,12 @@ def validate_keys(config_dict, valid_keys_set):
 def i2c_read(wb, slave_addr, reg_addr, length, send_stop=True, reg_addr_size=1):
     w_state = wb.regs.i2c_i2c_worker_write_fifo_state.read()
     w_depth = w_state & 0xFF
-    assert length + 3 + reg_addr_size <= w_depth
+    if length + 3 + reg_addr_size > w_depth:
+        error_msg = (
+            f"Requested read length({length}) exceeds the number of available entries"
+            f" in the I2C Worker FIFO({w_depth - 3 - reg_addr_size}"
+        )
+        raise ValueError(error_msg)
     wb.regs.i2c_i2c_worker_i2c_ctrl.write(0)
     wb.regs.i2c_worker.write(1)
     wb.regs.i2c_i2c_worker_fifos_access_port.write(
@@ -663,7 +668,12 @@ def i2c_write(wb, slave_addr, reg_addr, data=None, reg_addr_size=1):
     length = len(data)
     w_state = wb.regs.i2c_i2c_worker_write_fifo_state.read()
     w_depth = w_state & 0xFF
-    assert length + 1 + reg_addr_size <= w_depth
+    if length + 1 + reg_addr_size > w_depth:
+        error_msg = (
+            f"Requested write length({length}) exceeds the number of available entries"
+            f" in the I2C Worker FIFO({w_depth - 1 - reg_addr_size}"
+        )
+        raise ValueError(error_msg)
     wb.regs.i2c_i2c_worker_i2c_ctrl.write(0)
     wb.regs.i2c_worker.write(1)
     wb.regs.i2c_i2c_worker_fifos_access_port.write(
