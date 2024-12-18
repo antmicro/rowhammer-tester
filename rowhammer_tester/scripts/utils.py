@@ -616,7 +616,7 @@ def i2c_read(wb, slave_addr, reg_addr, length, send_stop=True, reg_addr_size=1):
     ret = []
     while len(ret) < length:
         fsm_state = wb.regs.i2c_i2c_worker_i2c_state.read() >> 8
-        if fsm_state == 9:  # Aborted
+        if fsm_state == I2CState.ABORT:
             print("Aborted")
             wb.regs.i2c_i2c_worker_i2c_ctrl.write(0x100)  # Reset FSM
             r_state = wb.regs.i2c_i2c_worker_read_fifo_state.read()
@@ -689,7 +689,7 @@ def i2c_write(wb, slave_addr, reg_addr, data=None, reg_addr_size=1):
     ret = []
     while len(ret) < length:
         fsm_state = wb.regs.i2c_i2c_worker_i2c_state.read() >> 8
-        if fsm_state == 9:  # Aborted
+        if fsm_state == I2CState.ABORT:
             print("Aborted")
             wb.regs.i2c_i2c_worker_i2c_ctrl.write(0x100)  # Reset FSM
             r_state = wb.regs.i2c_i2c_worker_read_fifo_state.read()
