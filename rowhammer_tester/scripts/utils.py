@@ -584,6 +584,7 @@ def validate_keys(config_dict, valid_keys_set):
 
 
 def i2c_read(wb, slave_addr, reg_addr, length, send_stop=True, reg_addr_size=1):
+    access_port = wb.regs.i2c_i2c_worker_fifos_access_port
     w_state = wb.regs.i2c_i2c_worker_write_fifo_state.read()
     w_depth = w_state & 0xFF
     if length + 3 + reg_addr_size > w_depth:
@@ -594,19 +595,15 @@ def i2c_read(wb, slave_addr, reg_addr, length, send_stop=True, reg_addr_size=1):
         raise ValueError(error_msg)
     wb.regs.i2c_i2c_worker_i2c_ctrl.write(0)
     wb.regs.i2c_worker.write(1)
-    wb.regs.i2c_i2c_worker_fifos_access_port.write(
+    access_port.write(
         I2CQueueEntry(data=slave_addr << 1, ack=1, s_start=1, s_data=1, abort_on_nack=1).pack()
     )
     for i in range(reg_addr_size):
         payload = (reg_addr >> (8 * i)) & 0xFF
-        wb.regs.i2c_i2c_worker_fifos_access_port.write(
-            I2CQueueEntry(data=payload, ack=1, s_data=1, abort_on_nack=1).pack()
-        )
+        access_port.write(I2CQueueEntry(data=payload, ack=1, s_data=1, abort_on_nack=1).pack())
     if send_stop:
-        wb.regs.i2c_i2c_worker_fifos_access_port.write(
-            I2CQueueEntry(s_stop=1, abort_on_nack=1).pack()
-        )
-    wb.regs.i2c_i2c_worker_fifos_access_port.write(
+        access_port.write(I2CQueueEntry(s_stop=1, abort_on_nack=1).pack())
+    access_port.write(
         I2CQueueEntry(data=slave_addr << 1 | 1, ack=1, s_start=1, s_data=1, abort_on_nack=1).pack()
     )
     discard_reads = 2 + reg_addr_size
@@ -616,7 +613,7 @@ def i2c_read(wb, slave_addr, reg_addr, length, send_stop=True, reg_addr_size=1):
     sent = 0
     for i in range(min(w_depth - w_entries, length)):
         flag = i == (length - 1)
-        wb.regs.i2c_i2c_worker_fifos_access_port.write(
+        access_port.write(
             I2CQueueEntry(
                 data=0xFF, ack=flag, s_data=1, s_stop=flag, s_idle=flag, abort_on_nack=not flag
             ).pack()
@@ -633,7 +630,7 @@ def i2c_read(wb, slave_addr, reg_addr, length, send_stop=True, reg_addr_size=1):
             r_state = wb.regs.i2c_i2c_worker_read_fifo_state.read()
             r_entries = r_state >> 8
             for _ in range(r_entries):
-                resp = wb.regs.i2c_i2c_worker_fifos_access_port.read()
+                resp = access_port.read()
 
             wb.regs.i2c_i2c_worker_i2c_ctrl.write(0x1)  # Setup for FIFO clear
             wb.regs.i2c_i2c_worker_start.write(1)  # Clear FIFOs
@@ -646,7 +643,7 @@ def i2c_read(wb, slave_addr, reg_addr, length, send_stop=True, reg_addr_size=1):
         w_entries = w_state >> 8
         for _ in range(min(length - sent, w_depth - w_entries)):
             flag = sent == (length - 1)
-            wb.regs.i2c_i2c_worker_fifos_access_port.write(
+            access_port.write(
                 I2CQueueEntry(
                     data=0xFF, ack=flag, s_data=1, s_stop=flag, s_idle=flag, abort_on_nack=not flag
                 ).pack()
@@ -656,12 +653,12 @@ def i2c_read(wb, slave_addr, reg_addr, length, send_stop=True, reg_addr_size=1):
         r_entries = r_state >> 8
         i = 0
         while i < r_entries and discard_reads > 0:
-            resp = wb.regs.i2c_i2c_worker_fifos_access_port.read()
+            resp = access_port.read()
             discard_reads -= 1
             i += 1
         if sent == length:
             for _ in range(r_entries - i):
-                resp = I2CQueueEntry().from_int(wb.regs.i2c_i2c_worker_fifos_access_port.read())
+                resp = I2CQueueEntry().from_int(access_port.read())
                 ret.append(resp.data)
         time.sleep(0.001)
     while not (wb.regs.i2c_i2c_worker_i2c_state.read() & 1):
@@ -671,6 +668,7 @@ def i2c_read(wb, slave_addr, reg_addr, length, send_stop=True, reg_addr_size=1):
 
 
 def i2c_write(wb, slave_addr, reg_addr, data=None, reg_addr_size=1):
+    access_port = wb.regs.i2c_i2c_worker_fifos_access_port
     if data is None:
         data = list()
     length = len(data)
@@ -684,14 +682,12 @@ def i2c_write(wb, slave_addr, reg_addr, data=None, reg_addr_size=1):
         raise ValueError(error_msg)
     wb.regs.i2c_i2c_worker_i2c_ctrl.write(0)
     wb.regs.i2c_worker.write(1)
-    wb.regs.i2c_i2c_worker_fifos_access_port.write(
+    access_port.write(
         I2CQueueEntry(data=slave_addr << 1, ack=1, s_start=1, s_data=1, abort_on_nack=1).pack()
     )
     for i in range(reg_addr_size):
         payload = (reg_addr >> (8 * i)) & 0xFF
-        wb.regs.i2c_i2c_worker_fifos_access_port.write(
-            I2CQueueEntry(data=payload, ack=1, s_data=1, abort_on_nack=1).pack()
-        )
+        access_port.write(I2CQueueEntry(data=payload, ack=1, s_data=1, abort_on_nack=1).pack())
     discard_reads = 1 + reg_addr_size
     w_state = wb.regs.i2c_i2c_worker_write_fifo_state.read()
     w_depth = w_state & 0xFF
@@ -699,7 +695,7 @@ def i2c_write(wb, slave_addr, reg_addr, data=None, reg_addr_size=1):
     sent = 0
     for _ in range(min(w_depth - w_entries, length)):
         flag = sent == (length - 1)
-        wb.regs.i2c_i2c_worker_fifos_access_port.write(
+        access_port.write(
             I2CQueueEntry(
                 data=data[sent],
                 ack=flag,
@@ -721,7 +717,7 @@ def i2c_write(wb, slave_addr, reg_addr, data=None, reg_addr_size=1):
             r_state = wb.regs.i2c_i2c_worker_read_fifo_state.read()
             r_entries = r_state >> 8
             for _ in range(r_entries):
-                resp = wb.regs.i2c_i2c_worker_fifos_access_port.read()
+                resp = access_port.read()
 
             wb.regs.i2c_i2c_worker_i2c_ctrl.write(0x1)  # Setup for FIFO clear
             wb.regs.i2c_i2c_worker_start.write(1)  # Clear FIFOs
@@ -733,7 +729,7 @@ def i2c_write(wb, slave_addr, reg_addr, data=None, reg_addr_size=1):
         w_entries = w_state >> 8
         for _ in range(min(length - sent, w_depth - w_entries)):
             flag = sent == (length - 1)
-            wb.regs.i2c_i2c_worker_fifos_access_port.write(
+            access_port.write(
                 I2CQueueEntry(
                     data=data[sent],
                     ack=flag,
@@ -747,7 +743,7 @@ def i2c_write(wb, slave_addr, reg_addr, data=None, reg_addr_size=1):
         r_state = wb.regs.i2c_i2c_worker_read_fifo_state.read()
         r_entries = r_state >> 8
         for _ in range(r_entries):
-            resp = I2CQueueEntry().from_int(wb.regs.i2c_i2c_worker_fifos_access_port.read())
+            resp = I2CQueueEntry().from_int(access_port.read())
             if discard_reads > 0:
                 discard_reads -= 1
                 continue
@@ -760,7 +756,8 @@ def i2c_write(wb, slave_addr, reg_addr, data=None, reg_addr_size=1):
 
 
 def i2c_poll(wb, slave_addr):
-    wb.regs.i2c_i2c_worker_fifos_access_port.write(
+    access_port = wb.regs.i2c_i2c_worker_fifos_access_port
+    access_port.write(
         I2CQueueEntry(data=slave_addr << 1, ack=1, s_start=1, s_data=1, s_stop=1, s_idle=1).pack()
     )
     wb.regs.i2c_worker.write(1)
@@ -768,22 +765,18 @@ def i2c_poll(wb, slave_addr):
     wb.regs.i2c_worker.write(0)
     while not (wb.regs.i2c_i2c_worker_i2c_state.read() & 1):
         time.sleep(0.001)
-    resp = I2CQueueEntry().from_int(wb.regs.i2c_i2c_worker_fifos_access_port.read())
+    resp = I2CQueueEntry().from_int(access_port.read())
     if resp.ack == 0:
         return True
-    wb.regs.i2c_i2c_worker_fifos_access_port.write(
-        I2CQueueEntry(data=slave_addr << 1 | 1, ack=1, s_start=1, s_data=1).pack()
-    )
-    wb.regs.i2c_i2c_worker_fifos_access_port.write(
-        I2CQueueEntry(data=0xFF, ack=1, s_data=1, s_stop=1, s_idle=1).pack()
-    )
+    access_port.write(I2CQueueEntry(data=slave_addr << 1 | 1, ack=1, s_start=1, s_data=1).pack())
+    access_port.write(I2CQueueEntry(data=0xFF, ack=1, s_data=1, s_stop=1, s_idle=1).pack())
     wb.regs.i2c_worker.write(1)
     wb.regs.i2c_i2c_worker_start.write(1)
     wb.regs.i2c_worker.write(0)
     while not (wb.regs.i2c_i2c_worker_i2c_state.read() & 1):
         time.sleep(0.001)
-    resp = I2CQueueEntry().from_int(wb.regs.i2c_i2c_worker_fifos_access_port.read())
-    wb.regs.i2c_i2c_worker_fifos_access_port.read()
+    resp = I2CQueueEntry().from_int(access_port.read())
+    access_port.read()
     if resp.ack == 0:
         return True
     return False
