@@ -9,34 +9,87 @@ Currently, 6 main targets are provided, each targeting a different DRAM type and
 Use the tab view below to select a DRAM memory type of interest.
 You will be provided with a name of the built target, building instruction and a link to the relevant hardware platform.
 
-````{tab} DDR3 (IC)
-This is supported by the Digilent [Arty](arty.md) boards.
-In this setup the Rowhammer Tester targets a single DDR3 IC installed on board.
-For Arty A7-100T with the XC7A100TCSG324-1 FPGA use:
+````{tab} DDR5 (SO-DIMM)
+
+This targets an off-the-shelf DDR5 SO-DIMMs installed on Antmicro [SO-DIMM DDR5 Tester](so_dimm_ddr5_tester.md).
+A typical building command is:
 
 ```sh
-export TARGET=arty
-make build TARGET_ARGS="--variant a7-100"
+export TARGET=sodimm_ddr5_tester
+make build TARGET_ARGS="--l2-size 256 --build --iodelay-clk-freq 400e6 --bios-lto --rw-bios --no-sdram-hw-test"
 ```
 
-For Arty A7-35T with the XC7A35TICSG324-1L FPGA use:
-
-```sh
-export TARGET=arty
-make build
-```
+The target can be customized with the following build parameters
+* ``--l2-size`` sets L2 cache size
+* ``--iodelayclk-freq`` specifies IODELAY clock frequency
+* ``--no-sdram-hw-test`` disables hardware accelerated memory test
 
 To upload the bitstream to volatile FPGA configuration RAM use:
 
 ```sh
-export TARGET=arty
+export TARGET=sodimm_ddr5_tester
 make upload
 ```
 
 To write the bitstream into non-volatile (Q)SPI Flash memory use:
 
 ```sh
-export TARGET=arty
+export TARGET=sodimm_ddr5_tester
+make flash
+```
+````
+````{tab} DDR5 (RDIMM)
+
+This targets an off-the-shelf DDR5 RDIMMs installed on Antmicro [RDIMM DDR5 Tester](rdimm_ddr5_tester.md).
+A typical building command is:
+
+```sh
+export TARGET=ddr5_tester
+make build TARGET_ARGS="--l2-size 256 --build --iodelay-clk-freq 400e6 --bios-lto --rw-bios --module MTC10F1084S1RC --no-sdram-hw-test"
+```
+
+The target can be customized with the following build parameters
+* ``--l2-size`` sets L2 cache size
+* ``--iodelayclk-freq`` specifies IODELAY clock frequency
+* ``--module`` specifies RDIMM DDR5 module family
+* ``--no-sdram-hw-test`` disables hardware accelerated memory test
+
+To upload the bitstream to volatile FPGA configuration RAM use:
+
+```sh
+export TARGET=ddr5_tester
+make upload
+```
+
+To write the bitstream into non-volatile (Q)SPI Flash memory use:
+
+```sh
+export TARGET=ddr5_tester
+make flash
+```
+
+````
+````{tab} LPDDR4 (IC)
+
+This targets single LPDDR4 ICs soldered to interchangeable testbeds installed on Antmicro [LPDDR4 Test Board](lpddr4_test_board.md).
+You can build the target with:
+
+```sh
+export TARGET=lpddr4_test_board
+make build
+```
+
+To upload the bitstream to volatile FPGA configuration RAM use:
+
+```sh
+export TARGET=lpddr4_test_board
+make upload
+```
+
+To write the bitstream into non-volatile (Q)SPI Flash memory use:
+
+```sh
+export TARGET=lpddr4_test_board
 make flash
 ```
 
@@ -78,90 +131,35 @@ To write the bitstream into non-volatile (Q)SPI Flash memory use:
 export TARGET=ddr4_datacenter_test_board
 make flash
 ```
-
 ````
-````{tab} LPDDR4 (IC)
-
-This targets single LPDDR4 ICs soldered to interchangeable testbeds installed on Antmicro [LPDDR4 Test Board](lpddr4_test_board.md).
-You can build the target with:
+````{tab} DDR3 (IC)
+This is supported by the Digilent [Arty](arty.md) boards.
+In this setup the Rowhammer Tester targets a single DDR3 IC installed on board.
+For Arty A7-100T with the XC7A100TCSG324-1 FPGA use:
 
 ```sh
-export TARGET=lpddr4_test_board
+export TARGET=arty
+make build TARGET_ARGS="--variant a7-100"
+```
+
+For Arty A7-35T with the XC7A35TICSG324-1L FPGA use:
+
+```sh
+export TARGET=arty
 make build
 ```
 
 To upload the bitstream to volatile FPGA configuration RAM use:
 
 ```sh
-export TARGET=lpddr4_test_board
+export TARGET=arty
 make upload
 ```
 
 To write the bitstream into non-volatile (Q)SPI Flash memory use:
 
 ```sh
-export TARGET=lpddr4_test_board
-make flash
-```
-
-````
-````{tab} DDR5 (RDIMM)
-
-This targets an off-the-shelf DDR5 RDIMMs installed on Antmicro [RDIMM DDR5 Tester](rdimm_ddr5_tester.md).
-A typical building command is:
-
-```sh
-export TARGET=ddr5_tester
-make build TARGET_ARGS="--l2-size 256 --build --iodelay-clk-freq 400e6 --bios-lto --rw-bios --module MTC10F1084S1RC --no-sdram-hw-test"
-```
-
-The target can be customized with the following build parameters
-* ``--l2-size`` sets L2 cache size
-* ``--iodelayclk-freq`` specifies IODELAY clock frequency
-* ``--module`` specifies RDIMM DDR5 module family
-* ``--no-sdram-hw-test`` disables hardware accelerated memory test
-
-To upload the bitstream to volatile FPGA configuration RAM use:
-
-```sh
-export TARGET=ddr5_tester
-make upload
-```
-
-To write the bitstream into non-volatile (Q)SPI Flash memory use:
-
-```sh
-export TARGET=ddr5_tester
-make flash
-```
-
-````
-````{tab} DDR5 (SO-DIMM)
-
-This targets an off-the-shelf DDR5 SO-DIMMs installed on Antmicro [SO-DIMM DDR5 Tester](so_dimm_ddr5_tester.md).
-A typical building command is:
-
-```sh
-export TARGET=sodimm_ddr5_tester
-make build TARGET_ARGS="--l2-size 256 --build --iodelay-clk-freq 400e6 --bios-lto --rw-bios --no-sdram-hw-test"
-```
-
-The target can be customized with the following build parameters
-* ``--l2-size`` sets L2 cache size
-* ``--iodelayclk-freq`` specifies IODELAY clock frequency
-* ``--no-sdram-hw-test`` disables hardware accelerated memory test
-
-To upload the bitstream to volatile FPGA configuration RAM use:
-
-```sh
-export TARGET=sodimm_ddr5_tester
-make upload
-```
-
-To write the bitstream into non-volatile (Q)SPI Flash memory use:
-
-```sh
-export TARGET=sodimm_ddr5_tester
+export TARGET=arty
 make flash
 ```
 

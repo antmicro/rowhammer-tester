@@ -12,13 +12,13 @@ building_rowhammer.md
 :caption: Supported hardware
 :maxdepth: 2
 
-arty.md
-zcu104.md
-lpddr4_test_board.md
+so_dimm_ddr5_tester.md
+rdimm_ddr5_tester.md
 lpddr4_test_board_with_ddr5_testbed.md
 rdimm_ddr4_tester.md
-rdimm_ddr5_tester.md
-so_dimm_ddr5_tester.md
+lpddr4_test_board.md
+zcu104.md
+arty.md
 ```
 
 ```{toctree}
