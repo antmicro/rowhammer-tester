@@ -18,6 +18,7 @@ rdimm_ddr4_tester.md
 lpddr4_test_board.md
 zcu104.md
 arty.md
+lpddr4_test_bed.md
 ```
 
 ```{toctree}
