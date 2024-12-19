@@ -41,6 +41,12 @@ make flash
 ````{tab} DDR5 (RDIMM)
 
 This targets an off-the-shelf DDR5 RDIMMs installed on Antmicro [RDIMM DDR5 Tester](rdimm_ddr5_tester.md).
+
+```{note}
+Currently only revision 1.0 of the RDIMM DDR5 Tester is supported with bitstream target.
+Software integration and RDIMM DDR5 PHY development for Artix UltraScale Plus FPGA existing on RDIMM DDR5 Tester in revision 2.0 is currently ongoing.
+```
+
 A typical building command is:
 
 ```sh
@@ -69,6 +75,7 @@ make flash
 ```
 
 ````
+
 ````{tab} LPDDR4 (IC)
 
 This targets single LPDDR4 ICs soldered to interchangeable testbeds installed on Antmicro [LPDDR4 Test Board](lpddr4_test_board.md).
