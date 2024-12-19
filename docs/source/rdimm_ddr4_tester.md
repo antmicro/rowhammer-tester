@@ -1,7 +1,7 @@
 # RDIMM DDR4 Tester
 
 :::{figure-md} data-center-rdimm-ddr4-tester
-![](images/data-center-rdimm-ddr4-tester-1.2.0.png)
+![](images/rdimm-ddr4-tester-1.2.0.png)
 
 Data Center RDIMM DDR4 Tester
 :::
@@ -17,10 +17,10 @@ For FPGA digital design documentation for this board, refer to the [Digital desi
 
 ## IO map
 
-A map of on-board connectors, status LEDs, control buttons and I/O interfaces is provided in {numref}`data-center-rdimm-ddr4-tester-interface-map` below.
+A map of on-board connectors, status LEDs, control buttons and I/O interfaces is provided in {numref}`rdimm-ddr4-tester-interface-map` below.
 
-:::{figure-md} data-center-rdimm-ddr4-tester-interface-map
-![DDR4 data center dram tester interface map](images/data-center-rdimm-ddr4-tester-descriptions.png)
+:::{figure-md} rdimm-ddr4-tester-interface-map
+![DDR4 data center dram tester interface map](images/rdimm-ddr4-tester-1.2.0-descriptions.png)
 
 DDR4 data center dram tester interface map
 :::
