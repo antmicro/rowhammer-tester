@@ -1,7 +1,7 @@
 # LPDDR4 Test Board with DDR5 Testbed
 
 :::{figure-md} lpddr4-test-board-with-ddr5-testbed
-![LPDDR4 Test Board with DDR5 Testbed](images/lpddr4-test-board.jpg)
+![LPDDR4 Test Board with DDR5 Testbed](images/lpddr4-test-board-1.0.4.png)
 
 LPDDR4 Test Board with DDR5 Testbed
 :::

@@ -1,7 +1,10 @@
 # LPDDR4 Test Board
 
-```{image} images/lpddr4-test-board.jpg
-```
+:::{figure-md} lpddr4-test-board
+![](images/lpddr4-test-board-1.0.4.png)
+
+LPDDR4 Test Board
+:::
 
 LPDDR4 Test Board is a platform developed by Antmicro for testing LPDDR4 memory.
 It uses the Xilinx Kintex-7 FPGA (XC7K70T-FBG484) and by default includes a custom SO-DIMM module with Micron's MT53E256M16D1 LPDDR4 DRAM.
@@ -18,7 +21,7 @@ For FPGA digital design documentation for this board, refer to the [Digital desi
 A map of on-board connectors, status LEDs, control buttons and I/O interfaces is provided in {numref}`lpddr4-test-board-interface-map` below.
 
 :::{figure-md} lpddr4-test-board-interface-map
-![LPDDR4 test board interface map](images/lpddr4-test-board-descriptions.png)
+![LPDDR4 test board interface map](images/lpddr4-test-board-1.0.4-descriptions.png)
 
 LPDDR4 test board interface map
 :::
