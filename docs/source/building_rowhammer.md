@@ -79,11 +79,8 @@ make flash
 ````{tab} DDR5 (IC)
 
 This configuration allows to test a single DDR5 IC.
-The hardware setup used in this scenario consist of [LPDDR4 Tester](lpddr4_test_board.md) 
+The hardware setup used in this scenario consist of a [LPDDR4 Tester](lpddr4_test_board.md) with a [DDR5 Test Bed](ddr5_test_bed.md) 
 Since DDR5 and LPDDR4 support the same VDDQ IO voltages it is possible to use the Tester Board to interface with a single DDR5 IC.
-The DDR5 IC needs to be soldered a custom [DDR5 Testbed](https://github.com/antmicro/ddr5-testbed/) PCB which is available on GitHub as open source hardware.
-The hardware design of the DDR5 Testbed includes a single Micron [MT60B2G8HB-48B:A](https://www.farnell.com/datasheets/3704816.pdf) 16Gb DRAM.
-Since LPDDR4 Tester offers limited number of IO pins used for interfacing with the Testbed only one channel of a single DDR5 memory IC located on the Testbed is accessible for testing.
 
 You can build this target with:
 
