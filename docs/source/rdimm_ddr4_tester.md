@@ -1,4 +1,4 @@
-# Data Center RDIMM DDR4 Tester
+# RDIMM DDR4 Tester
 
 :::{figure-md} data-center-rdimm-ddr4-tester
 ![](images/data-center-rdimm-ddr4-tester-1.2.0.png)

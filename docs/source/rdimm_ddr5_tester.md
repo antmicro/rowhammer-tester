@@ -1,9 +1,12 @@
-# Data Center RDIMM DDR5 Tester
-
-```{image} images/datacenter-rdimm-ddr5-tester.png
-```
+# RDIMM DDR5 Tester
 
 The Data Center RDIMM DDR5 Tester is an open source hardware test platform that enables testing and experimenting with various DDR5 RDIMMs (Registered Dual In-Line Memory Module).
+
+:::{figure-md} 
+![](images/datacenter-rdimm-ddr5-tester.png)
+
+RDIMM DDR5 Tester in revision 1.x
+:::
 
 The hardware is open and can be found on [GitHub](https://github.com/antmicro/rdimm-ddr5-tester).
 
