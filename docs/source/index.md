@@ -29,6 +29,7 @@ lpddr5_test_bed.md
 hammering.md
 visualization.md
 playbook.md
+memory_testing.md
 building_linux.md
 ```
 
