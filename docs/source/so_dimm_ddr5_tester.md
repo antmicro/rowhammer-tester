@@ -6,7 +6,8 @@
 SO-DIMM DDR5 Tester
 :::
 
-The SO-DIMM DDR5 tester is an open source hardware test platform that enables testing and experimenting with various DDR5 SO-DIMM modules and Antmicro LPDDR5 testbed.
+The SO-DIMM DDR5 tester is an open source hardware test platform that enables testing and experimenting with various off-the-shelf DDR5 SO-DIMM modules.
+This board also supports testing single LPDDR5 ICs via [LPDDR5 Test Bed](lpddr5_test_bed.md).
 
 The hardware is open and can be found on GitHub:
 <https://github.com/antmicro/sodimm-ddr5-tester>
@@ -27,7 +28,7 @@ Connectors:
 
 * [`J7`](#sodimm-ddr5-tester_J7) - main DC barrel jack power connector, voltage between 7-15 V is supported
 * [`J3`](#sodimm-ddr5-tester_J3) - USB-C debug connector used for programming FPGA or Flash memory
-* `J1`#sodimm-ddr5-tester_J1 - standard 14-pin JTAG connector used for programming FPGA or Flash memory
+* `J1` - optional slot for a standard 14-pin JTAG connector used for programming FPGA or Flash memory
 * [`J4`](#sodimm-ddr5-tester_J4) - HDMI connector
 * [`J6`](#sodimm-ddr5-tester_J6) - Ethernet connector used for data exchange with on-board FPGA
 * [`J2`](#sodimm-ddr5-tester_J2) - 262-pin SO-DIMM connector for connecting DDR5 memory modules

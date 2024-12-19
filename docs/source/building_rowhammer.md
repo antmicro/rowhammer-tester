@@ -9,6 +9,37 @@ Currently, 6 main targets are provided, each targeting a different DRAM type and
 Use the tab view below to select a DRAM memory type of interest.
 You will be provided with a name of the built target, building instruction and a link to the relevant hardware platform.
 
+````{tab} LPDDR5 (IC)
+
+This targets a single LPDDR5 IC soldered to the [LPDDR5 Test Bed](lpddr5_test_bed.md) that is installed in the [SO-DIMM DDR5 Tester](so_dimm_ddr5_tester.md).
+
+A typical building command is:
+
+```sh
+export TARGET=sodimm_lpddr5_tester
+make build TARGET_ARGS="--l2-size 256 --build --sys-clk-freq 50e6 --rw-bios --no-sdram-hw-test"
+```
+
+The target can be customized with the following build parameters
+* ``--l2-size`` sets L2 cache size
+* ``--sys-clk-freq`` specifies system clock frequency
+* ``--no-sdram-hw-test`` disables hardware accelerated memory test
+
+To upload the bitstream to volatile FPGA configuration RAM use:
+
+```sh
+export TARGET=sodimm_lpddr5_tester
+make upload
+```
+
+To write the bitstream into non-volatile (Q)SPI Flash memory use:
+
+```sh
+export TARGET=sodimm_lpddr5_tester
+make flash
+```
+````
+
 ````{tab} DDR5 (SO-DIMM)
 
 This targets an off-the-shelf DDR5 SO-DIMMs installed on Antmicro [SO-DIMM DDR5 Tester](so_dimm_ddr5_tester.md).
