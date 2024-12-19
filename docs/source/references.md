@@ -2,77 +2,77 @@
 
 []: # (RDIMM DDR4 Tester IO references)
 
-```{image} images/data-center-dram-tester/PWR1.png
-:name: data-center-dram-tester_PWR1
+```{image} images/rdimm-ddr4-tester-1.2.0/PWR1.png
+:name: rdimm-ddr4-tester-1.2.0_PWR1
 ```
-```{image} images/data-center-dram-tester/D1.png
-:name: data-center-dram-tester_D1
+```{image} images/rdimm-ddr4-tester-1.2.0/D1.png
+:name: rdimm-ddr4-tester-1.2.0_D1
 ```
-```{image} images/data-center-dram-tester/D10.png
-:name: data-center-dram-tester_D10
+```{image} images/rdimm-ddr4-tester-1.2.0/D10.png
+:name: rdimm-ddr4-tester-1.2.0_D10
 ```
-```{image} images/data-center-dram-tester/D15.png
-:name: data-center-dram-tester_D15
+```{image} images/rdimm-ddr4-tester-1.2.0/D15.png
+:name: rdimm-ddr4-tester-1.2.0_D15
 ```
-```{image} images/data-center-dram-tester/D17.png
-:name: data-center-dram-tester_D17
+```{image} images/rdimm-ddr4-tester-1.2.0/D17.png
+:name: rdimm-ddr4-tester-1.2.0_D17
 ```
-```{image} images/data-center-dram-tester/D5.png
-:name: data-center-dram-tester_D5
+```{image} images/rdimm-ddr4-tester-1.2.0/D5.png
+:name: rdimm-ddr4-tester-1.2.0_D5
 ```
-```{image} images/data-center-dram-tester/D6.png
-:name: data-center-dram-tester_D6
+```{image} images/rdimm-ddr4-tester-1.2.0/D6.png
+:name: rdimm-ddr4-tester-1.2.0_D6
 ```
-```{image} images/data-center-dram-tester/D7.png
-:name: data-center-dram-tester_D7
+```{image} images/rdimm-ddr4-tester-1.2.0/D7.png
+:name: rdimm-ddr4-tester-1.2.0_D7
 ```
-```{image} images/data-center-dram-tester/D8.png
-:name: data-center-dram-tester_D8
+```{image} images/rdimm-ddr4-tester-1.2.0/D8.png
+:name: rdimm-ddr4-tester-1.2.0_D8
 ```
-```{image} images/data-center-dram-tester/D9.png
-:name: data-center-dram-tester_D9
+```{image} images/rdimm-ddr4-tester-1.2.0/D9.png
+:name: rdimm-ddr4-tester-1.2.0_D9
 ```
-```{image} images/data-center-dram-tester/J2.png
-:name: data-center-dram-tester_J2
+```{image} images/rdimm-ddr4-tester-1.2.0/J2.png
+:name: rdimm-ddr4-tester-1.2.0_J2
 ```
-```{image} images/data-center-dram-tester/J3.png
-:name: data-center-dram-tester_J3
+```{image} images/rdimm-ddr4-tester-1.2.0/J3.png
+:name: rdimm-ddr4-tester-1.2.0_J3
 ```
-```{image} images/data-center-dram-tester/J5.png
-:name: data-center-dram-tester_J5
+```{image} images/rdimm-ddr4-tester-1.2.0/J5.png
+:name: rdimm-ddr4-tester-1.2.0_J5
 ```
-```{image} images/data-center-dram-tester/J6.png
-:name: data-center-dram-tester_J6
+```{image} images/rdimm-ddr4-tester-1.2.0/J6.png
+:name: rdimm-ddr4-tester-1.2.0_J6
 ```
-```{image} images/data-center-dram-tester/J7.png
-:name: data-center-dram-tester_J7
+```{image} images/rdimm-ddr4-tester-1.2.0/J7.png
+:name: rdimm-ddr4-tester-1.2.0_J7
 ```
-```{image} images/data-center-dram-tester/J8.png
-:name: data-center-dram-tester_J8
+```{image} images/rdimm-ddr4-tester-1.2.0/J8.png
+:name: rdimm-ddr4-tester-1.2.0_J8
 ```
-```{image} images/data-center-dram-tester/J9.png
-:name: data-center-dram-tester_J9
+```{image} images/rdimm-ddr4-tester-1.2.0/J9.png
+:name: rdimm-ddr4-tester-1.2.0_J9
 ```
-```{image} images/data-center-dram-tester/M1.png
-:name: data-center-dram-tester_M1
+```{image} images/rdimm-ddr4-tester-1.2.0/M1.png
+:name: rdimm-ddr4-tester-1.2.0_M1
 ```
-```{image} images/data-center-dram-tester/PROG_B1.png
-:name: data-center-dram-tester_PROG_B1
+```{image} images/rdimm-ddr4-tester-1.2.0/PROG_B1.png
+:name: rdimm-ddr4-tester-1.2.0_PROG_B1
 ```
-```{image} images/data-center-dram-tester/S1.png
-:name: data-center-dram-tester_S1
+```{image} images/rdimm-ddr4-tester-1.2.0/S1.png
+:name: rdimm-ddr4-tester-1.2.0_S1
 ```
-```{image} images/data-center-dram-tester/S2.png
-:name: data-center-dram-tester_S2
+```{image} images/rdimm-ddr4-tester-1.2.0/S2.png
+:name: rdimm-ddr4-tester-1.2.0_S2
 ```
-```{image} images/data-center-dram-tester/S3.png
-:name: data-center-dram-tester_S3
+```{image} images/rdimm-ddr4-tester-1.2.0/S3.png
+:name: rdimm-ddr4-tester-1.2.0_S3
 ```
-```{image} images/data-center-dram-tester/U14.png
-:name: data-center-dram-tester_U14
+```{image} images/rdimm-ddr4-tester-1.2.0/U14.png
+:name: rdimm-ddr4-tester-1.2.0_U14
 ```
-```{image} images/data-center-dram-tester/U15.png
-:name: data-center-dram-tester_U15
+```{image} images/rdimm-ddr4-tester-1.2.0/U15.png
+:name: rdimm-ddr4-tester-1.2.0_U15
 ```
 
 []: # (RDIMM DDR5 Tester Rev.1.0.0  IO references)
