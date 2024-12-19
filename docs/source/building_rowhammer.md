@@ -76,6 +76,42 @@ make flash
 
 ````
 
+````{tab} DDR5 (IC)
+
+This configuration allows to test a single DDR5 IC.
+The hardware setup used in this scenario consist of [LPDDR4 Tester](lpddr4_test_board.md) 
+Since DDR5 and LPDDR4 support the same VDDQ IO voltages it is possible to use the Tester Board to interface with a single DDR5 IC.
+The DDR5 IC needs to be soldered a custom [DDR5 Testbed](https://github.com/antmicro/ddr5-testbed/) PCB which is available on GitHub as open source hardware.
+The hardware design of the DDR5 Testbed includes a single Micron [MT60B2G8HB-48B:A](https://www.farnell.com/datasheets/3704816.pdf) 16Gb DRAM.
+Since LPDDR4 Tester offers limited number of IO pins used for interfacing with the Testbed only one channel of a single DDR5 memory IC located on the Testbed is accessible for testing.
+
+You can build this target with:
+
+```sh
+export TARGET=ddr5_test_board
+make build TARGET_ARGS="--l2-size 256 --build --iodelay-clk-freq 400e6 --bios-lto --rw-bios --no-sdram-hw-test"
+```
+
+The target can be customized with the following build parameters:
+* ``--l2-size`` sets L2 cache size
+* ``--no-sdram-hw-test`` disables hardware accelerated memory test
+
+To upload the bitstream to volatile FPGA configuration RAM use:
+
+```sh
+export TARGET=ddr5_test_board
+make upload
+```
+
+To write the bitstream into non-volatile (Q)SPI Flash memory use:
+
+```sh
+export TARGET=ddr5_test_board
+make flash
+```
+
+````
+
 ````{tab} LPDDR4 (IC)
 
 This targets single LPDDR4 ICs soldered to interchangeable testbeds installed on Antmicro [LPDDR4 Test Board](lpddr4_test_board.md).

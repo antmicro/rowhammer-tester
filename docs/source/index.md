@@ -14,7 +14,6 @@ building_rowhammer.md
 
 so_dimm_ddr5_tester.md
 rdimm_ddr5_tester.md
-lpddr4_test_board_with_ddr5_testbed.md
 rdimm_ddr4_tester.md
 lpddr4_test_board.md
 zcu104.md
