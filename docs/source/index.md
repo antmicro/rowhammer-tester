@@ -20,6 +20,7 @@ zcu104.md
 arty.md
 lpddr4_test_bed.md
 ddr5_test_bed.md
+lpddr5_test_bed.md
 ```
 
 ```{toctree}
