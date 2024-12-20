@@ -65,7 +65,7 @@ Used by `HalfDoubleAnalysisPayloadGenerator`.
 
 The purpose of the payload generator is to prepare a payload and process the test outcome.
 It is a class that can be reused in different tests [configurations](#configurations).
-Payload generators are located in the [payload_generators directory](https://github.com/antmicro/rowhammer-tester/tree/main/rowhammer_tester/scripts/playbook/payload_generators)
+Payload generators are located in the [payload_generators directory](https://github.com/antmicro/rowhammer-tester/tree/main/rowhammer_tester/scripts/playbook/payload_generators).
 
 ### Available payload generators
 
@@ -152,7 +152,7 @@ Here are the parameters that can be specified in *payload_generator_config* for 
 
 The results are a series of histograms with appropriate labeling.
 
-Example [configurations](#configurations) for this test ar provided as `configs/example_hammer_*.json` files.
+Example [configurations](#configurations) for this test are provided as `configs/example_hammer_*.json` files.
 Some of them require a significant amount of memory declared as `payload memory`.
 To execute a minimalistic example from within the rowhammer-tester repo, execute:
 
@@ -255,7 +255,6 @@ The following parameters are supported:
 ### Inversion
 
 If needed, use the `bitwise-inverted` data pattern for selected tested rows.
-
 Two parameters are used to specify which rows are to be inverted:
 
 * `inversion_divisor`
