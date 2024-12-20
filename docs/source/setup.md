@@ -66,7 +66,7 @@ The part of the documentation related to the digital design is auto-generated fr
 Other files are static and are located in the `docs/` directory.
 
 To build the documentation locally you may need to install additional requirements in your virtual Python environment.
-Those requirements are listed in `docs/requirements.txt'
+Those requirements are listed in `docs/requirements.txt`
 
 You can install them with:
 
