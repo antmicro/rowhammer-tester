@@ -250,38 +250,39 @@ class RowHammerSoC(SoCCore):
         controller_settings.cmd_buffer_buffered = True
         controller_settings.address_mapping = args.address_mapping
 
-        assert (
-            self.ddrphy.settings.memtype == module.memtype
-        ), f"Wrong DRAM module type: {self.ddrphy.settings.memtype} vs {module.memtype}"
-        self.add_sdram(
-            "sdram",
-            phy=self.ddrphy,
-            module=module,
-            origin=self.mem_map["main_ram"],
-            size=kwargs.get("max_sdram_size", 0x40000000),
-            l2_cache_size=kwargs.get("l2_size", 256),
-            l2_cache_full_memory_we=kwargs.get("masked_write", False),
-            controller_settings=controller_settings,
-            with_bist=not args.no_sdram_hw_test,
-        )
-        if args.sim and args.trace_dram_phy_dfi:
-            for sig, _ in self.sdram.dfii.master.iter_flat():
-                sig.attr.add("trace")
+        if not getattr(self, "skip_MC", False):
+            assert (
+                self.ddrphy.settings.memtype == module.memtype
+            ), f"Wrong DRAM module type: {self.ddrphy.settings.memtype} vs {module.memtype}"
+            self.add_sdram(
+                "sdram",
+                phy=self.ddrphy,
+                module=module,
+                origin=self.mem_map["main_ram"],
+                size=kwargs.get("max_sdram_size", 0x40000000),
+                l2_cache_size=kwargs.get("l2_size", 256),
+                l2_cache_full_memory_we=kwargs.get("masked_write", False),
+                controller_settings=controller_settings,
+                with_bist=not args.no_sdram_hw_test,
+            )
+            if args.sim and args.trace_dram_phy_dfi:
+                for sig, _ in self.sdram.dfii.master.iter_flat():
+                    sig.attr.add("trace")
 
-        if controller_settings.phy.memtype == "DDR5":
-            prefixes = [""] if not controller_settings.phy.with_sub_channels else ["A_", "B_"]
-            for _i, prefix in enumerate(prefixes):
-                setattr(
-                    self,
-                    prefix + "DQ_remapping",
-                    CSRStorage(
-                        8 * controller_settings.phy.nibbles * 4, name=prefix + "DQ_remapping"
-                    ),
-                )
+            if controller_settings.phy.memtype == "DDR5":
+                prefixes = [""] if not controller_settings.phy.with_sub_channels else ["A_", "B_"]
+                for _i, prefix in enumerate(prefixes):
+                    setattr(
+                        self,
+                        prefix + "DQ_remapping",
+                        CSRStorage(
+                            8 * controller_settings.phy.nibbles * 4, name=prefix + "DQ_remapping"
+                        ),
+                    )
 
-        # CPU will report that leveling finished by writing to ddrctrl CSRs
-        self.submodules.ddrctrl = LiteDRAMCoreControl()
-        self.add_csr("ddrctrl")
+            # CPU will report that leveling finished by writing to ddrctrl CSRs
+            self.submodules.ddrctrl = LiteDRAMCoreControl()
+            self.add_csr("ddrctrl")
 
         # Ethernet / Etherbone ---------------------------------------------------------------------
         if not args.sim:
@@ -305,9 +306,10 @@ class RowHammerSoC(SoCCore):
             self.add_wb_master(self.etherbone.wishbone.bus)
 
         # Rowhammer --------------------------------------------------------------------------------
-        self.submodules.rowhammer_dma = LiteDRAMDMAReader(self.sdram.crossbar.get_port())
-        self.submodules.rowhammer = RowHammerDMA(self.rowhammer_dma)
-        self.add_csr("rowhammer")
+        if not getattr(self, "skip_MC", False):
+            self.submodules.rowhammer_dma = LiteDRAMDMAReader(self.sdram.crossbar.get_port())
+            self.submodules.rowhammer = RowHammerDMA(self.rowhammer_dma)
+            self.add_csr("rowhammer")
 
         # Bist -------------------------------------------------------------------------------------
         if not args.no_memory_bist:
@@ -697,7 +699,8 @@ def configure_generated_files(builder, args, target_name):
     # CSR location definitions
     builder.csr_csv = os.path.join(builder.output_dir, "csr.csv")
     # DRAM initialization sequence
-    builder.soc.generate_sdram_phy_py_header(os.path.join(builder.output_dir, "sdram_init.py"))
+    if not getattr(builder.soc, "skip_MC", False):
+        builder.soc.generate_sdram_phy_py_header(os.path.join(builder.output_dir, "sdram_init.py"))
     # Target configuration
     with open(os.path.join(builder.output_dir, "defs.csv"), "w", newline="") as f:
         writer = csv.writer(f)
@@ -711,8 +714,11 @@ def configure_generated_files(builder, args, target_name):
             ]
         )
     # LiteDRAM settings (controller, phy, geom, timing)
-    with open(os.path.join(builder.output_dir, "litedram_settings.json"), "w") as f:
-        json.dump(builder.soc.sdram.controller.settings, f, cls=LiteDRAMSettingsEncoder, indent=4)
+    if not getattr(builder.soc, "skip_MC", False):
+        with open(os.path.join(builder.output_dir, "litedram_settings.json"), "w") as f:
+            json.dump(
+                builder.soc.sdram.controller.settings, f, cls=LiteDRAMSettingsEncoder, indent=4
+            )
 
 
 def run(args, builder, build_kwargs, target_name):
