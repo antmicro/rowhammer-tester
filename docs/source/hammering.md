@@ -6,8 +6,8 @@ For the complete list of script modifiers, see `--help`.
 
 There are two versions of the rowhammer script:
 
-* `rowhammer.py` - uses regular memory access via EtherBone to fill/check the memory (slower)
-* `hw_rowhammer.py` - BIST blocks will be used to fill/check the memory (much faster, but with some limitations regarding fill pattern)
+* `rowhammer.py` - uses regular memory access via EtherBone to fill/check the memory (slower).
+* `hw_rowhammer.py` - BIST blocks will be used to fill/check the memory (much faster, but with some limitations regarding fill pattern).
 
 BIST blocks are faster and are the intended way of running Rowhammer tester.
 
@@ -485,8 +485,8 @@ Two tests are available:
 
 Benchmarks memory access performance. There are two subcommands available:
 
-* `etherbone` - measure performance of the EtherBone bridge
-* `bist` - measure performance of DMA DRAM access using the BIST modules
+* `etherbone` - measures performance of the EtherBone bridge.
+* `bist` - measures performance of DMA DRAM access using the BIST modules.
 
 Example output:
 
