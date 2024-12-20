@@ -24,7 +24,7 @@ It can generate two different types of graphs:
    You can control the number of displayed columns with `--plot-columns`.
    For example if your module has 1024 columns and you provide `--plot-columns 16`, then the DRAM columns will be displayed in groups of 64.
 
-1. Distribution of rows affected by bitflips when targeting single rows. For example, you can generate a graph by calling:
+2. Distribution of rows affected by bitflips when targeting single rows. For example, you can generate a graph by calling:
 
    ```sh
       (venv) $ python logs2plot.py --aggressors-vs-victims your_error_summary.json
@@ -91,17 +91,17 @@ To view results using the visualizer you need to:
    npm run build
    ```
 
-1. Run `rowhammer.py` or `hw_rowhammer.py` with `--log-dir log_directory`.
+2. Run `rowhammer.py` or `hw_rowhammer.py` with `--log-dir log_directory`.
 
-1. Generate JSON files for the visualizer:
+3. Generate JSON files for the visualizer:
 
    ```sh
    python3 logs2vis.py log_directory/your_error_summary.json vis_directory
    ```
 
-1. Copy generated JSON files from `vis_directory` to `/path/to/f4pga-database-visualizer/dist/production/`
+4. Copy generated JSON files from `vis_directory` to `/path/to/f4pga-database-visualizer/dist/production/`.
 
-1. Start a simple HTTP server inside the production directory:
+5. Start a simple HTTP server inside the production directory:
 
    ```sh
    python -m http.server 8080
