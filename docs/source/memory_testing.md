@@ -1,52 +1,26 @@
+# Memory testing
 
-This chapter provides a comprehensive guide to performing memory tests. The memory testing process is designed to validate the integrity and performance of various memory modules. 
-This procedure employs unified testing scenario involving three short tests and one extended test to ensure thorough evaluation.
+This chapter provides a brief overview of memory validation and testing methodologies used for ensuring that the Rowhammer tester remains usable with various memory targets. 
 
-## Tools and Equipment
-The following tools and equipment are required for the memory testing procedure:
+## CI Driven testing 
 
-|   | Item | Manufacturer | MPN |
-|---|-------------------|----------|--------------|
-| 1 | Tester platform | Antmicro | - |
-| 2 | DUT(Device under test) | - | - |
-| 2 | USB C Hub with network adapter | i-tec | C31METALG3HUB |
-| 3 | RJ-45 cat 6a cable | Goobay | 91582 |
-| 4 | USB C cable | Goobay | 41073 |
-| 6 | USB C to USB A adapter (optional) | i-tec | C31TYPEA |
+The digital [design targets](building_rowhammer) supported by the Rowhammer tester are periodically synthesized with Continuous Integration system within Antmicro's internal infrastrucutre.
+The synthesized designs (bitstreams) are then uploaded to physical testers orchestrated with CI-runners.
+You can read more about hardware-in-the-loop testing methodology and Antmicro Scalerunner project from this [blog note](https://antmicro.com/blog/2022/08/scalerunner-open-source-compute-cluster/).
 
----
+The hardware platforms currently used in the CI-based testing are:
 
-## Procedure for Running Memory Tests
+* [RDIMM DDR5 Tester Rev. 1.0](rdimm_ddr5_tester.md) with off-the-shelf **XXX** memory module installed
+* [RDIMM DDR5 Tester Rev. 1.0](rdimm_ddr5_tester.md) with off-the-shelf **XXX** memory module installed
+* [SODIMM DDR5 Tester](sodimm_ddr5_tester.md) with [LPDD5 Testbed](lpddr5_testbed) with **XXX** memory module installed. 
+* [LPDDR4 Tester](lpddr4_tester.md) with [DDR5 Testbed](ddr5_testbed) with **XXX** memory module installed. 
 
-## Prepare testing platform
+## Manual testing
 
-First follow the instructions in [Installation and setup](installation-and-setup) and [Building Rowhammer Design](building-rowhammer-design) chapters.
-
-1. Activate venv
-
-```bash
-source venv/bin/activate
-```
-
-2. Export target
-
-```bash
-TARGET=ddr5_tester
-```
-
-3. Flash the board
-
-```bash
-make upload
-```
-(Upload to SRAM) or 
-
-```bash
-make flash
-```
-(Write to (Q)SPI Flash memory) - To start from flash please ensure that `MODE` jumper is set to `FLASH`
-
-## Running Memory Tests
+In order to increase test coverage with respect to a number of different off-the-shelf memory modules semi-automated testing is performed.
+In this scenario the memory module under test is installed in one of the testers and verified with a `Memtest` routine.
+The logs from the testing process are collected in a common storage bucket.
+Based on the collected logs a historical test coverage is evaluated.
 
 The unified testing procedure consists of three short memory tests followed by one extended test:
 
@@ -62,22 +36,8 @@ Run the following command:
 ```bash
 python3 rowhammer_tester/scripts/mem.py --srv --size 0x800000
 ```
----
 
-## Testing Parameters and Their Purpose
-The following parameters are used in the testing scripts:
-
-| Parameter        | Description                                                                          |
-|------------------|--------------------------------------------------------------------------------------|
-| `--srv`          | Program will start its own instance of litex_server                                  |
-| `--size`         | Specifies the memory size to be tested. For short tests, 0x200000 is used.           |
-|                  | For extended tests, 0x800000 is specified to a larger memory range.                  |
-
-Selected size parameters ensure a balance between execution time and test coverage.
-
----
-
-## RDIMM DDR5 Coverage Table
+## RDIMM DDR5 Test Coverage
 
 The following [Memory coverage table](csv/dimm_coverage_table.csv) outlines the DDR5 RDIMM modules that have passed all of the above tests.
 
