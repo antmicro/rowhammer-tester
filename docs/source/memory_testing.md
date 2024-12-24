@@ -18,6 +18,13 @@ The hardware platforms currently used in the CI-based testing are:
 ## Manual testing
 
 In order to increase test coverage with respect to a number of different off-the-shelf memory modules semi-automated testing is performed.
+
+:::{figure-md} rdimm-ddr5-memory-testing-setup
+![](images/rdimm-ddr5-memory-testing-setup.png)
+
+Memory testing setup for manual tests
+:::
+
 In this scenario the memory module under test is installed in one of the testers and verified with a `Memtest` routine.
 The logs from the testing process are collected in a common storage bucket.
 Based on the collected logs a historical test coverage is evaluated.
