@@ -49,7 +49,7 @@ python3 rowhammer_tester/scripts/mem.py --srv --size 0x800000
 The following RDIMM DDR5 coverage table outlines the DDR5 RDIMM modules that have passed all of the above tests.
 The table matches the memory module and the SHA of the latest Rowhammer tester commit that was used during the experimentation.
 
-```{csv-table} Nazwa Tabeli
+```{csv-table} RDIMM DDR5 test coverage
    :file: csv/coverage_table.csv
    :header-rows: 1
 ```
