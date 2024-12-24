@@ -71,11 +71,11 @@ make flash
 ````
 ````{tab} DDR5 (RDIMM)
 
-This targets an off-the-shelf DDR5 RDIMMs installed on Antmicro [RDIMM DDR5 Tester](rdimm_ddr5_tester.md).
+This targets off-the-shelf DDR5 RDIMMs installed on Antmicro [RDIMM DDR5 Tester](rdimm_ddr5_tester.md).
 
 ```{note}
 Currently only revision 1.0 of the RDIMM DDR5 Tester is supported with bitstream target.
-Software integration and RDIMM DDR5 PHY development for Artix UltraScale Plus FPGA existing on RDIMM DDR5 Tester in revision 2.0 is currently ongoing.
+Software integration and RDIMM DDR5 PHY development for the Artix UltraScale Plus FPGA found on the RDIMM DDR5 Tester in revision 2.0 is currently ongoing.
 ```
 
 A typical building command is:
@@ -109,9 +109,9 @@ make flash
 
 ````{tab} DDR5 (IC)
 
-This configuration allows to test a single DDR5 IC.
-The hardware setup used in this scenario consist of a [LPDDR4 Tester](lpddr4_test_board.md) with a [DDR5 Test Bed](ddr5_test_bed.md) 
-Since DDR5 and LPDDR4 support the same VDDQ IO voltages it is possible to use the Tester Board to interface with a single DDR5 IC.
+This configuration allows testing of a single DDR5 IC.
+The hardware setup used in this scenario consists of an [LPDDR4 Tester](lpddr4_test_board.md) with a [DDR5 Test Bed](ddr5_test_bed.md)
+Since DDR5 and LPDDR4 support the same VDDQ IO voltages, it is possible to use the Tester Board to interface with a single DDR5 IC.
 
 You can build this target with:
 
@@ -167,7 +167,7 @@ make flash
 ````
 ````{tab} DDR4 (SO-DIMM)
 
-This targets an off-the-shelf DDR4 SO-DIMMs installed on AMD-Xilinx [ZCU104](zcu104.md).
+This targets off-the-shelf DDR4 SO-DIMMs installed on AMD-Xilinx [ZCU104](zcu104.md).
 You can build the target with:
 
 ```sh
@@ -181,7 +181,7 @@ Please refer to the [Loading the bitstream](zcu104.md#loading-the-bitstream) sec
 ````
 ````{tab} DDR4 (RDIMM)
 
-This targets an off-the-shelf DDR4 RDIMMs installed on Antmicro [RDIMM DDR4 Tester](rdimm_ddr4_tester.md).
+This targets off-the-shelf DDR4 RDIMMs installed on Antmicro [RDIMM DDR4 Tester](rdimm_ddr4_tester.md).
 You can build the target with:
 
 ```sh
@@ -240,12 +240,12 @@ make flash
 Running `make` will generate build files without invoking Vivado.
 ```
 
-The generated bitstreams are stored in the `./build/<target-name>/gateware/` folder named after respective target name used for building.
+The generated bitstreams are stored in the `./build/<target-name>/gateware/` folder named after the respective target name used for building.
 
 ```{note}
 The FPGA configuration RAM is a volatile memory so you would need to write the generated bitstream every time you power-cycle the board or reset the configuration state of the FPGA.
-The on-board FPGA will get automatically configured with a bitstream stored in the Flash memory on power-on. 
-Please refer to the board-specific chapters (provided along with build instructions) for further information on how to connect the board to a host PC and and how to configure it for uploading the bitstream.
+The on-board FPGA will get automatically configured with a bitstream stored in the Flash memory on power-on.
+Please refer to the board-specific chapters (provided along with build instructions) for further information on how to connect the board to a host PC and how to configure it for uploading the bitstream.
 ```
 
 ## Ethernet connection

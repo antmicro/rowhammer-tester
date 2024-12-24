@@ -8,7 +8,7 @@ For FPGA gateware documentation for this board, refer to the [Gateware Documenta
 
 ## Variants
 
-The latest design revision (Rev. 2.0) is based on AMD (Xilinx) UltraScale Plus FPGA which offers more logic resources operating at higher througput. A more detailed comparison between Kintex-7 and UltraScale Plus RDIMM DDR5 Tester can be found in this [blog note](https://antmicro.com/blog/2024/12/data-center-rdimm-ddr5-tester-2-0/).  
+The latest design revision (Rev. 2.0) is based on AMD (Xilinx) UltraScale Plus FPGA which offers more logic resources operating at higher throughput. A more detailed comparison between Kintex-7 and UltraScale Plus RDIMM DDR5 Tester can be found in this [blog note](https://antmicro.com/blog/2024/12/data-center-rdimm-ddr5-tester-2-0/).
 
 ````{tab} Revision 2.0
 
@@ -51,7 +51,7 @@ Connectors:
 * [`J5`](#rdimm-ddr5-tester-2.0.0_J5) - socket for SD card
 * [`J12`](#rdimm-ddr5-tester-2.0.0_J12) - I2C/I3C connector
 * [`J17`](#rdimm-ddr5-tester-2.0.0_J17) - Heater connector (maximum 10W)
-* `J1` - optionally mounted standar 14-pin JTAG connector used for programming FPGA or Flash memory
+* `J1` - optionally mounted standard 14-pin JTAG connector used for programming FPGA or Flash memory
 
 Switches and buttons:
 
@@ -63,12 +63,12 @@ Switches and buttons:
 
 LEDs:
 
-* Power good indicator [`D1`](#rdimm-ddr5-tester-2.0.0_D1) - indicates presence of all FPGA voltage rails stabilized 
+* Power good indicator [`D1`](#rdimm-ddr5-tester-2.0.0_D1) - indicates presence of all FPGA voltage rails stabilized
 * FPGA programming INIT [`D2`](#rdimm-ddr5-tester-2.0.0_D2) - indicates current FPGA configuration state
 * FPGA programming DONE [`D3`](#rdimm-ddr5-tester-2.0.0_D3) - indicates completion of FPGA programming
 * 5x User ([`D8`](#rdimm-ddr5-tester-2.0.0_D8), [`D7`](#rdimm-ddr5-tester-2.0.0_D7), [`D6`](#rdimm-ddr5-tester-2.0.0_D6), [`D5`](#rdimm-ddr5-tester-2.0.0_D5), [`D4`](#rdimm-ddr5-tester-2.0.0_D4)) - user-configurable LEDs
-* VBULK indicator [`D21`](#rdimm-ddr5-tester-2.0.0_D21) - indicates presence of VBULK DDR5 voltage rail stabilized 
-* VMGT indicator [`D22`](#rdimm-ddr5-tester-2.0.0_D22) - indicates presence of VMGT DDR5 voltage rail stabilized 
+* VBULK indicator [`D21`](#rdimm-ddr5-tester-2.0.0_D21) - indicates presence of VBULK DDR5 voltage rail stabilized
+* VMGT indicator [`D22`](#rdimm-ddr5-tester-2.0.0_D22) - indicates presence of VMGT DDR5 voltage rail stabilized
 ````
 ````{tab} Revision 1.0
 
@@ -113,7 +113,7 @@ LEDs:
 The following instructions explain how to set up the board depending on the revision you have.
 
 ````{tab} Revision 2.0
-Set config switch [`SW4`](#rdimm-ddr5-tester-2.0.0_SW4) in proper positions.
+Set the config switch [`SW4`](#rdimm-ddr5-tester-2.0.0_SW4) in proper positions.
 The possible options are:
 
 * PB- CTRL - automatically turn on board or use power button [`SW5`](#rdimm-ddr5-tester-2.0.0_SW5)

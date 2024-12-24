@@ -6,14 +6,14 @@
 LPDDR4 Test Board
 :::
 
-LPDDR4 Test Board is a platform developed by Antmicro for testing LPDDR4 memory.
+The LPDDR4 Test Board is a platform developed by Antmicro for testing LPDDR4 memory.
 It uses the Xilinx Kintex-7 FPGA (XC7K70T-FBG484).
 
 The hardware is open and can be found on GitHub (<https://github.com/antmicro/lpddr4-test-board>).
 
 This Test Board supports interchangeable Test Beds that can be populated with various memories.
 Initially the LPDDR4 Test Board was meant to be used with [LPDDR4 Test Beds](lpddr4_test_bed.md).
-Currently it also supports [DDR5 Test Beds](ddr5_test_bed.md). 
+Currently it also supports [DDR5 Test Beds](ddr5_test_bed.md).
 
 For FPGA digital design documentation for this board, refer to the [Digital design](build/lpddr4_test_board/documentation/index.rst) chapter.
 
@@ -64,5 +64,5 @@ Then connect the board's USB-C [`J1`](#lpddr4-test-board_J1) and Ethernet [`J5`]
 Turn on the board using power switch [`S1`](#lpddr4-test-board_S1).
 Then configure the network.
 There is a JTAG/FLASH jumper [`MODE1`](#lpddr4-test-board_MODE1) on the right-hand side of the board.
-It defines whether the bitstream is be loaded via JTAG or FLASH memory.
+It defines whether the bitstream is loaded via JTAG or FLASH memory.
 The bitstream will be loaded from flash memory upon device power-on or after the FPGA programming [`PROG_B1`](#lpddr4-test-board_PROG_B1) button is pressed.
