@@ -10,10 +10,10 @@ You can read more about hardware-in-the-loop testing methodology and Antmicro Sc
 
 The hardware platforms currently used in the CI-based testing are:
 
-* [RDIMM DDR5 Tester Rev. 1.0](rdimm_ddr5_tester.md) with off-the-shelf **Micron MTC10F1084S1RC48BA1 NGCC** memory module installed
-* [SODIMM DDR5 Tester](sodimm_ddr5_tester.md) with off-the-shelf **Micron MTC8C1084S1SC48BA1** memory module installed. 
-* [SODIMM DDR5 Tester](sodimm_ddr5_tester.md) with [LPDD5 Testbed](lpddr5_testbed) with **Micron MT62F1G32D4DR-031 WT:B** memory module installed. 
-* [LPDDR4 Tester](lpddr4_tester.md) with [DDR5 Testbed](ddr5_testbed) with **Micron MT60B2G8HB-48B** memory module installed. 
+* [RDIMM DDR5 Tester Rev. 1.0](rdimm_ddr5_tester.md) with off-the-shelf `Micron MTC10F1084S1RC48BA1 NGCC` memory module installed
+* [SODIMM DDR5 Tester](so_dimm_ddr5_tester.md) with off-the-shelf `Micron MTC8C1084S1SC48BA1` memory module installed. 
+* [SODIMM DDR5 Tester](so_dimm_ddr5_tester.md) with [LPDD5 Testbed](lpddr5_testbed) with `Micron MT62F1G32D4DR-031 WT:B` memory module installed. 
+* [LPDDR4 Tester](lpddr4_tester.md) with [DDR5 Testbed](ddr5_testbed) with `Micron MT60B2G8HB-48B` memory module installed. 
 
 ## Manual testing
 
