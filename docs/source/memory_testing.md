@@ -39,19 +39,20 @@ python3 rowhammer_tester/scripts/mem.py --srv --size 0x800000
 
 ## RDIMM DDR5 Test Coverage
 
-The following [Memory coverage table](csv/dimm_coverage_table.csv) outlines the DDR5 RDIMM modules that have passed all of the above tests.
+The following RDIMM DDR5 coverage table outlines the DDR5 RDIMM modules that have passed all of the above tests.
+The table matches the memory module and the SHA of the latest Rowhammer tester commit that was used during the experimentation.
 
-| # | Memory MPN | Manufacturer | Short memtest (Basic) | Short memtest (Random) | Extended memtest (Basic) | Extended memtest (Random) | Rowhammer-tester commit SHA |
-|---|---|---|---|---|---|---|---|
-| 1 | MTC10F1084S1RC48BA1_JHCC | Micron | OK | OK | OK | OK | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
-| 2 | MTC10F1084S1RC48BA1_NGCC | Micron | OK | OK | OK | OK | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
-| 3 | MTC20F2085S1RC48BA1_PGCC | Micron | OK | OK | OK | OK | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
-| 4 | M321R4GA3BB6-CQKMG | Samsung | OK | OK | OK | OK | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
-| 5 | M329R8GA0BB0-CQKVG | Samsung | OK | OK | OK | OK | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
-| 6 | MTC20F2085S1RC48BA1_JHCC | Micron | OK | OK | OK | OK | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
-| 7 | HMCG84MEBRA112NBB | SK hynix | OK | OK | OK | OK | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
-| 8 | HMCG88AGBRA188NAA | SK hynix | OK | OK | OK | OK | [bd05e52](https://github.com/antmicro/rowhammer-tester/tree/bd05e520f30fea3b554e495bb3a92d60d0a08c97) |
-| 9 | M321R4GA3BB6-CQKET | Samsung | OK | OK | OK | OK | [bd05e52](https://github.com/antmicro/rowhammer-tester/tree/bd05e520f30fea3b554e495bb3a92d60d0a08c97) |
-| 10 | M321R4GA0BB0-CQKMS | Samsung | OK | OK | OK | OK | [bd05e52](https://github.com/antmicro/rowhammer-tester/tree/bd05e520f30fea3b554e495bb3a92d60d0a08c97) |
-| 11 | MTC18F104S1PC48BA2_NGCC | Micron | OK | OK | OK | OK | [bd05e52](https://github.com/antmicro/rowhammer-tester/tree/bd05e520f30fea3b554e495bb3a92d60d0a08c97) |
-| 12 | MTC10F1084S1RC48BA1_NHFF | Micron | OK | OK | OK | OK | [bd05e52](https://github.com/antmicro/rowhammer-tester/tree/bd05e520f30fea3b554e495bb3a92d60d0a08c97) |
+| #  | Memory MPN                | Manufacturer | Latest SHA                                                                                            |
+|----|---------------------------|--------------|-------------------------------------------------------------------------------------------------------|
+| 1  | MTC10F1084S1RC48BA1_JHCC  | Micron       | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
+| 2  | MTC10F1084S1RC48BA1_NGCC  | Micron       | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
+| 3  | MTC20F2085S1RC48BA1_PGCC  | Micron       | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
+| 4  | M321R4GA3BB6-CQKMG        | Samsung      | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
+| 5  | M329R8GA0BB0-CQKVG        | Samsung      | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
+| 6  | MTC20F2085S1RC48BA1_JHCC  | Micron       | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
+| 7  | HMCG84MEBRA112NBB         | SK hynix     | [35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e) |
+| 8  | HMCG88AGBRA188NAA         | SK hynix     | [bd05e52](https://github.com/antmicro/rowhammer-tester/tree/bd05e520f30fea3b554e495bb3a92d60d0a08c97) |
+| 9  | M321R4GA3BB6-CQKET        | Samsung      | [bd05e52](https://github.com/antmicro/rowhammer-tester/tree/bd05e520f30fea3b554e495bb3a92d60d0a08c97) |
+| 10 | M321R4GA0BB0-CQKMS        | Samsung      | [bd05e52](https://github.com/antmicro/rowhammer-tester/tree/bd05e520f30fea3b554e495bb3a92d60d0a08c97) |
+| 11 | MTC18F104S1PC48BA2_NGCC   | Micron       | [bd05e52](https://github.com/antmicro/rowhammer-tester/tree/bd05e520f30fea3b554e495bb3a92d60d0a08c97) |
+| 12 | MTC10F1084S1RC48BA1_NHFF  | Micron       | [bd05e52](https://github.com/antmicro/rowhammer-tester/tree/bd05e520f30fea3b554e495bb3a92d60d0a08c97) |
