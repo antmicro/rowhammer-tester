@@ -1,8 +1,8 @@
 <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0;width:100%;}
-.tg td{border:.05rem solid var(--md-typeset-table-color);border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+.tg td{border:.05rem solid var(--md-typeset-table-color);border-style:solid;border-width:1px;font-family:Lato;font-size:14px;
   overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg th{border:.05rem solid var(--md-typeset-table-color);border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+.tg th{border:.05rem solid var(--md-typeset-table-color);border-style:solid;border-width:1px;font-family:Lato;font-size:14px;
   font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
 .tg .tg-cly1{text-align:left;vertical-align:middle}
 .tg .tg-baqh{text-align:center;vertical-align:top}
