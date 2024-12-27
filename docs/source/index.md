@@ -6,6 +6,7 @@
 overview.md
 setup.md
 building_rowhammer.md
+bender_integration.md
 ```
 
 ```{toctree}
