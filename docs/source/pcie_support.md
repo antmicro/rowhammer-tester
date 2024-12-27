@@ -1,4 +1,4 @@
-# Bender integration
+# PCIe support
 This chapter describes implementation of new payload executor allowing to integrate bender instructions.
 
 ## Payload Executor commands mapping

@@ -6,7 +6,6 @@
 overview.md
 setup.md
 building_rowhammer.md
-bender_integration.md
 ```
 
 ```{toctree}
@@ -32,6 +31,7 @@ visualization.md
 playbook.md
 memory_testing.md
 building_linux.md
+pcie_support.md
 ```
 
 ```{toctree}
