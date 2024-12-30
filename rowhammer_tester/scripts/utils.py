@@ -347,6 +347,14 @@ class DRAMAddressConverter:
 # ######################### HW (accel) memory utils #############################
 
 
+def report_payload_exec_time(wb):
+    exec_start = wb.regs.payload_executor_exec_start.read()
+    exec_stop = wb.regs.payload_executor_exec_stop.read()
+    print(f"Payload execution started at: {exec_start}")
+    print(f"Payload execution finished at: {exec_stop}")
+    print(f"Total execution time (system clock cycles): {exec_stop - exec_start}")
+
+
 def _progress(current, max_count, bar_w=40, last=False, name="Progress", opt=None):
     s = "{name}: [{bar:{bw}}] {cur:{n}} / {max:{n}}{opt}".format(
         name=name,
@@ -567,6 +575,9 @@ def execute_payload(wb, payload):
         first = False
 
     finished = time.time()
+
+    report_payload_exec_time(wb)
+
     print(f"\nTotal elapsed time: {(finished - start) * 1e3:.3f} ms")
     if start_transition is not None:
         print(f"Registered execution time: {(finished - start_transition) * 1e3:.3f} ms\n")

@@ -1168,6 +1168,44 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
                 self.assert_history(dut.dfi_history, [OpCode.REF])
                 self.assertEqual(dut.execution_cycles, sum(max(1, i.timeslice) for i in payload))
 
+    def test_payload_exec_snapshot(self):
+        def generator(dut, expected_cycle_count):
+            # start execution, this should wait for the next refresh, then latch the start and stop
+            # cycle of the payload executor
+            yield dut.payload_executor.start.eq(1)
+            yield
+            yield dut.payload_executor.start.eq(0)
+            yield
+
+            while not (yield dut.payload_executor.ready):
+                yield
+
+            start_cycle = yield dut.payload_executor.payload_exec_start
+            stop_cycle = yield dut.payload_executor.payload_exec_stop
+            yield
+
+            self.assertNotEqual(start_cycle, 0)
+            self.assertNotEqual(stop_cycle, 0)
+            exec_cycles = stop_cycle - start_cycle
+            self.assertEqual(exec_cycles, expected_cycle_count)
+
+        encoder = Encoder(bankbits=5)
+        payload = [
+            encoder.Instruction(OpCode.ACT, timeslice=7, address=encoder.address(bank=1, row=100)),
+            encoder.Instruction(OpCode.READ, timeslice=3, address=encoder.address(bank=1, col=20)),
+            encoder.Instruction(OpCode.PRE, timeslice=5, address=encoder.address(bank=1)),
+            encoder.Instruction(OpCode.REF, timeslice=10),
+            encoder.Instruction(OpCode.NOOP, timeslice=0),  # STOP
+        ]
+
+        dut = PayloadExecutorDDR5DUT(encoder(payload))
+        run_simulation(
+            dut,
+            [generator(dut, sum(max(1, i.timeslice) for i in payload)), *dut.get_generators()],
+            vcd_name="test_payload_exec_snapshot.vcd",
+        )
+        self.assert_history(dut.dfi_history, [OpCode.ACT, OpCode.READ, OpCode.PRE, OpCode.REF])
+
 # Interactive tests --------------------------------------------------------------------------------
 
 

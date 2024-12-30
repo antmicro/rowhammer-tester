@@ -490,6 +490,22 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         self.loop_counter = Signal(Decoder.LOOP_COUNT)
         self.idle_counter = Signal(Decoder.TIMESLICE_NOOP)
 
+        self.exec_start = Signal(64, reset=0)
+        self.exec_stop = Signal(64, reset=0)
+        cycle_counter = Signal(64)
+
+        # Payload Executor Status
+        self.sync += [
+            cycle_counter.eq(cycle_counter + 1),
+            If(self.start, self.exec_start.eq(0), self.exec_stop.eq(0)),
+            If(
+                self.executing & (self.exec_start == 0),
+                self.exec_start.eq(cycle_counter),
+                self.exec_stop.eq(0),
+            ),
+            If(self.executing, self.exec_stop.eq(cycle_counter + 1)),
+        ]
+
         # Scratchpad
         self.submodules.scratchpad = Scratchpad(mem_scratchpad, dfi_switch.dfi)
 
@@ -617,9 +633,20 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             " from READ commands that is stored in the scratchpad memory",
         )
 
+        self._exec_start = CSRStatus(
+            64,
+            description="Number of cycles elapsed until the start of the payload execution.",
+        )
+        self._exec_stop = CSRStatus(
+            64,
+            description="Number of cycles elapsed until the end of the payload execution.",
+        )
+
         self.comb += [
             self.start.eq(self._start.re),
             self._status.fields.ready.eq(self.ready),
             self._status.fields.overflow.eq(self.scratchpad.overflow),
             self._read_count.status.eq(self.scratchpad.counter),
+            self._exec_start.status.eq(self.exec_start),
+            self._exec_stop.status.eq(self.exec_stop),
         ]
