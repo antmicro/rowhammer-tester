@@ -21,20 +21,23 @@ In particular PCIe requires mapping the API/commands into Rowhammer-specific API
 
 ## DRAM Bender integration
 
-### Payload Executor commands mapping
+Table below presents command mapping for proposed for controling Payload Executor.
+This mapping is common for all the DRAM variants.
+
 ```{include} csv/payload-executor-bender.md
 ```
 
-Table below presents DRAM-specific mappings proposed for Bender integration.
+Table below presents DRAM-specific command mappings proposed for Bender integration.
 
-### DDR5 commands mapping
+````{tab} DDR5
 ```{include} csv/dfi-ddr5-bender.md
 ```
-
-### LPDDR4 commands mapping
-```{include} csv/dfi-lpddr4-bender.md
-```
-
-### LPDDR5 commands mapping
+````
+````{tab} LPDDR5
 ```{include} csv/dfi-lpddr5-bender.md
 ```
+````
+````{tab} LPDDR4
+```{include} csv/dfi-lpddr4-bender.md
+```
+````
