@@ -29,15 +29,20 @@ This mapping is common for all the DRAM variants.
 
 Table below presents DRAM-specific command mappings proposed for Bender integration.
 
+
+````{tab} DDR4
+```{include} csv/dfi-ddr4-bender.md
+```
+````
 ````{tab} DDR5
 ```{include} csv/dfi-ddr5-bender.md
 ```
 ````
-````{tab} LPDDR5
-```{include} csv/dfi-lpddr5-bender.md
-```
-````
 ````{tab} LPDDR4
 ```{include} csv/dfi-lpddr4-bender.md
+```
+````
+````{tab} LPDDR5
+```{include} csv/dfi-lpddr5-bender.md
 ```
 ````
