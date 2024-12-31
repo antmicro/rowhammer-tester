@@ -38,7 +38,8 @@ It can generate two different types of graphs:
    The colors of the tiles indicate how many bitflips occurred for each victim.
 
    You can enable additional annotation with `--annotate bitflips` so that the number of occurred bitflips will be explicitly labeled on top of each victim tile.
-   {numref}`plot-annotation` presents a set of bitflips recorded while hammering rows **TODO: WHICH ROWS** of **TODO: WHICH MEMORY** from off-the-shelf RDIMM DDR5 memory under test.
+   {numref}`plot-annotation` presents a set of bitflips recorded while hammering rows `1-100` of `bank 0` in  `SK hynix HMCG84MEBRA112NBB`
+ from off-the-shelf RDIMM DDR5 memory under test.
 
    :::{figure-md} plot-annotation
    ![Annotated plot](images/annotation.png)
