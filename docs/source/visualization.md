@@ -1,8 +1,8 @@
 # Result visualization
 
-When you executed some attacks on your board, you can use the results to draw a plot or visualize them with the [F4PGA Database Visualizer](https://github.com/chipsalliance/f4pga-database-visualizer).
+When you executed some attacks on your board, you can use the results to draw a plot or visualize them with python and matplotlib or withthe [F4PGA Database Visualizer](https://github.com/chipsalliance/f4pga-database-visualizer).
 This chapter describes scripts used for visualizing the rowhammer attacks.
-The script accept json files that can be generated as a result of hammering (see the {doc}`hammering` chapter). 
+The script accept json files that can be generated as a result of hammering with commands described in the {doc}`hammering` chapter. 
 
 ## Plot bitflips - `logs2plot.py`
 
@@ -38,6 +38,7 @@ It can generate two different types of graphs:
    The colors of the tiles indicate how many bitflips occurred for each victim.
 
    You can enable additional annotation with `--annotate bitflips` so that the number of occurred bitflips will be explicitly labeled on top of each victim tile.
+   {numref}`plot-annotation` presents a set of bitflips recorded while hammering rows **TODO: WHICH ROWS** of **TODO: WHICH MEMORY** from off-the-shelf RDIMM DDR5 memory under test.
 
    :::{figure-md} plot-annotation
    ![Annotated plot](images/annotation.png)
