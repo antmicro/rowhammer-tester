@@ -1,5 +1,5 @@
-,Memory MPN,Manufacturer,RCD Manufacturer,Short Memtest,Extended Memtest,Latest SHA
-1,HMCG84MEBRA112NBB,SK hynix,Rambus,6/6,2/2,[35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e)
+#,Memory MPN,Manufacturer,RCD Manufacturer,Short Memtest,Extended Memtest,Latest SHA
+1,HMCG84MEBRA112NBB,SK hynix,Rambus,6/6,2/2,[fd2d59c](https://github.com/antmicro/rowhammer-tester/tree/fd2d59cf4ddc2274d3f8d4e311d53e6b73a6849a)
 2,HMCG88AGBRA188NN_AA,SK hynix,Montage,6/6,2/2,[bd05e52](https://github.com/antmicro/rowhammer-tester/tree/bd05e520f30fea3b554e495bb3a92d60d0a08c97)
 3,KF548R36RB-32,Kingston,Montage,6/6,2/2,[35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e)
 4,KF560R32RB-16,Kingston,REA Renesas,6/6,2/2,[35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e)
@@ -15,3 +15,4 @@
 14,MTC20F2085S1RC48BA1_JGCC,Micron,IDT Renesas,6/6,2/2,[35bfd92](https://github.com/antmicro/rowhammer-tester/tree/35bfd9252417346e4b1f38a753c22e0541185b9e)
 15,MTC20F2085S1RC48BA1_JHCC,Micron,Rambus,6/6,2/2,[bd05e52](https://github.com/antmicro/rowhammer-tester/tree/bd05e520f30fea3b554e495bb3a92d60d0a08c97)
 16,MTC20F2085S1RC48BA1_PGCC,Micron,IDT Renesas,6/6,2/2,[bd05e52](https://github.com/antmicro/rowhammer-tester/tree/bd05e520f30fea3b554e495bb3a92d60d0a08c97)
+17,MTC10F1084S1RC48BA1_JGCC,Micron,IDT Renesas,6/6,2/2,[fd2d59c](https://github.com/antmicro/rowhammer-tester/tree/fd2d59cf4ddc2274d3f8d4e311d53e6b73a6849a)
