@@ -1,6 +1,8 @@
 # Result visualization
 
 When you executed some attacks on your board, you can use the results to draw a plot or visualize them with the [F4PGA Database Visualizer](https://github.com/chipsalliance/f4pga-database-visualizer).
+This chapter describes scripts used for visualizing the rowhammer attacks.
+The script accept json files that can be generated as a result of hammering (see the {doc}`hammering` chapter). 
 
 ## Plot bitflips - `logs2plot.py`
 
@@ -30,7 +32,10 @@ It can generate two different types of graphs:
       (venv) $ python logs2plot.py --aggressors-vs-victims your_error_summary.json
    ```
 
-   One graph will be generated with victims on the X axis and aggressors on the Y axis. The colors of the tiles indicate how many bitflips occurred for each victim.
+   One graph will be generated with victims (affected rows) on the Y axis and aggressors (attacking rows) on the X axis.
+   The row under attack is marked with `X` symbol.
+   The affected rows (victims) above and below the row under attack (agsressor) include cells with number of bit flips detected.
+   The colors of the tiles indicate how many bitflips occurred for each victim.
 
    You can enable additional annotation with `--annotate bitflips` so that the number of occurred bitflips will be explicitly labeled on top of each victim tile.
 
@@ -48,7 +53,8 @@ It can generate two different types of graphs:
    Zooming in on the plot
    :::
 
-   This type of plot has built-in DQ per pad statistics for each attack. After clicking a specific tile you will see a new pop-up window with a plot:
+   This type of plot has built-in DQ per pad statistics for each attack. 
+   After clicking a specific tile you will see a new pop-up window with a plot:
 
    :::{figure-md} dq-pop-up
    ![Per pad statistics](images/dqs_vict_vs_aggr.png)
