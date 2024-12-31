@@ -5,52 +5,52 @@
 .tg th{border:.05rem solid var(--md-typeset-table-color);font-family:Lato;font-size:14px;
   font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
 .tg .tg-wa1i{font-weight:bold;text-align:center;vertical-align:middle}
-.tg .tg-f9t6{background-color:#B7B7B7;font-weight:bold;text-align:center;vertical-align:middle}
+.tg .tg-f9t6{background-color:rgba(183,183,183,.2);font-weight:bold;text-align:center;vertical-align:middle}
 .tg .tg-nrix{text-align:center;vertical-align:middle}
 .tg .tg-7zrl{text-align:center;vertical-align:bottom}
 .tg .tg-8d8j{text-align:center;vertical-align:bottom}
 </style>
 <table class="tg"><thead>
   <tr>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">INSTRUCTION</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">0</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">1</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">2</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">3</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">4</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">5</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">6</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">7</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">8</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">9</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">10</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">11</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">12</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">13</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">14</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">15</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">16</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">17</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">18</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">19</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">20</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">21</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">22</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">23</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">24</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">25</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">26</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">27</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">28</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">29</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">30</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">31</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">32-39</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">40-63</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">64-71</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">72-95</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">96-103</span></th>
-    <th class="tg-f9t6"><span style="font-weight:bold;background-color:#B7B7B7">104-127</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">INSTRUCTION</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">0</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">1</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">2</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">3</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">4</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">5</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">6</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">7</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">8</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">9</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">10</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">11</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">12</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">13</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">14</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">15</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">16</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">17</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">18</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">19</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">20</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">21</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">22</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">23</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">24</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">25</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">26</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">27</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">28</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">29</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">30</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">31</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">32-39</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">40-63</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">64-71</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">72-95</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">96-103</span></th>
+    <th class="tg-f9t6"><span style="font-weight:bold;background-color:rgba(183,183,183,.0)">104-127</span></th>
   </tr>
 </thead>
 <tbody>
