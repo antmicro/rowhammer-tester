@@ -23,6 +23,7 @@ isort == 5.13.2
 matplotlib == 3.7.3
 meson == 0.63.0
 ninja == 1.11.1
+pandas == 2.2.3
 parameterized == 0.9.0
 pexpect == 4.8.0
 pyvcd == 0.4.0
