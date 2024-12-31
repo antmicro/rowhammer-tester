@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 import itertools
-import time
 
 from rowhammer_tester.gateware.payload_executor import Encoder, OpCode
 from rowhammer_tester.scripts.utils import (
     DRAMAddressConverter,
     RemoteClient,
+    execute_payload,
     memdump,
     memread,
     memwrite,
@@ -72,20 +72,7 @@ def execute(wb):
     data = list(itertools.islice(word_gen(3), 128))
     memwrite(wb, data, base=converter.encode_bus(bank=0, row=100, col=200))
 
-    print("\nTransferring the payload ...")
-    memwrite(wb, program, base=wb.mems.payload.base)
-
-    def ready():
-        status = wb.regs.payload_executor_status.read()
-        return (status & 1) != 0
-
-    print("\nExecuting ...")
-    assert ready()
-    wb.regs.payload_executor_start.write(1)
-    while not ready():
-        time.sleep(0.001)
-
-    print("Finished")
+    execute_payload(wb, program)
 
     print("\nScratchpad contents:")
     scratchpad = memread(wb, n=512 // 4, base=wb.mems.scratchpad.base)
