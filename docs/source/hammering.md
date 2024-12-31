@@ -205,7 +205,18 @@ Since for a single ended attack row activation needs to be triggered the `--payl
 The size of the payload memory is set by default to 1024 bytes and can be changed using the `--payload-size` switch.
 ```
 
-## Cell retention measurement examples
+## Cell retention measurement
+
+The following set of commands allows to perform experiments on DRAM cell retention.
+In particular it is possible to fill the DRAM cell with a known pattern, disable cell refreshing and estimate the time after which first bit flips occur.
+{numref}`cell-retention-plot` presents a relation of bit flips detected over time.
+The results were collected from **TODO Memory type** off-the-shelf RDIMM DDR5 module.
+
+:::{figure-md} cell-retention-plot
+![cell-retention-plot](images/rdimm-ddr5-cell-retention-plot.png)
+
+Sample plot summarizing DRAM cell retention testing
+::: 
 
 * Select all row pairs (from 0 to nrows - 1) and perform a set of tests for different read count values, starting from 10e4 and ending at 10e5 with a step of 20e4 (`--read_count_range [start stop step]`):
 
