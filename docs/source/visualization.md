@@ -1,8 +1,8 @@
 # Result visualization
 
-When you executed some attacks on your board, you can use the results to draw a plot or visualize them with python and matplotlib or withthe [F4PGA Database Visualizer](https://github.com/chipsalliance/f4pga-database-visualizer).
+When you executed some attacks on your board, you can use the results to draw a plot or visualize them with python and matplotlib or with the [F4PGA Database Visualizer](https://github.com/chipsalliance/f4pga-database-visualizer).
 This chapter describes scripts used for visualizing the rowhammer attacks.
-The script accept json files that can be generated as a result of hammering with commands described in the {doc}`hammering` chapter. 
+The script accept json files that can be generated as a result of hammering with commands described in the {doc}`hammering` chapter.
 
 ## Plot bitflips - `logs2plot.py`
 
