@@ -21,6 +21,10 @@ In particular, PCIe requires mapping the API/commands into a Rowhammer-specific 
 
 ## DRAM Bender integration
 
+PCIe interface allows to integrate the RDIMM DDR5 Tester with third party DRAM testers.
+One of them is [DRAM Bender](https://github.com/CMU-SAFARI/DRAM-Bender) project.
+In order to make the RDIMM DDR5 Tetser compliant with DRAM Bender API it is required to ... 
+
 The table below presents command mapping proposed for controling the Payload Executor.
 This mapping is common for all DRAM variants.
 
