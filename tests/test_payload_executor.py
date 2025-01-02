@@ -1180,8 +1180,8 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
             while not (yield dut.payload_executor.ready):
                 yield
 
-            start_cycle = yield dut.payload_executor.payload_exec_start
-            stop_cycle = yield dut.payload_executor.payload_exec_stop
+            start_cycle = yield dut.payload_executor.exec_start
+            stop_cycle = yield dut.payload_executor.exec_stop
             yield
 
             self.assertNotEqual(start_cycle, 0)
