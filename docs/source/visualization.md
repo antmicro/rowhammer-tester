@@ -115,9 +115,9 @@ To view results using the visualizer you need to:
    python -m http.server 8080
    ```
 
-An example output generated with the `--aggresors-vs-victims` flag looks like so:
+An example output generated with the `--aggressors-vs-victims` flag looks like so:
 
-:::{figure-md} aggresors-vs-victims-output
+:::{figure-md} aggressors-vs-victims-output
 ![Aggressors vs. victims output](images/f4pga_visualizer_aggr_vs_vict.png)
 
 Agressors vs. victims flag output example
