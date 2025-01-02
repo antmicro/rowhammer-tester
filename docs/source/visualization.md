@@ -1,8 +1,8 @@
 # Result visualization
 
-When you executed some attacks on your board, you can use the results to draw a plot or visualize them with python and matplotlib or with the [F4PGA Database Visualizer](https://github.com/chipsalliance/f4pga-database-visualizer).
+After executing attacks on your board, you can use the results to draw a plot or visualize them with Python and matplotlib or with the [F4PGA Database Visualizer](https://github.com/chipsalliance/f4pga-database-visualizer).
 This chapter describes scripts used for visualizing the rowhammer attacks.
-The script accept json files that can be generated as a result of hammering with commands described in the {doc}`hammering` chapter.
+The script accept JSON files that can be generated as a result of hammering with commands described in the {doc}`hammering` chapter.
 
 ## Plot bitflips - `logs2plot.py`
 
@@ -32,9 +32,9 @@ It can generate two different types of graphs:
       (venv) $ python logs2plot.py --aggressors-vs-victims your_error_summary.json
    ```
 
-   One graph will be generated with victims (affected rows) on the Y axis and aggressors (attacking rows) on the X axis.
-   The row under attack is marked with `X` symbol.
-   The affected rows (victims) above and below the row under attack (agsressor) include cells with number of bit flips detected.
+   A graph will be generated with victims (affected rows) on the Y axis and aggressors (attacking rows) on the X axis.
+   The row under attack is marked with the `X` symbol.
+   The affected rows (victims) above and below the row under attack (aggressor) include cells along with the number of bitflips detected.
    The colors of the tiles indicate how many bitflips occurred for each victim.
 
    You can enable additional annotation with `--annotate bitflips` so that the number of occurred bitflips will be explicitly labeled on top of each victim tile.
@@ -47,7 +47,7 @@ It can generate two different types of graphs:
    Example plot generated with annotation enabled
    :::
 
-   You can zoom in on interesting parts by using matplotlib's zoom tool (in the bottom left corner):
+   You can zoom in using matplotlib's zoom tool (in the bottom left corner):
 
    :::{figure-md} annotation-zoom
    ![Annotation zoom](images/annotation_zoom.png)

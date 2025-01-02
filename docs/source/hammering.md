@@ -207,9 +207,9 @@ The size of the payload memory is set by default to 1024 bytes and can be change
 
 ## Cell retention measurement
 
-The following set of commands allows to perform experiments on DRAM cell retention.
-In particular it is possible to fill the DRAM cell with a known pattern, disable cell refreshing and estimate the time after which first bit flips occur.
-{numref}`cell-retention-plot` presents a relation of bit flips detected over time.
+The following set of commands allows to perform DRAM cell retention experiments.
+More specifically, it is possible to fill a DRAM cell with a known pattern, disable cell refreshing and estimate the time until the first bitflips.
+{numref}`cell-retention-plot` presents a relation of bitflips detected over time.
 The results were collected from `SK hynix HMCG84MEBRA112NBB` off-the-shelf RDIMM DDR5 module.
 
 :::{figure-md} cell-retention-plot
