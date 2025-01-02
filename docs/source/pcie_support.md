@@ -1,8 +1,8 @@
 # PCIe support
 
-The selected hardware platforms used for DRAM testing include optional PCIe interface break-routed from the on-board FPGA. 
-Those platforms are [SO-DIMM DDR5 Tester](so_dimm_ddr5_tester.md) supporting PCIe x4 and [RDIMM DDR5 Tester](rdimm_ddr5_tester.md) in Revision 2.0 supporting PCIe x8. 
-Those platforms were designed in a form of PCIe cards and are mechanically compliant with host platforms with PCIe root complex.
+The selected hardware platforms used for DRAM testing include an optional PCIe interface break-routed from the on-board FPGA. 
+These platforms are [SO-DIMM DDR5 Testers](so_dimm_ddr5_tester.md) supporting PCIe x4 and [RDIMM DDR5 Tester](rdimm_ddr5_tester.md) in Revision 2.0 supporting PCIe x8. 
+The platforms were designed in the form factor of PCIe cards and are mechanically compliant with host platforms with a PCIe root complex.
 
 :::{figure-md} rdimm-ddr5-tester-pcie-integration
 ![RDIMM DDR5 Tester PCIe integration](images/rdimm-ddr5-tester-pcie-integration.png)
@@ -10,24 +10,24 @@ Those platforms were designed in a form of PCIe cards and are mechanically compl
 RDIMM DDR5 Tester connected to Intel NUC-series host PC over PCIe x8.
 :::
 
-Enabling PCIe interface in the digital design allows for fast data-exchange between the host PC, FPGA and the memory.
+Enabling a PCIe interface in the digital design allows for fast data exchange between the host PC, the FPGA and the memory.
 
 :::{note}
 
 Enabling PCIe connectivity currently requires extending the existing the Rowhammer tester codebase with setup-specific features.
-In particular PCIe requires mapping the API/commands into Rowhammer-specific API.
+In particular, PCIe requires mapping the API/commands into a Rowhammer-specific API.
 
 :::
 
 ## DRAM Bender integration
 
-Table below presents command mapping for proposed for controling Payload Executor.
-This mapping is common for all the DRAM variants.
+The table below presents command mapping proposed for controling the Payload Executor.
+This mapping is common for all DRAM variants.
 
 ```{include} csv/payload-executor-bender.md
 ```
 
-Table below presents DRAM-specific command mappings proposed for Bender integration.
+The table below presents DRAM-specific command mappings proposed for Bender integration.
 
 
 ````{tab} DDR4
