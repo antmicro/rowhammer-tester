@@ -42,19 +42,23 @@ A row of the table represents the DDR command (if one-cycle) or a `DFI PHASE` of
 
 Each of the DDR command in the DFI sequence can be prefixed with a `TIMESLICE` argument that determines the delay with which the next command in sequence is issued.
 
-````{tab} DDR4
-```{include} csv/dfi-ddr4-bender.md
-```
-````
 ````{tab} DDR5
 ```{include} csv/dfi-ddr5-bender.md
 ```
 ````
-````{tab} LPDDR4
-```{include} csv/dfi-lpddr4-bender.md
+
+````{tab} DDR4
+```{include} csv/dfi-ddr4-bender.md
 ```
 ````
+
 ````{tab} LPDDR5
 ```{include} csv/dfi-lpddr5-bender.md
 ```
 ````
+
+````{tab} LPDDR4
+```{include} csv/dfi-lpddr4-bender.md
+```
+````
+
