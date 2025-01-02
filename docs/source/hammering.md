@@ -113,15 +113,6 @@ Several attack and row selection modes are available, but only one mode can be s
   (venv) $ python hw_rowhammer.py --row-pairs random --start-row 4 --nrows 10
   ```
 
-* `--no-attack-time <time>`
-
-  Instead of performing a rowhammer attack, the script will load the RAM with selected pattern and sleep for `time` nanoseconds.
-  After this time, it will check for any bitflips that could have happened.
-  This option does not imply `--no-refresh`.
-
-  ```sh
-  (venv) $ python hw_rowhammer.py --no-attack-time 100e9 --no-refresh
-  ```
 
 ## Patterns
 
@@ -207,9 +198,20 @@ The size of the payload memory is set by default to 1024 bytes and can be change
 
 ## Cell retention measurement
 
-The following set of commands allows to perform DRAM cell retention experiments.
-More specifically, it is possible to fill a DRAM cell with a known pattern, disable cell refreshing and estimate the time until the first bitflips.
-{numref}`cell-retention-plot` presents a relation of bitflips detected over time.
+The following parameter is used to conduct DRAM cell retention experiments.
+
+* `--no-attack-time <time>`
+
+  Instead of performing a rowhammer attack, the script will load the RAM with selected pattern and sleep for `time` nanoseconds.
+  After this time, it will check for any bitflips that could have happened.
+  This option does not imply `--no-refresh`.
+
+  ```sh
+  (venv) $ python hw_rowhammer.py --no-attack-time 10e9 --no-refresh
+  ```
+
+By executing this command with varying sleep intervals, it is possible to characterize the frequency and occurrence of bit flips over time. 
+{numref}`cell-retention-plot` presents the relationship between the detected bit flips and the elapsed time without a memory refresh.
 The results were collected from `SK hynix HMCG84MEBRA112NBB` off-the-shelf RDIMM DDR5 module.
 
 :::{figure-md} cell-retention-plot
@@ -217,6 +219,10 @@ The results were collected from `SK hynix HMCG84MEBRA112NBB` off-the-shelf RDIMM
 
 Sample plot summarizing DRAM cell retention testing
 ::: 
+
+## Read count parameter optimization
+
+The following set of commands can be used to analyze the relationship between the number of bit flips and the number of reads. Additionally, they help identify the optimal number of reads required to trigger a bit flip.
 
 * Select all row pairs (from 0 to nrows - 1) and perform a set of tests for different read count values, starting from 10e4 and ending at 10e5 with a step of 20e4 (`--read_count_range [start stop step]`):
 
