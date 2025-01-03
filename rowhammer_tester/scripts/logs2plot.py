@@ -7,14 +7,14 @@ Depending on chosen mode, it will generate one or many separate plots.
 import argparse
 import json
 import os
-from math import floor, ceil
+from copy import deepcopy
+from itertools import repeat
+from math import ceil, floor
 from pathlib import Path
-from typing import Optional, List, Tuple
-from itertools import repeat, chain
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from logs2dq import DQ_PADS
-from logs2dq import plot as plot_dqs
 from matplotlib import cm, colors
 from matplotlib import pyplot as plt
 
@@ -24,8 +24,197 @@ dq_data: list = []
 PLOT_STYLE = os.path.join(
     os.path.abspath(os.path.dirname(__file__)), "resources", "antmicro.mplstyle"
 )
-# Custom color map with aubergine background color for 0
-CMAP = colors.ListedColormap(["#2E303E", *cm.get_cmap("plasma").colors])
+
+
+def plot_interactive(
+    rows: List[int],
+    aggressors: Union[List[int], List[List[int]]],
+    xdata: List[int],
+    bitflips: List[int],
+    avb_packed: List[Tuple[int, int, int]],
+    column_count: int,
+    xlabel: str,
+    title: str,
+    annotate: str,
+    colorbar: bool,
+    png: Optional[str],
+    group_cols: int,
+    group_rows: int,
+    avv: bool = False,
+):
+
+    min_victim = min(rows) if rows else 0
+    max_victim = max(rows) if rows else 0
+    x_ax: List[int] = []
+    y_ax: List[int] = []
+    if all(isinstance(ag, int) for ag in aggressors):
+        min_aggressor = min(aggressors) if aggressors else 0
+        max_aggressor = max(aggressors) if aggressors else 0
+        for ag in aggressors:
+            y_ax.extend(repeat(ag, column_count))  # type: ignore
+        x_ax = [x for rep in repeat(range(column_count), len(aggressors)) for x in rep]
+    else:
+        assert all(isinstance(ag, list) for ag in aggressors)
+        min_aggressor = min(min(aggressors)) if aggressors else 0  # type: ignore
+        max_aggressor = max(max(aggressors)) if aggressors else 0  # type: ignore
+        for idx in range(len(aggressors)):
+            x_ax.extend(repeat(idx, len(aggressors[idx])))  # type: ignore
+            y_ax.extend(aggressors[idx])  # type: ignore
+
+    fig, ax = plt.subplots()
+    fig.set_size_inches(16, 16)
+    abs_ylim = (
+        min(min_victim, min_aggressor) - 1,  # type: ignore
+        max(max_victim, max_aggressor) + 1,  # type: ignore
+    )
+    cbar = None
+    press_callback_en = False
+
+    def reset_axes():
+        plt.ylim(abs_ylim)
+        plt.xlim(-0.5, column_count - 0.5)
+
+    def draw_plot():
+        nonlocal cbar, press_callback_en
+        press_callback_en = False
+        xlim, ylim = list(plt.xlim()), list(plt.ylim())
+        ax.clear()
+        xlim[0] = int(floor(xlim[0]) + 0.5)
+        ylim[0] = int(floor(ylim[0]) + 0.5)
+        xl = xlim[1] - xlim[0] + 0.5
+        xstep = ceil(xl / group_cols)
+        xl = ceil(xl / xstep) * xstep
+        xlim[1] = int(xl + xlim[0])
+
+        yl = ylim[1] - ylim[0]
+        ystep = ceil(yl / group_rows)
+        yl = ceil(yl / ystep) * ystep
+        ylim[1] = int(yl + ylim[0])
+
+        bins = [int(xl / xstep), int(yl / ystep)]
+        qbins = deepcopy(bins)
+
+        hist_range = [[xlim[0], xlim[1]], [ylim[0], ylim[1]]]
+        qxdata, qrows, qbitflips = [], [], []
+        for i in reversed(range(len(xdata))):
+            if (xlim[0] <= xdata[i] < xlim[1]) and (ylim[0] <= rows[i] < ylim[1]):
+                qxdata.append(xdata[i])
+                qrows.append(rows[i])
+                qbitflips.append(bitflips[i])
+
+        if avv and xstep == 1 and ystep == 1:
+            press_callback_en = True
+            qbins[0] = bins[0] * 2 + 1
+            hist_range[0] = [xlim[0] - 0.25, xlim[1] + 0.25]
+            qxdata = [x + 0.5 for x in qxdata]
+
+        h, _, _, _ = ax.hist2d(
+            qxdata,
+            qrows,
+            bins=qbins,
+            range=hist_range,
+            weights=qbitflips,
+            cmap="plasma",
+            cmin=1,
+        )
+        sc = ax.scatter(
+            [x + xstep / 2 for x in x_ax],
+            [y + ystep / 2 for y in y_ax],
+            10,
+            marker="x",
+        )
+        _xticks = range(xlim[0], xlim[1] + 1, xstep)
+        xticks = [x + xstep / 2 for x in _xticks]
+        xticks_str = [f"{x}" if xstep == 1 else f"{x}..{x+xstep -1}" for x in _xticks]
+        _yticks = range(ylim[0], ylim[1] + 1, ystep)
+        yticks = [y + ystep / 2 for y in _yticks]
+        yticks_str = [f"{y}" if ystep == 1 else f"{y}..{y+ystep -1}" for y in _yticks]
+
+        ax.set_xlabel(xlabel)
+        ax.set_xticks(xticks, xticks_str)
+        ax.tick_params(axis="x", labelrotation=45)
+        ax.set_ylabel("Row")
+        ax.set_yticks(yticks, yticks_str)
+
+        # Do not annotate by default since it slows down a plot and it makes it hard
+        # to read without zooming in
+        if annotate == "bitflips":
+            new_avb = np.zeros((bins[0], bins[1]))
+            xlb = (xlim[1] - xlim[0]) / (bins[0])
+            ylb = (ylim[1] - ylim[0]) / (bins[1])
+            for a, v, b in avb_packed:
+                if (
+                    b == 0
+                    or not (xlim[0] <= v < xlim[1])
+                    or not (ylim[0] <= a < ylim[1])
+                ):
+                    continue
+                new_avb[int(floor((v - xlim[0]) / xlb))][
+                    int(floor((a - ylim[0]) / ylb))
+                ] += b
+            for i in range(new_avb.shape[0]):
+                for j in range(new_avb.shape[1]):
+                    if new_avb[i][j] == 0:
+                        continue
+                    ax.text(
+                        xticks[i],
+                        yticks[j],
+                        f"{int(new_avb[i][j])}",
+                        color="w",
+                        ha="center",
+                        va="center",
+                        fontweight="bold",
+                    )
+
+        ax.grid(visible=True, which="both", color="gray", alpha=0.2, linestyle="-")
+        plt.xlim(xlim[0] - 0.5, xlim[1] + 0.5)
+        plt.ylim(ylim[0] - 0.5, ylim[1] + 0.5)
+        ax.set_aspect(xstep / ystep, adjustable="box")
+        ax.legend([sc], ["Row under attack"], fontsize="small")
+        if colorbar:
+            # Limit number of colorbar ticks
+            # if left unchanged they can be floats, which looks bad
+            min_flips = int(np.nanmin(h))
+            max_flips = max(int(np.nanmax(h)), min_flips + 1)
+            ticks_step = max(1, int((max_flips - min_flips) // 20))
+            cbar = fig.colorbar(
+                mappable=cm.ScalarMappable(
+                    norm=colors.Normalize(min_flips, max_flips), cmap="plasma"
+                ),
+                ticks=range(min_flips, max_flips + 1, ticks_step),
+                ax=ax,
+                cax=None if cbar is None else cbar.ax,
+                fraction=0.02,
+                pad=0.02,
+                aspect=40,
+            )
+
+    reset_axes()
+    draw_plot()
+    plt.suptitle(title)
+
+    toolbar = fig.canvas.toolbar
+
+    def new_home(*_args, **_kwargs):
+        print("Reset view")
+        reset_axes()
+        draw_plot()
+        plt.draw()
+
+    if toolbar is not None:
+        toolbar._update_view = new_home
+    fig.canvas.mpl_connect(
+        "button_release_event",
+        lambda _event: None if press_callback_en else draw_plot(),
+    )
+    fig.canvas.mpl_connect(
+        "button_press_event",
+        lambda event: on_click(event) if press_callback_en else None,
+    )
+    if png is None:
+        plt.show()
+    else:
+        plt.savefig(png, dpi=600)
 
 
 def plot_single_attack(
@@ -34,180 +223,54 @@ def plot_single_attack(
     xlabel="DQ",
     png: Optional[str] = None,
     colorbar: bool = True,
-    col_chunk: int = 128,
     col_count: int = 1024,
-    group_rows: Optional[int] = None,
-    group_cols: Optional[int] = None,
+    group_rows: int = 64,
+    group_cols: int = 64,
 ):
-    aggressors = data.pop("aggressors")
+    aggressors = data["aggressors"]
     plt.style.use(PLOT_STYLE)
 
-    columns = len(next(iter(data.values()))) if data.values() else col_count
-    chunk_size = min(col_chunk, columns)  # if group_cols is None else columns
-    chunks = ceil(columns / chunk_size)
-
-    xdata: list[list[int]] = [[] for _ in range(chunks)]
-    rows: list[list[int]] = [[] for _ in range(chunks)]
-    bitflips: list[list[int]] = [[] for _ in range(chunks)]
-    # Aggressors (a) with victims (v) and bitflips (b) packed into tuple (a, v, b)
-    avb_packed: list[list[tuple(int, int, int)]] = [[] for _ in range(chunks)]
-    max_flips = 0
-    # Put aggressors and its victims into lists for hist2d
-    for row, bits in data.items():
-        for idx, flip_count in enumerate(bits):
-            ch = floor(idx / chunk_size)
-            rows[ch].append(row)
-            xdata[ch].append(idx)
-            bitflips[ch].append(flip_count)
-            max_flips = max(max_flips, int(flip_count))
-
-            # Pack data for annotation
-            avb_packed[ch].append((row, idx, flip_count))
-    min_victim = min(min(rows)) if rows and rows[0] else 0
-    max_victim = max(max(rows)) if rows and rows[0] else 0
-    min_aggressor = min(aggressors) if aggressors else 0
-    max_aggressor = max(aggressors) if aggressors else 0
-
-    fig, axs = plt.subplots(nrows=chunks)
-    fig.set_size_inches(16, 4 * chunks)
-    yt = range(
-        min(min_victim, min_aggressor - 1) - 1, max(max_victim, max_aggressor) + 2
+    columns = (
+        len(next(iter(data["victims"].values())))
+        if data["victims"].values()
+        else col_count
     )
 
-    def reset_axes():
-        for chunk in range(chunks):
-            ax = axs[chunk] if chunks > 1 else axs
-            plt.sca(ax)
-            plt.ylim(min(yt), max(yt))
-            chmin, chmax = chunk_size * chunk, chunk_size * (chunk + 1)
-            plt.xlim(-0.5 + chmin, chmax - 0.5)
+    xdata: list[int] = []
+    rows: list[int] = []
+    bitflips: list[int] = []
+    # Aggressors (a) with victims (v) and bitflips (b) packed into tuple (a, v, b)
+    avb_packed: List[Tuple[int, int, int]] = []
+    # Put aggressors and its victims into lists for hist2d
+    for row, bits in data["victims"].items():
+        for idx, flip_count in enumerate(bits):
+            rows.append(row)
+            xdata.append(idx)
+            bitflips.append(flip_count)
 
-    def draw_plot():
-        for chunk in range(chunks):
-            ax = axs[chunk] if chunks > 1 else axs
-            plt.sca(ax)
-            xlim, ylim = plt.xlim(), plt.ylim()
-            ax.clear()
-            chmin, chmax = chunk_size * chunk, chunk_size * (chunk + 1)
-            ch_rows = rows[chunk]
-            ch_xdata = xdata[chunk]
-            ch_bitflips = bitflips[chunk]
-            ch_avb_packed = avb_packed[chunk]
-            xlim = floor(xlim[0]), ceil(xlim[1])
-            ylim = floor(ylim[0]), ceil(ylim[1])
-            bins = [
-                int(xlim[1] - xlim[0]),
-                int(ylim[1] - ylim[0] + 1),
-            ]
-            
-            bins[0] = bins[0] if group_cols is None else int(bins[0]/ceil(bins[0]/group_cols))
-            bins[1] = bins[1] if group_rows is None else int(bins[1]/ceil(bins[1]/group_rows))
-            new_avb=np.zeros(bins[0], bins[1])
-            for a, v, b in ch_avb_packed:
-                if (
-                    b == 0
-                    or not (xlim[0] <= v <= xlim[1])
-                    or not (ylim[0] <= a <= ylim[1])
-                ):
-                    continue
-                new_avb[(v-xlim[0])//bins[0]][(a-ylim[0])//bins[1]]+=b
-
-            hist_range = [
-                [-0.5 + xlim[0], xlim[1] - 0.5],
-                [ylim[0] - 0.5, ylim[1] + 0.5],
-            ]
-
-            h, _, _, _ = ax.hist2d(
-                ch_xdata,
-                ch_rows,
-                bins=bins,
-                range=hist_range,
-                weights=ch_bitflips,
-                vmin=0,
-                vmax=max_flips,
-                cmap=CMAP,
-            )
-            y_ax: List[int] = []
-            for ag in aggressors:
-                y_ax.extend(repeat(ag, chunk_size))
-            sc = ax.scatter(
-                list(repeat(range(chmin, chmax), len(aggressors))), y_ax, 10, marker="x"
-            )
-
-            # Do not annotate by default since it slows down a plot and it makes it hard
-            # to read without zooming in
-            if annotate == "bitflips":
-                for a, v, b in ch_avb_packed:
-                    ax.text(
-                        v,
-                        a,
-                        f"{int(b)}",
-                        color="w",
-                        ha="center",
-                        va="center",
-                        fontweight="bold",
-                    )
-
-            ax.set_ylabel("Row")
-            ax.set_yticks(yt)
-
-            ax.set_xlabel(xlabel)
-
-            ax.set_xticks(range(chmin, chmax, ceil((chmax - chmin) / 64)))
-            ax.grid(visible=True, which="both", color="gray", alpha=0.2, linestyle="-")
-            plt.xlim(xlim)
-            plt.ylim(ylim)
-            ax.set_aspect("equal", adjustable="box")
-
-    reset_axes()
-    draw_plot()
-
-    if colorbar:
-        # Limit number of colorbar ticks
-        # if left unchanged they can be floats, which looks bad
-        ticks_step = max(1, int(max_flips // 20))
-        if chunks > 1:
-            fig.subplots_adjust(right=0.9)
-            cbar_ax = fig.add_axes([0.92, 0.06, 0.05, 0.9])
-            fig.colorbar(
-                mappable=cm.ScalarMappable(
-                    norm=colors.Normalize(0, max_flips), cmap=CMAP
-                ),
-                ticks=range(0, max_flips + 1, ticks_step),
-                cax=cbar_ax,
-                location="right",
-            )
-        else:
-            fig.colorbar(
-                mappable=cm.ScalarMappable(
-                    norm=colors.Normalize(0, max_flips), cmap=CMAP
-                ),
-                ticks=range(0, max_flips + 1, ticks_step),
-                location="bottom",
-            )
+            # Pack data for annotation
+            avb_packed.append((row, idx, flip_count))
 
     if len(aggressors) == 1:
-        plt.suptitle(f"Single Sided Attack (Attacker row: {aggressors[0]})")
+        title = f"Single Sided Attack (Attacker row: {aggressors[0]})"
     else:
-        plt.suptitle(
-            f"Dual Sided Attack (Attacker rows: {aggressors[0]}, {aggressors[1]})"
-        )
+        title = f"Dual Sided Attack (Attacker rows: {aggressors[0]}, {aggressors[1]})"
 
-    toolbar = fig.canvas.toolbar
-
-    def new_home(*args, **kwargs):
-        print("Reset view")
-        reset_axes()
-        draw_plot()
-        plt.draw()
-
-    if toolbar is not None:
-        toolbar._update_view = new_home
-    fig.canvas.mpl_connect("button_release_event", lambda event: draw_plot())
-    if png is None:
-        plt.show()
-    else:
-        plt.savefig(png, dpi=600)
+    plot_interactive(
+        rows,
+        aggressors,
+        xdata,
+        bitflips,
+        avb_packed,
+        columns,
+        xlabel,
+        title,
+        annotate,
+        colorbar,
+        png,
+        group_cols,
+        group_rows,
+    )
 
 
 def plot_aggressors_vs_victims(
@@ -215,8 +278,8 @@ def plot_aggressors_vs_victims(
     annotate: str,
     png: Optional[str],
     colorbar: bool = True,
-    group_rows: Optional[int] = None,
-    group_cols: Optional[int] = None,
+    group_rows: int = 64,
+    group_cols: int = 64,
 ):
     aggressors: list[list[int]] = []
     victims: list[int] = []
@@ -225,7 +288,7 @@ def plot_aggressors_vs_victims(
     plt.style.use(PLOT_STYLE)
 
     # Aggressors (a) with victims (v) and bitflips (b) packed into tuple (a, v, b)
-    avb_packed: list[tuple(int, int, int)] = []
+    avb_packed: List[Tuple[int, int, int]] = []
 
     dq_data.clear()
     # Put aggressors and its victims into lists for hist2d
@@ -233,8 +296,8 @@ def plot_aggressors_vs_victims(
     for aggressor, victim in data:
         # Each victim must have its corresponding aggressor
         attempt += 1
-        attack = {"aggressors": aggressor}
         aggressors.append(aggressor)
+        attack_victims = {}
         for v in victim:
             # From json file - v[1] is a single victim row hierarchy
             bitflip_amount = v[1]["bitflips"]
@@ -246,89 +309,31 @@ def plot_aggressors_vs_victims(
             attempts.append(attempt)
 
             # Pack data for annotation
-            avb_packed.append((attempt, row_number, bitflip_amount))
+            avb_packed.append((row_number, attempt, bitflip_amount))
 
             # Save DQ data for single aggressor vs victim
             dq_counters = count_bitflips_per_dq(cols)
-            attack[row_number] = dq_counters
+            attack_victims[row_number] = dq_counters
+        attack = {"aggressors": aggressor, "victims": attack_victims}
         dq_data.append(attack)
-
-    min_attempts, max_attempts = 0, len(aggressors) - 1
-    min_victim = min(victims) if victims else 0
-    max_victim = max(victims) if victims else 0
-    min_aggressor = min(min(aggressors)) if aggressors else 0
-    max_aggressor = max(max(aggressors)) if aggressors else 0
-
-    bins = [(max_attempts - min_attempts + 1) * 2, max_victim - min_victim + 1]
-    hist_range = [
-        [min_attempts - 0.25, max_attempts + 0.75],
-        [min_victim - 0.5, max_victim + 0.5],
-    ]
-
-    fig, ax = plt.subplots()
-    fig.set_size_inches(16, 12)
-    fig.canvas.mpl_connect("button_press_event", on_click)
-
-    h, _, _, _ = ax.hist2d(
-        attempts,
+    amin, amax = min(min(aggressors)), max(max(aggressors))
+    title = f"Aggressors ({amin}, {amax}) vs victims ({min(victims)}, {max(victims)})"
+    plot_interactive(
         victims,
-        bins=bins,
-        range=hist_range,
-        weights=bitflips,
-        cmap=CMAP,
+        aggressors,
+        attempts,
+        bitflips,
+        avb_packed,
+        max(attempts),
+        "Attempt",
+        title,
+        annotate,
+        colorbar,
+        png,
+        group_cols,
+        group_rows,
+        True,
     )
-    aggressors_all = range(min_aggressor, max_aggressor + 1)
-    xat = []
-    yag = []
-    for idx in range(len(aggressors)):
-        xat.extend(repeat(idx, len(aggressors[idx])))
-        yag.extend(aggressors[idx])
-    sc = ax.scatter(xat, yag, marker="x")
-    ax.legend([sc], ["Row under attack"], fontsize="small", loc="upper left")
-
-    # Do not annotate by default since it slows down a plot and it makes it hard
-    # to read without zooming in
-    if annotate == "bitflips":
-        for a, v, b in avb_packed:
-            ax.text(
-                a,
-                v,
-                f"{b}",
-                color="w",
-                ha="center",
-                va="center",
-                fontweight="bold",
-            )
-
-    ax.set_ylabel("Victim")
-    ax.set_yticks(
-        range(min(min_victim, min_aggressor - 1), max(max_victim, max_aggressor) + 1)
-    )
-
-    ax.set_xlabel("Target")
-    ax.set_xticks(range(min_attempts, max_attempts + 1))
-    plt.xlim(min_attempts - 0.25, max_attempts + 0.25)
-
-    ax.grid(visible=True, which="both", color="gray", alpha=0.2, linestyle="-")
-
-    if colorbar:
-        # Limit number of colorbar ticks
-        # if left unchanged they can be floats, which looks bad
-        max_errors = int(h.max())
-        ticks_step = max(1, int(max_errors // 20))
-        plt.colorbar(
-            mappable=cm.ScalarMappable(norm=colors.Normalize(0, max_errors), cmap=CMAP),
-            ticks=range(0, max_errors + 1, ticks_step),
-        )
-
-    plt.title(
-        f"Aggressors ({min_aggressor}, {max_aggressor}) vs victims ({min_victim}, {max_victim})"
-    )
-
-    if png is None:
-        plt.show()
-    else:
-        plt.savefig(png, dpi=600)
 
 
 def count_bitflips_per_dq(data: dict):
@@ -346,10 +351,8 @@ def on_click(event):
     if plt.get_current_fig_manager().toolbar.mode != "":
         return
     try:
-        if 0.25 <= event.xdata % 1 < 0.75:
-            raise TypeError
-        x = floor(event.xdata + 0.5)
-        y = floor(event.ydata + 0.5)
+        x = floor(event.xdata - 0.5)
+        y = floor(event.ydata - 0.5)
         dq_counters = dq_data[x]
     except KeyError:
         print(f"No data about attack - aggressor({x}) vs victim({y}).")
@@ -376,12 +379,6 @@ if __name__ == "__main__":
         help="Annotate heat map with number of bitflips or just a color (default: color).",
     )
     parser.add_argument(
-        "--column-chunk",
-        type=int,
-        default=128,
-        help="Number of columns to be put into a single subplot",
-    )
-    parser.add_argument(
         "-p",
         "--png",
         nargs="?",
@@ -398,19 +395,15 @@ if __name__ == "__main__":
         "-gr",
         "--group-rows",
         type=int,
-        nargs="?",
-        const=32,
-        default=None,
-        help="Group rows into N groups (default N: 32)",
+        default=64,
+        help="Group rows into N groups (default N: 64)",
     )
     parser.add_argument(
         "-gc",
         "--group-columns",
         type=int,
-        nargs="?",
-        const=128,
-        default=None,
-        help="Group columns into N groups (default N: 128)",
+        default=64,
+        help="Group columns into N groups (default N: 64)",
     )
     args = parser.parse_args()
 
@@ -463,14 +456,15 @@ if __name__ == "__main__":
 
             # Otherwise plot single attack immediately
             else:
-                data = {"aggressors": hammered_rows}
+                victims = {}
                 for row in attack_results["errors_in_rows"].values():
                     row_number = row["row"]
                     cols = row["col"]
-                    data[row_number] = list(repeat(0, COLS))
+                    victims[row_number] = list(repeat(0, COLS))
                     for _, single_read in cols.items():
                         for c in single_read:
-                            data[row_number][c] += 1
+                            victims[row_number][c] += 1
+                data = {"aggressors": hammered_rows, "victims": victims}
 
                 plot_single_attack(
                     data,
@@ -478,7 +472,6 @@ if __name__ == "__main__":
                     xlabel="Column",
                     png=args.png,
                     colorbar=not args.no_colorbar,
-                    col_chunk=args.column_chunk,
                     col_count=COLS,
                     group_rows=args.group_rows,
                     group_cols=args.group_columns,
