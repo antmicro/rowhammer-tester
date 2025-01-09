@@ -1,33 +1,50 @@
 stages:
-  - build
+  - verify
+  - pre-build
+  - build-docs
   - deploy
+  - build
+  - test
+  - test-upstream
 
-image: $CI_DOCS_DOCKER_IMAGE
+variables:
+  GIT_SUBMODULE_STRATEGY: none
+  YAML_SOURCE_COMMIT: 12f4e6a83f1f81217662033b279eb457cbf904e5
 
-build:
-  stage: build
-  tags: ['ace-x86_64']
-  variables:
-    GIT_SUBMODULE_STRATEGY: normal
-  before_script:
-    - pip3 install -r docs/requirements.txt
-  script:
-    - cd docs
-    - make html latexpdf
-    - cp build/latex/*.pdf build/html/
-    - tar cf ../$CI_DOCS_ARCHIVE -C build/html/ .
-  artifacts:
-    paths:
-      - $CI_DOCS_ARCHIVE
-
-deploy:
-  variables:
-    GIT_STRATEGY: none
-  dependencies:
-    - build
-  stage: deploy
-  tags: ['docs']
-  script: echo 'Deploying docs'
-  artifacts:
-    paths:
-      - $CI_DOCS_ARCHIVE
+include:
+    - project: 'rowhammer-tester-ci'
+      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      file: '/ci-setup.yaml'
+    - project: 'rowhammer-tester-ci'
+      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      file: '/ci-bitstream-setup.yaml'
+    - project: 'rowhammer-tester-ci'
+      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      file: '/ci-hw-setup.yaml'
+    - project: 'rowhammer-tester-ci'
+      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      file: '/pre-build-lint-and-unit-tests.yaml'
+    - project: 'rowhammer-tester-ci'
+      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      file: '/build-docs.yaml'
+    - project: 'rowhammer-tester-ci'
+      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      file: '/deploy-docs.yaml'
+    - project: 'rowhammer-tester-ci'
+      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      file: '/build-ddr5-tester-linux.yaml'
+    - project: 'rowhammer-tester-ci'
+      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      file: '/build-spds.yaml'
+    - project: 'rowhammer-tester-ci'
+      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      file: '/build-bitstreams.yaml'
+    - project: 'rowhammer-tester-ci'
+      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      file: '/tests-platforms.yaml'
+    - project: 'rowhammer-tester-ci'
+      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      file: '/tests-sim.yaml'
+    - project: 'rowhammer-tester-ci'
+      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      file: '/test-upstream-is-up-to-date.yaml'
