@@ -1,0 +1,1175 @@
+SDRAM
+=====
+
+Register Listing for SDRAM
+--------------------------
+
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| Register                                                                       | Address                                                |
++================================================================================+========================================================+
+| :ref:`SDRAM_DFII_CONTROL <SDRAM_DFII_CONTROL>`                                 | :ref:`0xf0006000 <SDRAM_DFII_CONTROL>`                 |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI0_COMMAND <SDRAM_DFII_PI0_COMMAND>`                         | :ref:`0xf0006004 <SDRAM_DFII_PI0_COMMAND>`             |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI0_COMMAND_ISSUE <SDRAM_DFII_PI0_COMMAND_ISSUE>`             | :ref:`0xf0006008 <SDRAM_DFII_PI0_COMMAND_ISSUE>`       |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI0_ADDRESS <SDRAM_DFII_PI0_ADDRESS>`                         | :ref:`0xf000600c <SDRAM_DFII_PI0_ADDRESS>`             |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI0_BADDRESS <SDRAM_DFII_PI0_BADDRESS>`                       | :ref:`0xf0006010 <SDRAM_DFII_PI0_BADDRESS>`            |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI0_WRDATA <SDRAM_DFII_PI0_WRDATA>`                           | :ref:`0xf0006014 <SDRAM_DFII_PI0_WRDATA>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI0_RDDATA <SDRAM_DFII_PI0_RDDATA>`                           | :ref:`0xf0006018 <SDRAM_DFII_PI0_RDDATA>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI1_COMMAND <SDRAM_DFII_PI1_COMMAND>`                         | :ref:`0xf000601c <SDRAM_DFII_PI1_COMMAND>`             |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI1_COMMAND_ISSUE <SDRAM_DFII_PI1_COMMAND_ISSUE>`             | :ref:`0xf0006020 <SDRAM_DFII_PI1_COMMAND_ISSUE>`       |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI1_ADDRESS <SDRAM_DFII_PI1_ADDRESS>`                         | :ref:`0xf0006024 <SDRAM_DFII_PI1_ADDRESS>`             |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI1_BADDRESS <SDRAM_DFII_PI1_BADDRESS>`                       | :ref:`0xf0006028 <SDRAM_DFII_PI1_BADDRESS>`            |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI1_WRDATA <SDRAM_DFII_PI1_WRDATA>`                           | :ref:`0xf000602c <SDRAM_DFII_PI1_WRDATA>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI1_RDDATA <SDRAM_DFII_PI1_RDDATA>`                           | :ref:`0xf0006030 <SDRAM_DFII_PI1_RDDATA>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI2_COMMAND <SDRAM_DFII_PI2_COMMAND>`                         | :ref:`0xf0006034 <SDRAM_DFII_PI2_COMMAND>`             |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI2_COMMAND_ISSUE <SDRAM_DFII_PI2_COMMAND_ISSUE>`             | :ref:`0xf0006038 <SDRAM_DFII_PI2_COMMAND_ISSUE>`       |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI2_ADDRESS <SDRAM_DFII_PI2_ADDRESS>`                         | :ref:`0xf000603c <SDRAM_DFII_PI2_ADDRESS>`             |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI2_BADDRESS <SDRAM_DFII_PI2_BADDRESS>`                       | :ref:`0xf0006040 <SDRAM_DFII_PI2_BADDRESS>`            |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI2_WRDATA <SDRAM_DFII_PI2_WRDATA>`                           | :ref:`0xf0006044 <SDRAM_DFII_PI2_WRDATA>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI2_RDDATA <SDRAM_DFII_PI2_RDDATA>`                           | :ref:`0xf0006048 <SDRAM_DFII_PI2_RDDATA>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI3_COMMAND <SDRAM_DFII_PI3_COMMAND>`                         | :ref:`0xf000604c <SDRAM_DFII_PI3_COMMAND>`             |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI3_COMMAND_ISSUE <SDRAM_DFII_PI3_COMMAND_ISSUE>`             | :ref:`0xf0006050 <SDRAM_DFII_PI3_COMMAND_ISSUE>`       |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI3_ADDRESS <SDRAM_DFII_PI3_ADDRESS>`                         | :ref:`0xf0006054 <SDRAM_DFII_PI3_ADDRESS>`             |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI3_BADDRESS <SDRAM_DFII_PI3_BADDRESS>`                       | :ref:`0xf0006058 <SDRAM_DFII_PI3_BADDRESS>`            |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI3_WRDATA <SDRAM_DFII_PI3_WRDATA>`                           | :ref:`0xf000605c <SDRAM_DFII_PI3_WRDATA>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_DFII_PI3_RDDATA <SDRAM_DFII_PI3_RDDATA>`                           | :ref:`0xf0006060 <SDRAM_DFII_PI3_RDDATA>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TRP <SDRAM_CONTROLLER_TRP>`                             | :ref:`0xf0006064 <SDRAM_CONTROLLER_TRP>`               |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TRCD <SDRAM_CONTROLLER_TRCD>`                           | :ref:`0xf0006068 <SDRAM_CONTROLLER_TRCD>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TWR <SDRAM_CONTROLLER_TWR>`                             | :ref:`0xf000606c <SDRAM_CONTROLLER_TWR>`               |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TWTR <SDRAM_CONTROLLER_TWTR>`                           | :ref:`0xf0006070 <SDRAM_CONTROLLER_TWTR>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TREFI <SDRAM_CONTROLLER_TREFI>`                         | :ref:`0xf0006074 <SDRAM_CONTROLLER_TREFI>`             |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TRFC <SDRAM_CONTROLLER_TRFC>`                           | :ref:`0xf0006078 <SDRAM_CONTROLLER_TRFC>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TFAW <SDRAM_CONTROLLER_TFAW>`                           | :ref:`0xf000607c <SDRAM_CONTROLLER_TFAW>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TCCD <SDRAM_CONTROLLER_TCCD>`                           | :ref:`0xf0006080 <SDRAM_CONTROLLER_TCCD>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TCCD_WR <SDRAM_CONTROLLER_TCCD_WR>`                     | :ref:`0xf0006084 <SDRAM_CONTROLLER_TCCD_WR>`           |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TRTP <SDRAM_CONTROLLER_TRTP>`                           | :ref:`0xf0006088 <SDRAM_CONTROLLER_TRTP>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TRRD <SDRAM_CONTROLLER_TRRD>`                           | :ref:`0xf000608c <SDRAM_CONTROLLER_TRRD>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TRC <SDRAM_CONTROLLER_TRC>`                             | :ref:`0xf0006090 <SDRAM_CONTROLLER_TRC>`               |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TRAS <SDRAM_CONTROLLER_TRAS>`                           | :ref:`0xf0006094 <SDRAM_CONTROLLER_TRAS>`              |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_TZQCS <SDRAM_CONTROLLER_TZQCS>`                         | :ref:`0xf0006098 <SDRAM_CONTROLLER_TZQCS>`             |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ADDR_0 <SDRAM_CONTROLLER_LAST_ADDR_0>`             | :ref:`0xf000609c <SDRAM_CONTROLLER_LAST_ADDR_0>`       |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ACTIVE_ROW_0 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_0>` | :ref:`0xf00060a0 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_0>` |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ADDR_1 <SDRAM_CONTROLLER_LAST_ADDR_1>`             | :ref:`0xf00060a4 <SDRAM_CONTROLLER_LAST_ADDR_1>`       |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ACTIVE_ROW_1 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_1>` | :ref:`0xf00060a8 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_1>` |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ADDR_2 <SDRAM_CONTROLLER_LAST_ADDR_2>`             | :ref:`0xf00060ac <SDRAM_CONTROLLER_LAST_ADDR_2>`       |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ACTIVE_ROW_2 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_2>` | :ref:`0xf00060b0 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_2>` |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ADDR_3 <SDRAM_CONTROLLER_LAST_ADDR_3>`             | :ref:`0xf00060b4 <SDRAM_CONTROLLER_LAST_ADDR_3>`       |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ACTIVE_ROW_3 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_3>` | :ref:`0xf00060b8 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_3>` |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ADDR_4 <SDRAM_CONTROLLER_LAST_ADDR_4>`             | :ref:`0xf00060bc <SDRAM_CONTROLLER_LAST_ADDR_4>`       |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ACTIVE_ROW_4 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_4>` | :ref:`0xf00060c0 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_4>` |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ADDR_5 <SDRAM_CONTROLLER_LAST_ADDR_5>`             | :ref:`0xf00060c4 <SDRAM_CONTROLLER_LAST_ADDR_5>`       |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ACTIVE_ROW_5 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_5>` | :ref:`0xf00060c8 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_5>` |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ADDR_6 <SDRAM_CONTROLLER_LAST_ADDR_6>`             | :ref:`0xf00060cc <SDRAM_CONTROLLER_LAST_ADDR_6>`       |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ACTIVE_ROW_6 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_6>` | :ref:`0xf00060d0 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_6>` |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ADDR_7 <SDRAM_CONTROLLER_LAST_ADDR_7>`             | :ref:`0xf00060d4 <SDRAM_CONTROLLER_LAST_ADDR_7>`       |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+| :ref:`SDRAM_CONTROLLER_LAST_ACTIVE_ROW_7 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_7>` | :ref:`0xf00060d8 <SDRAM_CONTROLLER_LAST_ACTIVE_ROW_7>` |
++--------------------------------------------------------------------------------+--------------------------------------------------------+
+
+SDRAM_DFII_CONTROL
+^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x0 = 0xf0006000`
+
+    Control DFI signals common to all phases
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_CONTROL
+
+        {
+            "reg": [
+                {"name": "sel",  "attr": '1', "bits": 1},
+                {"name": "cke",  "bits": 1},
+                {"name": "odt",  "bits": 1},
+                {"name": "reset_n",  "bits": 1},
+                {"bits": 28}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++-------+---------+-------------------------------------------+
+| Field | Name    | Description                               |
++=======+=========+===========================================+
+| [0]   | SEL     |                                           |
+|       |         |                                           |
+|       |         | +---------+-----------------------------+ |
+|       |         | | Value   | Description                 | |
+|       |         | +=========+=============================+ |
+|       |         | | ``0b0`` | Software (CPU) control.     | |
+|       |         | +---------+-----------------------------+ |
+|       |         | | ``0b1`` | Hardware control (default). | |
+|       |         | +---------+-----------------------------+ |
++-------+---------+-------------------------------------------+
+| [1]   | CKE     | DFI clock enable bus                      |
++-------+---------+-------------------------------------------+
+| [2]   | ODT     | DFI on-die termination bus                |
++-------+---------+-------------------------------------------+
+| [3]   | RESET_N | DFI clock reset bus                       |
++-------+---------+-------------------------------------------+
+
+SDRAM_DFII_PI0_COMMAND
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x4 = 0xf0006004`
+
+    Control DFI signals on a single phase
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI0_COMMAND
+
+        {
+            "reg": [
+                {"name": "cs",  "bits": 1},
+                {"name": "we",  "bits": 1},
+                {"name": "cas",  "bits": 1},
+                {"name": "ras",  "bits": 1},
+                {"name": "wren",  "bits": 1},
+                {"name": "rden",  "bits": 1},
+                {"bits": 26}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++-------+------+-------------------------------+
+| Field | Name | Description                   |
++=======+======+===============================+
+| [0]   | CS   | DFI chip select bus           |
++-------+------+-------------------------------+
+| [1]   | WE   | DFI write enable bus          |
++-------+------+-------------------------------+
+| [2]   | CAS  | DFI column address strobe bus |
++-------+------+-------------------------------+
+| [3]   | RAS  | DFI row address strobe bus    |
++-------+------+-------------------------------+
+| [4]   | WREN | DFI write data enable bus     |
++-------+------+-------------------------------+
+| [5]   | RDEN | DFI read data enable bus      |
++-------+------+-------------------------------+
+
+SDRAM_DFII_PI0_COMMAND_ISSUE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x8 = 0xf0006008`
+
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI0_COMMAND_ISSUE
+
+        {
+            "reg": [
+                {"name": "dfii_pi0_command_issue", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_DFII_PI0_ADDRESS
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xc = 0xf000600c`
+
+    DFI address bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI0_ADDRESS
+
+        {
+            "reg": [
+                {"name": "dfii_pi0_address[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_DFII_PI0_BADDRESS
+^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x10 = 0xf0006010`
+
+    DFI bank address bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI0_BADDRESS
+
+        {
+            "reg": [
+                {"name": "dfii_pi0_baddress[2:0]", "bits": 3},
+                {"bits": 29},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_DFII_PI0_WRDATA
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x14 = 0xf0006014`
+
+    DFI write data bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI0_WRDATA
+
+        {
+            "reg": [
+                {"name": "dfii_pi0_wrdata[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_DFII_PI0_RDDATA
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x18 = 0xf0006018`
+
+    DFI read data bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI0_RDDATA
+
+        {
+            "reg": [
+                {"name": "dfii_pi0_rddata[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_DFII_PI1_COMMAND
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x1c = 0xf000601c`
+
+    Control DFI signals on a single phase
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI1_COMMAND
+
+        {
+            "reg": [
+                {"name": "cs",  "bits": 1},
+                {"name": "we",  "bits": 1},
+                {"name": "cas",  "bits": 1},
+                {"name": "ras",  "bits": 1},
+                {"name": "wren",  "bits": 1},
+                {"name": "rden",  "bits": 1},
+                {"bits": 26}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++-------+------+-------------------------------+
+| Field | Name | Description                   |
++=======+======+===============================+
+| [0]   | CS   | DFI chip select bus           |
++-------+------+-------------------------------+
+| [1]   | WE   | DFI write enable bus          |
++-------+------+-------------------------------+
+| [2]   | CAS  | DFI column address strobe bus |
++-------+------+-------------------------------+
+| [3]   | RAS  | DFI row address strobe bus    |
++-------+------+-------------------------------+
+| [4]   | WREN | DFI write data enable bus     |
++-------+------+-------------------------------+
+| [5]   | RDEN | DFI read data enable bus      |
++-------+------+-------------------------------+
+
+SDRAM_DFII_PI1_COMMAND_ISSUE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x20 = 0xf0006020`
+
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI1_COMMAND_ISSUE
+
+        {
+            "reg": [
+                {"name": "dfii_pi1_command_issue", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_DFII_PI1_ADDRESS
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x24 = 0xf0006024`
+
+    DFI address bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI1_ADDRESS
+
+        {
+            "reg": [
+                {"name": "dfii_pi1_address[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_DFII_PI1_BADDRESS
+^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x28 = 0xf0006028`
+
+    DFI bank address bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI1_BADDRESS
+
+        {
+            "reg": [
+                {"name": "dfii_pi1_baddress[2:0]", "bits": 3},
+                {"bits": 29},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_DFII_PI1_WRDATA
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x2c = 0xf000602c`
+
+    DFI write data bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI1_WRDATA
+
+        {
+            "reg": [
+                {"name": "dfii_pi1_wrdata[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_DFII_PI1_RDDATA
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x30 = 0xf0006030`
+
+    DFI read data bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI1_RDDATA
+
+        {
+            "reg": [
+                {"name": "dfii_pi1_rddata[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_DFII_PI2_COMMAND
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x34 = 0xf0006034`
+
+    Control DFI signals on a single phase
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI2_COMMAND
+
+        {
+            "reg": [
+                {"name": "cs",  "bits": 1},
+                {"name": "we",  "bits": 1},
+                {"name": "cas",  "bits": 1},
+                {"name": "ras",  "bits": 1},
+                {"name": "wren",  "bits": 1},
+                {"name": "rden",  "bits": 1},
+                {"bits": 26}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++-------+------+-------------------------------+
+| Field | Name | Description                   |
++=======+======+===============================+
+| [0]   | CS   | DFI chip select bus           |
++-------+------+-------------------------------+
+| [1]   | WE   | DFI write enable bus          |
++-------+------+-------------------------------+
+| [2]   | CAS  | DFI column address strobe bus |
++-------+------+-------------------------------+
+| [3]   | RAS  | DFI row address strobe bus    |
++-------+------+-------------------------------+
+| [4]   | WREN | DFI write data enable bus     |
++-------+------+-------------------------------+
+| [5]   | RDEN | DFI read data enable bus      |
++-------+------+-------------------------------+
+
+SDRAM_DFII_PI2_COMMAND_ISSUE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x38 = 0xf0006038`
+
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI2_COMMAND_ISSUE
+
+        {
+            "reg": [
+                {"name": "dfii_pi2_command_issue", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_DFII_PI2_ADDRESS
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x3c = 0xf000603c`
+
+    DFI address bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI2_ADDRESS
+
+        {
+            "reg": [
+                {"name": "dfii_pi2_address[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_DFII_PI2_BADDRESS
+^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x40 = 0xf0006040`
+
+    DFI bank address bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI2_BADDRESS
+
+        {
+            "reg": [
+                {"name": "dfii_pi2_baddress[2:0]", "bits": 3},
+                {"bits": 29},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_DFII_PI2_WRDATA
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x44 = 0xf0006044`
+
+    DFI write data bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI2_WRDATA
+
+        {
+            "reg": [
+                {"name": "dfii_pi2_wrdata[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_DFII_PI2_RDDATA
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x48 = 0xf0006048`
+
+    DFI read data bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI2_RDDATA
+
+        {
+            "reg": [
+                {"name": "dfii_pi2_rddata[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_DFII_PI3_COMMAND
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x4c = 0xf000604c`
+
+    Control DFI signals on a single phase
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI3_COMMAND
+
+        {
+            "reg": [
+                {"name": "cs",  "bits": 1},
+                {"name": "we",  "bits": 1},
+                {"name": "cas",  "bits": 1},
+                {"name": "ras",  "bits": 1},
+                {"name": "wren",  "bits": 1},
+                {"name": "rden",  "bits": 1},
+                {"bits": 26}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++-------+------+-------------------------------+
+| Field | Name | Description                   |
++=======+======+===============================+
+| [0]   | CS   | DFI chip select bus           |
++-------+------+-------------------------------+
+| [1]   | WE   | DFI write enable bus          |
++-------+------+-------------------------------+
+| [2]   | CAS  | DFI column address strobe bus |
++-------+------+-------------------------------+
+| [3]   | RAS  | DFI row address strobe bus    |
++-------+------+-------------------------------+
+| [4]   | WREN | DFI write data enable bus     |
++-------+------+-------------------------------+
+| [5]   | RDEN | DFI read data enable bus      |
++-------+------+-------------------------------+
+
+SDRAM_DFII_PI3_COMMAND_ISSUE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x50 = 0xf0006050`
+
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI3_COMMAND_ISSUE
+
+        {
+            "reg": [
+                {"name": "dfii_pi3_command_issue", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_DFII_PI3_ADDRESS
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x54 = 0xf0006054`
+
+    DFI address bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI3_ADDRESS
+
+        {
+            "reg": [
+                {"name": "dfii_pi3_address[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_DFII_PI3_BADDRESS
+^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x58 = 0xf0006058`
+
+    DFI bank address bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI3_BADDRESS
+
+        {
+            "reg": [
+                {"name": "dfii_pi3_baddress[2:0]", "bits": 3},
+                {"bits": 29},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_DFII_PI3_WRDATA
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x5c = 0xf000605c`
+
+    DFI write data bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI3_WRDATA
+
+        {
+            "reg": [
+                {"name": "dfii_pi3_wrdata[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_DFII_PI3_RDDATA
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x60 = 0xf0006060`
+
+    DFI read data bus
+
+    .. wavedrom::
+        :caption: SDRAM_DFII_PI3_RDDATA
+
+        {
+            "reg": [
+                {"name": "dfii_pi3_rddata[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_TRP
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x64 = 0xf0006064`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TRP
+
+        {
+            "reg": [
+                {"name": "controller_trp[1:0]", "attr": 'reset: 3', "bits": 2},
+                {"bits": 30},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CONTROLLER_TRCD
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x68 = 0xf0006068`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TRCD
+
+        {
+            "reg": [
+                {"name": "controller_trcd[1:0]", "attr": 'reset: 3', "bits": 2},
+                {"bits": 30},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CONTROLLER_TWR
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x6c = 0xf000606c`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TWR
+
+        {
+            "reg": [
+                {"name": "controller_twr[1:0]", "attr": 'reset: 3', "bits": 2},
+                {"bits": 30},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CONTROLLER_TWTR
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x70 = 0xf0006070`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TWTR
+
+        {
+            "reg": [
+                {"name": "controller_twtr[1:0]", "attr": 'reset: 2', "bits": 2},
+                {"bits": 30},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CONTROLLER_TREFI
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x74 = 0xf0006074`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TREFI
+
+        {
+            "reg": [
+                {"name": "controller_trefi[9:0]", "attr": 'reset: 782', "bits": 10},
+                {"bits": 22},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_TRFC
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x78 = 0xf0006078`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TRFC
+
+        {
+            "reg": [
+                {"name": "controller_trfc[5:0]", "attr": 'reset: 16', "bits": 6},
+                {"bits": 26},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CONTROLLER_TFAW
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x7c = 0xf000607c`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TFAW
+
+        {
+            "reg": [
+                {"name": "controller_tfaw[2:0]", "attr": 'reset: 6', "bits": 3},
+                {"bits": 29},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CONTROLLER_TCCD
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x80 = 0xf0006080`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TCCD
+
+        {
+            "reg": [
+                {"name": "controller_tccd", "attr": 'reset: 1', "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CONTROLLER_TCCD_WR
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x84 = 0xf0006084`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TCCD_WR
+
+        {
+            "reg": [
+                {"name": "controller_tccd_wr", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CONTROLLER_TRTP
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x88 = 0xf0006088`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TRTP
+
+        {
+            "reg": [
+                {"name": "controller_trtp", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CONTROLLER_TRRD
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x8c = 0xf000608c`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TRRD
+
+        {
+            "reg": [
+                {"name": "controller_trrd[1:0]", "attr": 'reset: 2', "bits": 2},
+                {"bits": 30},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CONTROLLER_TRC
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x90 = 0xf0006090`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TRC
+
+        {
+            "reg": [
+                {"name": "controller_trc[2:0]", "attr": 'reset: 6', "bits": 3},
+                {"bits": 29},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CONTROLLER_TRAS
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x94 = 0xf0006094`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TRAS
+
+        {
+            "reg": [
+                {"name": "controller_tras[2:0]", "attr": 'reset: 5', "bits": 3},
+                {"bits": 29},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_CONTROLLER_TZQCS
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x98 = 0xf0006098`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_TZQCS
+
+        {
+            "reg": [
+                {"name": "controller_tzqcs[7:0]", "attr": 'reset: 16', "bits": 8},
+                {"bits": 24},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ADDR_0
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0x9c = 0xf000609c`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ADDR_0
+
+        {
+            "reg": [
+                {"name": "controller_last_addr_0[20:0]", "bits": 21},
+                {"bits": 11},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ACTIVE_ROW_0
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xa0 = 0xf00060a0`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ACTIVE_ROW_0
+
+        {
+            "reg": [
+                {"name": "controller_last_active_row_0[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ADDR_1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xa4 = 0xf00060a4`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ADDR_1
+
+        {
+            "reg": [
+                {"name": "controller_last_addr_1[20:0]", "bits": 21},
+                {"bits": 11},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ACTIVE_ROW_1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xa8 = 0xf00060a8`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ACTIVE_ROW_1
+
+        {
+            "reg": [
+                {"name": "controller_last_active_row_1[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ADDR_2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xac = 0xf00060ac`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ADDR_2
+
+        {
+            "reg": [
+                {"name": "controller_last_addr_2[20:0]", "bits": 21},
+                {"bits": 11},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ACTIVE_ROW_2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xb0 = 0xf00060b0`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ACTIVE_ROW_2
+
+        {
+            "reg": [
+                {"name": "controller_last_active_row_2[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ADDR_3
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xb4 = 0xf00060b4`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ADDR_3
+
+        {
+            "reg": [
+                {"name": "controller_last_addr_3[20:0]", "bits": 21},
+                {"bits": 11},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ACTIVE_ROW_3
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xb8 = 0xf00060b8`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ACTIVE_ROW_3
+
+        {
+            "reg": [
+                {"name": "controller_last_active_row_3[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ADDR_4
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xbc = 0xf00060bc`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ADDR_4
+
+        {
+            "reg": [
+                {"name": "controller_last_addr_4[20:0]", "bits": 21},
+                {"bits": 11},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ACTIVE_ROW_4
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xc0 = 0xf00060c0`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ACTIVE_ROW_4
+
+        {
+            "reg": [
+                {"name": "controller_last_active_row_4[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ADDR_5
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xc4 = 0xf00060c4`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ADDR_5
+
+        {
+            "reg": [
+                {"name": "controller_last_addr_5[20:0]", "bits": 21},
+                {"bits": 11},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ACTIVE_ROW_5
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xc8 = 0xf00060c8`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ACTIVE_ROW_5
+
+        {
+            "reg": [
+                {"name": "controller_last_active_row_5[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ADDR_6
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xcc = 0xf00060cc`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ADDR_6
+
+        {
+            "reg": [
+                {"name": "controller_last_addr_6[20:0]", "bits": 21},
+                {"bits": 11},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ACTIVE_ROW_6
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xd0 = 0xf00060d0`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ACTIVE_ROW_6
+
+        {
+            "reg": [
+                {"name": "controller_last_active_row_6[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ADDR_7
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xd4 = 0xf00060d4`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ADDR_7
+
+        {
+            "reg": [
+                {"name": "controller_last_addr_7[20:0]", "bits": 21},
+                {"bits": 11},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_CONTROLLER_LAST_ACTIVE_ROW_7
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006000 + 0xd8 = 0xf00060d8`
+
+
+    .. wavedrom::
+        :caption: SDRAM_CONTROLLER_LAST_ACTIVE_ROW_7
+
+        {
+            "reg": [
+                {"name": "controller_last_active_row_7[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
