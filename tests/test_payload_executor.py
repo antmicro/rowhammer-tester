@@ -1206,6 +1206,47 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         )
         self.assert_history(dut.dfi_history, [OpCode.ACT, OpCode.READ, OpCode.PRE, OpCode.REF])
 
+    def test_instruction_fetch(self):
+        def run_payload(dut, payload):
+            def generator(dut, payload):
+                yield dut.dfii._control.fields.mode_2n.eq(0)
+                yield dut.dfii._control.fields.reset_n.eq(1)
+                yield dut.payload_executor.start.eq(1)
+                yield
+                yield dut.payload_executor.start.eq(0)
+
+                for instr in payload:
+                    self.assertEqual(instr, (yield dut.payload_executor.instruction))
+                    while not (yield dut.payload_executor.fetch_address):
+                        yield
+                    while (yield dut.payload_executor.fetch_address):
+                        yield
+
+                while not (yield dut.payload_executor.ready):
+                    yield
+
+            run_simulation(
+                dut,
+                [generator(dut, payload), *dut.get_generators()],
+                vcd_name="test_instruction_fetch.vcd",
+            )
+
+        encoder = Encoder(bankbits=5)
+        payload = (
+            encoder(OpCode.ACT, timeslice=10, address=encoder.address(bank=1, row=100))
+            + encoder(OpCode.READ, timeslice=3, address=encoder.address(bank=1, col=13))
+            + encoder(OpCode.PRE, timeslice=10, address=encoder.address(bank=1))
+            + encoder(OpCode.REF, timeslice=15)
+        )
+
+        dut = PayloadExecutorDDR5DUT(payload)
+        run_payload(dut, payload)
+
+        # compare DFI history to what payload should yield
+        op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE, OpCode.REF]
+        self.assert_history(dut.dfi_history, op_codes)
+
+
 # Interactive tests --------------------------------------------------------------------------------
 
 

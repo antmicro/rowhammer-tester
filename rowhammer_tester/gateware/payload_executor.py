@@ -510,24 +510,24 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         self.submodules.scratchpad = Scratchpad(mem_scratchpad, dfi_switch.dfi)
 
         # Fetcher
-        # uses synchronous port, instruction is ready 1 cycle after fetch_address is asserted
+        # uses synchronous port, instruction is ready 1 cycle after self.fetch_address is asserted
         assert (
             mem_payload.width == Decoder.INSTRUCTION
         ), f"Wrong payload memory word width: {mem_payload.width} vs {Decoder.INSTRUCTION}"
 
-        instruction = Signal(Decoder.INSTRUCTION)
-        fetch_address = Signal.like(self.program_counter)
+        self.instruction = Signal(Decoder.INSTRUCTION)
+        self.fetch_address = Signal.like(self.program_counter)
         payload_port = mem_payload.get_port(write_capable=False)
         self.specials += payload_port
         self.comb += [
-            payload_port.adr.eq(fetch_address),
-            instruction.eq(payload_port.dat_r),
+            payload_port.adr.eq(self.fetch_address),
+            self.instruction.eq(payload_port.dat_r),
         ]
 
         # Decoder
         rankbits = log2_int(nranks)
         self.submodules.decoder = decoder = Decoder(
-            instruction, rankbits=rankbits, bankbits=bankbits, rowbits=rowbits, colbits=colbits
+            self.instruction, rankbits=rankbits, bankbits=bankbits, rowbits=rowbits, colbits=colbits
         )
         self.submodules.rank_decoder = OneHotDecoder(nranks)
         if rankbits:
@@ -548,7 +548,7 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         self.fsm.act(
             "WAIT-DFI",
             self.scratchpad.reset.eq(1),
-            fetch_address.eq(0),
+            self.fetch_address.eq(0),
             If(dfi_switch.dfi_ready, NextValue(self.program_counter, 0), NextState("RUN")),
         )
         self.fsm.act(
@@ -567,14 +567,14 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
                 If(
                     self.loop_counter != decoder.loop_count,
                     # Continue the loop
-                    fetch_address.eq(self.program_counter - decoder.loop_jump),
-                    NextValue(self.program_counter, fetch_address),
+                    self.fetch_address.eq(self.program_counter - decoder.loop_jump),
+                    NextValue(self.program_counter, self.fetch_address),
                     NextValue(self.loop_counter, self.loop_counter + 1),
                 ).Else(
                     # Finish the loop
                     # Set loop_counter to 0 so that next loop instruction will start properly
-                    fetch_address.eq(self.program_counter + 1),
-                    NextValue(self.program_counter, fetch_address),
+                    self.fetch_address.eq(self.program_counter + 1),
+                    NextValue(self.program_counter, self.fetch_address),
                     NextValue(self.loop_counter, 0),
                 ),
             ).Else(
@@ -582,8 +582,8 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
                 # Timeslice=0 should be illegal but we still consider it as =1
                 If(
                     (decoder.timeslice == 0) | (decoder.timeslice == 1),
-                    fetch_address.eq(self.program_counter + 1),
-                    NextValue(self.program_counter, fetch_address),
+                    self.fetch_address.eq(self.program_counter + 1),
+                    NextValue(self.program_counter, self.fetch_address),
                 ).Else(
                     # Wait in idle loop after sending the command
                     NextValue(self.idle_counter, decoder.timeslice - 2),
@@ -604,8 +604,8 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             self.executing.eq(1),
             If(
                 self.idle_counter == 0,
-                fetch_address.eq(self.program_counter + 1),
-                NextValue(self.program_counter, fetch_address),
+                self.fetch_address.eq(self.program_counter + 1),
+                NextValue(self.program_counter, self.fetch_address),
                 NextState("RUN"),
             ).Else(
                 NextValue(self.idle_counter, self.idle_counter - 1),
