@@ -37,6 +37,7 @@ import rowhammer_tester.targets.modules as local_modules
 from rowhammer_tester.gateware.bist import PatternMemory, Reader, Writer
 from rowhammer_tester.gateware.payload_executor import DFISwitch, PayloadExecutor, SyncableRefresher
 from rowhammer_tester.gateware.rowhammer import RowHammerDMA
+from rowhammer_tester.gateware.sram import SRAM
 
 _target_name_to_fancy_string = {
     "arty": "Arty-A7",
@@ -404,7 +405,7 @@ class RowHammerSoC(SoCCore):
             scratchpad_mem = Memory(scratchpad_width, scratchpad_depth)
             self.specials += payload_mem, scratchpad_mem
 
-            self.add_memory(payload_mem, name="payload", origin=0x30000000)
+            self.add_memory(payload_mem, name="payload", origin=0x30000000, sram_type=SRAM)
             self.add_memory(scratchpad_mem, name="scratchpad", origin=0x31000000)
             self.logger.info(
                 "{}: Length: {}, Data Width: {}-bit".format(
@@ -441,8 +442,8 @@ class RowHammerSoC(SoCCore):
             self.payload_executor.add_csrs()
             self.add_csr("payload_executor")
 
-    def add_memory(self, mem, *, name, origin, mode="rw"):
-        ram = wishbone.SRAM(
+    def add_memory(self, mem, *, name, origin, mode="rw", sram_type=wishbone.SRAM):
+        ram = sram_type(
             mem,
             bus=wishbone.Interface(data_width=mem.width),
             read_only="w" not in mode,
