@@ -174,8 +174,12 @@ def plot_interactive(
         if colorbar:
             # Limit number of colorbar ticks
             # if left unchanged they can be floats, which looks bad
-            min_flips = int(np.nanmin(h))
-            max_flips = max(int(np.nanmax(h)), min_flips + 1)
+            try:
+                min_flips = int(np.nanmin(h))
+                max_flips = max(int(np.nanmax(h)), min_flips + 1)
+            except:
+                min_flips, max_flips = 0, 1
+
             ticks_step = max(1, int((max_flips - min_flips) // 20))
             cbar = fig.colorbar(
                 mappable=cm.ScalarMappable(
@@ -317,7 +321,12 @@ def plot_aggressors_vs_victims(
         attack = {"aggressors": aggressor, "victims": attack_victims}
         dq_data.append(attack)
     amin, amax = min(min(aggressors)), max(max(aggressors))
-    title = f"Aggressors ({amin}, {amax}) vs victims ({min(victims)}, {max(victims)})"
+    if len(victims) == 0:
+        title = f"Aggressors ({amin}, {amax}) vs victims (no bitflips present)"
+    else:
+        vmin, vmax = min(victims), max(victims)
+        title = f"Aggressors ({amin}, {amax}) vs victims ({vmin}, {vmax})"
+
     plot_interactive(
         victims,
         aggressors,
