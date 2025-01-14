@@ -42,7 +42,6 @@ def plot_interactive(
     group_rows: int,
     avv: bool = False,
 ):
-
     min_victim = min(rows) if rows else 0
     max_victim = max(rows) if rows else 0
     x_ax: List[int] = []
@@ -143,15 +142,9 @@ def plot_interactive(
             xlb = (xlim[1] - xlim[0]) / (bins[0])
             ylb = (ylim[1] - ylim[0]) / (bins[1])
             for a, v, b in avb_packed:
-                if (
-                    b == 0
-                    or not (xlim[0] <= v < xlim[1])
-                    or not (ylim[0] <= a < ylim[1])
-                ):
+                if b == 0 or not (xlim[0] <= v < xlim[1]) or not (ylim[0] <= a < ylim[1]):
                     continue
-                new_avb[int(floor((v - xlim[0]) / xlb))][
-                    int(floor((a - ylim[0]) / ylb))
-                ] += b
+                new_avb[int(floor((v - xlim[0]) / xlb))][int(floor((a - ylim[0]) / ylb))] += b
             for i in range(new_avb.shape[0]):
                 for j in range(new_avb.shape[1]):
                     if new_avb[i][j] == 0:
@@ -177,7 +170,7 @@ def plot_interactive(
             try:
                 min_flips = int(np.nanmin(h))
                 max_flips = max(int(np.nanmax(h)), min_flips + 1)
-            except:
+            except Exception:
                 min_flips, max_flips = 0, 1
 
             ticks_step = max(1, int((max_flips - min_flips) // 20))
@@ -234,11 +227,7 @@ def plot_single_attack(
     aggressors = data["aggressors"]
     plt.style.use(PLOT_STYLE)
 
-    columns = (
-        len(next(iter(data["victims"].values())))
-        if data["victims"].values()
-        else col_count
-    )
+    columns = len(next(iter(data["victims"].values()))) if data["victims"].values() else col_count
 
     xdata: list[int] = []
     rows: list[int] = []
