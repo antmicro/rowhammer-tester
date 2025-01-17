@@ -9,42 +9,42 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: none
-  YAML_SOURCE_COMMIT: 12f4e6a83f1f81217662033b279eb457cbf904e5
+  YAML_SOURCE_COMMIT: main
 
 include:
     - project: 'rowhammer-tester-ci'
-      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      ref: main
       file: '/ci-setup.yaml'
     - project: 'rowhammer-tester-ci'
-      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      ref: main
       file: '/ci-bitstream-setup.yaml'
     - project: 'rowhammer-tester-ci'
-      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      ref: main
       file: '/ci-hw-setup.yaml'
     - project: 'rowhammer-tester-ci'
-      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      ref: main
       file: '/pre-build-lint-and-unit-tests.yaml'
     - project: 'rowhammer-tester-ci'
-      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      ref: main
       file: '/build-docs.yaml'
     - project: 'rowhammer-tester-ci'
-      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      ref: main
       file: '/deploy-docs.yaml'
     - project: 'rowhammer-tester-ci'
-      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      ref: main
       file: '/build-ddr5-tester-linux.yaml'
     - project: 'rowhammer-tester-ci'
-      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      ref: main
       file: '/build-spds.yaml'
     - project: 'rowhammer-tester-ci'
-      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      ref: main
       file: '/build-bitstreams.yaml'
     - project: 'rowhammer-tester-ci'
-      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      ref: main
       file: '/tests-platforms.yaml'
     - project: 'rowhammer-tester-ci'
-      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      ref: main
       file: '/tests-sim.yaml'
     - project: 'rowhammer-tester-ci'
-      ref: 12f4e6a83f1f81217662033b279eb457cbf904e5
+      ref: main
       file: '/test-upstream-is-up-to-date.yaml'
