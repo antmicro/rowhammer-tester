@@ -365,7 +365,7 @@ class RefreshCounter(Module):
 
         if memtype == "DDR5":
             ref_cmd = 0b10011
-            self.comb += self.refresh.eq(dfi_phase.address[:5] == ref_cmd)
+            self.comb += self.refresh.eq(~dfi_phase.cs_n & (dfi_phase.address[:5] == ref_cmd))
         else:
             ref_cmd = dict(cs_n=0, cas_n=0, ras_n=0, we_n=1)
             self.comb += self.refresh.eq(
