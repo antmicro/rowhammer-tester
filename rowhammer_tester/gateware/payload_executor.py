@@ -375,6 +375,42 @@ class RefreshCounter(Module):
         self.sync += If(self.refresh, self.counter.eq(self.counter + 1))
 
 
+class Fetcher(Module):
+    """
+    Generates memory addresses for fetching instructions for PayloadExecutor. By default increases
+    address by 1 on each cycle.
+    When jump is asserted address gets decremented by jump_offset+pipeline_delay instead of
+    getting increased by 1.
+    When stall is asserted it stops the change of address. During stall it also outputs previous
+    memory address so that address doesn't change in the cycle that stall is asserted.
+    """
+
+    def __init__(self, mem_addr, stall, jump, jump_offset, pipeline_delay=2):
+        self.program_counter = Signal.like(mem_addr, reset=0)
+        self.program_counter_old = Signal.like(mem_addr, reset=0)
+        self.next_addr = Signal.like(mem_addr)
+
+        self.comb += [
+            If(
+                ~jump,
+                self.next_addr.eq(self.program_counter + 1),
+            ).Else(
+                self.next_addr.eq(self.program_counter - jump_offset - pipeline_delay),
+            ),
+            If(stall, mem_addr.eq(self.program_counter_old)).Else(
+                mem_addr.eq(self.program_counter)
+            ),
+        ]
+
+        self.sync += [
+            If(
+                ~stall,
+                self.program_counter.eq(self.next_addr),
+                self.program_counter_old.eq(self.program_counter),
+            )
+        ]
+
+
 class DFISwitch(Module, AutoCSR):
     # Synchronizes disconnection of the MC to last REF/ZQC command sent by MC
     # Refresher must provide `ce` signal
@@ -483,10 +519,11 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         """
         )
 
+        self.pipeline_delay = 2
+
         self.start = Signal()
         self.executing = Signal()
         self.ready = Signal()
-        self.program_counter = Signal(max=mem_payload.depth - 1)
         self.loop_counter = Signal(Decoder.LOOP_COUNT)
         self.idle_counter = Signal(Decoder.TIMESLICE_NOOP)
 
@@ -510,19 +547,32 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         self.submodules.scratchpad = Scratchpad(mem_scratchpad, dfi_switch.dfi)
 
         # Fetcher
-        # uses synchronous port, instruction is ready 1 cycle after self.fetch_address is asserted
+        # uses synchronous port, mem_data is ready 1 cycle after mem_addr is asserted
         assert (
             mem_payload.width == Decoder.INSTRUCTION
         ), f"Wrong payload memory word width: {mem_payload.width} vs {Decoder.INSTRUCTION}"
 
         self.instruction = Signal(Decoder.INSTRUCTION)
-        self.fetch_address = Signal.like(self.program_counter)
+
+        self.mem_addr = Signal(max=mem_payload.depth - 1 + self.pipeline_delay)
+        self.mem_data = Signal.like(self.instruction)
+        self.stall = Signal()
+        self.bubble = Signal()  # Helper signal for tests, doesn't get used in logic
+        self.jump_offset = Signal(Decoder.LOOP_JUMP)
+        self.jump = Signal()
+
+        self.submodules.fetcher = Fetcher(
+            self.mem_addr, self.stall, self.jump, self.jump_offset, self.pipeline_delay
+        )
+
         payload_port = mem_payload.get_port(write_capable=False)
         self.specials += payload_port
         self.comb += [
-            payload_port.adr.eq(self.fetch_address),
-            self.instruction.eq(payload_port.dat_r),
+            payload_port.adr.eq(self.mem_addr),
+            self.mem_data.eq(payload_port.dat_r),
         ]
+
+        self.sync += [If(~self.stall, self.instruction.eq(self.mem_data))]
 
         # Decoder
         rankbits = log2_int(nranks)
@@ -533,11 +583,14 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         if rankbits:
             self.comb += self.rank_decoder.i.eq(self.decoder.dfi_rank)
 
+        self.comb += self.jump_offset.eq(decoder.loop_jump)
+
         # Executor
         self.submodules.dfi_executor = DFIExecutor(dfi_switch.dfi, self.decoder, self.rank_decoder)
         self.submodules.fsm = FSM()
         self.fsm.act(
             "READY",
+            self.stall.eq(1),
             self.ready.eq(1),
             If(
                 self.start,
@@ -548,15 +601,21 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         self.fsm.act(
             "WAIT-DFI",
             self.scratchpad.reset.eq(1),
-            self.fetch_address.eq(0),
-            If(dfi_switch.dfi_ready, NextValue(self.program_counter, 0), NextState("RUN")),
+            self.stall.eq(1),
+            If(
+                dfi_switch.dfi_ready,
+                NextState("BUBBLE"),
+                NextValue(self.idle_counter, self.pipeline_delay - 1),
+            ),
         )
         self.fsm.act(
             "RUN",
+            self.stall.eq(0),
             self.executing.eq(1),
             # Terminate after executing the whole program or when STOP instruction is encountered
             If(
-                (self.program_counter == mem_payload.depth - 1) | decoder.stop,
+                (self.mem_addr == mem_payload.depth - 1 + self.pipeline_delay) | decoder.stop,
+                # decoder.stop,
                 NextValue(dfi_switch.wants_dfi, 0),
                 NextState("READY"),
             ),
@@ -567,14 +626,13 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
                 If(
                     self.loop_counter != decoder.loop_count,
                     # Continue the loop
-                    self.fetch_address.eq(self.program_counter - decoder.loop_jump),
-                    NextValue(self.program_counter, self.fetch_address),
+                    self.jump.eq(1),
                     NextValue(self.loop_counter, self.loop_counter + 1),
+                    NextState("BUBBLE"),
+                    NextValue(self.idle_counter, self.pipeline_delay - 1),
                 ).Else(
                     # Finish the loop
                     # Set loop_counter to 0 so that next loop instruction will start properly
-                    self.fetch_address.eq(self.program_counter + 1),
-                    NextValue(self.program_counter, self.fetch_address),
                     NextValue(self.loop_counter, 0),
                 ),
             ).Else(
@@ -582,8 +640,6 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
                 # Timeslice=0 should be illegal but we still consider it as =1
                 If(
                     (decoder.timeslice == 0) | (decoder.timeslice == 1),
-                    self.fetch_address.eq(self.program_counter + 1),
-                    NextValue(self.program_counter, self.fetch_address),
                 ).Else(
                     # Wait in idle loop after sending the command
                     NextValue(self.idle_counter, decoder.timeslice - 2),
@@ -601,11 +657,22 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         )
         self.fsm.act(
             "IDLE",
+            self.stall.eq(1),
             self.executing.eq(1),
             If(
                 self.idle_counter == 0,
-                self.fetch_address.eq(self.program_counter + 1),
-                NextValue(self.program_counter, self.fetch_address),
+                NextState("RUN"),
+            ).Else(
+                NextValue(self.idle_counter, self.idle_counter - 1),
+            ),
+        )
+        self.fsm.act(
+            "BUBBLE",  # State that waits for pipeline to clear
+            self.stall.eq(0),
+            self.executing.eq(1),
+            self.bubble.eq(1),
+            If(
+                self.idle_counter == 0,
                 NextState("RUN"),
             ).Else(
                 NextValue(self.idle_counter, self.idle_counter - 1),
