@@ -1081,12 +1081,90 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         dut = PayloadExecutorDDR5DUT(encoder(payload))
         self.run_payload(dut)
 
+        # Last loop won't have pipeline_delay, compensate by subtracting in time_total
         time_loop = 3 + 5 + 1 + dut.payload_executor.pipeline_delay
-        time_total = 7 + 6 * time_loop + 10 + 1
+        time_total = 7 + 6 * time_loop + 10 - dut.payload_executor.pipeline_delay + 1
 
         op_codes = [OpCode.ACT] + 6 * [OpCode.READ, OpCode.PRE] + [OpCode.REF]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.execution_cycles, time_total)
+        self.assertEqual(dut.execution_cycles, time_total + dut.payload_executor.pipeline_delay)
+
+    def test_execution_cycles_longer_dual_loop(self):
+        # Check execution time with timeslices longer than 1 and two loops (not nested)
+        encoder = Encoder(bankbits=5)
+        payload = [
+            encoder.Instruction(OpCode.ACT, timeslice=7, address=encoder.address(bank=1, row=100)),
+            encoder.Instruction(OpCode.READ, timeslice=3, address=encoder.address(bank=1, col=20)),
+            encoder.Instruction(OpCode.PRE, timeslice=5, address=encoder.address(bank=1)),
+            encoder.Instruction(OpCode.LOOP, count=6 - 1, jump=2),  # to READ col=20
+            encoder.Instruction(OpCode.REF, timeslice=10),
+            encoder.Instruction(OpCode.LOOP, count=4 - 1, jump=1),  # to REF timeslice = 10
+            encoder.Instruction(OpCode.NOOP, timeslice=0),  # STOP
+        ]
+
+        dut = PayloadExecutorDDR5DUT(encoder(payload))
+        self.run_payload(dut)
+
+        # Last loop won't have pipeline_delay, compensate by subtracting in time_total
+        time_loop1 = 3 + 5 + 1 + dut.payload_executor.pipeline_delay
+        time_loop2 = 10 + 1 + dut.payload_executor.pipeline_delay
+        time_total = (
+            7
+            + 6 * time_loop1
+            - dut.payload_executor.pipeline_delay
+            + 4 * time_loop2
+            - dut.payload_executor.pipeline_delay
+            + 1
+        )
+
+        op_codes = [OpCode.ACT] + 6 * [OpCode.READ, OpCode.PRE] + 4 * [OpCode.REF]
+        self.assert_history(dut.dfi_history, op_codes)
+        self.assertEqual(dut.execution_cycles, time_total + dut.payload_executor.pipeline_delay)
+
+    def test_execution_cycles_loop_end(self):
+        # Check execution time when loop is located at the end of the payload
+        encoder = Encoder(bankbits=5)
+        payload = (
+            encoder(OpCode.ACT, timeslice=1, address=encoder.address(bank=1, row=100))
+            + encoder(OpCode.READ, timeslice=1, address=encoder.address(bank=1, col=20))
+            + encoder(OpCode.PRE, timeslice=1, address=encoder.address(bank=1))
+        )
+
+        depth = 16
+        payload += [encoder(OpCode.NOOP, timeslice=1)[0]] * (depth - len(payload) - 2)
+        payload += [encoder(OpCode.ACT, timeslice=7, address=encoder.address(bank=1, row=100))[0]]
+        payload += [encoder(OpCode.LOOP, count=10 - 1, jump=2)[0]]
+        dut = PayloadExecutorDDR5DUT(payload, payload_depth=depth)
+        self.run_payload(dut, vcd_name="test_execution_cycles_loop_end.vcd")
+
+        # Loops will be shorter by 1 pipeline_delay, compensate by subtracting it in time_total
+        loop_time = 1 + 7 + 1 + dut.payload_executor.pipeline_delay
+        time_total = depth - 3 + 10 * loop_time - dut.payload_executor.pipeline_delay
+
+        op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE] + [OpCode.ACT] * 10
+        self.assert_history(dut.dfi_history, op_codes)
+        self.assertEqual(dut.execution_cycles, time_total + dut.payload_executor.pipeline_delay)
+
+    def test_execution_cycles_no_stop_longer(self):
+        # Check execution time when there is no STOP instruction (rest of memory filled with NOOPs)
+        # This test has NOOPs timeslice set to 3
+        encoder = Encoder(bankbits=5)
+        payload = (
+            encoder(OpCode.ACT, timeslice=1, address=encoder.address(bank=1, row=100))
+            + encoder(OpCode.READ, timeslice=1, address=encoder.address(bank=1, col=20))
+            + encoder(OpCode.PRE, timeslice=1, address=encoder.address(bank=1))
+        )
+
+        depth = 16
+        payload += [encoder(OpCode.NOOP, timeslice=3)[0]] * (depth - len(payload))
+        dut = PayloadExecutorDDR5DUT(payload, payload_depth=depth)
+        self.run_payload(dut, vcd_name="test_execution_cycles_no_stop_longer.vcd")
+
+        op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
+        self.assert_history(dut.dfi_history, op_codes)
+        self.assertEqual(
+            dut.execution_cycles, 3 + (depth - 3) * 3 + dut.payload_executor.pipeline_delay
+        )
 
     def test_execution_refresh_delay(self):
         # Check that payload execution is started after refresh command
