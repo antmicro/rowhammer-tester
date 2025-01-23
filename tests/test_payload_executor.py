@@ -1163,7 +1163,10 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
         self.assert_history(dut.dfi_history, op_codes)
         self.assertEqual(
-            dut.execution_cycles, 3 + (depth - 3) * 3 + dut.payload_executor.pipeline_delay
+            # We need to subtract 2 since last timeslice is not executed
+            # because executor terminates on last instruction
+            dut.execution_cycles,
+            3 + (depth - 3) * 3 - 2 + dut.payload_executor.pipeline_delay,
         )
 
     def test_execution_refresh_delay(self):

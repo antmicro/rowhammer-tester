@@ -613,14 +613,15 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             self.stall.eq(0),
             self.executing.eq(1),
             # Terminate after executing the whole program or when STOP instruction is encountered
+            # Do not terminate when next instruction is LOOP with jump to previous address
             If(
-                (self.mem_addr == mem_payload.depth - 1 + self.pipeline_delay) | decoder.stop,
-                # decoder.stop,
+                ((self.mem_addr == mem_payload.depth - 1 + self.pipeline_delay) | decoder.stop)
+                & ((decoder.op_code != OpCode.LOOP) | (decoder.loop_count == self.loop_counter)),
                 NextValue(dfi_switch.wants_dfi, 0),
                 NextState("READY"),
-            ),
-            # Execute instruction
-            If(
+            )
+            .Elif(
+                # Execute instruction
                 decoder.op_code == OpCode.LOOP,
                 # If a loop instruction with count=0 is found it will be a NOOP
                 If(
@@ -635,7 +636,8 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
                     # Set loop_counter to 0 so that next loop instruction will start properly
                     NextValue(self.loop_counter, 0),
                 ),
-            ).Else(
+            )
+            .Else(
                 # DFI instruction
                 # Timeslice=0 should be illegal but we still consider it as =1
                 If(
