@@ -1476,6 +1476,86 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         op_codes = [OpCode.ACT] + 8 * [OpCode.READ] + [OpCode.PRE] + 5 * 2 * [OpCode.REF]
         self.assert_history(dut.dfi_history, op_codes)
 
+    def test_instruction_timings_jump(self):
+        # Checks if each instruction is executed at correct cycle
+        def run_payload(dut, encoder, payload):
+            def generator(dut, _encoder, payload):
+                yield dut.dfii._control.fields.mode_2n.eq(0)
+                yield dut.dfii._control.fields.reset_n.eq(1)
+                yield dut.payload_executor.start.eq(1)
+                yield
+                yield dut.payload_executor.start.eq(0)
+
+                # Wait for first instruction
+                while (not (yield dut.payload_executor.executing)):
+                    yield
+                for _ in range(dut.payload_executor.PIPELINE_DELAY):
+                    yield
+
+                idx = 0
+                while idx < len(payload):
+
+                    # Compare fetched instruction to expected
+                    instr = payload[idx]
+                    instruction_encoded = encoder(instr)
+                    self.assertEqual(
+                        instruction_encoded[0], (yield dut.payload_executor.instruction)
+                    )
+
+                    # Execute instruction
+                    yield
+
+                    if hasattr(instr, "jump") and instr.jump > 0 and instr.count > 0:
+                        idx -= instr.jump
+                        instr.count -= 1
+                        # After jump we need to wait for PIPELINE_DELAY for pipeline to clear
+                        for _ in range(dut.payload_executor.PIPELINE_DELAY):
+                            yield
+                    else:
+                        idx += 1
+                        # Idle for timeslice-1 cycles
+                        if not hasattr(instr, "jump"):
+                            for _ in range(max(instr.timeslice-1, 0)):
+                                yield
+
+
+                while not (yield dut.payload_executor.ready):
+                    yield
+
+            run_simulation(
+                dut,
+                [generator(dut, encoder, payload), *dut.get_generators()],
+                vcd_name="test_instruction_timings_jump.vcd",
+            )
+
+        encoder = Encoder(bankbits=3)
+        instrs = [
+            encoder.I(OpCode.ACT, timeslice=10, address=encoder.address(bank=0, row=100)),
+            encoder.I(OpCode.READ, timeslice=30, address=encoder.address(bank=0, col=200)),
+            encoder.I(OpCode.LOOP, count=8 - 1, jump=1),  # to READ col=200
+            encoder.I(OpCode.PRE, timeslice=15, address=encoder.address(bank=0)),
+            encoder.I(OpCode.NOOP, timeslice=1),
+            encoder.I(OpCode.NOOP, timeslice=2),
+            encoder.I(OpCode.NOOP, timeslice=3),
+            encoder.I(OpCode.NOOP, timeslice=4),
+            encoder.I(OpCode.NOOP, timeslice=5),
+            encoder.I(OpCode.NOOP, timeslice=6),
+            encoder.I(OpCode.NOOP, timeslice=7),
+            encoder.I(OpCode.NOOP, timeslice=8),
+            encoder.I(OpCode.NOOP, timeslice=9),
+            encoder.I(OpCode.NOOP, timeslice=10),
+            encoder.I(OpCode.NOOP, timeslice=1000),
+            encoder.I(OpCode.REF, timeslice=20),
+            encoder.I(OpCode.REF, timeslice=25),
+            encoder.I(OpCode.LOOP, count=5 - 1, jump=2),  # to first REF
+        ]
+
+        dut = PayloadExecutorDDR5DUT(encoder(instrs))
+        run_payload(dut, encoder, instrs)
+
+        op_codes = [OpCode.ACT] + 8 * [OpCode.READ] + [OpCode.PRE] + 5 * 2 * [OpCode.REF]
+        self.assert_history(dut.dfi_history, op_codes)
+
 
 # Interactive tests --------------------------------------------------------------------------------
 
