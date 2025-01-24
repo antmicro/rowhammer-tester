@@ -677,7 +677,7 @@ class TestPayloadExecutor(unittest.TestCase):
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.execution_cycles, 4 + dut.payload_executor.pipeline_delay)
+        self.assertEqual(dut.execution_cycles, 4 + dut.payload_executor.PIPELINE_DELAY)
 
     def test_execution_cycles_default_stop(self):
         # Check execution time with no explicit STOP,
@@ -694,7 +694,7 @@ class TestPayloadExecutor(unittest.TestCase):
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.execution_cycles, 4 + dut.payload_executor.pipeline_delay)
+        self.assertEqual(dut.execution_cycles, 4 + dut.payload_executor.PIPELINE_DELAY)
 
     def test_execution_cycles_no_stop(self):
         # Check execution time when there is no STOP instruction (rest of memory filled with NOOPs)
@@ -712,7 +712,7 @@ class TestPayloadExecutor(unittest.TestCase):
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.execution_cycles, dut.payload_executor.pipeline_delay + depth)
+        self.assertEqual(dut.execution_cycles, dut.payload_executor.PIPELINE_DELAY + depth)
 
     def test_execution_cycles_longer(self):
         # Check execution time with timeslices longer than 1
@@ -732,7 +732,7 @@ class TestPayloadExecutor(unittest.TestCase):
         self.assert_history(dut.dfi_history, op_codes)
         self.assertEqual(
             dut.execution_cycles,
-            dut.payload_executor.pipeline_delay + sum(max(1, i.timeslice) for i in payload),
+            dut.payload_executor.PIPELINE_DELAY + sum(max(1, i.timeslice) for i in payload),
         )
 
     def test_execution_refresh_delay(self):
@@ -751,11 +751,11 @@ class TestPayloadExecutor(unittest.TestCase):
 
                 op_codes = [OpCode.ACT, OpCode.PRE]
                 self.assert_history(dut.dfi_history, op_codes)
-                self.assertEqual(dut.execution_cycles, 20 + dut.payload_executor.pipeline_delay)
+                self.assertEqual(dut.execution_cycles, 20 + dut.payload_executor.PIPELINE_DELAY)
                 self.assertEqual(
                     dut.runtime_cycles,
                     20
-                    + dut.payload_executor.pipeline_delay
+                    + dut.payload_executor.PIPELINE_DELAY
                     + max(1, refresh_delay)
                     + switch_latency,
                 )
@@ -1008,7 +1008,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.execution_cycles, 4 + dut.payload_executor.pipeline_delay)
+        self.assertEqual(dut.execution_cycles, 4 + dut.payload_executor.PIPELINE_DELAY)
 
     def test_execution_cycles_default_stop(self):
         # Check execution time with no explicit STOP,
@@ -1025,7 +1025,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.execution_cycles, 4 + dut.payload_executor.pipeline_delay)
+        self.assertEqual(dut.execution_cycles, 4 + dut.payload_executor.PIPELINE_DELAY)
 
     def test_execution_cycles_no_stop(self):
         # Check execution time when there is no STOP instruction (rest of memory filled with NOOPs)
@@ -1043,7 +1043,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.execution_cycles, depth + dut.payload_executor.pipeline_delay)
+        self.assertEqual(dut.execution_cycles, depth + dut.payload_executor.PIPELINE_DELAY)
 
     def test_execution_cycles_longer(self):
         # Check execution time with timeslices longer than 1
@@ -1063,7 +1063,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         self.assert_history(dut.dfi_history, op_codes)
         self.assertEqual(
             dut.execution_cycles,
-            sum(max(1, i.timeslice) for i in payload) + dut.payload_executor.pipeline_delay,
+            sum(max(1, i.timeslice) for i in payload) + dut.payload_executor.PIPELINE_DELAY,
         )
 
     def test_execution_cycles_longer_loop(self):
@@ -1082,12 +1082,12 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         self.run_payload(dut)
 
         # Last loop won't have pipeline_delay, compensate by subtracting in time_total
-        time_loop = 3 + 5 + 1 + dut.payload_executor.pipeline_delay
-        time_total = 7 + 6 * time_loop + 10 - dut.payload_executor.pipeline_delay + 1
+        time_loop = 3 + 5 + 1 + dut.payload_executor.PIPELINE_DELAY
+        time_total = 7 + 6 * time_loop + 10 - dut.payload_executor.PIPELINE_DELAY + 1
 
         op_codes = [OpCode.ACT] + 6 * [OpCode.READ, OpCode.PRE] + [OpCode.REF]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.execution_cycles, time_total + dut.payload_executor.pipeline_delay)
+        self.assertEqual(dut.execution_cycles, time_total + dut.payload_executor.PIPELINE_DELAY)
 
     def test_execution_cycles_longer_dual_loop(self):
         # Check execution time with timeslices longer than 1 and two loops (not nested)
@@ -1106,20 +1106,20 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         self.run_payload(dut)
 
         # Last loop won't have pipeline_delay, compensate by subtracting in time_total
-        time_loop1 = 3 + 5 + 1 + dut.payload_executor.pipeline_delay
-        time_loop2 = 10 + 1 + dut.payload_executor.pipeline_delay
+        time_loop1 = 3 + 5 + 1 + dut.payload_executor.PIPELINE_DELAY
+        time_loop2 = 10 + 1 + dut.payload_executor.PIPELINE_DELAY
         time_total = (
             7
             + 6 * time_loop1
-            - dut.payload_executor.pipeline_delay
+            - dut.payload_executor.PIPELINE_DELAY
             + 4 * time_loop2
-            - dut.payload_executor.pipeline_delay
+            - dut.payload_executor.PIPELINE_DELAY
             + 1
         )
 
         op_codes = [OpCode.ACT] + 6 * [OpCode.READ, OpCode.PRE] + 4 * [OpCode.REF]
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.execution_cycles, time_total + dut.payload_executor.pipeline_delay)
+        self.assertEqual(dut.execution_cycles, time_total + dut.payload_executor.PIPELINE_DELAY)
 
     def test_execution_cycles_loop_end(self):
         # Check execution time when loop is located at the end of the payload
@@ -1138,12 +1138,12 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         self.run_payload(dut, vcd_name="test_execution_cycles_loop_end.vcd")
 
         # Loops will be shorter by 1 pipeline_delay, compensate by subtracting it in time_total
-        loop_time = 1 + 7 + 1 + dut.payload_executor.pipeline_delay
-        time_total = depth - 3 + 10 * loop_time - dut.payload_executor.pipeline_delay
+        loop_time = 1 + 7 + 1 + dut.payload_executor.PIPELINE_DELAY
+        time_total = depth - 3 + 10 * loop_time - dut.payload_executor.PIPELINE_DELAY
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE] + [OpCode.ACT] * 10
         self.assert_history(dut.dfi_history, op_codes)
-        self.assertEqual(dut.execution_cycles, time_total + dut.payload_executor.pipeline_delay)
+        self.assertEqual(dut.execution_cycles, time_total + dut.payload_executor.PIPELINE_DELAY)
 
     def test_execution_cycles_no_stop_longer(self):
         # Check execution time when there is no STOP instruction (rest of memory filled with NOOPs)
@@ -1166,8 +1166,50 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
             # We need to subtract 2 since last timeslice is not executed
             # because executor terminates on last instruction
             dut.execution_cycles,
-            3 + (depth - 3) * 3 - 2 + dut.payload_executor.pipeline_delay,
+            3 + (depth - 3) * 3 - 2 + dut.payload_executor.PIPELINE_DELAY,
         )
+
+    def test_execution_cycles_loop_all_positions(self):
+        # Check execution time with loop in all memory positions of 16-word deep memory
+        # Doesn't include loop in pos=0 since that position is not legal for a loop instruction
+        encoder = Encoder(bankbits=5)
+        depth = 16
+
+        for loop_position in range(1, depth):
+            with self.subTest(loop_position=loop_position):
+                payload = [encoder.I(OpCode.NOOP, timeslice=3)] * (depth)
+                payload[loop_position - 1] = encoder.I(
+                    OpCode.ACT, timeslice=2, address=encoder.address(bank=1, row=100)
+                )
+                payload[loop_position] = encoder.I(OpCode.LOOP, count=7 - 1, jump=1)
+
+                dut = PayloadExecutorDDR5DUT(encoder(payload), payload_depth=depth)
+                self.run_payload(
+                    dut, vcd_name=f"test_execution_cycles_loop_all_positions{loop_position}.vcd"
+                )
+
+                op_codes = [OpCode.ACT] * 7
+
+                self.assert_history(dut.dfi_history, op_codes)
+                if loop_position != depth - 1:
+                    self.assertEqual(
+                        # We need to subtract 2 since last timeslice is not executed
+                        # because executor terminates on last instruction
+                        dut.execution_cycles,
+                        (depth - 2) * 3
+                        + 6 * (2 + 1 + dut.payload_executor.PIPELINE_DELAY)
+                        + (2 + 1)
+                        - 2
+                        + dut.payload_executor.PIPELINE_DELAY,
+                    )
+                else:
+                    self.assertEqual(
+                        dut.execution_cycles,
+                        (depth - 2) * 3
+                        + 6 * (2 + 1 + dut.payload_executor.PIPELINE_DELAY)
+                        + (2 + 1)
+                        + dut.payload_executor.PIPELINE_DELAY,
+                    )
 
     def test_execution_refresh_delay(self):
         # Check that payload execution is started after refresh command
@@ -1185,11 +1227,11 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
 
                 op_codes = [OpCode.ACT, OpCode.PRE]
                 self.assert_history(dut.dfi_history, op_codes)
-                self.assertEqual(dut.execution_cycles, 20 + dut.payload_executor.pipeline_delay)
+                self.assertEqual(dut.execution_cycles, 20 + dut.payload_executor.PIPELINE_DELAY)
                 self.assertEqual(
                     dut.runtime_cycles,
                     20
-                    + dut.payload_executor.pipeline_delay
+                    + dut.payload_executor.PIPELINE_DELAY
                     + max(1, refresh_delay)
                     + switch_latency,
                 )
@@ -1289,7 +1331,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
                 self.assert_history(dut.dfi_history, [OpCode.REF])
                 self.assertEqual(
                     dut.execution_cycles,
-                    sum(max(1, i.timeslice) for i in payload) + dut.payload_executor.pipeline_delay,
+                    sum(max(1, i.timeslice) for i in payload) + dut.payload_executor.PIPELINE_DELAY,
                 )
 
     def test_payload_exec_snapshot(self):
@@ -1328,7 +1370,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
             [
                 generator(
                     dut,
-                    sum(max(1, i.timeslice) for i in payload) + dut.payload_executor.pipeline_delay,
+                    sum(max(1, i.timeslice) for i in payload) + dut.payload_executor.PIPELINE_DELAY,
                 ),
                 *dut.get_generators(),
             ],

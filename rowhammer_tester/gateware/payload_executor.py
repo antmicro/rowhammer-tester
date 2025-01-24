@@ -499,6 +499,8 @@ class DFISwitch(Module, AutoCSR):
 
 
 class PayloadExecutor(Module, AutoCSR, AutoDoc):
+    PIPELINE_DELAY = 2
+
     def __init__(
         self,
         mem_payload,
@@ -518,8 +520,6 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         {Decoder.__doc__}
         """
         )
-
-        self.pipeline_delay = 2
 
         self.start = Signal()
         self.executing = Signal()
@@ -554,7 +554,7 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
 
         self.instruction = Signal(Decoder.INSTRUCTION)
 
-        self.mem_addr = Signal(max=mem_payload.depth - 1 + self.pipeline_delay)
+        self.mem_addr = Signal(max=mem_payload.depth - 1 + self.PIPELINE_DELAY)
         self.mem_data = Signal.like(self.instruction)
         self.stall = Signal()
         self.bubble = Signal()  # Helper signal for tests, doesn't get used in logic
@@ -562,7 +562,7 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
         self.jump = Signal()
 
         self.submodules.fetcher = Fetcher(
-            self.mem_addr, self.stall, self.jump, self.jump_offset, self.pipeline_delay
+            self.mem_addr, self.stall, self.jump, self.jump_offset, self.PIPELINE_DELAY
         )
 
         payload_port = mem_payload.get_port(write_capable=False)
@@ -605,7 +605,7 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             If(
                 dfi_switch.dfi_ready,
                 NextState("BUBBLE"),
-                NextValue(self.idle_counter, self.pipeline_delay - 1),
+                NextValue(self.idle_counter, self.PIPELINE_DELAY - 1),
             ),
         )
         self.fsm.act(
@@ -615,7 +615,7 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             # Terminate after executing the whole program or when STOP instruction is encountered
             # Do not terminate when next instruction is LOOP with jump to previous address
             If(
-                ((self.mem_addr == mem_payload.depth - 1 + self.pipeline_delay) | decoder.stop)
+                ((self.mem_addr == mem_payload.depth - 1 + self.PIPELINE_DELAY) | decoder.stop)
                 & ((decoder.op_code != OpCode.LOOP) | (decoder.loop_count == self.loop_counter)),
                 NextValue(dfi_switch.wants_dfi, 0),
                 NextState("READY"),
@@ -630,7 +630,7 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
                     self.jump.eq(1),
                     NextValue(self.loop_counter, self.loop_counter + 1),
                     NextState("BUBBLE"),
-                    NextValue(self.idle_counter, self.pipeline_delay - 1),
+                    NextValue(self.idle_counter, self.PIPELINE_DELAY - 1),
                 ).Else(
                     # Finish the loop
                     # Set loop_counter to 0 so that next loop instruction will start properly
