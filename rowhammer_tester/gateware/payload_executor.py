@@ -554,7 +554,7 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
 
         self.instruction = Signal(Decoder.INSTRUCTION)
 
-        self.mem_addr = Signal(max=mem_payload.depth - 1 + self.PIPELINE_DELAY)
+        self.mem_addr = Signal(max=mem_payload.depth)
         self.mem_data = Signal.like(self.instruction)
         self.stall = Signal()
         self.bubble = Signal()  # Helper signal for tests, doesn't get used in logic
@@ -615,7 +615,7 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             # Terminate after executing the whole program or when STOP instruction is encountered
             # Do not terminate when next instruction is LOOP with jump to previous address
             If(
-                ((self.mem_addr == mem_payload.depth - 1 + self.PIPELINE_DELAY) | decoder.stop)
+                ((self.mem_addr == self.PIPELINE_DELAY - 1) | decoder.stop)
                 & ((decoder.op_code != OpCode.LOOP) | (decoder.loop_count == self.loop_counter)),
                 NextValue(dfi_switch.wants_dfi, 0),
                 NextState("READY"),
