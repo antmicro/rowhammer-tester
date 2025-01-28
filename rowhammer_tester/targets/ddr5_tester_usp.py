@@ -4,10 +4,12 @@ import math
 
 from litedram.phy import ddr5
 from liteeth.phy import LiteEthUSPHYRGMII
+from litex.build.generic_platform import Pins
 from litex.build.io import DifferentialInput
 from litex.build.xilinx.vivado import vivado_build_argdict, vivado_build_args
 from litex.soc.cores.bitbang import I2CMaster
 from litex.soc.cores.clock import USPIDELAYCTRL, USPMMCM
+from litex.soc.cores.gpio import GPIOOut
 from litex.soc.integration.builder import Builder
 
 # from litex.soc.integration.doc import ModuleDoc
@@ -64,13 +66,32 @@ class CRG(Module):
 
 
 class SoC(common.RowHammerSoC):
-    def __init__(self, **kwargs):
+    def __init__(self, build_sim=False, **kwargs):
         self.skip_MC = True
+        if build_sim:
+            kwargs["uart_name"] = "serial"
+            kwargs["uart_baudrate"] = 10000000
         super().__init__(**kwargs)
 
         # SPD EEPROM I2C ---------------------------------------------------------------------------
         self.submodules.i2c = I2CMaster(self.platform.request("i2c"))
         self.add_csr("i2c")
+        if build_sim:
+            self.platform.add_extension([("finish", 0, Pins(1))])
+            self.add_constant("CONFIG_BIOS_NO_CRC")
+            self.add_constant("CONFIG_BIOS_NO_PROMPT")
+            self.add_constant("MAIN_RAM_BASE")
+            self.add_constant("CONFIG_MAIN_RAM_INIT")
+            self.submodules.sim_finisher = GPIOOut(self.platform.request("finish"))
+            with self.create_early_init() as early_init:
+                early_init += """printf("Sim PHY init\\n");
+    ddrphy_phy_reset_write(0);
+    do {
+        busy_wait_us(50);
+    } while (!ddrphy_init_status_init_done_read());
+
+    sim_finisher_out_write(1);
+"""
 
     def get_platform(self):
         return antmicro_ddr5_tester_usp.Platform()
@@ -141,12 +162,17 @@ def main():
     parser.add(g, "--eth-reset-time", default="10e-3", help="Duration of Ethernet PHY reset")
     parser.add(g, "--iodelay-clk-freq", default="300e6", help="IODELAY clock frequency")
     parser.add(g, "--riu-clk-freq", default="200e6", help="XIPHY RIU clock frequency")
+    parser.add(
+        g, "--build-for-simulation", action="store_true", help="Build verilog and SW for simulation"
+    )
     vivado_build_args(g)
     args = parser.parse_args()
+    if args.build_for_simulation:
+        args.no_compile_gateware = True
 
     soc_kwargs = common.get_soc_kwargs(args)
     soc_kwargs.update(dict(riu_clk_freq=args.riu_clk_freq))
-    soc = SoC(**soc_kwargs)
+    soc = SoC(build_sim=args.build_for_simulation, **soc_kwargs)
     soc.platform.add_platform_command(
         "set_property USER_CLOCK_ROOT X0Y1 ["
         'get_nets -filter {{NAME=="{riu_clk}" || NAME=="{div_clk}"}}]',
