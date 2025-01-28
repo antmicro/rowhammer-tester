@@ -386,6 +386,7 @@ class Fetcher(Module):
     """
 
     def __init__(self, mem_addr, stall, jump, jump_offset, pipeline_delay=2):
+        self.reset_pc = Signal()
         self.program_counter = Signal.like(mem_addr, reset=0)
         self.program_counter_old = Signal.like(mem_addr, reset=0)
         self.next_addr = Signal.like(mem_addr)
@@ -407,7 +408,11 @@ class Fetcher(Module):
                 ~stall,
                 self.program_counter.eq(self.next_addr),
                 self.program_counter_old.eq(self.program_counter),
-            )
+            ).Elif(
+                self.reset_pc,
+                self.program_counter.eq(0),
+                self.program_counter_old.eq(0),
+            ),
         ]
 
 
@@ -592,6 +597,7 @@ class PayloadExecutor(Module, AutoCSR, AutoDoc):
             "READY",
             self.stall.eq(1),
             self.ready.eq(1),
+            self.fetcher.reset_pc.eq(1),
             If(
                 self.start,
                 NextValue(dfi_switch.wants_dfi, 1),
