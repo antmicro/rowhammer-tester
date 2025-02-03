@@ -200,9 +200,7 @@ class TestRefreshCounterDDR5(unittest.TestCase):
                 yield
             self.assertEqual((yield dut.dfi_switch.refresh_counter.counter), 0x10)
 
-        self.run_payload(
-            dut, test_generators=[idle_generator(dut)], vcd_name="test_counter_no_traffic.vcd"
-        )
+        self.run_payload(dut, test_generators=[idle_generator(dut)])
         op_codes = [OpCode.PRE_ALL, OpCode.REF] * 16
         self.assert_history(dut.dfi_history, op_codes)
 
@@ -215,11 +213,7 @@ class TestRefreshCounterDDR5(unittest.TestCase):
                 yield
             self.assertEqual((yield dut.dfi_switch.refresh_counter.counter), 0x0)
 
-        self.run_payload(
-            dut,
-            test_generators=[idle_generator(dut)],
-            vcd_name="test_counter_no_traffic_no_refresh.vcd",
-        )
+        self.run_payload(dut, test_generators=[idle_generator(dut)])
         op_codes = []
         self.assert_history(dut.dfi_history, op_codes)
 
@@ -247,9 +241,7 @@ class TestRefreshCounterDDR5(unittest.TestCase):
                 yield
             self.assertEqual((yield dut.dfi_switch.refresh_counter.counter), 0x10)
 
-        self.run_payload(
-            dut, test_generators=[traffic_generator(dut)], vcd_name="test_counter_with_traffic.vcd"
-        )
+        self.run_payload(dut, test_generators=[traffic_generator(dut)])
         op_codes = [OpCode.PRE_ALL, OpCode.REF, OpCode.ACT, OpCode.READ] + [
             OpCode.PRE_ALL,
             OpCode.REF,
@@ -282,10 +274,6 @@ class TestRefreshCounterDDR5(unittest.TestCase):
                 yield
             self.assertEqual((yield dut.dfi_switch.refresh_counter.counter), 0x0)
 
-        self.run_payload(
-            dut,
-            test_generators=[traffic_generator(dut)],
-            vcd_name="test_counter_with_traffic_no_refresh.vcd",
-        )
+        self.run_payload(dut, test_generators=[traffic_generator(dut)])
         op_codes = [OpCode.ACT, OpCode.READ]
         self.assert_history(dut.dfi_history, op_codes)

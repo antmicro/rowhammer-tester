@@ -690,7 +690,7 @@ class TestPayloadExecutor(unittest.TestCase):
         )
 
         dut = PayloadExecutorDUT(payload)
-        self.run_payload(dut, vcd_name="test_execution_cycles_default_stop.vcd")
+        self.run_payload(dut)
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
         self.assert_history(dut.dfi_history, op_codes)
@@ -747,7 +747,7 @@ class TestPayloadExecutor(unittest.TestCase):
         for refresh_delay in [0, 2, 4, 11]:
             with self.subTest(refresh_delay=refresh_delay):
                 dut = PayloadExecutorDUT(encoder(payload), refresh_delay=refresh_delay)
-                self.run_payload(dut, vcd_name=f"test_execution_refresh_delay_{refresh_delay}.vcd")
+                self.run_payload(dut)
 
                 op_codes = [OpCode.ACT, OpCode.PRE]
                 self.assert_history(dut.dfi_history, op_codes)
@@ -968,7 +968,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         )
 
         dut = PayloadExecutorDDR5DUT(payload)
-        self.run_payload(dut, vcd_name="test_payload_loop.vcd")
+        self.run_payload(dut)
 
         op_codes = [OpCode.ACT] + 8 * [OpCode.READ] + [OpCode.PRE] + 5 * 2 * [OpCode.REF]
         self.assert_history(dut.dfi_history, op_codes)
@@ -1135,7 +1135,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         payload += [encoder(OpCode.ACT, timeslice=7, address=encoder.address(bank=1, row=100))[0]]
         payload += [encoder(OpCode.LOOP, count=10 - 1, jump=2)[0]]
         dut = PayloadExecutorDDR5DUT(payload, payload_depth=depth)
-        self.run_payload(dut, vcd_name="test_execution_cycles_loop_end.vcd")
+        self.run_payload(dut)
 
         # Loops will be shorter by 1 pipeline_delay, compensate by subtracting it in time_total
         loop_time = 1 + 7 + 1 + dut.payload_executor.PIPELINE_DELAY
@@ -1158,7 +1158,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
         depth = 16
         payload += [encoder(OpCode.NOOP, timeslice=3)[0]] * (depth - len(payload))
         dut = PayloadExecutorDDR5DUT(payload, payload_depth=depth)
-        self.run_payload(dut, vcd_name="test_execution_cycles_no_stop_longer.vcd")
+        self.run_payload(dut)
 
         op_codes = [OpCode.ACT, OpCode.READ, OpCode.PRE]
         self.assert_history(dut.dfi_history, op_codes)
@@ -1184,9 +1184,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
                 payload[loop_position] = encoder.I(OpCode.LOOP, count=7 - 1, jump=1)
 
                 dut = PayloadExecutorDDR5DUT(encoder(payload), payload_depth=depth)
-                self.run_payload(
-                    dut, vcd_name=f"test_execution_cycles_loop_all_positions{loop_position}.vcd"
-                )
+                self.run_payload(dut)
 
                 op_codes = [OpCode.ACT] * 7
 
@@ -1273,9 +1271,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
 
         dut = PayloadExecutorDDR5DUT(encoder(payload), refresh_delay=10 - 1)
         dut.dfi_switch.add_csrs()
-        run_simulation(
-            dut, [generator(dut), *dut.get_generators()], vcd_name="test_refresh_counter.vcd"
-        )
+        run_simulation(dut, [generator(dut), *dut.get_generators()])
 
     def test_switch_at_refresh(self):
         def generator(dut, switch_at):
@@ -1306,11 +1302,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
             with self.subTest(switch_at=switch_at):
                 dut = PayloadExecutorDDR5DUT(encoder(payload), refresh_delay=10 - 1)
                 dut.dfi_switch.add_csrs()
-                run_simulation(
-                    dut,
-                    [generator(dut, switch_at), *dut.get_generators()],
-                    vcd_name=f"test_switch_at_refresh_{switch_at}.vcd",
-                )
+                run_simulation(dut, [generator(dut, switch_at), *dut.get_generators()])
 
     def test_large_timeslice_ddr5(self):
         # Check that a instruction with timeslice > 31 is broken down into
@@ -1326,7 +1318,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
                     encoder.Instruction(OpCode.NOOP, timeslice=0),  # STOP
                 ]
                 dut = PayloadExecutorDDR5DUT(encoder(payload))
-                self.run_payload(dut, vcd_name=f"test_large_timeslice_ddr5_{ref_timeslice}.vcd")
+                self.run_payload(dut)
 
                 self.assert_history(dut.dfi_history, [OpCode.REF])
                 self.assertEqual(
@@ -1374,7 +1366,6 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
                 ),
                 *dut.get_generators(),
             ],
-            vcd_name="test_payload_exec_snapshot.vcd",
         )
         self.assert_history(dut.dfi_history, [OpCode.ACT, OpCode.READ, OpCode.PRE, OpCode.REF])
 
@@ -1401,11 +1392,7 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
                 while not (yield dut.payload_executor.ready):
                     yield
 
-            run_simulation(
-                dut,
-                [generator(dut, payload), *dut.get_generators()],
-                vcd_name="test_instruction_fetch.vcd",
-            )
+            run_simulation(dut, [generator(dut, payload), *dut.get_generators()])
 
         encoder = Encoder(bankbits=5)
         payload = (
@@ -1449,7 +1436,6 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
             run_simulation(
                 dut,
                 [generator(dut), *dut.get_generators()],
-                vcd_name="test_multiple_runs.vcd",
             )
 
         encoder = Encoder(bankbits=5)
@@ -1502,7 +1488,6 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
             run_simulation(
                 dut,
                 [generator(dut, encoder, payload), *dut.get_generators()],
-                vcd_name="test_instruction_fetch_jump.vcd",
             )
 
         encoder = Encoder(bankbits=3)
@@ -1569,7 +1554,6 @@ class TestPayloadExecutorDDR5(unittest.TestCase):
             run_simulation(
                 dut,
                 [generator(dut, encoder, payload), *dut.get_generators()],
-                vcd_name="test_instruction_timings_jump.vcd",
             )
 
         encoder = Encoder(bankbits=3)

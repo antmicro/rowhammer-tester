@@ -192,12 +192,10 @@ def access_pattern_test(bist_name, mem_inc, pattern, count):
         )
         generators = [generator(dut), *dut.default_port_handlers()]
         if pattern == PATTERNS_ADDR_0:
-            pattern_name = "PATTERNS_ADDR_0"
+            _pattern_name = "PATTERNS_ADDR_0"
         else:
-            pattern_name = "PATTERNS_ADDR_INC"
-        run_simulation(
-            dut, generators, vcd_name=bist_name + pattern_name + f"mem_inc:{mem_inc}.vcd"
-        )
+            _pattern_name = "PATTERNS_ADDR_INC"
+        run_simulation(dut, generators)
 
         we = 0 if bist_name == "reader" else 1
         pattern_cycle = itertools.cycle(pattern)
@@ -308,7 +306,7 @@ class TestWriter(unittest.TestCase):
 
         dut = BISTDUT(pattern_init=pattern, rowbits=rowbits, row_shift=row_shift, writer=True)
         generators = [generator(dut), *dut.default_port_handlers()]
-        run_simulation(dut, generators, vcd_name="test_multiple_addresses.vcd")
+        run_simulation(dut, generators)
 
         # print()
         # for addr, we, data in dut.commands:
@@ -426,7 +424,7 @@ class TestReader(unittest.TestCase):
             generator(dut),
             dut.read_handler(0),
         ]
-        run_simulation(dut, generators, vcd_name="test_row_hammer_attack_pattern.vcd")
+        run_simulation(dut, generators)
 
         # BIST Reader should cycle through the list of addresses
         we = 0
@@ -504,7 +502,7 @@ class TestReader(unittest.TestCase):
 
         dut = BISTDUT(pattern_init=pattern, rowbits=rowbits, row_shift=row_shift, reader=True)
         generators = [generator(dut), dut.read_handler(rdata_callback)]
-        run_simulation(dut, generators, vcd_name="sim.vcd")
+        run_simulation(dut, generators)
 
         # print()
         # for addr, we, data in dut.commands:
