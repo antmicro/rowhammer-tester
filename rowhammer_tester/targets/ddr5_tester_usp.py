@@ -14,7 +14,7 @@ from litex.soc.integration.builder import Builder
 
 # from litex.soc.integration.doc import ModuleDoc
 from litex_boards.platforms import antmicro_ddr5_tester_usp
-from migen import ClockDomain, Instance, Module, Signal
+from migen import ClockDomain, ClockSignal, Instance, Module, Signal
 
 from rowhammer_tester.targets import common
 
@@ -33,6 +33,13 @@ class CRG(Module):
                 f"RIU clock frequency {riu_clk_freq} is beyond safe value of 250 MHz"
             )
         self.clock_domains.cd_sys = ClockDomain()
+        # Fast clocks to the component mode PHYCRG
+        self.clock_domains.cd_sys4x_raw = ClockDomain(reset_less=True)
+        self.clock_domains.cd_sys4x_90_raw = ClockDomain(reset_less=True)
+        # BUFGCE/BUFGECE_DIV enable and reset domains
+        self.clock_domains.cd_sys2x_rst = ClockDomain()
+        self.clock_domains.cd_sys2x_90_rst = ClockDomain()
+
         self.clock_domains.cd_riu = ClockDomain()
         self.clock_domains.cd_idelay = ClockDomain()
 
@@ -52,6 +59,13 @@ class CRG(Module):
         self.submodules.mmcm = mmcm = USPMMCM(speedgrade=-2)
         mmcm.register_clkin(input_clk, input_clk_freq)
         mmcm.create_clkout(self.cd_sys, sys_clk_freq, with_reset=False)
+        mmcm.create_clkout(self.cd_sys4x_raw, 4 * sys_clk_freq, buf=None, with_reset=False)
+        mmcm.create_clkout(self.cd_sys2x_rst, 2 * sys_clk_freq)
+        mmcm.create_clkout(
+            self.cd_sys4x_90_raw, 4 * sys_clk_freq, phase=90, buf=None, with_reset=False
+        )
+        mmcm.create_clkout(self.cd_sys2x_90_rst, 2 * sys_clk_freq, phase=45)
+        mmcm.create_clkout(self.cd_sys, sys_clk_freq, with_reset=False)
         mmcm.create_clkout(self.cd_riu, riu_clk_freq, with_reset=False)
         mmcm.params["name"] = "MMCM_IO"
 
@@ -67,7 +81,7 @@ class CRG(Module):
 
 class SoC(common.RowHammerSoC):
     def __init__(self, build_sim=False, **kwargs):
-        self.skip_MC = True
+        self.skip_MC = False
         if build_sim:
             kwargs["uart_name"] = "serial"
             kwargs["uart_baudrate"] = 10000000
@@ -92,6 +106,7 @@ class SoC(common.RowHammerSoC):
 
     sim_finisher_out_write(1);
 """
+            breakpoint()
 
     def get_platform(self):
         return antmicro_ddr5_tester_usp.Platform()
@@ -105,15 +120,54 @@ class SoC(common.RowHammerSoC):
         )
         return crg
 
+    def get_ddr_pin_domains(self):
+        return dict(
+            ck_t=(("sys2x_io", "sys4x_io"), None),
+            ck_c=(("sys2x_io", "sys4x_io"), None),
+            A_ca=(("sys2x_io", "sys4x_io"), None),
+            A_par=(("sys2x_io", "sys4x_io"), None),
+            A_cs_n=(("sys2x_io", "sys4x_io"), None),
+            B_ca=(("sys2x_io", "sys4x_io"), None),
+            B_par=(("sys2x_io", "sys4x_io"), None),
+            B_cs_n=(("sys2x_io", "sys4x_io"), None),
+            reset_n=(("sys2x_io", "sys4x_io"), None),
+            alert_n=(None, ("sys_io", "sys4x_io")),
+            A_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys2x_90_io", "sys4x_90_io")),
+            A_dqs_t=(("sys2x_io", "sys4x_io"), ("sys2x_io", "sys4x_io")),
+            A_dqs_c=(("sys2x_io", "sys4x_io"), ("sys2x_io", "sys4x_io")),
+            B_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys2x_90_io", "sys4x_90_io")),
+            B_dqs_t=(("sys2x_io", "sys4x_io"), ("sys2x_io", "sys4x_io")),
+            B_dqs_c=(("sys2x_io", "sys4x_io"), ("sys2x_io", "sys4x_io")),
+        )
+
     def get_ddrphy(self):
-        return ddr5.USPDDR5PHY(
+        phycrg = ddr5.USPPHYCRG(
+            reset_clock_domain="sys2x_rst",
+            reset_clock_90_domain="sys2x_90_rst",
+            source_4x=ClockSignal("sys4x_raw"),
+            source_4x_90=ClockSignal("sys4x_90_raw"),
+        )
+        self.submodules.PHYCRG = phycrg
+        phycrg.create_clock_domains(
+            clock_domains=["sys_io", "sys2x_io", "sys2x_90_io", "sys4x_io", "sys4x_90_io"],
+        )
+
+        pin_vref_mapping = {}
+        for key, mappings in self.platform.pin_bank_byte_nibble_bitslice_mapping()["ddr5"].items():
+            for (bank, byte, _, _) in mappings:
+                if key not in pin_vref_mapping:
+                    pin_vref_mapping[key] = []
+                pin_vref_mapping[key].append((bank, byte))
+
+        return ddr5.USPCompoDDR5PHY(
+            iodelay_clk_freq=float(self.args.sys_clk_freq)*4,
+            sys_clk_freq=self.sys_clk_freq,
+            direct_control=False,
             pads=self.platform.request("ddr5"),
-            sys_freq=self.sys_clk_freq,
-            riu_freq=float(self.args.riu_clk_freq),
+            crg=phycrg,
             with_sub_channels=True,
-            pin_bank_byte_nibble_bitslice_mapping=self.platform.pin_bank_byte_nibble_bitslice_mapping()[
-                "ddr5"
-            ],
+            pin_domains=self.get_ddr_pin_domains(),
+            pin_vref_mapping = pin_vref_mapping
         )
 
     def add_host_bridge(self):
@@ -154,7 +208,7 @@ class SoC(common.RowHammerSoC):
 def main():
     parser = common.ArgumentParser(
         description="LiteX SoC on UltraScale+ DDR5 Tester Board",
-        sys_clk_freq="333.333333e6",
+        sys_clk_freq="125e6",
         module="M329R8GA0BB0",
     )
     g = parser.add_argument_group(title="UltraScale+ DDR5 Tester Board")
@@ -173,24 +227,30 @@ def main():
     soc_kwargs = common.get_soc_kwargs(args)
     soc_kwargs.update(dict(riu_clk_freq=args.riu_clk_freq))
     soc = SoC(build_sim=args.build_for_simulation, **soc_kwargs)
-    soc.platform.add_platform_command(
-        "set_property USER_CLOCK_ROOT X0Y1 ["
-        'get_nets -filter {{NAME=="{riu_clk}" || NAME=="{div_clk}"}}]',
-        riu_clk=soc.crg.cd_riu.clk,
-        div_clk=soc.crg.cd_sys.clk,
-    )
-    soc.platform.add_platform_command(
-        "set_property CLOCK_DELAY_GROUP RIU_DIV_group ["
-        'get_nets -filter {{NAME=="{riu_clk}" || NAME=~"*xiphy*pll_clk"}}]',
-        riu_clk=soc.crg.cd_riu.clk,
-    )
-    soc.platform.add_platform_command(
-        'set_property LOC MMCM_X0Y1 [get_cells -filter (NAME=="MMCM_IO")]'
-    )
+    #    soc.platform.add_platform_command(
+    #        "set_property USER_CLOCK_ROOT X0Y1 ["
+    #        'get_nets -filter {{NAME=="{riu_clk}" || NAME=="{div_clk}"}}]',
+    #        riu_clk=soc.crg.cd_riu.clk,
+    #        div_clk=soc.crg.cd_sys.clk,
+    #    )
+    #    soc.platform.add_platform_command(
+    #        "set_property CLOCK_DELAY_GROUP RIU_DIV_group ["
+    #        'get_nets -filter {{NAME=="{riu_clk}" || NAME=~"*xiphy*pll_clk"}}]',
+    #        riu_clk=soc.crg.cd_riu.clk,
+    #    )
+    #    soc.platform.add_platform_command(
+    #        'set_property LOC MMCM_X0Y1 [get_cells -filter (NAME=="MMCM_IO")]'
+    #    )
     soc.platform.add_platform_command(
         "set_property CLOCK_DEDICATED_ROUTE SAME_CMT_COLUMN "
         '[get_nets -filter (NAME=="{clkin}")]',
         clkin=soc.crg.bufg_o,
+    )
+    soc.platform.add_platform_command(
+        "set_property UNAVAILABLE_DURING_CALIBRATION TRUE [get_ports ddr5_dlbdq]"
+    )
+    soc.platform.add_platform_command(
+        "set_property UNAVAILABLE_DURING_CALIBRATION TRUE [get_ports ddr5_B_dqsb_t[0]]"
     )
 
     target_name = "ddr5_tester_usp"

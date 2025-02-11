@@ -312,7 +312,7 @@ class RowHammerSoC(SoCCore):
             self.add_csr("rowhammer")
 
         # Bist -------------------------------------------------------------------------------------
-        if not args.no_memory_bist:
+        if not args.no_memory_bist and not getattr(self, "skip_MC", False):
             pattern_data_size = int(args.pattern_data_size, 0)
             phy_settings = self.sdram.controller.settings.phy
             pattern_data_width = phy_settings.dfi_databits * phy_settings.nphases
@@ -390,7 +390,7 @@ class RowHammerSoC(SoCCore):
             assert pattern_data_width == dram_rd_port.data_width
 
         # Payload executor -------------------------------------------------------------------------
-        if not args.no_payload_executor:
+        if not args.no_payload_executor and not getattr(self, "skip_MC", False):
             # TODO: disconnect bus during payload execution
             phy_settings = self.sdram.controller.settings.phy
 
