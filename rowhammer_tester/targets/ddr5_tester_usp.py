@@ -33,12 +33,6 @@ class CRG(Module):
                 f"RIU clock frequency {riu_clk_freq} is beyond safe value of 250 MHz"
             )
         self.clock_domains.cd_sys = ClockDomain()
-        # Fast clocks to the component mode PHYCRG
-        self.clock_domains.cd_sys4x_raw = ClockDomain(reset_less=True)
-        self.clock_domains.cd_sys4x_90_raw = ClockDomain(reset_less=True)
-        # BUFGCE/BUFGECE_DIV enable and reset domains
-        self.clock_domains.cd_sys2x_rst = ClockDomain()
-        self.clock_domains.cd_sys2x_90_rst = ClockDomain()
 
         self.clock_domains.cd_riu = ClockDomain()
         self.clock_domains.cd_idelay = ClockDomain()
@@ -58,13 +52,6 @@ class CRG(Module):
         # MMCM
         self.submodules.mmcm = mmcm = USPMMCM(speedgrade=-2)
         mmcm.register_clkin(input_clk, input_clk_freq)
-        mmcm.create_clkout(self.cd_sys, sys_clk_freq, with_reset=False)
-        mmcm.create_clkout(self.cd_sys4x_raw, 4 * sys_clk_freq, buf=None, with_reset=False)
-        mmcm.create_clkout(self.cd_sys2x_rst, 2 * sys_clk_freq)
-        mmcm.create_clkout(
-            self.cd_sys4x_90_raw, 4 * sys_clk_freq, phase=90, buf=None, with_reset=False
-        )
-        mmcm.create_clkout(self.cd_sys2x_90_rst, 2 * sys_clk_freq, phase=45)
         mmcm.create_clkout(self.cd_sys, sys_clk_freq, with_reset=False)
         mmcm.create_clkout(self.cd_riu, riu_clk_freq, with_reset=False)
         mmcm.params["name"] = "MMCM_IO"
@@ -90,6 +77,22 @@ class SoC(common.RowHammerSoC):
         # SPD EEPROM I2C ---------------------------------------------------------------------------
         self.submodules.i2c = I2CMaster(self.platform.request("i2c"))
         self.add_csr("i2c")
+        out_pads = [
+            self.platform.request("vin_bulk_en"),
+            self.platform.request("vin_mgmt_en"),
+        ]
+        _out = Signal(2)
+        self.comb += [pad.eq(_out[i]) for i, pad in enumerate(out_pads)]
+        self.submodules.GPIO_out = GPIOOut(_out)
+        self.add_csr("GPIO_out")
+        with self.create_early_init() as early_init:
+            early_init += """
+    // Enable DIMM power
+    printf("Early Init\\n");
+    GPIO_out_out_write(3);
+    busy_wait_us(50);
+"""
+
         if build_sim:
             self.platform.add_extension([("finish", 0, Pins(1))])
             self.add_constant("CONFIG_BIOS_NO_CRC")
@@ -106,7 +109,6 @@ class SoC(common.RowHammerSoC):
 
     sim_finisher_out_write(1);
 """
-            breakpoint()
 
     def get_platform(self):
         return antmicro_ddr5_tester_usp.Platform()
@@ -131,7 +133,7 @@ class SoC(common.RowHammerSoC):
             B_par=(("sys2x_io", "sys4x_io"), None),
             B_cs_n=(("sys2x_io", "sys4x_io"), None),
             reset_n=(("sys2x_io", "sys4x_io"), None),
-            alert_n=(None, ("sys_io", "sys4x_io")),
+            alert_n=(None, ("sys2x_io", "sys4x_io")),
             A_dq=(("sys2x_90_io", "sys4x_90_io"), ("sys2x_90_io", "sys4x_90_io")),
             A_dqs_t=(("sys2x_io", "sys4x_io"), ("sys2x_io", "sys4x_io")),
             A_dqs_c=(("sys2x_io", "sys4x_io"), ("sys2x_io", "sys4x_io")),
@@ -141,12 +143,7 @@ class SoC(common.RowHammerSoC):
         )
 
     def get_ddrphy(self):
-        phycrg = ddr5.USPPHYCRG(
-            reset_clock_domain="sys2x_rst",
-            reset_clock_90_domain="sys2x_90_rst",
-            source_4x=ClockSignal("sys4x_raw"),
-            source_4x_90=ClockSignal("sys4x_90_raw"),
-        )
+        phycrg = ddr5.USPPHYCRG(self.sys_clk_freq)
         self.submodules.PHYCRG = phycrg
         phycrg.create_clock_domains(
             clock_domains=["sys_io", "sys2x_io", "sys2x_90_io", "sys4x_io", "sys4x_90_io"],
@@ -154,20 +151,20 @@ class SoC(common.RowHammerSoC):
 
         pin_vref_mapping = {}
         for key, mappings in self.platform.pin_bank_byte_nibble_bitslice_mapping()["ddr5"].items():
-            for (bank, byte, _, _) in mappings:
+            for bank, byte, _, _ in mappings:
                 if key not in pin_vref_mapping:
                     pin_vref_mapping[key] = []
                 pin_vref_mapping[key].append((bank, byte))
 
         return ddr5.USPCompoDDR5PHY(
-            iodelay_clk_freq=float(self.args.sys_clk_freq)*4,
+            iodelay_clk_freq=float(self.args.sys_clk_freq) * 4,
             sys_clk_freq=self.sys_clk_freq,
             direct_control=False,
             pads=self.platform.request("ddr5"),
             crg=phycrg,
             with_sub_channels=True,
             pin_domains=self.get_ddr_pin_domains(),
-            pin_vref_mapping = pin_vref_mapping
+            pin_vref_mapping=pin_vref_mapping,
         )
 
     def add_host_bridge(self):
@@ -251,6 +248,33 @@ def main():
     )
     soc.platform.add_platform_command(
         "set_property UNAVAILABLE_DURING_CALIBRATION TRUE [get_ports ddr5_B_dqsb_t[0]]"
+    )
+    soc.platform.add_platform_command(
+        "set_false_path -through [get_pins -hierarchical -regexp -filter {{ "
+        'PARENT_CELL =~  ".*OSERDESE3.*" && DIRECTION == "OUT" && NAME =~  ".*OQ.*" }}]'
+        " -to [get_pins -hierarchical -regexp -filter {{ "
+        'PARENT_CELL =~  ".*ISERDESE3.*" && DIRECTION == "IN" && NAME =~  ".*/D.*" }}]'
+    )
+    soc.platform.add_platform_command(
+        "set_false_path -through [get_pins -hierarchical -regexp -filter {{ "
+        'PARENT_CELL =~  ".*OSERDESE3.*" && DIRECTION == "OUT" && NAME =~  ".*T_OUT.*" }}]'
+        " -to [get_pins -hierarchical -regexp -filter {{ "
+        'PARENT_CELL =~  ".*ISERDESE3.*" && DIRECTION == "IN" && NAME =~  ".*/D.*" }}]'
+    )
+    soc.platform.add_platform_command(
+        "set_property CLOCK_LOW_FANOUT TRUE [get_nets -of_objects ["
+            "get_pins -of_objects [get_cells -filter {{LOW_FANOUT_BUFG == TRUE}}] "
+                "-filter {{DIRECTION == OUT}}]]"
+    )
+    soc.platform.add_platform_command(
+        "set_property CLOCK_DELAY_GROUP phy_clk [get_nets {{{fast} {slow}}}]",
+        fast=ClockSignal("sys4x_io"),
+        slow=ClockSignal("sys2x_io"),
+    )
+    soc.platform.add_platform_command(
+        "set_property CLOCK_DELAY_GROUP phy_clk_90 [get_nets {{{fast} {slow}}}]",
+        fast=ClockSignal("sys4x_90_io"),
+        slow=ClockSignal("sys2x_90_io"),
     )
 
     target_name = "ddr5_tester_usp"
