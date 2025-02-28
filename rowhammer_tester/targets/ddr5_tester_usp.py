@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-import math
+# import math
 
 from litedram.phy import ddr5
-from liteeth.phy import LiteEthUSPHYRGMII
+
+# from liteeth.phy import LiteEthUSPHYRGMII
 from litex.build.generic_platform import Pins
 from litex.build.io import DifferentialInput
 from litex.build.xilinx.vivado import vivado_build_argdict, vivado_build_args
@@ -14,7 +15,7 @@ from litex.soc.integration.builder import Builder
 
 # from litex.soc.integration.doc import ModuleDoc
 from litex_boards.platforms import antmicro_ddr5_tester_usp
-from migen import ClockDomain, ClockSignal, Instance, Module, Signal
+from migen import ClockDomain, ClockSignal, If, Instance, Module, Signal
 
 from rowhammer_tester.targets import common
 
@@ -149,6 +150,16 @@ class SoC(common.RowHammerSoC):
             clock_domains=["sys_io", "sys2x_io", "sys2x_90_io", "sys4x_io", "sys4x_90_io"],
         )
 
+        self.trigger_sig = self.platform.request("trigger")
+        div = 3000
+        div_sig = Signal(min=0, max=div, reset=0)
+        self.sync.sys4x_io += [
+            If(
+                div_sig == 0,
+                self.trigger_sig.eq(~self.trigger_sig),
+                div_sig.eq(div - 1),
+            ).Else(div_sig.eq(div_sig - 1))
+        ]
         pin_vref_mapping = {}
         for key, mappings in self.platform.pin_bank_byte_nibble_bitslice_mapping()["ddr5"].items():
             for bank, byte, _, _ in mappings:
@@ -168,32 +179,34 @@ class SoC(common.RowHammerSoC):
         )
 
     def add_host_bridge(self):
-        clock_pads = self.platform.request("eth_clocks")
-        self.submodules.ethphy = phy = LiteEthUSPHYRGMII(
-            clock_pads=clock_pads,
-            pads=self.platform.request("eth"),
-            hw_reset_cycles=math.ceil(float(self.args.eth_reset_time) * self.sys_clk_freq),
-            rx_delay=0.8e-9,
-            iodelay_clk_freq=float(self.args.iodelay_clk_freq),
-            usp=True,
-        )
-        self.add_etherbone(
-            phy=phy,
-            ip_address=self.ip_address,
-            mac_address=self.mac_address,
-            udp_port=self.udp_port,
-            buffer_depth=256,
-            with_timing_constraints=False,
-        )
+        pass
 
-        eth_rx_clk = getattr(phy, "crg", phy).cd_eth_rx.clk
-        eth_tx_clk = getattr(phy, "crg", phy).cd_eth_tx.clk
-        eth_rx_clk.attr.add("keep")
-        eth_tx_clk.attr.add("keep")
-        # Period constraint is specified in ns
-        self.platform.add_period_constraint(clock_pads.rx, 1e9 / phy.rx_clk_freq)
-        self.platform.add_false_path_constraints(self.crg.cd_sys.clk, eth_rx_clk)
-        self.platform.add_false_path_constraints(self.crg.cd_sys.clk, eth_tx_clk)
+    #        clock_pads = self.platform.request("eth_clocks")
+    #        self.submodules.ethphy = phy = LiteEthUSPHYRGMII(
+    #            clock_pads=clock_pads,
+    #            pads=self.platform.request("eth"),
+    #            hw_reset_cycles=math.ceil(float(self.args.eth_reset_time) * self.sys_clk_freq),
+    #            rx_delay=0.8e-9,
+    #            iodelay_clk_freq=float(self.args.iodelay_clk_freq),
+    #            usp=True,
+    #        )
+    #        self.add_etherbone(
+    #            phy=phy,
+    #            ip_address=self.ip_address,
+    #            mac_address=self.mac_address,
+    #            udp_port=self.udp_port,
+    #            buffer_depth=256,
+    #            with_timing_constraints=False,
+    #        )
+    #
+    #        eth_rx_clk = getattr(phy, "crg", phy).cd_eth_rx.clk
+    #        eth_tx_clk = getattr(phy, "crg", phy).cd_eth_tx.clk
+    #        eth_rx_clk.attr.add("keep")
+    #        eth_tx_clk.attr.add("keep")
+    #        # Period constraint is specified in ns
+    #        self.platform.add_period_constraint(clock_pads.rx, 1e9 / phy.rx_clk_freq)
+    #        self.platform.add_false_path_constraints(self.crg.cd_sys.clk, eth_rx_clk)
+    #        self.platform.add_false_path_constraints(self.crg.cd_sys.clk, eth_tx_clk)
 
     def get_sdram_ratio(self):
         return "1:4"
@@ -223,6 +236,10 @@ def main():
 
     soc_kwargs = common.get_soc_kwargs(args)
     soc_kwargs.update(dict(riu_clk_freq=args.riu_clk_freq))
+    if args.uart_name:
+        soc_kwargs["uart_name"] = args.uart_name
+    if args.integrated_sram_size:
+        soc_kwargs["integrated_sram_size"] = args.integrated_sram_size
     soc = SoC(build_sim=args.build_for_simulation, **soc_kwargs)
     #    soc.platform.add_platform_command(
     #        "set_property USER_CLOCK_ROOT X0Y1 ["
@@ -263,8 +280,8 @@ def main():
     )
     soc.platform.add_platform_command(
         "set_property CLOCK_LOW_FANOUT TRUE [get_nets -of_objects ["
-            "get_pins -of_objects [get_cells -filter {{LOW_FANOUT_BUFG == TRUE}}] "
-                "-filter {{DIRECTION == OUT}}]]"
+        "get_pins -of_objects [get_cells -filter {{LOW_FANOUT_BUFG == TRUE}}] "
+        "-filter {{DIRECTION == OUT}}]]"
     )
     soc.platform.add_platform_command(
         "set_property CLOCK_DELAY_GROUP phy_clk [get_nets {{{fast} {slow}}}]",
