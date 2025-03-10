@@ -182,6 +182,10 @@ def main():
     args = parser.parse_args()
 
     soc_kwargs = common.get_soc_kwargs(args)
+    if args.uart_name:
+        soc_kwargs["uart_name"] = args.uart_name
+    if args.integrated_sram_size:
+        soc_kwargs["integrated_sram_size"] = args.integrated_sram_size
     soc = SoC(**soc_kwargs)
     soc.get_ddr_pin_domains()
     soc.platform.add_platform_command("set_property CLOCK_BUFFER_TYPE BUFG [get_nets sys_rst]")

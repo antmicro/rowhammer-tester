@@ -53,8 +53,8 @@ class CRG(Module):
         # MMCM
         self.submodules.mmcm = mmcm = USPMMCM(speedgrade=-2)
         mmcm.register_clkin(input_clk, input_clk_freq)
-        mmcm.create_clkout(self.cd_sys, sys_clk_freq, with_reset=False)
-        mmcm.create_clkout(self.cd_riu, riu_clk_freq, with_reset=False)
+        mmcm.create_clkout(self.cd_sys, sys_clk_freq, with_reset=False, margin=1e-3)
+        mmcm.create_clkout(self.cd_riu, riu_clk_freq, with_reset=False, margin=1e-3)
         mmcm.params["name"] = "MMCM_IO"
 
         self.submodules.mmcm_idlyctrl = mmcm_idlyctrl = USPMMCM(speedgrade=-2)
@@ -144,7 +144,13 @@ class SoC(common.RowHammerSoC):
         )
 
     def get_ddrphy(self):
-        phycrg = ddr5.USPPHYCRG(self.sys_clk_freq)
+        banks = []
+        for _, mappings in self.platform.pin_bank_byte_nibble_bitslice_mapping()["ddr5"].items():
+            for bank, _, _, _ in mappings:
+                if bank not in banks:
+                    banks.append(bank)
+
+        phycrg = ddr5.USPPHYCRG(sys_clk_freq=self.sys_clk_freq, banks=banks)
         self.submodules.PHYCRG = phycrg
         phycrg.create_clock_domains(
             clock_domains=["sys_io", "sys2x_io", "sys2x_90_io", "sys4x_io", "sys4x_90_io"],
@@ -161,14 +167,20 @@ class SoC(common.RowHammerSoC):
             ).Else(div_sig.eq(div_sig - 1))
         ]
         pin_vref_mapping = {}
+        pin_bank_mapping = {}
         for key, mappings in self.platform.pin_bank_byte_nibble_bitslice_mapping()["ddr5"].items():
             for bank, byte, _, _ in mappings:
                 if key not in pin_vref_mapping:
                     pin_vref_mapping[key] = []
+                    pin_bank_mapping[key] = []
                 pin_vref_mapping[key].append((bank, byte))
+                pin_bank_mapping[key].append(bank)
 
+        iodelay_clk_freq = float(self.args.sys_clk_freq) * 4
+        if float(self.args.sys_clk_freq) > 150e6:
+            iodelay_clk_freq = float(self.args.sys_clk_freq) * 2
         return ddr5.USPCompoDDR5PHY(
-            iodelay_clk_freq=float(self.args.sys_clk_freq) * 4,
+            iodelay_clk_freq=iodelay_clk_freq,
             sys_clk_freq=self.sys_clk_freq,
             direct_control=False,
             pads=self.platform.request("ddr5"),
@@ -176,6 +188,7 @@ class SoC(common.RowHammerSoC):
             with_sub_channels=True,
             pin_domains=self.get_ddr_pin_domains(),
             pin_vref_mapping=pin_vref_mapping,
+            pin_bank_mapping=pin_bank_mapping,
         )
 
     def add_host_bridge(self):
@@ -278,11 +291,11 @@ def main():
         " -to [get_pins -hierarchical -regexp -filter {{ "
         'PARENT_CELL =~  ".*ISERDESE3.*" && DIRECTION == "IN" && NAME =~  ".*/D.*" }}]'
     )
-    soc.platform.add_platform_command(
-        "set_property CLOCK_LOW_FANOUT TRUE [get_nets -of_objects ["
-        "get_pins -of_objects [get_cells -filter {{LOW_FANOUT_BUFG == TRUE}}] "
-        "-filter {{DIRECTION == OUT}}]]"
-    )
+    # soc.platform.add_platform_command(
+    #    "set_property CLOCK_LOW_FANOUT TRUE [get_nets -of_objects ["
+    #    "get_pins -of_objects [get_cells -filter {{LOW_FANOUT_BUFG == TRUE}}] "
+    #    "-filter {{DIRECTION == OUT}}]]"
+    # )
     soc.platform.add_platform_command(
         "set_property CLOCK_DELAY_GROUP phy_clk [get_nets {{{fast} {slow}}}]",
         fast=ClockSignal("sys4x_io"),
@@ -293,6 +306,15 @@ def main():
         fast=ClockSignal("sys4x_90_io"),
         slow=ClockSignal("sys2x_90_io"),
     )
+    soc.platform.add_platform_command(
+        'set_property CLOCK_REGION CLOCKREGION_X0Y1 [get_cells -filter {{NAME =~ "_*_buf"}}]'
+    )
+    soc.platform.add_platform_command(
+        'set_property PHASESHIFT_MODE WAVEFORM [get_cells -filter {{PRIMITIVE_TYPE =~ "*.MMCME4_ADV"}}]'
+    )
+    soc.platform.add_platform_command("set_property INTERNAL_VREF 0.75 [get_iobanks 64]")
+    soc.platform.add_platform_command("set_property INTERNAL_VREF 0.75 [get_iobanks 65]")
+    soc.platform.add_platform_command("set_property INTERNAL_VREF 0.75 [get_iobanks 66]")
 
     target_name = "ddr5_tester_usp"
     builder_kwargs = common.get_builder_kwargs(args, target_name=target_name)
