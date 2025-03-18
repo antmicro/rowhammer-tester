@@ -310,7 +310,8 @@ def main():
         'set_property CLOCK_REGION CLOCKREGION_X0Y1 [get_cells -filter {{NAME =~ "_*_buf"}}]'
     )
     soc.platform.add_platform_command(
-        'set_property PHASESHIFT_MODE WAVEFORM [get_cells -filter {{PRIMITIVE_TYPE =~ "*.MMCME4_ADV"}}]'
+        'set_property PHASESHIFT_MODE WAVEFORM ['
+            'get_cells -filter {{PRIMITIVE_TYPE =~ "*.MMCME4_ADV"}}]'
     )
     soc.platform.add_platform_command("set_property INTERNAL_VREF 0.75 [get_iobanks 64]")
     soc.platform.add_platform_command("set_property INTERNAL_VREF 0.75 [get_iobanks 65]")

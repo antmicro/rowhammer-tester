@@ -25,6 +25,7 @@ SPD_COMMANDS = {
     "zcu104": (1, [(1, [0x74, 0x80])], False),
     "ddr4_datacenter_test_board": (0, None, False),
     "ddr5_tester": (0, None, True),
+    "ddr5_tester_usp": (0, None, True),
     "sodimm_ddr5_tester": (0, None, True),
 }
 

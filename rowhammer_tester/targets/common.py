@@ -601,6 +601,7 @@ class ArgumentParser(argparse.ArgumentParser):
         # Litex args
         builder_args(self.add_argument_group(title="Builder"))
         soc_core_args(self.add_argument_group(title="SoC Core"))
+        self._option_string_actions["--uart-name"].default = None
 
 
 def get_sdram_module(name):
