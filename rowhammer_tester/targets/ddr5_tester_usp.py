@@ -291,11 +291,6 @@ def main():
         " -to [get_pins -hierarchical -regexp -filter {{ "
         'PARENT_CELL =~  ".*ISERDESE3.*" && DIRECTION == "IN" && NAME =~  ".*/D.*" }}]'
     )
-    # soc.platform.add_platform_command(
-    #    "set_property CLOCK_LOW_FANOUT TRUE [get_nets -of_objects ["
-    #    "get_pins -of_objects [get_cells -filter {{LOW_FANOUT_BUFG == TRUE}}] "
-    #    "-filter {{DIRECTION == OUT}}]]"
-    # )
     soc.platform.add_platform_command(
         "set_property CLOCK_DELAY_GROUP phy_clk [get_nets {{{fast} {slow}}}]",
         fast=ClockSignal("sys4x_io"),
@@ -309,6 +304,25 @@ def main():
     soc.platform.add_platform_command(
         'set_property CLOCK_REGION CLOCKREGION_X0Y1 [get_cells -filter {{NAME =~ "_*_buf"}}]'
     )
+    soc.platform.add_platform_command(
+        "set_property CLOCK_DELAY_GROUP PHY_CE [get_nets {{{fast} {slow}}}]",
+        fast=ClockSignal("sys4x_raw_buf"),
+        slow=ClockSignal("sys4x_ctrl"),
+    )
+    soc.platform.add_platform_command(
+        "set_property CLOCK_DELAY_GROUP PHY_CE_90 [get_nets {{{fast} {slow}}}]",
+        fast=ClockSignal("sys4x_90_raw_buf"),
+        slow=ClockSignal("sys4x_90_ctrl"),
+    )
+    soc.platform.add_platform_command(
+       "set_property CLOCK_LOW_FANOUT TRUE [get_nets {{{ctrl}}}]",
+       ctrl=ClockSignal("sys4x_ctrl"),
+    )
+    soc.platform.add_platform_command(
+       "set_property CLOCK_LOW_FANOUT TRUE [get_nets {{{ctrl}}}]",
+       ctrl=ClockSignal("sys4x_90_ctrl"),
+    )
+
     soc.platform.add_platform_command(
         'set_property PHASESHIFT_MODE WAVEFORM ['
             'get_cells -filter {{PRIMITIVE_TYPE =~ "*.MMCME4_ADV"}}]'
