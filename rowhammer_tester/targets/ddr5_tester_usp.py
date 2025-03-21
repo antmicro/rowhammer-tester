@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
-# import math
+import math
 
 from litedram.phy import ddr5
-
-# from liteeth.phy import LiteEthUSPHYRGMII
+from liteeth.phy import LiteEthUSPHYRGMII
 from litex.build.generic_platform import Pins
 from litex.build.io import DifferentialInput
 from litex.build.xilinx.vivado import vivado_build_argdict, vivado_build_args
@@ -192,34 +191,32 @@ class SoC(common.RowHammerSoC):
         )
 
     def add_host_bridge(self):
-        pass
+        clock_pads = self.platform.request("eth_clocks")
+        self.submodules.ethphy = phy = LiteEthUSPHYRGMII(
+            clock_pads=clock_pads,
+            pads=self.platform.request("eth"),
+            hw_reset_cycles=math.ceil(float(self.args.eth_reset_time) * self.sys_clk_freq),
+            rx_delay=0.8e-9,
+            iodelay_clk_freq=float(self.args.iodelay_clk_freq),
+            usp=True,
+        )
+        self.add_etherbone(
+            phy=phy,
+            ip_address=self.ip_address,
+            mac_address=self.mac_address,
+            udp_port=self.udp_port,
+            buffer_depth=256,
+            with_timing_constraints=False,
+        )
 
-    #        clock_pads = self.platform.request("eth_clocks")
-    #        self.submodules.ethphy = phy = LiteEthUSPHYRGMII(
-    #            clock_pads=clock_pads,
-    #            pads=self.platform.request("eth"),
-    #            hw_reset_cycles=math.ceil(float(self.args.eth_reset_time) * self.sys_clk_freq),
-    #            rx_delay=0.8e-9,
-    #            iodelay_clk_freq=float(self.args.iodelay_clk_freq),
-    #            usp=True,
-    #        )
-    #        self.add_etherbone(
-    #            phy=phy,
-    #            ip_address=self.ip_address,
-    #            mac_address=self.mac_address,
-    #            udp_port=self.udp_port,
-    #            buffer_depth=256,
-    #            with_timing_constraints=False,
-    #        )
-    #
-    #        eth_rx_clk = getattr(phy, "crg", phy).cd_eth_rx.clk
-    #        eth_tx_clk = getattr(phy, "crg", phy).cd_eth_tx.clk
-    #        eth_rx_clk.attr.add("keep")
-    #        eth_tx_clk.attr.add("keep")
-    #        # Period constraint is specified in ns
-    #        self.platform.add_period_constraint(clock_pads.rx, 1e9 / phy.rx_clk_freq)
-    #        self.platform.add_false_path_constraints(self.crg.cd_sys.clk, eth_rx_clk)
-    #        self.platform.add_false_path_constraints(self.crg.cd_sys.clk, eth_tx_clk)
+        eth_rx_clk = getattr(phy, "crg", phy).cd_eth_rx.clk
+        eth_tx_clk = getattr(phy, "crg", phy).cd_eth_tx.clk
+        eth_rx_clk.attr.add("keep")
+        eth_tx_clk.attr.add("keep")
+        # Period constraint is specified in ns
+        self.platform.add_period_constraint(clock_pads.rx, 1e9 / phy.rx_clk_freq)
+        self.platform.add_false_path_constraints(self.crg.cd_sys.clk, eth_rx_clk)
+        self.platform.add_false_path_constraints(self.crg.cd_sys.clk, eth_tx_clk)
 
     def get_sdram_ratio(self):
         return "1:4"
@@ -315,17 +312,17 @@ def main():
         slow=ClockSignal("sys4x_90_ctrl"),
     )
     soc.platform.add_platform_command(
-       "set_property CLOCK_LOW_FANOUT TRUE [get_nets {{{ctrl}}}]",
-       ctrl=ClockSignal("sys4x_ctrl"),
+        "set_property CLOCK_LOW_FANOUT TRUE [get_nets {{{ctrl}}}]",
+        ctrl=ClockSignal("sys4x_ctrl"),
     )
     soc.platform.add_platform_command(
-       "set_property CLOCK_LOW_FANOUT TRUE [get_nets {{{ctrl}}}]",
-       ctrl=ClockSignal("sys4x_90_ctrl"),
+        "set_property CLOCK_LOW_FANOUT TRUE [get_nets {{{ctrl}}}]",
+        ctrl=ClockSignal("sys4x_90_ctrl"),
     )
 
     soc.platform.add_platform_command(
-        'set_property PHASESHIFT_MODE WAVEFORM ['
-            'get_cells -filter {{PRIMITIVE_TYPE =~ "*.MMCME4_ADV"}}]'
+        "set_property PHASESHIFT_MODE WAVEFORM ["
+        'get_cells -filter {{PRIMITIVE_TYPE =~ "*.MMCME4_ADV"}}]'
     )
     soc.platform.add_platform_command("set_property INTERNAL_VREF 0.75 [get_iobanks 64]")
     soc.platform.add_platform_command("set_property INTERNAL_VREF 0.75 [get_iobanks 65]")
