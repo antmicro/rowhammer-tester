@@ -16,7 +16,7 @@ include:
       ref: main
       file: '/ci-setup.yaml'
     - project: 'rowhammer-tester-ci'
-      ref: main
+      ref: keep-verilog-source
       file: '/ci-bitstream-setup.yaml'
     - project: 'rowhammer-tester-ci'
       ref: main
