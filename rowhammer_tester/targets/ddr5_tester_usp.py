@@ -97,18 +97,8 @@ class SoC(common.RowHammerSoC):
             self.platform.add_extension([("finish", 0, Pins(1))])
             self.add_constant("CONFIG_BIOS_NO_CRC")
             self.add_constant("CONFIG_BIOS_NO_PROMPT")
-            self.add_constant("MAIN_RAM_BASE")
-            self.add_constant("CONFIG_MAIN_RAM_INIT")
+            self.add_constant("DDR5_RDIMM_SIM")
             self.submodules.sim_finisher = GPIOOut(self.platform.request("finish"))
-            with self.create_early_init() as early_init:
-                early_init += """printf("Sim PHY init\\n");
-    ddrphy_phy_reset_write(0);
-    do {
-        busy_wait_us(50);
-    } while (!ddrphy_init_status_init_done_read());
-
-    sim_finisher_out_write(1);
-"""
 
     def get_platform(self):
         return antmicro_ddr5_tester_usp.Platform()
