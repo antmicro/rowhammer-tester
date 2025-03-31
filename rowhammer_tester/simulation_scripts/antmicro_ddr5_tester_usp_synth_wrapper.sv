@@ -8,7 +8,7 @@ module antmicro_ddr5_tester_usp_synth_wrapper (
     output wire          user_led1,
     output wire          user_led2,
     output wire          user_led3,
-    output wire          user_led4,
+    output reg           trigger,
     output wire          ddr5_ck_t,
     output wire          ddr5_ck_c,
     output reg     [6:0] ddr5_A_ca,
@@ -45,7 +45,9 @@ module antmicro_ddr5_tester_usp_synth_wrapper (
     output wire          eth_tx_ctl,
     output wire    [3:0] eth_tx_data,
     inout  wire          i2c_sda,
-    inout  wire          i2c_scl
+    inout  wire          i2c_scl,
+    output wire          vin_bulk_en,
+    output wire          vin_mgmt_en
 );
     wire finish;
     antmicro_ddr5_tester_usp device(.*);
