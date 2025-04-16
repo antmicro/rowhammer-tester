@@ -1,4 +1,4 @@
-read_verilog {../../venv/lib/python3.11/site-packages/pythondata_cpu_vexriscv/verilog/VexRiscv_Lite.v}
+read_verilog $env(VexRiscvPath)
 read_verilog {../../build/ddr5_tester_usp/gateware/antmicro_ddr5_tester_usp.v}
 read_xdc ../../build/ddr5_tester_usp/gateware/antmicro_ddr5_tester_usp.xdc
 set_property PROCESSING_ORDER EARLY [get_files antmicro_ddr5_tester_usp.xdc]
