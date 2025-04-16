@@ -145,16 +145,6 @@ class SoC(common.RowHammerSoC):
             clock_domains=["sys_io", "sys2x_io", "sys2x_90_io", "sys4x_io", "sys4x_90_io"],
         )
 
-        self.trigger_sig = self.platform.request("trigger")
-        div = 3000
-        div_sig = Signal(min=0, max=div, reset=0)
-        self.sync.sys4x_io += [
-            If(
-                div_sig == 0,
-                self.trigger_sig.eq(~self.trigger_sig),
-                div_sig.eq(div - 1),
-            ).Else(div_sig.eq(div_sig - 1))
-        ]
         pin_vref_mapping = {}
         pin_bank_mapping = {}
         for key, mappings in self.platform.pin_bank_byte_nibble_bitslice_mapping()["ddr5"].items():

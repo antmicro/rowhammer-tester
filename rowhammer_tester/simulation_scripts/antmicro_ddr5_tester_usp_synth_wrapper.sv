@@ -8,7 +8,6 @@ module antmicro_ddr5_tester_usp_synth_wrapper (
     output wire          user_led1,
     output wire          user_led2,
     output wire          user_led3,
-    output reg           trigger,
     output wire          ddr5_ck_t,
     output wire          ddr5_ck_c,
     output reg     [6:0] ddr5_A_ca,
