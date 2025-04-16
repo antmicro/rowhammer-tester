@@ -14,7 +14,7 @@ from litex.soc.integration.builder import Builder
 
 # from litex.soc.integration.doc import ModuleDoc
 from litex_boards.platforms import antmicro_ddr5_tester_usp
-from migen import ClockDomain, ClockSignal, If, Instance, Module, Signal
+from migen import ClockDomain, ClockSignal, Instance, Module, Signal
 
 from rowhammer_tester.targets import common
 
