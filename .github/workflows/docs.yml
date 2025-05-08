@@ -26,7 +26,7 @@ jobs:
           cd docs
           make html latexpdf
           cp build/latex/*.pdf build/html/
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: gh-page
           path: docs/build/html
