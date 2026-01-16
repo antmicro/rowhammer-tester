@@ -1,0 +1,1786 @@
+DDRPHY
+======
+
+Register Listing for DDRPHY
+---------------------------
+
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| Register                                                                           | Address                                                  |
++====================================================================================+==========================================================+
+| :ref:`DDRPHY_CSRMODULE_ENABLE_FIFOS <DDRPHY_CSRMODULE_ENABLE_FIFOS>`               | :ref:`0xf0000800 <DDRPHY_CSRMODULE_ENABLE_FIFOS>`        |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_RST <DDRPHY_CSRMODULE_RST>`                                 | :ref:`0xf0000804 <DDRPHY_CSRMODULE_RST>`                 |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_RDIMM_MODE <DDRPHY_CSRMODULE_RDIMM_MODE>`                   | :ref:`0xf0000808 <DDRPHY_CSRMODULE_RDIMM_MODE>`          |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_RDPHASE <DDRPHY_CSRMODULE_RDPHASE>`                         | :ref:`0xf000080c <DDRPHY_CSRMODULE_RDPHASE>`             |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_WRPHASE <DDRPHY_CSRMODULE_WRPHASE>`                         | :ref:`0xf0000810 <DDRPHY_CSRMODULE_WRPHASE>`             |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_ALERT <DDRPHY_CSRMODULE_ALERT>`                             | :ref:`0xf0000814 <DDRPHY_CSRMODULE_ALERT>`               |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_ALERT_REDUCE <DDRPHY_CSRMODULE_ALERT_REDUCE>`               | :ref:`0xf0000818 <DDRPHY_CSRMODULE_ALERT_REDUCE>`        |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_SAMPLE_ALERT <DDRPHY_CSRMODULE_SAMPLE_ALERT>`               | :ref:`0xf000081c <DDRPHY_CSRMODULE_SAMPLE_ALERT>`        |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_RESET_ALERT <DDRPHY_CSRMODULE_RESET_ALERT>`                 | :ref:`0xf0000820 <DDRPHY_CSRMODULE_RESET_ALERT>`         |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_CKDLY_RST <DDRPHY_CSRMODULE_CKDLY_RST>`                     | :ref:`0xf0000824 <DDRPHY_CSRMODULE_CKDLY_RST>`           |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_CKDLY_INC <DDRPHY_CSRMODULE_CKDLY_INC>`                     | :ref:`0xf0000828 <DDRPHY_CSRMODULE_CKDLY_INC>`           |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_PREAMBLE <DDRPHY_CSRMODULE_A_PREAMBLE>`                   | :ref:`0xf000082c <DDRPHY_CSRMODULE_A_PREAMBLE>`          |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_WLEVEL_EN <DDRPHY_CSRMODULE_A_WLEVEL_EN>`                 | :ref:`0xf0000830 <DDRPHY_CSRMODULE_A_WLEVEL_EN>`         |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_PAR_ENABLE <DDRPHY_CSRMODULE_A_PAR_ENABLE>`               | :ref:`0xf0000834 <DDRPHY_CSRMODULE_A_PAR_ENABLE>`        |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_PAR_VALUE <DDRPHY_CSRMODULE_A_PAR_VALUE>`                 | :ref:`0xf0000838 <DDRPHY_CSRMODULE_A_PAR_VALUE>`         |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_DISCARD_RD_FIFO <DDRPHY_CSRMODULE_A_DISCARD_RD_FIFO>`     | :ref:`0xf000083c <DDRPHY_CSRMODULE_A_DISCARD_RD_FIFO>`   |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_DLY_SEL <DDRPHY_CSRMODULE_A_DLY_SEL>`                     | :ref:`0xf0000840 <DDRPHY_CSRMODULE_A_DLY_SEL>`           |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_DQ_DQS_RATIO <DDRPHY_CSRMODULE_A_DQ_DQS_RATIO>`           | :ref:`0xf0000844 <DDRPHY_CSRMODULE_A_DQ_DQS_RATIO>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CK_RDLY_INC <DDRPHY_CSRMODULE_A_CK_RDLY_INC>`             | :ref:`0xf0000848 <DDRPHY_CSRMODULE_A_CK_RDLY_INC>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CK_RDLY_RST <DDRPHY_CSRMODULE_A_CK_RDLY_RST>`             | :ref:`0xf000084c <DDRPHY_CSRMODULE_A_CK_RDLY_RST>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CK_RDDLY <DDRPHY_CSRMODULE_A_CK_RDDLY>`                   | :ref:`0xf0000850 <DDRPHY_CSRMODULE_A_CK_RDDLY>`          |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CK_RDDLY_PREAMBLE <DDRPHY_CSRMODULE_A_CK_RDDLY_PREAMBLE>` | :ref:`0xf0000854 <DDRPHY_CSRMODULE_A_CK_RDDLY_PREAMBLE>` |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CK_WDLY_INC <DDRPHY_CSRMODULE_A_CK_WDLY_INC>`             | :ref:`0xf0000858 <DDRPHY_CSRMODULE_A_CK_WDLY_INC>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CK_WDLY_RST <DDRPHY_CSRMODULE_A_CK_WDLY_RST>`             | :ref:`0xf000085c <DDRPHY_CSRMODULE_A_CK_WDLY_RST>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CK_WDLY_DQS <DDRPHY_CSRMODULE_A_CK_WDLY_DQS>`             | :ref:`0xf0000860 <DDRPHY_CSRMODULE_A_CK_WDLY_DQS>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CK_WDDLY_INC <DDRPHY_CSRMODULE_A_CK_WDDLY_INC>`           | :ref:`0xf0000864 <DDRPHY_CSRMODULE_A_CK_WDDLY_INC>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CK_WDDLY_RST <DDRPHY_CSRMODULE_A_CK_WDDLY_RST>`           | :ref:`0xf0000868 <DDRPHY_CSRMODULE_A_CK_WDDLY_RST>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CK_WDLY_DQ <DDRPHY_CSRMODULE_A_CK_WDLY_DQ>`               | :ref:`0xf000086c <DDRPHY_CSRMODULE_A_CK_WDLY_DQ>`        |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_DQ_DLY_SEL <DDRPHY_CSRMODULE_A_DQ_DLY_SEL>`               | :ref:`0xf0000870 <DDRPHY_CSRMODULE_A_DQ_DLY_SEL>`        |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CSDLY_RST <DDRPHY_CSRMODULE_A_CSDLY_RST>`                 | :ref:`0xf0000874 <DDRPHY_CSRMODULE_A_CSDLY_RST>`         |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CSDLY_INC <DDRPHY_CSRMODULE_A_CSDLY_INC>`                 | :ref:`0xf0000878 <DDRPHY_CSRMODULE_A_CSDLY_INC>`         |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CADLY_RST <DDRPHY_CSRMODULE_A_CADLY_RST>`                 | :ref:`0xf000087c <DDRPHY_CSRMODULE_A_CADLY_RST>`         |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CADLY_INC <DDRPHY_CSRMODULE_A_CADLY_INC>`                 | :ref:`0xf0000880 <DDRPHY_CSRMODULE_A_CADLY_INC>`         |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_PARDLY_RST <DDRPHY_CSRMODULE_A_PARDLY_RST>`               | :ref:`0xf0000884 <DDRPHY_CSRMODULE_A_PARDLY_RST>`        |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_PARDLY_INC <DDRPHY_CSRMODULE_A_PARDLY_INC>`               | :ref:`0xf0000888 <DDRPHY_CSRMODULE_A_PARDLY_INC>`        |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CSDLY <DDRPHY_CSRMODULE_A_CSDLY>`                         | :ref:`0xf000088c <DDRPHY_CSRMODULE_A_CSDLY>`             |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_CADLY <DDRPHY_CSRMODULE_A_CADLY>`                         | :ref:`0xf0000890 <DDRPHY_CSRMODULE_A_CADLY>`             |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_RDLY_DQ_RST <DDRPHY_CSRMODULE_A_RDLY_DQ_RST>`             | :ref:`0xf0000894 <DDRPHY_CSRMODULE_A_RDLY_DQ_RST>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_RDLY_DQ_INC <DDRPHY_CSRMODULE_A_RDLY_DQ_INC>`             | :ref:`0xf0000898 <DDRPHY_CSRMODULE_A_RDLY_DQ_INC>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_RDLY_DQS_RST <DDRPHY_CSRMODULE_A_RDLY_DQS_RST>`           | :ref:`0xf000089c <DDRPHY_CSRMODULE_A_RDLY_DQS_RST>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_RDLY_DQS_INC <DDRPHY_CSRMODULE_A_RDLY_DQS_INC>`           | :ref:`0xf00008a0 <DDRPHY_CSRMODULE_A_RDLY_DQS_INC>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_RDLY_DQS <DDRPHY_CSRMODULE_A_RDLY_DQS>`                   | :ref:`0xf00008a4 <DDRPHY_CSRMODULE_A_RDLY_DQS>`          |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_RDLY_DQ <DDRPHY_CSRMODULE_A_RDLY_DQ>`                     | :ref:`0xf00008a8 <DDRPHY_CSRMODULE_A_RDLY_DQ>`           |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_WDLY_DQ_RST <DDRPHY_CSRMODULE_A_WDLY_DQ_RST>`             | :ref:`0xf00008ac <DDRPHY_CSRMODULE_A_WDLY_DQ_RST>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_WDLY_DQ_INC <DDRPHY_CSRMODULE_A_WDLY_DQ_INC>`             | :ref:`0xf00008b0 <DDRPHY_CSRMODULE_A_WDLY_DQ_INC>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_WDLY_DM_RST <DDRPHY_CSRMODULE_A_WDLY_DM_RST>`             | :ref:`0xf00008b4 <DDRPHY_CSRMODULE_A_WDLY_DM_RST>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_WDLY_DM_INC <DDRPHY_CSRMODULE_A_WDLY_DM_INC>`             | :ref:`0xf00008b8 <DDRPHY_CSRMODULE_A_WDLY_DM_INC>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_WDLY_DQS_RST <DDRPHY_CSRMODULE_A_WDLY_DQS_RST>`           | :ref:`0xf00008bc <DDRPHY_CSRMODULE_A_WDLY_DQS_RST>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_WDLY_DQS_INC <DDRPHY_CSRMODULE_A_WDLY_DQS_INC>`           | :ref:`0xf00008c0 <DDRPHY_CSRMODULE_A_WDLY_DQS_INC>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_WDLY_DQS <DDRPHY_CSRMODULE_A_WDLY_DQS>`                   | :ref:`0xf00008c4 <DDRPHY_CSRMODULE_A_WDLY_DQS>`          |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_WDLY_DQ <DDRPHY_CSRMODULE_A_WDLY_DQ>`                     | :ref:`0xf00008c8 <DDRPHY_CSRMODULE_A_WDLY_DQ>`           |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_A_WDLY_DM <DDRPHY_CSRMODULE_A_WDLY_DM>`                     | :ref:`0xf00008cc <DDRPHY_CSRMODULE_A_WDLY_DM>`           |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_PREAMBLE <DDRPHY_CSRMODULE_B_PREAMBLE>`                   | :ref:`0xf00008d0 <DDRPHY_CSRMODULE_B_PREAMBLE>`          |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_WLEVEL_EN <DDRPHY_CSRMODULE_B_WLEVEL_EN>`                 | :ref:`0xf00008d4 <DDRPHY_CSRMODULE_B_WLEVEL_EN>`         |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_PAR_ENABLE <DDRPHY_CSRMODULE_B_PAR_ENABLE>`               | :ref:`0xf00008d8 <DDRPHY_CSRMODULE_B_PAR_ENABLE>`        |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_PAR_VALUE <DDRPHY_CSRMODULE_B_PAR_VALUE>`                 | :ref:`0xf00008dc <DDRPHY_CSRMODULE_B_PAR_VALUE>`         |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_DISCARD_RD_FIFO <DDRPHY_CSRMODULE_B_DISCARD_RD_FIFO>`     | :ref:`0xf00008e0 <DDRPHY_CSRMODULE_B_DISCARD_RD_FIFO>`   |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_DLY_SEL <DDRPHY_CSRMODULE_B_DLY_SEL>`                     | :ref:`0xf00008e4 <DDRPHY_CSRMODULE_B_DLY_SEL>`           |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_DQ_DQS_RATIO <DDRPHY_CSRMODULE_B_DQ_DQS_RATIO>`           | :ref:`0xf00008e8 <DDRPHY_CSRMODULE_B_DQ_DQS_RATIO>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CK_RDLY_INC <DDRPHY_CSRMODULE_B_CK_RDLY_INC>`             | :ref:`0xf00008ec <DDRPHY_CSRMODULE_B_CK_RDLY_INC>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CK_RDLY_RST <DDRPHY_CSRMODULE_B_CK_RDLY_RST>`             | :ref:`0xf00008f0 <DDRPHY_CSRMODULE_B_CK_RDLY_RST>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CK_RDDLY <DDRPHY_CSRMODULE_B_CK_RDDLY>`                   | :ref:`0xf00008f4 <DDRPHY_CSRMODULE_B_CK_RDDLY>`          |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CK_RDDLY_PREAMBLE <DDRPHY_CSRMODULE_B_CK_RDDLY_PREAMBLE>` | :ref:`0xf00008f8 <DDRPHY_CSRMODULE_B_CK_RDDLY_PREAMBLE>` |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CK_WDLY_INC <DDRPHY_CSRMODULE_B_CK_WDLY_INC>`             | :ref:`0xf00008fc <DDRPHY_CSRMODULE_B_CK_WDLY_INC>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CK_WDLY_RST <DDRPHY_CSRMODULE_B_CK_WDLY_RST>`             | :ref:`0xf0000900 <DDRPHY_CSRMODULE_B_CK_WDLY_RST>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CK_WDLY_DQS <DDRPHY_CSRMODULE_B_CK_WDLY_DQS>`             | :ref:`0xf0000904 <DDRPHY_CSRMODULE_B_CK_WDLY_DQS>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CK_WDDLY_INC <DDRPHY_CSRMODULE_B_CK_WDDLY_INC>`           | :ref:`0xf0000908 <DDRPHY_CSRMODULE_B_CK_WDDLY_INC>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CK_WDDLY_RST <DDRPHY_CSRMODULE_B_CK_WDDLY_RST>`           | :ref:`0xf000090c <DDRPHY_CSRMODULE_B_CK_WDDLY_RST>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CK_WDLY_DQ <DDRPHY_CSRMODULE_B_CK_WDLY_DQ>`               | :ref:`0xf0000910 <DDRPHY_CSRMODULE_B_CK_WDLY_DQ>`        |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_DQ_DLY_SEL <DDRPHY_CSRMODULE_B_DQ_DLY_SEL>`               | :ref:`0xf0000914 <DDRPHY_CSRMODULE_B_DQ_DLY_SEL>`        |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CSDLY_RST <DDRPHY_CSRMODULE_B_CSDLY_RST>`                 | :ref:`0xf0000918 <DDRPHY_CSRMODULE_B_CSDLY_RST>`         |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CSDLY_INC <DDRPHY_CSRMODULE_B_CSDLY_INC>`                 | :ref:`0xf000091c <DDRPHY_CSRMODULE_B_CSDLY_INC>`         |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CADLY_RST <DDRPHY_CSRMODULE_B_CADLY_RST>`                 | :ref:`0xf0000920 <DDRPHY_CSRMODULE_B_CADLY_RST>`         |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CADLY_INC <DDRPHY_CSRMODULE_B_CADLY_INC>`                 | :ref:`0xf0000924 <DDRPHY_CSRMODULE_B_CADLY_INC>`         |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_PARDLY_RST <DDRPHY_CSRMODULE_B_PARDLY_RST>`               | :ref:`0xf0000928 <DDRPHY_CSRMODULE_B_PARDLY_RST>`        |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_PARDLY_INC <DDRPHY_CSRMODULE_B_PARDLY_INC>`               | :ref:`0xf000092c <DDRPHY_CSRMODULE_B_PARDLY_INC>`        |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CSDLY <DDRPHY_CSRMODULE_B_CSDLY>`                         | :ref:`0xf0000930 <DDRPHY_CSRMODULE_B_CSDLY>`             |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_CADLY <DDRPHY_CSRMODULE_B_CADLY>`                         | :ref:`0xf0000934 <DDRPHY_CSRMODULE_B_CADLY>`             |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_RDLY_DQ_RST <DDRPHY_CSRMODULE_B_RDLY_DQ_RST>`             | :ref:`0xf0000938 <DDRPHY_CSRMODULE_B_RDLY_DQ_RST>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_RDLY_DQ_INC <DDRPHY_CSRMODULE_B_RDLY_DQ_INC>`             | :ref:`0xf000093c <DDRPHY_CSRMODULE_B_RDLY_DQ_INC>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_RDLY_DQS_RST <DDRPHY_CSRMODULE_B_RDLY_DQS_RST>`           | :ref:`0xf0000940 <DDRPHY_CSRMODULE_B_RDLY_DQS_RST>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_RDLY_DQS_INC <DDRPHY_CSRMODULE_B_RDLY_DQS_INC>`           | :ref:`0xf0000944 <DDRPHY_CSRMODULE_B_RDLY_DQS_INC>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_RDLY_DQS <DDRPHY_CSRMODULE_B_RDLY_DQS>`                   | :ref:`0xf0000948 <DDRPHY_CSRMODULE_B_RDLY_DQS>`          |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_RDLY_DQ <DDRPHY_CSRMODULE_B_RDLY_DQ>`                     | :ref:`0xf000094c <DDRPHY_CSRMODULE_B_RDLY_DQ>`           |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_WDLY_DQ_RST <DDRPHY_CSRMODULE_B_WDLY_DQ_RST>`             | :ref:`0xf0000950 <DDRPHY_CSRMODULE_B_WDLY_DQ_RST>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_WDLY_DQ_INC <DDRPHY_CSRMODULE_B_WDLY_DQ_INC>`             | :ref:`0xf0000954 <DDRPHY_CSRMODULE_B_WDLY_DQ_INC>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_WDLY_DM_RST <DDRPHY_CSRMODULE_B_WDLY_DM_RST>`             | :ref:`0xf0000958 <DDRPHY_CSRMODULE_B_WDLY_DM_RST>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_WDLY_DM_INC <DDRPHY_CSRMODULE_B_WDLY_DM_INC>`             | :ref:`0xf000095c <DDRPHY_CSRMODULE_B_WDLY_DM_INC>`       |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_WDLY_DQS_RST <DDRPHY_CSRMODULE_B_WDLY_DQS_RST>`           | :ref:`0xf0000960 <DDRPHY_CSRMODULE_B_WDLY_DQS_RST>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_WDLY_DQS_INC <DDRPHY_CSRMODULE_B_WDLY_DQS_INC>`           | :ref:`0xf0000964 <DDRPHY_CSRMODULE_B_WDLY_DQS_INC>`      |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_WDLY_DQS <DDRPHY_CSRMODULE_B_WDLY_DQS>`                   | :ref:`0xf0000968 <DDRPHY_CSRMODULE_B_WDLY_DQS>`          |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_WDLY_DQ <DDRPHY_CSRMODULE_B_WDLY_DQ>`                     | :ref:`0xf000096c <DDRPHY_CSRMODULE_B_WDLY_DQ>`           |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+| :ref:`DDRPHY_CSRMODULE_B_WDLY_DM <DDRPHY_CSRMODULE_B_WDLY_DM>`                     | :ref:`0xf0000970 <DDRPHY_CSRMODULE_B_WDLY_DM>`           |
++------------------------------------------------------------------------------------+----------------------------------------------------------+
+
+DDRPHY_CSRMODULE_ENABLE_FIFOS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x0 = 0xf0000800`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_ENABLE_FIFOS
+
+        {
+            "reg": [
+                {"name": "csrmodule_enable_fifos", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_RST
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x4 = 0xf0000804`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_rst", "attr": 'reset: 1', "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_RDIMM_MODE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x8 = 0xf0000808`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_RDIMM_MODE
+
+        {
+            "reg": [
+                {"name": "csrmodule_rdimm_mode", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_RDPHASE
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xc = 0xf000080c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_RDPHASE
+
+        {
+            "reg": [
+                {"name": "csrmodule_rdphase[1:0]", "bits": 2},
+                {"bits": 30},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_WRPHASE
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x10 = 0xf0000810`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_WRPHASE
+
+        {
+            "reg": [
+                {"name": "csrmodule_wrphase[1:0]", "bits": 2},
+                {"bits": 30},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_ALERT
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x14 = 0xf0000814`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_ALERT
+
+        {
+            "reg": [
+                {"name": "csrmodule_alert", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_ALERT_REDUCE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x18 = 0xf0000818`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_ALERT_REDUCE
+
+        {
+            "reg": [
+                {"name": "initial_state",  "bits": 1},
+                {"name": "operation",  "bits": 1},
+                {"bits": 30}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++-------+---------------+------------------------------+
+| Field | Name          | Description                  |
++=======+===============+==============================+
+| [0]   | INITIAL_STATE | Initial value of all bits    |
++-------+---------------+------------------------------+
+| [1]   | OPERATION     | 0 - `or` (default), 1 -`and` |
++-------+---------------+------------------------------+
+
+DDRPHY_CSRMODULE_SAMPLE_ALERT
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x1c = 0xf000081c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_SAMPLE_ALERT
+
+        {
+            "reg": [
+                {"name": "csrmodule_sample_alert", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_RESET_ALERT
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x20 = 0xf0000820`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_RESET_ALERT
+
+        {
+            "reg": [
+                {"name": "csrmodule_reset_alert", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_CKDLY_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x24 = 0xf0000824`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_CKDLY_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_ckdly_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_CKDLY_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x28 = 0xf0000828`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_CKDLY_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_ckdly_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_PREAMBLE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x2c = 0xf000082c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_PREAMBLE
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_preamble[3:0]", "bits": 4},
+                {"bits": 28},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_WLEVEL_EN
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x30 = 0xf0000830`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_WLEVEL_EN
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_wlevel_en", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_PAR_ENABLE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x34 = 0xf0000834`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_PAR_ENABLE
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_par_enable", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_PAR_VALUE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x38 = 0xf0000838`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_PAR_VALUE
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_par_value", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_DISCARD_RD_FIFO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x3c = 0xf000083c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_DISCARD_RD_FIFO
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_discard_rd_fifo", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_DLY_SEL
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x40 = 0xf0000840`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_DLY_SEL
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_dly_sel[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_A_DQ_DQS_RATIO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x44 = 0xf0000844`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_DQ_DQS_RATIO
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_dq_dqs_ratio[3:0]", "attr": 'reset: 4', "bits": 4},
+                {"bits": 28},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_CK_RDLY_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x48 = 0xf0000848`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CK_RDLY_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_ck_rdly_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_CK_RDLY_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x4c = 0xf000084c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CK_RDLY_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_ck_rdly_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_CK_RDDLY
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x50 = 0xf0000850`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CK_RDDLY
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_ck_rddly[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_A_CK_RDDLY_PREAMBLE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x54 = 0xf0000854`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CK_RDDLY_PREAMBLE
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_ck_rddly_preamble[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_A_CK_WDLY_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x58 = 0xf0000858`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CK_WDLY_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_ck_wdly_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_CK_WDLY_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x5c = 0xf000085c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CK_WDLY_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_ck_wdly_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_CK_WDLY_DQS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x60 = 0xf0000860`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CK_WDLY_DQS
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_ck_wdly_dqs[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_A_CK_WDDLY_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x64 = 0xf0000864`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CK_WDDLY_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_ck_wddly_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_CK_WDDLY_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x68 = 0xf0000868`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CK_WDDLY_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_ck_wddly_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_CK_WDLY_DQ
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x6c = 0xf000086c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CK_WDLY_DQ
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_ck_wdly_dq[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_A_DQ_DLY_SEL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x70 = 0xf0000870`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_DQ_DLY_SEL
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_dq_dly_sel[3:0]", "bits": 4},
+                {"bits": 28},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_CSDLY_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x74 = 0xf0000874`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CSDLY_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_csdly_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_CSDLY_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x78 = 0xf0000878`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CSDLY_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_csdly_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_CADLY_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x7c = 0xf000087c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CADLY_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_cadly_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_CADLY_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x80 = 0xf0000880`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CADLY_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_cadly_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_PARDLY_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x84 = 0xf0000884`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_PARDLY_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_pardly_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_PARDLY_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x88 = 0xf0000888`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_PARDLY_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_pardly_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_CSDLY
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x8c = 0xf000088c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CSDLY
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_csdly[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_A_CADLY
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x90 = 0xf0000890`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_CADLY
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_cadly[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_A_RDLY_DQ_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x94 = 0xf0000894`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_RDLY_DQ_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_rdly_dq_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_RDLY_DQ_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x98 = 0xf0000898`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_RDLY_DQ_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_rdly_dq_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_RDLY_DQS_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x9c = 0xf000089c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_RDLY_DQS_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_rdly_dqs_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_RDLY_DQS_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xa0 = 0xf00008a0`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_RDLY_DQS_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_rdly_dqs_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_RDLY_DQS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xa4 = 0xf00008a4`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_RDLY_DQS
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_rdly_dqs[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_A_RDLY_DQ
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xa8 = 0xf00008a8`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_RDLY_DQ
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_rdly_dq[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_A_WDLY_DQ_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xac = 0xf00008ac`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_WDLY_DQ_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_wdly_dq_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_WDLY_DQ_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xb0 = 0xf00008b0`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_WDLY_DQ_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_wdly_dq_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_WDLY_DM_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xb4 = 0xf00008b4`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_WDLY_DM_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_wdly_dm_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_WDLY_DM_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xb8 = 0xf00008b8`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_WDLY_DM_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_wdly_dm_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_WDLY_DQS_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xbc = 0xf00008bc`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_WDLY_DQS_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_wdly_dqs_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_WDLY_DQS_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xc0 = 0xf00008c0`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_WDLY_DQS_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_wdly_dqs_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_A_WDLY_DQS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xc4 = 0xf00008c4`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_WDLY_DQS
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_wdly_dqs[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_A_WDLY_DQ
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xc8 = 0xf00008c8`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_WDLY_DQ
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_wdly_dq[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_A_WDLY_DM
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xcc = 0xf00008cc`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_A_WDLY_DM
+
+        {
+            "reg": [
+                {"name": "csrmodule_a_wdly_dm[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_B_PREAMBLE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xd0 = 0xf00008d0`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_PREAMBLE
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_preamble[3:0]", "bits": 4},
+                {"bits": 28},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_WLEVEL_EN
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xd4 = 0xf00008d4`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_WLEVEL_EN
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_wlevel_en", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_PAR_ENABLE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xd8 = 0xf00008d8`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_PAR_ENABLE
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_par_enable", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_PAR_VALUE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xdc = 0xf00008dc`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_PAR_VALUE
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_par_value", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_DISCARD_RD_FIFO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xe0 = 0xf00008e0`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_DISCARD_RD_FIFO
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_discard_rd_fifo", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_DLY_SEL
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xe4 = 0xf00008e4`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_DLY_SEL
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_dly_sel[13:0]", "bits": 14},
+                {"bits": 18},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_B_DQ_DQS_RATIO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xe8 = 0xf00008e8`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_DQ_DQS_RATIO
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_dq_dqs_ratio[3:0]", "attr": 'reset: 4', "bits": 4},
+                {"bits": 28},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_CK_RDLY_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xec = 0xf00008ec`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CK_RDLY_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_ck_rdly_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_CK_RDLY_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xf0 = 0xf00008f0`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CK_RDLY_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_ck_rdly_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_CK_RDDLY
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xf4 = 0xf00008f4`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CK_RDDLY
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_ck_rddly[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_B_CK_RDDLY_PREAMBLE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xf8 = 0xf00008f8`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CK_RDDLY_PREAMBLE
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_ck_rddly_preamble[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_B_CK_WDLY_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0xfc = 0xf00008fc`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CK_WDLY_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_ck_wdly_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_CK_WDLY_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x100 = 0xf0000900`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CK_WDLY_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_ck_wdly_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_CK_WDLY_DQS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x104 = 0xf0000904`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CK_WDLY_DQS
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_ck_wdly_dqs[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_B_CK_WDDLY_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x108 = 0xf0000908`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CK_WDDLY_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_ck_wddly_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_CK_WDDLY_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x10c = 0xf000090c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CK_WDDLY_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_ck_wddly_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_CK_WDLY_DQ
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x110 = 0xf0000910`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CK_WDLY_DQ
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_ck_wdly_dq[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_B_DQ_DLY_SEL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x114 = 0xf0000914`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_DQ_DLY_SEL
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_dq_dly_sel[3:0]", "bits": 4},
+                {"bits": 28},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_CSDLY_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x118 = 0xf0000918`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CSDLY_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_csdly_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_CSDLY_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x11c = 0xf000091c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CSDLY_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_csdly_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_CADLY_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x120 = 0xf0000920`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CADLY_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_cadly_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_CADLY_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x124 = 0xf0000924`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CADLY_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_cadly_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_PARDLY_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x128 = 0xf0000928`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_PARDLY_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_pardly_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_PARDLY_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x12c = 0xf000092c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_PARDLY_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_pardly_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_CSDLY
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x130 = 0xf0000930`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CSDLY
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_csdly[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_B_CADLY
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x134 = 0xf0000934`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_CADLY
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_cadly[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_B_RDLY_DQ_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x138 = 0xf0000938`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_RDLY_DQ_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_rdly_dq_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_RDLY_DQ_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x13c = 0xf000093c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_RDLY_DQ_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_rdly_dq_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_RDLY_DQS_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x140 = 0xf0000940`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_RDLY_DQS_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_rdly_dqs_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_RDLY_DQS_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x144 = 0xf0000944`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_RDLY_DQS_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_rdly_dqs_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_RDLY_DQS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x148 = 0xf0000948`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_RDLY_DQS
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_rdly_dqs[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_B_RDLY_DQ
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x14c = 0xf000094c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_RDLY_DQ
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_rdly_dq[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_B_WDLY_DQ_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x150 = 0xf0000950`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_WDLY_DQ_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_wdly_dq_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_WDLY_DQ_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x154 = 0xf0000954`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_WDLY_DQ_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_wdly_dq_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_WDLY_DM_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x158 = 0xf0000958`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_WDLY_DM_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_wdly_dm_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_WDLY_DM_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x15c = 0xf000095c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_WDLY_DM_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_wdly_dm_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_WDLY_DQS_RST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x160 = 0xf0000960`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_WDLY_DQS_RST
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_wdly_dqs_rst", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_WDLY_DQS_INC
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x164 = 0xf0000964`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_WDLY_DQS_INC
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_wdly_dqs_inc", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+DDRPHY_CSRMODULE_B_WDLY_DQS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x168 = 0xf0000968`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_WDLY_DQS
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_wdly_dqs[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_B_WDLY_DQ
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x16c = 0xf000096c`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_WDLY_DQ
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_wdly_dq[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+DDRPHY_CSRMODULE_B_WDLY_DM
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x170 = 0xf0000970`
+
+
+    .. wavedrom::
+        :caption: DDRPHY_CSRMODULE_B_WDLY_DM
+
+        {
+            "reg": [
+                {"name": "csrmodule_b_wdly_dm[15:0]", "bits": 16},
+                {"bits": 16},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+

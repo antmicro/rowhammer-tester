@@ -1,0 +1,162 @@
+MAIN
+====
+
+Register Listing for MAIN
+-------------------------
+
++----------------------------------------------------+------------------------------------------+
+| Register                                           | Address                                  |
++====================================================+==========================================+
+| :ref:`MAIN_A_DQ_REMAPPING3 <MAIN_A_DQ_REMAPPING3>` | :ref:`0xf0006800 <MAIN_A_DQ_REMAPPING3>` |
++----------------------------------------------------+------------------------------------------+
+| :ref:`MAIN_A_DQ_REMAPPING2 <MAIN_A_DQ_REMAPPING2>` | :ref:`0xf0006804 <MAIN_A_DQ_REMAPPING2>` |
++----------------------------------------------------+------------------------------------------+
+| :ref:`MAIN_A_DQ_REMAPPING1 <MAIN_A_DQ_REMAPPING1>` | :ref:`0xf0006808 <MAIN_A_DQ_REMAPPING1>` |
++----------------------------------------------------+------------------------------------------+
+| :ref:`MAIN_A_DQ_REMAPPING0 <MAIN_A_DQ_REMAPPING0>` | :ref:`0xf000680c <MAIN_A_DQ_REMAPPING0>` |
++----------------------------------------------------+------------------------------------------+
+| :ref:`MAIN_B_DQ_REMAPPING3 <MAIN_B_DQ_REMAPPING3>` | :ref:`0xf0006810 <MAIN_B_DQ_REMAPPING3>` |
++----------------------------------------------------+------------------------------------------+
+| :ref:`MAIN_B_DQ_REMAPPING2 <MAIN_B_DQ_REMAPPING2>` | :ref:`0xf0006814 <MAIN_B_DQ_REMAPPING2>` |
++----------------------------------------------------+------------------------------------------+
+| :ref:`MAIN_B_DQ_REMAPPING1 <MAIN_B_DQ_REMAPPING1>` | :ref:`0xf0006818 <MAIN_B_DQ_REMAPPING1>` |
++----------------------------------------------------+------------------------------------------+
+| :ref:`MAIN_B_DQ_REMAPPING0 <MAIN_B_DQ_REMAPPING0>` | :ref:`0xf000681c <MAIN_B_DQ_REMAPPING0>` |
++----------------------------------------------------+------------------------------------------+
+
+MAIN_A_DQ_REMAPPING3
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006800 + 0x0 = 0xf0006800`
+
+    Bits 96-127 of `MAIN_A_DQ_REMAPPING`.
+
+    .. wavedrom::
+        :caption: MAIN_A_DQ_REMAPPING3
+
+        {
+            "reg": [
+                {"name": "a_dq_remapping[127:96]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+MAIN_A_DQ_REMAPPING2
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006800 + 0x4 = 0xf0006804`
+
+    Bits 64-95 of `MAIN_A_DQ_REMAPPING`.
+
+    .. wavedrom::
+        :caption: MAIN_A_DQ_REMAPPING2
+
+        {
+            "reg": [
+                {"name": "a_dq_remapping[95:64]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+MAIN_A_DQ_REMAPPING1
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006800 + 0x8 = 0xf0006808`
+
+    Bits 32-63 of `MAIN_A_DQ_REMAPPING`.
+
+    .. wavedrom::
+        :caption: MAIN_A_DQ_REMAPPING1
+
+        {
+            "reg": [
+                {"name": "a_dq_remapping[63:32]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+MAIN_A_DQ_REMAPPING0
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006800 + 0xc = 0xf000680c`
+
+    Bits 0-31 of `MAIN_A_DQ_REMAPPING`.
+
+    .. wavedrom::
+        :caption: MAIN_A_DQ_REMAPPING0
+
+        {
+            "reg": [
+                {"name": "a_dq_remapping[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+MAIN_B_DQ_REMAPPING3
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006800 + 0x10 = 0xf0006810`
+
+    Bits 96-127 of `MAIN_B_DQ_REMAPPING`.
+
+    .. wavedrom::
+        :caption: MAIN_B_DQ_REMAPPING3
+
+        {
+            "reg": [
+                {"name": "b_dq_remapping[127:96]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+MAIN_B_DQ_REMAPPING2
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006800 + 0x14 = 0xf0006814`
+
+    Bits 64-95 of `MAIN_B_DQ_REMAPPING`.
+
+    .. wavedrom::
+        :caption: MAIN_B_DQ_REMAPPING2
+
+        {
+            "reg": [
+                {"name": "b_dq_remapping[95:64]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+MAIN_B_DQ_REMAPPING1
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006800 + 0x18 = 0xf0006818`
+
+    Bits 32-63 of `MAIN_B_DQ_REMAPPING`.
+
+    .. wavedrom::
+        :caption: MAIN_B_DQ_REMAPPING1
+
+        {
+            "reg": [
+                {"name": "b_dq_remapping[63:32]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+MAIN_B_DQ_REMAPPING0
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0006800 + 0x1c = 0xf000681c`
+
+    Bits 0-31 of `MAIN_B_DQ_REMAPPING`.
+
+    .. wavedrom::
+        :caption: MAIN_B_DQ_REMAPPING0
+
+        {
+            "reg": [
+                {"name": "b_dq_remapping[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+

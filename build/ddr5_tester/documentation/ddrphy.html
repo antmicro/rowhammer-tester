@@ -1,0 +1,3578 @@
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="">
+    
+    
+      
+        <title>DDRPHY - Rowhammer tester</title>
+      
+    
+    
+      
+        
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+        <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_immaterial_theme.c5589c0bd87d933a4.min.css?v=eeeb54bc" />
+        <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css?v=4c969af8" />
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="deep-orange">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../index.html" title="Rowhammer tester" class="md-header__button md-logo" aria-label="Rowhammer tester" data-md-component="logo">
+      <img src="../../../_static/white.svg" alt="logo">
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Rowhammer tester
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DDRPHY
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <div class="md-header__button">
+        <a href="../../../rowhammer-tester.pdf" title="PDF - rowhammer-tester.pdf">
+          <div class="md-icon">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64v384c0 35.3 28.7 64 64 64h256c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zm192 0v128h128L256 0zM64 224h24c30.9 0 56 25.1 56 56s-25.1 56-56 56h-8v32c0 8.8-7.2 16-16 16s-16-7.2-16-16V240c0-8.8 7.2-16 16-16zm24 80c13.3 0 24-10.7 24-24s-10.7-24-24-24h-8v48h8zm72-64c0-8.8 7.2-16 16-16h24c26.5 0 48 21.5 48 48v64c0 26.5-21.5 48-48 48h-24c-8.8 0-16-7.2-16-16V240zm32 112h8c8.8 0 16-7.2 16-16v-64c0-8.8-7.2-16-16-16h-8v96zm96-128h48c8.8 0 16 7.2 16 16s-7.2 16-16 16h-32v32h32c8.8 0 16 7.2 16 16s-7.2 16-16 16h-32v48c0 8.8-7.2 16-16 16s-16-7.2-16-16V240c0-8.8 7.2-16 16-16z"/></svg>
+          </div>
+        </a>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/antmicro/rowhammer-tester" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antmicro/rowhammer-tester
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../index.html" title="Rowhammer tester" class="md-nav__button md-logo" aria-label="Rowhammer tester" data-md-component="logo">
+      <img src="../../../_static/white.svg" alt="logo">
+    </a>
+    Rowhammer tester
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/antmicro/rowhammer-tester" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antmicro/rowhammer-tester
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../overview.html" class="md-nav__link">
+        <span class="md-ellipsis">Project overview</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../setup.html" class="md-nav__link">
+        <span class="md-ellipsis">Installation and setup</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../building_rowhammer.html" class="md-nav__link">
+        <span class="md-ellipsis">Building Rowhammer designs</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          <span class="md-ellipsis">Supported hardware</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Supported hardware" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Supported hardware</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../so_dimm_ddr5_tester.html" class="md-nav__link">
+        <span class="md-ellipsis">SO-<wbr>DIMM DDR5 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../rdimm_ddr5_tester.html" class="md-nav__link">
+        <span class="md-ellipsis">RDIMM DDR5 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../rdimm_ddr4_tester.html" class="md-nav__link">
+        <span class="md-ellipsis">RDIMM DDR4 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../lpddr4_test_board.html" class="md-nav__link">
+        <span class="md-ellipsis">LPDDR4 Test Board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../zcu104.html" class="md-nav__link">
+        <span class="md-ellipsis">ZCU104 board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../arty.html" class="md-nav__link">
+        <span class="md-ellipsis">Arty-<wbr>A7 board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../lpddr4_test_bed.html" class="md-nav__link">
+        <span class="md-ellipsis">LPDDR4 Test Bed</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ddr5_test_bed.html" class="md-nav__link">
+        <span class="md-ellipsis">DDR5 Test Bed</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../lpddr5_test_bed.html" class="md-nav__link">
+        <span class="md-ellipsis">LPDDR5 Test Bed</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../hammering.html" class="md-nav__link">
+        <span class="md-ellipsis">Performing attacks <wbr>(hammering)</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../visualization.html" class="md-nav__link">
+        <span class="md-ellipsis">Result visualization</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../playbook.html" class="md-nav__link">
+        <span class="md-ellipsis">Test-<wbr>writing playbook</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../memory_testing.html" class="md-nav__link">
+        <span class="md-ellipsis">Memory testing</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../building_linux.html" class="md-nav__link">
+        <span class="md-ellipsis">Building Linux target</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../pcie_support.html" class="md-nav__link">
+        <span class="md-ellipsis">PCIe support</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11" type="checkbox" id="__nav_11" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11">
+          <span class="md-ellipsis">Digital design</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Digital design" data-md-level="1">
+        <label class="md-nav__title" for="__nav_11">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Digital design</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../arty/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester Arty-<wbr>A7</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../zcu104/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester ZCU104</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ddr4_datacenter_test_board/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester Data Center DRAM Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../lpddr4_test_board/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester LPDDR4 Test Board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ddr5_test_board/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester DDR5 Test Board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_6" type="checkbox" id="__nav_11_6" checked>
+      
+      
+      
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="index.html"><span class="md-ellipsis">Documentation for Row Hammer Tester DDR5 Tester</span></a>
+          
+            <label for="__nav_11_6">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Documentation for Row Hammer Tester DDR5 Tester" data-md-level="2">
+        <label class="md-nav__title" for="__nav_11_6">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Documentation for Row Hammer Tester DDR5 Tester</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html#modules" class="md-nav__link">
+        <span class="md-ellipsis">Modules</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_6_2" type="checkbox" id="__nav_11_6_2" checked>
+      
+      
+      
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="index.html#register-groups"><span class="md-ellipsis">Register Groups</span></a>
+          
+            <label for="__nav_11_6_2">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Register Groups" data-md-level="3">
+        <label class="md-nav__title" for="__nav_11_6_2">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Register Groups</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="leds.html" class="md-nav__link">
+        <span class="md-ellipsis">LEDS</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          <span class="md-ellipsis">DDRPHY</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
+        <span class="md-ellipsis">DDRPHY</span>
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#register-listing-for-ddrphy" class="md-nav__link">
+    <span class="md-ellipsis">Register Listing for DDRPHY</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Register Listing for DDRPHY">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-enable-fifos" class="md-nav__link">
+    <span title="ddrphy_csrmodule_enable_fifos (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>ENABLE_<wbr>FIFOS</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-rdimm-mode" class="md-nav__link">
+    <span title="ddrphy_csrmodule_rdimm_mode (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>RDIMM_<wbr>MODE</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-rdphase" class="md-nav__link">
+    <span title="ddrphy_csrmodule_rdphase (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>RDPHASE</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-wrphase" class="md-nav__link">
+    <span title="ddrphy_csrmodule_wrphase (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>WRPHASE</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-alert" class="md-nav__link">
+    <span title="ddrphy_csrmodule_alert (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>ALERT</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-alert-reduce" class="md-nav__link">
+    <span title="ddrphy_csrmodule_alert_reduce (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>ALERT_<wbr>REDUCE</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-sample-alert" class="md-nav__link">
+    <span title="ddrphy_csrmodule_sample_alert (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>SAMPLE_<wbr>ALERT</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-reset-alert" class="md-nav__link">
+    <span title="ddrphy_csrmodule_reset_alert (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>RESET_<wbr>ALERT</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-ckdly-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_ckdly_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>CKDLY_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-ckdly-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_ckdly_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>CKDLY_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-preamble" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_preamble (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>PREAMBLE</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-wlevel-en" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_wlevel_en (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>WLEVEL_<wbr>EN</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-par-enable" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_par_enable (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>PAR_<wbr>ENABLE</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-par-value" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_par_value (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>PAR_<wbr>VALUE</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-discard-rd-fifo" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_discard_rd_fifo (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>DISCARD_<wbr>RD_<wbr>FIFO</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-dly-sel" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_dly_sel (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>DLY_<wbr>SEL</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-dq-dqs-ratio" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_dq_dqs_ratio (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>DQ_<wbr>DQS_<wbr>RATIO</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-ck-rdly-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_ck_rdly_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CK_<wbr>RDLY_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-ck-rdly-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_ck_rdly_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CK_<wbr>RDLY_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-ck-rddly" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_ck_rddly (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CK_<wbr>RDDLY</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-ck-rddly-preamble" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_ck_rddly_preamble (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CK_<wbr>RDDLY_<wbr>PREAMBLE</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-ck-wdly-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_ck_wdly_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CK_<wbr>WDLY_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-ck-wdly-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_ck_wdly_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CK_<wbr>WDLY_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-ck-wdly-dqs" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_ck_wdly_dqs (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CK_<wbr>WDLY_<wbr>DQS</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-ck-wddly-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_ck_wddly_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CK_<wbr>WDDLY_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-ck-wddly-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_ck_wddly_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CK_<wbr>WDDLY_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-ck-wdly-dq" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_ck_wdly_dq (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CK_<wbr>WDLY_<wbr>DQ</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-dq-dly-sel" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_dq_dly_sel (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>DQ_<wbr>DLY_<wbr>SEL</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-csdly-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_csdly_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CSDLY_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-csdly-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_csdly_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CSDLY_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-cadly-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_cadly_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CADLY_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-cadly-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_cadly_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CADLY_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-pardly-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_pardly_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>PARDLY_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-pardly-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_pardly_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>PARDLY_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-csdly" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_csdly (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CSDLY</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-cadly" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_cadly (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>CADLY</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-rdly-dq-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_rdly_dq_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>RDLY_<wbr>DQ_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-rdly-dq-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_rdly_dq_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>RDLY_<wbr>DQ_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-rdly-dqs-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_rdly_dqs_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>RDLY_<wbr>DQS_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-rdly-dqs-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_rdly_dqs_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>RDLY_<wbr>DQS_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-rdly-dqs" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_rdly_dqs (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>RDLY_<wbr>DQS</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-rdly-dq" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_rdly_dq (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>RDLY_<wbr>DQ</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-wdly-dq-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_wdly_dq_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>WDLY_<wbr>DQ_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-wdly-dq-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_wdly_dq_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>WDLY_<wbr>DQ_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-wdly-dm-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_wdly_dm_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>WDLY_<wbr>DM_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-wdly-dm-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_wdly_dm_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>WDLY_<wbr>DM_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-wdly-dqs-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_wdly_dqs_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>WDLY_<wbr>DQS_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-wdly-dqs-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_wdly_dqs_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>WDLY_<wbr>DQS_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-wdly-dqs" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_wdly_dqs (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>WDLY_<wbr>DQS</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-wdly-dq" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_wdly_dq (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>WDLY_<wbr>DQ</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-a-wdly-dm" class="md-nav__link">
+    <span title="ddrphy_csrmodule_a_wdly_dm (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>A_<wbr>WDLY_<wbr>DM</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-preamble" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_preamble (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>PREAMBLE</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-wlevel-en" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_wlevel_en (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>WLEVEL_<wbr>EN</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-par-enable" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_par_enable (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>PAR_<wbr>ENABLE</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-par-value" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_par_value (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>PAR_<wbr>VALUE</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-discard-rd-fifo" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_discard_rd_fifo (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>DISCARD_<wbr>RD_<wbr>FIFO</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-dly-sel" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_dly_sel (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>DLY_<wbr>SEL</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-dq-dqs-ratio" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_dq_dqs_ratio (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>DQ_<wbr>DQS_<wbr>RATIO</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-ck-rdly-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_ck_rdly_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CK_<wbr>RDLY_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-ck-rdly-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_ck_rdly_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CK_<wbr>RDLY_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-ck-rddly" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_ck_rddly (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CK_<wbr>RDDLY</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-ck-rddly-preamble" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_ck_rddly_preamble (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CK_<wbr>RDDLY_<wbr>PREAMBLE</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-ck-wdly-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_ck_wdly_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CK_<wbr>WDLY_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-ck-wdly-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_ck_wdly_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CK_<wbr>WDLY_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-ck-wdly-dqs" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_ck_wdly_dqs (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CK_<wbr>WDLY_<wbr>DQS</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-ck-wddly-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_ck_wddly_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CK_<wbr>WDDLY_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-ck-wddly-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_ck_wddly_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CK_<wbr>WDDLY_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-ck-wdly-dq" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_ck_wdly_dq (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CK_<wbr>WDLY_<wbr>DQ</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-dq-dly-sel" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_dq_dly_sel (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>DQ_<wbr>DLY_<wbr>SEL</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-csdly-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_csdly_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CSDLY_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-csdly-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_csdly_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CSDLY_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-cadly-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_cadly_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CADLY_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-cadly-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_cadly_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CADLY_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-pardly-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_pardly_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>PARDLY_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-pardly-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_pardly_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>PARDLY_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-csdly" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_csdly (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CSDLY</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-cadly" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_cadly (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>CADLY</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-rdly-dq-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_rdly_dq_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>RDLY_<wbr>DQ_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-rdly-dq-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_rdly_dq_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>RDLY_<wbr>DQ_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-rdly-dqs-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_rdly_dqs_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>RDLY_<wbr>DQS_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-rdly-dqs-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_rdly_dqs_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>RDLY_<wbr>DQS_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-rdly-dqs" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_rdly_dqs (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>RDLY_<wbr>DQS</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-rdly-dq" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_rdly_dq (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>RDLY_<wbr>DQ</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-wdly-dq-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_wdly_dq_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>WDLY_<wbr>DQ_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-wdly-dq-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_wdly_dq_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>WDLY_<wbr>DQ_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-wdly-dm-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_wdly_dm_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>WDLY_<wbr>DM_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-wdly-dm-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_wdly_dm_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>WDLY_<wbr>DM_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-wdly-dqs-rst" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_wdly_dqs_rst (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>WDLY_<wbr>DQS_<wbr>RST</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-wdly-dqs-inc" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_wdly_dqs_inc (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>WDLY_<wbr>DQS_<wbr>INC</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-wdly-dqs" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_wdly_dqs (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>WDLY_<wbr>DQS</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-wdly-dq" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_wdly_dq (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>WDLY_<wbr>DQ</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ddrphy-csrmodule-b-wdly-dm" class="md-nav__link">
+    <span title="ddrphy_csrmodule_b_wdly_dm (reference label)" class="md-ellipsis">DDRPHY_<wbr>CSRMODULE_<wbr>B_<wbr>WDLY_<wbr>DM</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="controller_settings.html" class="md-nav__link">
+        <span class="md-ellipsis">CONTROLLER_<wbr>SETTINGS</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ddrctrl.html" class="md-nav__link">
+        <span class="md-ellipsis">DDRCTRL</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rowhammer.html" class="md-nav__link">
+        <span class="md-ellipsis">ROWHAMMER</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="writer.html" class="md-nav__link">
+        <span class="md-ellipsis">WRITER</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reader.html" class="md-nav__link">
+        <span class="md-ellipsis">READER</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dfi_switch.html" class="md-nav__link">
+        <span class="md-ellipsis">DFI_<wbr>SWITCH</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="payload_executor.html" class="md-nav__link">
+        <span class="md-ellipsis">PAYLOAD_<wbr>EXECUTOR</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="i2c.html" class="md-nav__link">
+        <span class="md-ellipsis">I2C</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ctrl.html" class="md-nav__link">
+        <span class="md-ellipsis">CTRL</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ethphy.html" class="md-nav__link">
+        <span class="md-ellipsis">ETHPHY</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="identifier_mem.html" class="md-nav__link">
+        <span class="md-ellipsis">IDENTIFIER_<wbr>MEM</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="main.html" class="md-nav__link">
+        <span class="md-ellipsis">MAIN</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="sdram.html" class="md-nav__link">
+        <span class="md-ellipsis">SDRAM</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="sdram_checker.html" class="md-nav__link">
+        <span class="md-ellipsis">SDRAM_<wbr>CHECKER</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="sdram_generator.html" class="md-nav__link">
+        <span class="md-ellipsis">SDRAM_<wbr>GENERATOR</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="timer0.html" class="md-nav__link">
+        <span class="md-ellipsis">TIMER0</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="uart.html" class="md-nav__link">
+        <span class="md-ellipsis">UART</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset" role="main">
+                  
+
+
+  <a href="https://github.com/antmicro/rowhammer-tester/blob/main/docs/source/build/ddr5_tester/documentation/ddrphy.rst" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+<h1 id="ddrphy">DDRPHY<a class="headerlink" href="#ddrphy" title="Link to this heading">¶</a></h1>
+<h2 id="register-listing-for-ddrphy">Register Listing for DDRPHY<a class="headerlink" href="#register-listing-for-ddrphy" title="Link to this heading">¶</a></h2>
+<table class="docutils data align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Register</p></th>
+<th class="head"><p>Address</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-enable-fifos"><span class="std std-ref">DDRPHY_CSRMODULE_ENABLE_FIFOS</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-enable-fifos"><span class="std std-ref">0xf0000800</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-rst"><span class="std std-ref">DDRPHY_CSRMODULE_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-rst"><span class="std std-ref">0xf0000804</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-rdimm-mode"><span class="std std-ref">DDRPHY_CSRMODULE_RDIMM_MODE</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-rdimm-mode"><span class="std std-ref">0xf0000808</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-rdphase"><span class="std std-ref">DDRPHY_CSRMODULE_RDPHASE</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-rdphase"><span class="std std-ref">0xf000080c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-wrphase"><span class="std std-ref">DDRPHY_CSRMODULE_WRPHASE</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-wrphase"><span class="std std-ref">0xf0000810</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-alert"><span class="std std-ref">DDRPHY_CSRMODULE_ALERT</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-alert"><span class="std std-ref">0xf0000814</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-alert-reduce"><span class="std std-ref">DDRPHY_CSRMODULE_ALERT_REDUCE</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-alert-reduce"><span class="std std-ref">0xf0000818</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-sample-alert"><span class="std std-ref">DDRPHY_CSRMODULE_SAMPLE_ALERT</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-sample-alert"><span class="std std-ref">0xf000081c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-reset-alert"><span class="std std-ref">DDRPHY_CSRMODULE_RESET_ALERT</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-reset-alert"><span class="std std-ref">0xf0000820</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-ckdly-rst"><span class="std std-ref">DDRPHY_CSRMODULE_CKDLY_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-ckdly-rst"><span class="std std-ref">0xf0000824</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-ckdly-inc"><span class="std std-ref">DDRPHY_CSRMODULE_CKDLY_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-ckdly-inc"><span class="std std-ref">0xf0000828</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-preamble"><span class="std std-ref">DDRPHY_CSRMODULE_A_PREAMBLE</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-preamble"><span class="std std-ref">0xf000082c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wlevel-en"><span class="std std-ref">DDRPHY_CSRMODULE_A_WLEVEL_EN</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wlevel-en"><span class="std std-ref">0xf0000830</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-par-enable"><span class="std std-ref">DDRPHY_CSRMODULE_A_PAR_ENABLE</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-par-enable"><span class="std std-ref">0xf0000834</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-par-value"><span class="std std-ref">DDRPHY_CSRMODULE_A_PAR_VALUE</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-par-value"><span class="std std-ref">0xf0000838</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-discard-rd-fifo"><span class="std std-ref">DDRPHY_CSRMODULE_A_DISCARD_RD_FIFO</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-discard-rd-fifo"><span class="std std-ref">0xf000083c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-dly-sel"><span class="std std-ref">DDRPHY_CSRMODULE_A_DLY_SEL</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-dly-sel"><span class="std std-ref">0xf0000840</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-dq-dqs-ratio"><span class="std std-ref">DDRPHY_CSRMODULE_A_DQ_DQS_RATIO</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-dq-dqs-ratio"><span class="std std-ref">0xf0000844</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-rdly-inc"><span class="std std-ref">DDRPHY_CSRMODULE_A_CK_RDLY_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-rdly-inc"><span class="std std-ref">0xf0000848</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-rdly-rst"><span class="std std-ref">DDRPHY_CSRMODULE_A_CK_RDLY_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-rdly-rst"><span class="std std-ref">0xf000084c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-rddly"><span class="std std-ref">DDRPHY_CSRMODULE_A_CK_RDDLY</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-rddly"><span class="std std-ref">0xf0000850</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-rddly-preamble"><span class="std std-ref">DDRPHY_CSRMODULE_A_CK_RDDLY_PREAMBLE</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-rddly-preamble"><span class="std std-ref">0xf0000854</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-wdly-inc"><span class="std std-ref">DDRPHY_CSRMODULE_A_CK_WDLY_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-wdly-inc"><span class="std std-ref">0xf0000858</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-wdly-rst"><span class="std std-ref">DDRPHY_CSRMODULE_A_CK_WDLY_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-wdly-rst"><span class="std std-ref">0xf000085c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-wdly-dqs"><span class="std std-ref">DDRPHY_CSRMODULE_A_CK_WDLY_DQS</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-wdly-dqs"><span class="std std-ref">0xf0000860</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-wddly-inc"><span class="std std-ref">DDRPHY_CSRMODULE_A_CK_WDDLY_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-wddly-inc"><span class="std std-ref">0xf0000864</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-wddly-rst"><span class="std std-ref">DDRPHY_CSRMODULE_A_CK_WDDLY_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-wddly-rst"><span class="std std-ref">0xf0000868</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-wdly-dq"><span class="std std-ref">DDRPHY_CSRMODULE_A_CK_WDLY_DQ</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-ck-wdly-dq"><span class="std std-ref">0xf000086c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-dq-dly-sel"><span class="std std-ref">DDRPHY_CSRMODULE_A_DQ_DLY_SEL</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-dq-dly-sel"><span class="std std-ref">0xf0000870</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-csdly-rst"><span class="std std-ref">DDRPHY_CSRMODULE_A_CSDLY_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-csdly-rst"><span class="std std-ref">0xf0000874</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-csdly-inc"><span class="std std-ref">DDRPHY_CSRMODULE_A_CSDLY_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-csdly-inc"><span class="std std-ref">0xf0000878</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-cadly-rst"><span class="std std-ref">DDRPHY_CSRMODULE_A_CADLY_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-cadly-rst"><span class="std std-ref">0xf000087c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-cadly-inc"><span class="std std-ref">DDRPHY_CSRMODULE_A_CADLY_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-cadly-inc"><span class="std std-ref">0xf0000880</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-pardly-rst"><span class="std std-ref">DDRPHY_CSRMODULE_A_PARDLY_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-pardly-rst"><span class="std std-ref">0xf0000884</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-pardly-inc"><span class="std std-ref">DDRPHY_CSRMODULE_A_PARDLY_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-pardly-inc"><span class="std std-ref">0xf0000888</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-csdly"><span class="std std-ref">DDRPHY_CSRMODULE_A_CSDLY</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-csdly"><span class="std std-ref">0xf000088c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-cadly"><span class="std std-ref">DDRPHY_CSRMODULE_A_CADLY</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-cadly"><span class="std std-ref">0xf0000890</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-rdly-dq-rst"><span class="std std-ref">DDRPHY_CSRMODULE_A_RDLY_DQ_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-rdly-dq-rst"><span class="std std-ref">0xf0000894</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-rdly-dq-inc"><span class="std std-ref">DDRPHY_CSRMODULE_A_RDLY_DQ_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-rdly-dq-inc"><span class="std std-ref">0xf0000898</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-rdly-dqs-rst"><span class="std std-ref">DDRPHY_CSRMODULE_A_RDLY_DQS_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-rdly-dqs-rst"><span class="std std-ref">0xf000089c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-rdly-dqs-inc"><span class="std std-ref">DDRPHY_CSRMODULE_A_RDLY_DQS_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-rdly-dqs-inc"><span class="std std-ref">0xf00008a0</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-rdly-dqs"><span class="std std-ref">DDRPHY_CSRMODULE_A_RDLY_DQS</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-rdly-dqs"><span class="std std-ref">0xf00008a4</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-rdly-dq"><span class="std std-ref">DDRPHY_CSRMODULE_A_RDLY_DQ</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-rdly-dq"><span class="std std-ref">0xf00008a8</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dq-rst"><span class="std std-ref">DDRPHY_CSRMODULE_A_WDLY_DQ_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dq-rst"><span class="std std-ref">0xf00008ac</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dq-inc"><span class="std std-ref">DDRPHY_CSRMODULE_A_WDLY_DQ_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dq-inc"><span class="std std-ref">0xf00008b0</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dm-rst"><span class="std std-ref">DDRPHY_CSRMODULE_A_WDLY_DM_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dm-rst"><span class="std std-ref">0xf00008b4</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dm-inc"><span class="std std-ref">DDRPHY_CSRMODULE_A_WDLY_DM_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dm-inc"><span class="std std-ref">0xf00008b8</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dqs-rst"><span class="std std-ref">DDRPHY_CSRMODULE_A_WDLY_DQS_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dqs-rst"><span class="std std-ref">0xf00008bc</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dqs-inc"><span class="std std-ref">DDRPHY_CSRMODULE_A_WDLY_DQS_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dqs-inc"><span class="std std-ref">0xf00008c0</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dqs"><span class="std std-ref">DDRPHY_CSRMODULE_A_WDLY_DQS</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dqs"><span class="std std-ref">0xf00008c4</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dq"><span class="std std-ref">DDRPHY_CSRMODULE_A_WDLY_DQ</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dq"><span class="std std-ref">0xf00008c8</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dm"><span class="std std-ref">DDRPHY_CSRMODULE_A_WDLY_DM</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-a-wdly-dm"><span class="std std-ref">0xf00008cc</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-preamble"><span class="std std-ref">DDRPHY_CSRMODULE_B_PREAMBLE</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-preamble"><span class="std std-ref">0xf00008d0</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wlevel-en"><span class="std std-ref">DDRPHY_CSRMODULE_B_WLEVEL_EN</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wlevel-en"><span class="std std-ref">0xf00008d4</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-par-enable"><span class="std std-ref">DDRPHY_CSRMODULE_B_PAR_ENABLE</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-par-enable"><span class="std std-ref">0xf00008d8</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-par-value"><span class="std std-ref">DDRPHY_CSRMODULE_B_PAR_VALUE</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-par-value"><span class="std std-ref">0xf00008dc</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-discard-rd-fifo"><span class="std std-ref">DDRPHY_CSRMODULE_B_DISCARD_RD_FIFO</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-discard-rd-fifo"><span class="std std-ref">0xf00008e0</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-dly-sel"><span class="std std-ref">DDRPHY_CSRMODULE_B_DLY_SEL</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-dly-sel"><span class="std std-ref">0xf00008e4</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-dq-dqs-ratio"><span class="std std-ref">DDRPHY_CSRMODULE_B_DQ_DQS_RATIO</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-dq-dqs-ratio"><span class="std std-ref">0xf00008e8</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-rdly-inc"><span class="std std-ref">DDRPHY_CSRMODULE_B_CK_RDLY_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-rdly-inc"><span class="std std-ref">0xf00008ec</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-rdly-rst"><span class="std std-ref">DDRPHY_CSRMODULE_B_CK_RDLY_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-rdly-rst"><span class="std std-ref">0xf00008f0</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-rddly"><span class="std std-ref">DDRPHY_CSRMODULE_B_CK_RDDLY</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-rddly"><span class="std std-ref">0xf00008f4</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-rddly-preamble"><span class="std std-ref">DDRPHY_CSRMODULE_B_CK_RDDLY_PREAMBLE</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-rddly-preamble"><span class="std std-ref">0xf00008f8</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-wdly-inc"><span class="std std-ref">DDRPHY_CSRMODULE_B_CK_WDLY_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-wdly-inc"><span class="std std-ref">0xf00008fc</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-wdly-rst"><span class="std std-ref">DDRPHY_CSRMODULE_B_CK_WDLY_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-wdly-rst"><span class="std std-ref">0xf0000900</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-wdly-dqs"><span class="std std-ref">DDRPHY_CSRMODULE_B_CK_WDLY_DQS</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-wdly-dqs"><span class="std std-ref">0xf0000904</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-wddly-inc"><span class="std std-ref">DDRPHY_CSRMODULE_B_CK_WDDLY_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-wddly-inc"><span class="std std-ref">0xf0000908</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-wddly-rst"><span class="std std-ref">DDRPHY_CSRMODULE_B_CK_WDDLY_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-wddly-rst"><span class="std std-ref">0xf000090c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-wdly-dq"><span class="std std-ref">DDRPHY_CSRMODULE_B_CK_WDLY_DQ</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-ck-wdly-dq"><span class="std std-ref">0xf0000910</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-dq-dly-sel"><span class="std std-ref">DDRPHY_CSRMODULE_B_DQ_DLY_SEL</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-dq-dly-sel"><span class="std std-ref">0xf0000914</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-csdly-rst"><span class="std std-ref">DDRPHY_CSRMODULE_B_CSDLY_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-csdly-rst"><span class="std std-ref">0xf0000918</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-csdly-inc"><span class="std std-ref">DDRPHY_CSRMODULE_B_CSDLY_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-csdly-inc"><span class="std std-ref">0xf000091c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-cadly-rst"><span class="std std-ref">DDRPHY_CSRMODULE_B_CADLY_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-cadly-rst"><span class="std std-ref">0xf0000920</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-cadly-inc"><span class="std std-ref">DDRPHY_CSRMODULE_B_CADLY_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-cadly-inc"><span class="std std-ref">0xf0000924</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-pardly-rst"><span class="std std-ref">DDRPHY_CSRMODULE_B_PARDLY_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-pardly-rst"><span class="std std-ref">0xf0000928</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-pardly-inc"><span class="std std-ref">DDRPHY_CSRMODULE_B_PARDLY_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-pardly-inc"><span class="std std-ref">0xf000092c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-csdly"><span class="std std-ref">DDRPHY_CSRMODULE_B_CSDLY</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-csdly"><span class="std std-ref">0xf0000930</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-cadly"><span class="std std-ref">DDRPHY_CSRMODULE_B_CADLY</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-cadly"><span class="std std-ref">0xf0000934</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-rdly-dq-rst"><span class="std std-ref">DDRPHY_CSRMODULE_B_RDLY_DQ_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-rdly-dq-rst"><span class="std std-ref">0xf0000938</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-rdly-dq-inc"><span class="std std-ref">DDRPHY_CSRMODULE_B_RDLY_DQ_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-rdly-dq-inc"><span class="std std-ref">0xf000093c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-rdly-dqs-rst"><span class="std std-ref">DDRPHY_CSRMODULE_B_RDLY_DQS_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-rdly-dqs-rst"><span class="std std-ref">0xf0000940</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-rdly-dqs-inc"><span class="std std-ref">DDRPHY_CSRMODULE_B_RDLY_DQS_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-rdly-dqs-inc"><span class="std std-ref">0xf0000944</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-rdly-dqs"><span class="std std-ref">DDRPHY_CSRMODULE_B_RDLY_DQS</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-rdly-dqs"><span class="std std-ref">0xf0000948</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-rdly-dq"><span class="std std-ref">DDRPHY_CSRMODULE_B_RDLY_DQ</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-rdly-dq"><span class="std std-ref">0xf000094c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dq-rst"><span class="std std-ref">DDRPHY_CSRMODULE_B_WDLY_DQ_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dq-rst"><span class="std std-ref">0xf0000950</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dq-inc"><span class="std std-ref">DDRPHY_CSRMODULE_B_WDLY_DQ_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dq-inc"><span class="std std-ref">0xf0000954</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dm-rst"><span class="std std-ref">DDRPHY_CSRMODULE_B_WDLY_DM_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dm-rst"><span class="std std-ref">0xf0000958</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dm-inc"><span class="std std-ref">DDRPHY_CSRMODULE_B_WDLY_DM_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dm-inc"><span class="std std-ref">0xf000095c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dqs-rst"><span class="std std-ref">DDRPHY_CSRMODULE_B_WDLY_DQS_RST</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dqs-rst"><span class="std std-ref">0xf0000960</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dqs-inc"><span class="std std-ref">DDRPHY_CSRMODULE_B_WDLY_DQS_INC</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dqs-inc"><span class="std std-ref">0xf0000964</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dqs"><span class="std std-ref">DDRPHY_CSRMODULE_B_WDLY_DQS</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dqs"><span class="std std-ref">0xf0000968</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dq"><span class="std std-ref">DDRPHY_CSRMODULE_B_WDLY_DQ</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dq"><span class="std std-ref">0xf000096c</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dm"><span class="std std-ref">DDRPHY_CSRMODULE_B_WDLY_DM</span></a></p></td>
+<td><p><a class="reference internal" href="#ddrphy-csrmodule-b-wdly-dm"><span class="std std-ref">0xf0000970</span></a></p></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ddrphy-csrmodule-enable-fifos">DDRPHY_CSRMODULE_ENABLE_FIFOS<a class="headerlink" href="#ddrphy-csrmodule-enable-fifos" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x0 = 0xf0000800</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_enable_fifos", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-rst">DDRPHY_CSRMODULE_RST<a class="headerlink" href="#ddrphy-csrmodule-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x4 = 0xf0000804</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_rst", "attr": 'reset: 1', "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-rdimm-mode">DDRPHY_CSRMODULE_RDIMM_MODE<a class="headerlink" href="#ddrphy-csrmodule-rdimm-mode" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x8 = 0xf0000808</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_rdimm_mode", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-rdphase">DDRPHY_CSRMODULE_RDPHASE<a class="headerlink" href="#ddrphy-csrmodule-rdphase" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xc = 0xf000080c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_rdphase[1:0]", "bits": 2},
+        {"bits": 30},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-wrphase">DDRPHY_CSRMODULE_WRPHASE<a class="headerlink" href="#ddrphy-csrmodule-wrphase" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x10 = 0xf0000810</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_wrphase[1:0]", "bits": 2},
+        {"bits": 30},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-alert">DDRPHY_CSRMODULE_ALERT<a class="headerlink" href="#ddrphy-csrmodule-alert" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x14 = 0xf0000814</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_alert", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-alert-reduce">DDRPHY_CSRMODULE_ALERT_REDUCE<a class="headerlink" href="#ddrphy-csrmodule-alert-reduce" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x18 = 0xf0000818</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "initial_state",  "bits": 1},
+        {"name": "operation",  "bits": 1},
+        {"bits": 30}
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<table class="docutils data align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>[0]</p></td>
+<td><p>INITIAL_STATE</p></td>
+<td><p>Initial value of all bits</p></td>
+</tr>
+<tr class="row-odd"><td><p>[1]</p></td>
+<td><p>OPERATION</p></td>
+<td><p>0 - <cite>or</cite> (default), 1 -<cite>and</cite></p></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ddrphy-csrmodule-sample-alert">DDRPHY_CSRMODULE_SAMPLE_ALERT<a class="headerlink" href="#ddrphy-csrmodule-sample-alert" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x1c = 0xf000081c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_sample_alert", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-reset-alert">DDRPHY_CSRMODULE_RESET_ALERT<a class="headerlink" href="#ddrphy-csrmodule-reset-alert" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x20 = 0xf0000820</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_reset_alert", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-ckdly-rst">DDRPHY_CSRMODULE_CKDLY_RST<a class="headerlink" href="#ddrphy-csrmodule-ckdly-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x24 = 0xf0000824</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_ckdly_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-ckdly-inc">DDRPHY_CSRMODULE_CKDLY_INC<a class="headerlink" href="#ddrphy-csrmodule-ckdly-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x28 = 0xf0000828</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_ckdly_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-preamble">DDRPHY_CSRMODULE_A_PREAMBLE<a class="headerlink" href="#ddrphy-csrmodule-a-preamble" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x2c = 0xf000082c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_preamble[3:0]", "bits": 4},
+        {"bits": 28},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-wlevel-en">DDRPHY_CSRMODULE_A_WLEVEL_EN<a class="headerlink" href="#ddrphy-csrmodule-a-wlevel-en" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x30 = 0xf0000830</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_wlevel_en", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-par-enable">DDRPHY_CSRMODULE_A_PAR_ENABLE<a class="headerlink" href="#ddrphy-csrmodule-a-par-enable" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x34 = 0xf0000834</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_par_enable", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-par-value">DDRPHY_CSRMODULE_A_PAR_VALUE<a class="headerlink" href="#ddrphy-csrmodule-a-par-value" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x38 = 0xf0000838</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_par_value", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-discard-rd-fifo">DDRPHY_CSRMODULE_A_DISCARD_RD_FIFO<a class="headerlink" href="#ddrphy-csrmodule-a-discard-rd-fifo" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x3c = 0xf000083c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_discard_rd_fifo", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-dly-sel">DDRPHY_CSRMODULE_A_DLY_SEL<a class="headerlink" href="#ddrphy-csrmodule-a-dly-sel" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x40 = 0xf0000840</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_dly_sel[13:0]", "bits": 14},
+        {"bits": 18},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-dq-dqs-ratio">DDRPHY_CSRMODULE_A_DQ_DQS_RATIO<a class="headerlink" href="#ddrphy-csrmodule-a-dq-dqs-ratio" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x44 = 0xf0000844</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_dq_dqs_ratio[3:0]", "attr": 'reset: 4', "bits": 4},
+        {"bits": 28},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-ck-rdly-inc">DDRPHY_CSRMODULE_A_CK_RDLY_INC<a class="headerlink" href="#ddrphy-csrmodule-a-ck-rdly-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x48 = 0xf0000848</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_ck_rdly_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-ck-rdly-rst">DDRPHY_CSRMODULE_A_CK_RDLY_RST<a class="headerlink" href="#ddrphy-csrmodule-a-ck-rdly-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x4c = 0xf000084c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_ck_rdly_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-ck-rddly">DDRPHY_CSRMODULE_A_CK_RDDLY<a class="headerlink" href="#ddrphy-csrmodule-a-ck-rddly" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x50 = 0xf0000850</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_ck_rddly[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-ck-rddly-preamble">DDRPHY_CSRMODULE_A_CK_RDDLY_PREAMBLE<a class="headerlink" href="#ddrphy-csrmodule-a-ck-rddly-preamble" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x54 = 0xf0000854</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_ck_rddly_preamble[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-ck-wdly-inc">DDRPHY_CSRMODULE_A_CK_WDLY_INC<a class="headerlink" href="#ddrphy-csrmodule-a-ck-wdly-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x58 = 0xf0000858</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_ck_wdly_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-ck-wdly-rst">DDRPHY_CSRMODULE_A_CK_WDLY_RST<a class="headerlink" href="#ddrphy-csrmodule-a-ck-wdly-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x5c = 0xf000085c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_ck_wdly_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-ck-wdly-dqs">DDRPHY_CSRMODULE_A_CK_WDLY_DQS<a class="headerlink" href="#ddrphy-csrmodule-a-ck-wdly-dqs" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x60 = 0xf0000860</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_ck_wdly_dqs[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-ck-wddly-inc">DDRPHY_CSRMODULE_A_CK_WDDLY_INC<a class="headerlink" href="#ddrphy-csrmodule-a-ck-wddly-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x64 = 0xf0000864</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_ck_wddly_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-ck-wddly-rst">DDRPHY_CSRMODULE_A_CK_WDDLY_RST<a class="headerlink" href="#ddrphy-csrmodule-a-ck-wddly-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x68 = 0xf0000868</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_ck_wddly_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-ck-wdly-dq">DDRPHY_CSRMODULE_A_CK_WDLY_DQ<a class="headerlink" href="#ddrphy-csrmodule-a-ck-wdly-dq" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x6c = 0xf000086c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_ck_wdly_dq[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-dq-dly-sel">DDRPHY_CSRMODULE_A_DQ_DLY_SEL<a class="headerlink" href="#ddrphy-csrmodule-a-dq-dly-sel" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x70 = 0xf0000870</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_dq_dly_sel[3:0]", "bits": 4},
+        {"bits": 28},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-csdly-rst">DDRPHY_CSRMODULE_A_CSDLY_RST<a class="headerlink" href="#ddrphy-csrmodule-a-csdly-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x74 = 0xf0000874</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_csdly_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-csdly-inc">DDRPHY_CSRMODULE_A_CSDLY_INC<a class="headerlink" href="#ddrphy-csrmodule-a-csdly-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x78 = 0xf0000878</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_csdly_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-cadly-rst">DDRPHY_CSRMODULE_A_CADLY_RST<a class="headerlink" href="#ddrphy-csrmodule-a-cadly-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x7c = 0xf000087c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_cadly_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-cadly-inc">DDRPHY_CSRMODULE_A_CADLY_INC<a class="headerlink" href="#ddrphy-csrmodule-a-cadly-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x80 = 0xf0000880</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_cadly_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-pardly-rst">DDRPHY_CSRMODULE_A_PARDLY_RST<a class="headerlink" href="#ddrphy-csrmodule-a-pardly-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x84 = 0xf0000884</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_pardly_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-pardly-inc">DDRPHY_CSRMODULE_A_PARDLY_INC<a class="headerlink" href="#ddrphy-csrmodule-a-pardly-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x88 = 0xf0000888</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_pardly_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-csdly">DDRPHY_CSRMODULE_A_CSDLY<a class="headerlink" href="#ddrphy-csrmodule-a-csdly" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x8c = 0xf000088c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_csdly[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-cadly">DDRPHY_CSRMODULE_A_CADLY<a class="headerlink" href="#ddrphy-csrmodule-a-cadly" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x90 = 0xf0000890</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_cadly[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-rdly-dq-rst">DDRPHY_CSRMODULE_A_RDLY_DQ_RST<a class="headerlink" href="#ddrphy-csrmodule-a-rdly-dq-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x94 = 0xf0000894</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_rdly_dq_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-rdly-dq-inc">DDRPHY_CSRMODULE_A_RDLY_DQ_INC<a class="headerlink" href="#ddrphy-csrmodule-a-rdly-dq-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x98 = 0xf0000898</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_rdly_dq_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-rdly-dqs-rst">DDRPHY_CSRMODULE_A_RDLY_DQS_RST<a class="headerlink" href="#ddrphy-csrmodule-a-rdly-dqs-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x9c = 0xf000089c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_rdly_dqs_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-rdly-dqs-inc">DDRPHY_CSRMODULE_A_RDLY_DQS_INC<a class="headerlink" href="#ddrphy-csrmodule-a-rdly-dqs-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xa0 = 0xf00008a0</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_rdly_dqs_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-rdly-dqs">DDRPHY_CSRMODULE_A_RDLY_DQS<a class="headerlink" href="#ddrphy-csrmodule-a-rdly-dqs" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xa4 = 0xf00008a4</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_rdly_dqs[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-rdly-dq">DDRPHY_CSRMODULE_A_RDLY_DQ<a class="headerlink" href="#ddrphy-csrmodule-a-rdly-dq" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xa8 = 0xf00008a8</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_rdly_dq[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-wdly-dq-rst">DDRPHY_CSRMODULE_A_WDLY_DQ_RST<a class="headerlink" href="#ddrphy-csrmodule-a-wdly-dq-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xac = 0xf00008ac</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_wdly_dq_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-wdly-dq-inc">DDRPHY_CSRMODULE_A_WDLY_DQ_INC<a class="headerlink" href="#ddrphy-csrmodule-a-wdly-dq-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xb0 = 0xf00008b0</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_wdly_dq_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-wdly-dm-rst">DDRPHY_CSRMODULE_A_WDLY_DM_RST<a class="headerlink" href="#ddrphy-csrmodule-a-wdly-dm-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xb4 = 0xf00008b4</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_wdly_dm_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-wdly-dm-inc">DDRPHY_CSRMODULE_A_WDLY_DM_INC<a class="headerlink" href="#ddrphy-csrmodule-a-wdly-dm-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xb8 = 0xf00008b8</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_wdly_dm_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-wdly-dqs-rst">DDRPHY_CSRMODULE_A_WDLY_DQS_RST<a class="headerlink" href="#ddrphy-csrmodule-a-wdly-dqs-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xbc = 0xf00008bc</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_wdly_dqs_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-wdly-dqs-inc">DDRPHY_CSRMODULE_A_WDLY_DQS_INC<a class="headerlink" href="#ddrphy-csrmodule-a-wdly-dqs-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xc0 = 0xf00008c0</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_wdly_dqs_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-wdly-dqs">DDRPHY_CSRMODULE_A_WDLY_DQS<a class="headerlink" href="#ddrphy-csrmodule-a-wdly-dqs" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xc4 = 0xf00008c4</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_wdly_dqs[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-wdly-dq">DDRPHY_CSRMODULE_A_WDLY_DQ<a class="headerlink" href="#ddrphy-csrmodule-a-wdly-dq" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xc8 = 0xf00008c8</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_wdly_dq[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-a-wdly-dm">DDRPHY_CSRMODULE_A_WDLY_DM<a class="headerlink" href="#ddrphy-csrmodule-a-wdly-dm" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xcc = 0xf00008cc</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_a_wdly_dm[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-preamble">DDRPHY_CSRMODULE_B_PREAMBLE<a class="headerlink" href="#ddrphy-csrmodule-b-preamble" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xd0 = 0xf00008d0</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_preamble[3:0]", "bits": 4},
+        {"bits": 28},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-wlevel-en">DDRPHY_CSRMODULE_B_WLEVEL_EN<a class="headerlink" href="#ddrphy-csrmodule-b-wlevel-en" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xd4 = 0xf00008d4</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_wlevel_en", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-par-enable">DDRPHY_CSRMODULE_B_PAR_ENABLE<a class="headerlink" href="#ddrphy-csrmodule-b-par-enable" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xd8 = 0xf00008d8</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_par_enable", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-par-value">DDRPHY_CSRMODULE_B_PAR_VALUE<a class="headerlink" href="#ddrphy-csrmodule-b-par-value" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xdc = 0xf00008dc</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_par_value", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-discard-rd-fifo">DDRPHY_CSRMODULE_B_DISCARD_RD_FIFO<a class="headerlink" href="#ddrphy-csrmodule-b-discard-rd-fifo" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xe0 = 0xf00008e0</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_discard_rd_fifo", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-dly-sel">DDRPHY_CSRMODULE_B_DLY_SEL<a class="headerlink" href="#ddrphy-csrmodule-b-dly-sel" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xe4 = 0xf00008e4</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_dly_sel[13:0]", "bits": 14},
+        {"bits": 18},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-dq-dqs-ratio">DDRPHY_CSRMODULE_B_DQ_DQS_RATIO<a class="headerlink" href="#ddrphy-csrmodule-b-dq-dqs-ratio" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xe8 = 0xf00008e8</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_dq_dqs_ratio[3:0]", "attr": 'reset: 4', "bits": 4},
+        {"bits": 28},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-ck-rdly-inc">DDRPHY_CSRMODULE_B_CK_RDLY_INC<a class="headerlink" href="#ddrphy-csrmodule-b-ck-rdly-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xec = 0xf00008ec</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_ck_rdly_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-ck-rdly-rst">DDRPHY_CSRMODULE_B_CK_RDLY_RST<a class="headerlink" href="#ddrphy-csrmodule-b-ck-rdly-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xf0 = 0xf00008f0</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_ck_rdly_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-ck-rddly">DDRPHY_CSRMODULE_B_CK_RDDLY<a class="headerlink" href="#ddrphy-csrmodule-b-ck-rddly" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xf4 = 0xf00008f4</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_ck_rddly[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-ck-rddly-preamble">DDRPHY_CSRMODULE_B_CK_RDDLY_PREAMBLE<a class="headerlink" href="#ddrphy-csrmodule-b-ck-rddly-preamble" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xf8 = 0xf00008f8</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_ck_rddly_preamble[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-ck-wdly-inc">DDRPHY_CSRMODULE_B_CK_WDLY_INC<a class="headerlink" href="#ddrphy-csrmodule-b-ck-wdly-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0xfc = 0xf00008fc</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_ck_wdly_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-ck-wdly-rst">DDRPHY_CSRMODULE_B_CK_WDLY_RST<a class="headerlink" href="#ddrphy-csrmodule-b-ck-wdly-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x100 = 0xf0000900</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_ck_wdly_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-ck-wdly-dqs">DDRPHY_CSRMODULE_B_CK_WDLY_DQS<a class="headerlink" href="#ddrphy-csrmodule-b-ck-wdly-dqs" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x104 = 0xf0000904</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_ck_wdly_dqs[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-ck-wddly-inc">DDRPHY_CSRMODULE_B_CK_WDDLY_INC<a class="headerlink" href="#ddrphy-csrmodule-b-ck-wddly-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x108 = 0xf0000908</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_ck_wddly_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-ck-wddly-rst">DDRPHY_CSRMODULE_B_CK_WDDLY_RST<a class="headerlink" href="#ddrphy-csrmodule-b-ck-wddly-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x10c = 0xf000090c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_ck_wddly_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-ck-wdly-dq">DDRPHY_CSRMODULE_B_CK_WDLY_DQ<a class="headerlink" href="#ddrphy-csrmodule-b-ck-wdly-dq" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x110 = 0xf0000910</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_ck_wdly_dq[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-dq-dly-sel">DDRPHY_CSRMODULE_B_DQ_DLY_SEL<a class="headerlink" href="#ddrphy-csrmodule-b-dq-dly-sel" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x114 = 0xf0000914</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_dq_dly_sel[3:0]", "bits": 4},
+        {"bits": 28},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-csdly-rst">DDRPHY_CSRMODULE_B_CSDLY_RST<a class="headerlink" href="#ddrphy-csrmodule-b-csdly-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x118 = 0xf0000918</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_csdly_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-csdly-inc">DDRPHY_CSRMODULE_B_CSDLY_INC<a class="headerlink" href="#ddrphy-csrmodule-b-csdly-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x11c = 0xf000091c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_csdly_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-cadly-rst">DDRPHY_CSRMODULE_B_CADLY_RST<a class="headerlink" href="#ddrphy-csrmodule-b-cadly-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x120 = 0xf0000920</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_cadly_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-cadly-inc">DDRPHY_CSRMODULE_B_CADLY_INC<a class="headerlink" href="#ddrphy-csrmodule-b-cadly-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x124 = 0xf0000924</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_cadly_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-pardly-rst">DDRPHY_CSRMODULE_B_PARDLY_RST<a class="headerlink" href="#ddrphy-csrmodule-b-pardly-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x128 = 0xf0000928</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_pardly_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-pardly-inc">DDRPHY_CSRMODULE_B_PARDLY_INC<a class="headerlink" href="#ddrphy-csrmodule-b-pardly-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x12c = 0xf000092c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_pardly_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-csdly">DDRPHY_CSRMODULE_B_CSDLY<a class="headerlink" href="#ddrphy-csrmodule-b-csdly" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x130 = 0xf0000930</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_csdly[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-cadly">DDRPHY_CSRMODULE_B_CADLY<a class="headerlink" href="#ddrphy-csrmodule-b-cadly" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x134 = 0xf0000934</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_cadly[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-rdly-dq-rst">DDRPHY_CSRMODULE_B_RDLY_DQ_RST<a class="headerlink" href="#ddrphy-csrmodule-b-rdly-dq-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x138 = 0xf0000938</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_rdly_dq_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-rdly-dq-inc">DDRPHY_CSRMODULE_B_RDLY_DQ_INC<a class="headerlink" href="#ddrphy-csrmodule-b-rdly-dq-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x13c = 0xf000093c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_rdly_dq_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-rdly-dqs-rst">DDRPHY_CSRMODULE_B_RDLY_DQS_RST<a class="headerlink" href="#ddrphy-csrmodule-b-rdly-dqs-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x140 = 0xf0000940</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_rdly_dqs_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-rdly-dqs-inc">DDRPHY_CSRMODULE_B_RDLY_DQS_INC<a class="headerlink" href="#ddrphy-csrmodule-b-rdly-dqs-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x144 = 0xf0000944</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_rdly_dqs_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-rdly-dqs">DDRPHY_CSRMODULE_B_RDLY_DQS<a class="headerlink" href="#ddrphy-csrmodule-b-rdly-dqs" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x148 = 0xf0000948</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_rdly_dqs[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-rdly-dq">DDRPHY_CSRMODULE_B_RDLY_DQ<a class="headerlink" href="#ddrphy-csrmodule-b-rdly-dq" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x14c = 0xf000094c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_rdly_dq[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-wdly-dq-rst">DDRPHY_CSRMODULE_B_WDLY_DQ_RST<a class="headerlink" href="#ddrphy-csrmodule-b-wdly-dq-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x150 = 0xf0000950</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_wdly_dq_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-wdly-dq-inc">DDRPHY_CSRMODULE_B_WDLY_DQ_INC<a class="headerlink" href="#ddrphy-csrmodule-b-wdly-dq-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x154 = 0xf0000954</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_wdly_dq_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-wdly-dm-rst">DDRPHY_CSRMODULE_B_WDLY_DM_RST<a class="headerlink" href="#ddrphy-csrmodule-b-wdly-dm-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x158 = 0xf0000958</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_wdly_dm_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-wdly-dm-inc">DDRPHY_CSRMODULE_B_WDLY_DM_INC<a class="headerlink" href="#ddrphy-csrmodule-b-wdly-dm-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x15c = 0xf000095c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_wdly_dm_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-wdly-dqs-rst">DDRPHY_CSRMODULE_B_WDLY_DQS_RST<a class="headerlink" href="#ddrphy-csrmodule-b-wdly-dqs-rst" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x160 = 0xf0000960</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_wdly_dqs_rst", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-wdly-dqs-inc">DDRPHY_CSRMODULE_B_WDLY_DQS_INC<a class="headerlink" href="#ddrphy-csrmodule-b-wdly-dqs-inc" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x164 = 0xf0000964</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_wdly_dqs_inc", "bits": 1},
+        {"bits": 31},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-wdly-dqs">DDRPHY_CSRMODULE_B_WDLY_DQS<a class="headerlink" href="#ddrphy-csrmodule-b-wdly-dqs" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x168 = 0xf0000968</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_wdly_dqs[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-wdly-dq">DDRPHY_CSRMODULE_B_WDLY_DQ<a class="headerlink" href="#ddrphy-csrmodule-b-wdly-dq" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x16c = 0xf000096c</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_wdly_dq[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+<h3 id="ddrphy-csrmodule-b-wdly-dm">DDRPHY_CSRMODULE_B_WDLY_DM<a class="headerlink" href="#ddrphy-csrmodule-b-wdly-dm" title="Link to this heading">¶</a></h3>
+<p><cite>Address: 0xf0000800 + 0x170 = 0xf0000970</cite></p>
+<blockquote>
+<div>
+<div style="overflow-x:auto">
+<script type="WaveDrom">
+{
+    "reg": [
+        {"name": "csrmodule_b_wdly_dm[15:0]", "bits": 16},
+        {"bits": 16},
+    ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+}
+</script>
+</div>
+</div></blockquote>
+
+    <script type="text/javascript">
+        function init() {
+            WaveDrom.ProcessAll();
+        }
+        window.onload = init;
+    </script>
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      2026-01-16
+    
+  </small>
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="leds.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: LEDS" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              LEDS
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="controller_settings.html" class="md-footer__link md-footer__link--next" aria-label="Next: CONTROLLER_SETTINGS" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              CONTROLLER_SETTINGS
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  
+  
+  <div class="md-footer-meta md-typeset">
+    
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-footer-copyright__highlight">
+        Copyright &#169; Antmicro, 2021-2026.
+        
+    </div>
+  
+      <a href="https://github.com/antmicro/rowhammer-tester/tree/1319b0cb765122fd3a647a8fb341a565ada5a4d5">1319b0cb</a>
+        @ <a href="https://github.com/antmicro/rowhammer-tester/tree/main">main</a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+      
+      
+    
+    <a href="https://github.com/antmicro" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/antmicro" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+    
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["toc.integrate"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+      
+        <script src="../../../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
+        <script src="../../../_static/tabs.js?v=3ee01567"></script>
+        <script src="../../../_static/default.js?v=0004674d"></script>
+        <script src="../../../_static/WaveDrom.js?v=12e62515"></script>
+        <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
+        <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
+        <script defer="defer" src="../../../_static/tippy/build/ddr5_tester/documentation/ddrphy.451fa995-f8bb-4d7a-8e93-a2967c6aac3c.js"></script>
+    
+  </body>
+</html>

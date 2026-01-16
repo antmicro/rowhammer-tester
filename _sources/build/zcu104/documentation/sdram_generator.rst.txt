@@ -1,0 +1,165 @@
+SDRAM_GENERATOR
+===============
+
+Register Listing for SDRAM_GENERATOR
+------------------------------------
+
++--------------------------------------------------------+--------------------------------------------+
+| Register                                               | Address                                    |
++========================================================+============================================+
+| :ref:`SDRAM_GENERATOR_RESET <SDRAM_GENERATOR_RESET>`   | :ref:`0xf0007000 <SDRAM_GENERATOR_RESET>`  |
++--------------------------------------------------------+--------------------------------------------+
+| :ref:`SDRAM_GENERATOR_START <SDRAM_GENERATOR_START>`   | :ref:`0xf0007004 <SDRAM_GENERATOR_START>`  |
++--------------------------------------------------------+--------------------------------------------+
+| :ref:`SDRAM_GENERATOR_DONE <SDRAM_GENERATOR_DONE>`     | :ref:`0xf0007008 <SDRAM_GENERATOR_DONE>`   |
++--------------------------------------------------------+--------------------------------------------+
+| :ref:`SDRAM_GENERATOR_BASE <SDRAM_GENERATOR_BASE>`     | :ref:`0xf000700c <SDRAM_GENERATOR_BASE>`   |
++--------------------------------------------------------+--------------------------------------------+
+| :ref:`SDRAM_GENERATOR_END <SDRAM_GENERATOR_END>`       | :ref:`0xf0007010 <SDRAM_GENERATOR_END>`    |
++--------------------------------------------------------+--------------------------------------------+
+| :ref:`SDRAM_GENERATOR_LENGTH <SDRAM_GENERATOR_LENGTH>` | :ref:`0xf0007014 <SDRAM_GENERATOR_LENGTH>` |
++--------------------------------------------------------+--------------------------------------------+
+| :ref:`SDRAM_GENERATOR_RANDOM <SDRAM_GENERATOR_RANDOM>` | :ref:`0xf0007018 <SDRAM_GENERATOR_RANDOM>` |
++--------------------------------------------------------+--------------------------------------------+
+| :ref:`SDRAM_GENERATOR_TICKS <SDRAM_GENERATOR_TICKS>`   | :ref:`0xf000701c <SDRAM_GENERATOR_TICKS>`  |
++--------------------------------------------------------+--------------------------------------------+
+
+SDRAM_GENERATOR_RESET
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x0 = 0xf0007000`
+
+
+    .. wavedrom::
+        :caption: SDRAM_GENERATOR_RESET
+
+        {
+            "reg": [
+                {"name": "reset", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_GENERATOR_START
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x4 = 0xf0007004`
+
+
+    .. wavedrom::
+        :caption: SDRAM_GENERATOR_START
+
+        {
+            "reg": [
+                {"name": "start", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_GENERATOR_DONE
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x8 = 0xf0007008`
+
+
+    .. wavedrom::
+        :caption: SDRAM_GENERATOR_DONE
+
+        {
+            "reg": [
+                {"name": "done", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+SDRAM_GENERATOR_BASE
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0xc = 0xf000700c`
+
+
+    .. wavedrom::
+        :caption: SDRAM_GENERATOR_BASE
+
+        {
+            "reg": [
+                {"name": "base[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_GENERATOR_END
+^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x10 = 0xf0007010`
+
+
+    .. wavedrom::
+        :caption: SDRAM_GENERATOR_END
+
+        {
+            "reg": [
+                {"name": "end[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_GENERATOR_LENGTH
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x14 = 0xf0007014`
+
+
+    .. wavedrom::
+        :caption: SDRAM_GENERATOR_LENGTH
+
+        {
+            "reg": [
+                {"name": "length[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+SDRAM_GENERATOR_RANDOM
+^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x18 = 0xf0007018`
+
+
+    .. wavedrom::
+        :caption: SDRAM_GENERATOR_RANDOM
+
+        {
+            "reg": [
+                {"name": "data",  "bits": 1},
+                {"name": "addr",  "bits": 1},
+                {"bits": 30}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++-------+------+-------------+
+| Field | Name | Description |
++=======+======+=============+
++-------+------+-------------+
++-------+------+-------------+
+
+SDRAM_GENERATOR_TICKS
+^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0007000 + 0x1c = 0xf000701c`
+
+
+    .. wavedrom::
+        :caption: SDRAM_GENERATOR_TICKS
+
+        {
+            "reg": [
+                {"name": "ticks[31:0]", "bits": 32}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+

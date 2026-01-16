@@ -1,0 +1,1273 @@
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="">
+    
+    
+      
+        <title>Test-writing playbook - Rowhammer tester</title>
+      
+    
+    
+      
+        
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.c5589c0bd87d933a4.min.css?v=eeeb54bc" />
+        <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=4c969af8" />
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="deep-orange">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Rowhammer tester" class="md-header__button md-logo" aria-label="Rowhammer tester" data-md-component="logo">
+      <img src="_static/white.svg" alt="logo">
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Rowhammer tester
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Test-writing playbook
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <div class="md-header__button">
+        <a href="rowhammer-tester.pdf" title="PDF - rowhammer-tester.pdf">
+          <div class="md-icon">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64v384c0 35.3 28.7 64 64 64h256c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zm192 0v128h128L256 0zM64 224h24c30.9 0 56 25.1 56 56s-25.1 56-56 56h-8v32c0 8.8-7.2 16-16 16s-16-7.2-16-16V240c0-8.8 7.2-16 16-16zm24 80c13.3 0 24-10.7 24-24s-10.7-24-24-24h-8v48h8zm72-64c0-8.8 7.2-16 16-16h24c26.5 0 48 21.5 48 48v64c0 26.5-21.5 48-48 48h-24c-8.8 0-16-7.2-16-16V240zm32 112h8c8.8 0 16-7.2 16-16v-64c0-8.8-7.2-16-16-16h-8v96zm96-128h48c8.8 0 16 7.2 16 16s-7.2 16-16 16h-32v32h32c8.8 0 16 7.2 16 16s-7.2 16-16 16h-32v48c0 8.8-7.2 16-16 16s-16-7.2-16-16V240c0-8.8 7.2-16 16-16z"/></svg>
+          </div>
+        </a>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/antmicro/rowhammer-tester" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antmicro/rowhammer-tester
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Rowhammer tester" class="md-nav__button md-logo" aria-label="Rowhammer tester" data-md-component="logo">
+      <img src="_static/white.svg" alt="logo">
+    </a>
+    Rowhammer tester
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/antmicro/rowhammer-tester" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antmicro/rowhammer-tester
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="overview.html" class="md-nav__link">
+        <span class="md-ellipsis">Project overview</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="setup.html" class="md-nav__link">
+        <span class="md-ellipsis">Installation and setup</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="building_rowhammer.html" class="md-nav__link">
+        <span class="md-ellipsis">Building Rowhammer designs</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          <span class="md-ellipsis">Supported hardware</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Supported hardware" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Supported hardware</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="so_dimm_ddr5_tester.html" class="md-nav__link">
+        <span class="md-ellipsis">SO-<wbr>DIMM DDR5 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rdimm_ddr5_tester.html" class="md-nav__link">
+        <span class="md-ellipsis">RDIMM DDR5 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rdimm_ddr4_tester.html" class="md-nav__link">
+        <span class="md-ellipsis">RDIMM DDR4 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lpddr4_test_board.html" class="md-nav__link">
+        <span class="md-ellipsis">LPDDR4 Test Board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="zcu104.html" class="md-nav__link">
+        <span class="md-ellipsis">ZCU104 board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="arty.html" class="md-nav__link">
+        <span class="md-ellipsis">Arty-<wbr>A7 board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lpddr4_test_bed.html" class="md-nav__link">
+        <span class="md-ellipsis">LPDDR4 Test Bed</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ddr5_test_bed.html" class="md-nav__link">
+        <span class="md-ellipsis">DDR5 Test Bed</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lpddr5_test_bed.html" class="md-nav__link">
+        <span class="md-ellipsis">LPDDR5 Test Bed</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="hammering.html" class="md-nav__link">
+        <span class="md-ellipsis">Performing attacks <wbr>(hammering)</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="visualization.html" class="md-nav__link">
+        <span class="md-ellipsis">Result visualization</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          <span class="md-ellipsis">Test-<wbr>writing playbook</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
+        <span class="md-ellipsis">Test-<wbr>writing playbook</span>
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#payload" class="md-nav__link">
+    <span title="payload (reference label)" class="md-ellipsis">Payload</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Payload">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changing-payload-memory-size" class="md-nav__link">
+    <span title="changing payload memory size (reference label)" class="md-ellipsis">Changing payload memory size</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#row-mapping" class="md-nav__link">
+    <span title="row mapping (reference label)" class="md-ellipsis">Row mapping</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#row-generator-class" class="md-nav__link">
+    <span title="row generator class (reference label)" class="md-ellipsis">Row Generator class</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Row Generator class">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#evenrowgenerator" class="md-nav__link">
+    <span title="evenrowgenerator (reference label)" class="md-ellipsis">Even<wbr>Row<wbr>Generator</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#halfdoublerowgenerator" class="md-nav__link">
+    <span title="halfdoublerowgenerator (reference label)" class="md-ellipsis">Half<wbr>Double<wbr>Row<wbr>Generator</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#payload-generator-class" class="md-nav__link">
+    <span title="payload generator class (reference label)" class="md-ellipsis">Payload generator class</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Payload generator class">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-payload-generators" class="md-nav__link">
+    <span title="available payload generators (reference label)" class="md-ellipsis">Available payload generators</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Available payload generators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rowlistpayloadgenerator" class="md-nav__link">
+    <span title="rowlistpayloadgenerator (reference label)" class="md-ellipsis">Row<wbr>List<wbr>Payload<wbr>Generator</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hammertolerancepayloadgenerator" class="md-nav__link">
+    <span title="hammertolerancepayloadgenerator (reference label)" class="md-ellipsis">Hammer<wbr>Tolerance<wbr>Payload<wbr>Generator</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#halfdoubleanalysispayloadgenerator" class="md-nav__link">
+    <span title="halfdoubleanalysispayloadgenerator (reference label)" class="md-ellipsis">Half<wbr>Double<wbr>Analysis<wbr>Payload<wbr>Generator</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configurations" class="md-nav__link">
+    <span title="configurations (reference label)" class="md-ellipsis">Configurations</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configurations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inversion" class="md-nav__link">
+    <span title="inversion (reference label)" class="md-ellipsis">Inversion</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="memory_testing.html" class="md-nav__link">
+        <span class="md-ellipsis">Memory testing</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="building_linux.html" class="md-nav__link">
+        <span class="md-ellipsis">Building Linux target</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pcie_support.html" class="md-nav__link">
+        <span class="md-ellipsis">PCIe support</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11" type="checkbox" id="__nav_11" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11">
+          <span class="md-ellipsis">Digital design</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Digital design" data-md-level="1">
+        <label class="md-nav__title" for="__nav_11">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Digital design</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/arty/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester Arty-<wbr>A7</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/zcu104/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester ZCU104</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/ddr4_datacenter_test_board/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester Data Center DRAM Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/lpddr4_test_board/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester LPDDR4 Test Board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/ddr5_test_board/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester DDR5 Test Board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/ddr5_tester/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester DDR5 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset" role="main">
+                  
+
+
+  <a href="https://github.com/antmicro/rowhammer-tester/blob/main/docs/source/playbook.md" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+<h1 id="test-writing-playbook">Test-writing playbook<a class="headerlink" href="#test-writing-playbook" title="Link to this heading">¶</a></h1>
+<p>The <a class="reference external" href="https://github.com/antmicro/rowhammer-tester/tree/master/rowhammer_tester/scripts/playbook">Playbook directory</a> contains a group of Python classes and scripts designed to simplify the process of writing various rowhammer-related tests.
+These tests can be executed against a hardware platform.</p>
+<h2 id="payload">Payload<a class="headerlink" href="#payload" title="Link to this heading">¶</a></h2>
+<p>Tests are generated as <code class="docutils literal notranslate"><span class="pre">payload</span></code> data.
+After generation, this data is transferred to a memory area in the device reserved for this purpose called <code class="docutils literal notranslate"><span class="pre">payload</span> <span class="pre">memory</span></code>.
+The payload contains an instruction list that can be interpreted by the <code class="docutils literal notranslate"><span class="pre">payload</span> <span class="pre">executor</span></code> module on hardware.
+The payload executor translates these instructions into DRAM commands.
+The payload executor connects directly to the DRAM PHY, bypassing the DRAM controller, as explained in the <a class="reference internal" href="overview.html#tester-suite-architecture"><span class="std std-ref">Architecture section</span></a>.</p>
+<h3 id="changing-payload-memory-size">Changing payload memory size<a class="headerlink" href="#changing-payload-memory-size" title="Link to this heading">¶</a></h3>
+<p>Payload memory size can be changed up to the limit of memory available on the hardware platform used.
+The payload memory size is defined in <a class="reference external" href="https://github.com/antmicro/rowhammer-tester/blob/main/rowhammer_tester/targets/common.py">common.py</a>, as an argument to LiteX:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--payload-size&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;1024&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Payload memory size in bytes&quot;</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<p>The examples shown in this chapter don’t require any changes.
+When writing your own <a class="reference internal" href="#configurations">configurations</a>, you may need to change the default value.</p>
+<h2 id="row-mapping">Row mapping<a class="headerlink" href="#row-mapping" title="Link to this heading">¶</a></h2>
+<p>In the case of DRAM modules, the physical layout of the memory rows in hardware can be different from the logical numbers assigned to them.
+The nature of a rowhammer attack is such that only the physically adjacent rows are affected by the <code class="docutils literal notranslate"><span class="pre">aggressor</span> <span class="pre">row</span></code>.
+There are several mapping strategies that can be implemented to deal with the problem of disparity between physical location and logical enumeration:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">TrivialRowMapping</span></code> - logical address is the same as physical address</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TypeARowMapping</span></code> - a more complex mapping method, reverse-engineered as a part of the <a class="reference external" href="https://download.vusec.net/papers/hammertime_raid18.pdf"><em>Defeating Software Mitigations against Rowhammer: a Surgical Precision Hammer</em> paper</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TypeBRowMapping</span></code> - logical address is the physical one multiplied by 2, taken from <a class="reference external" href="https://arxiv.org/pdf/2005.13121.pdf">Revisiting RowHammer: An Experimental Analysis of Modern DRAM Devices and Mitigation Techniques</a></p></li>
+</ul>
+<h2 id="row-generator-class">Row Generator class<a class="headerlink" href="#row-generator-class" title="Link to this heading">¶</a></h2>
+<p>The Row Generator class is responsible for creating a list of row numbers used in a rowhammer attack.
+Currently, one instance of this class is available.</p>
+<h3 id="evenrowgenerator">EvenRowGenerator<a class="headerlink" href="#evenrowgenerator" title="Link to this heading">¶</a></h3>
+<p>Generates a list of even numbered rows.
+Uses the row mapping specified by the <a class="reference internal" href="#payload-generator-class"><span class="std std-ref">payload generator class</span></a> used.
+Two configuration parameters are needed for EvenRowGenerator:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">nr_rows</span></code> - number of rows to be generated</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_row</span></code> - maximal number to be used. The chosen numbers will be <em>modulo max_row</em></p></li>
+</ul>
+<h3 id="halfdoublerowgenerator">HalfDoubleRowGenerator<a class="headerlink" href="#halfdoublerowgenerator" title="Link to this heading">¶</a></h3>
+<p>Generates a list of rows for a <a class="reference external" href="https://github.com/google/hammer-kit/blob/main/20210525_half_double.pdf">Half-Double</a> attack.
+The list will repeat rows to create weight difference between attacks at different distances.
+Used by <code class="docutils literal notranslate"><span class="pre">HalfDoubleAnalysisPayloadGenerator</span></code>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">nr_rows</span></code> - number of rows in the attack pattern</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">distance_one</span></code> - indicates whether the attack has a distance one component</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">double_sided</span></code> - is the attack double-sided?</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">distance_two</span></code> - indicates whether the attack has a distance two component</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">attack_rows_start</span></code> - the index of the first attack row</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_attack_row_idx</span></code> - the position of the last attack row relative to <code class="docutils literal notranslate"><span class="pre">attack_rows_start</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">decoy_rows_start</span></code> - the index of the first decoy row; there are 3 decoy rows that are used as placebos in various situations: to hammer away from the victim but to keep the number of hammers and timing constant</p></li>
+</ul>
+<h2 id="payload-generator-class">Payload generator class<a class="headerlink" href="#payload-generator-class" title="Link to this heading">¶</a></h2>
+<p>The purpose of the payload generator is to prepare a payload and process the test outcome.
+It is a class that can be reused in different tests <a class="reference internal" href="#configurations">configurations</a>.
+Payload generators are located in the <a class="reference external" href="https://github.com/antmicro/rowhammer-tester/tree/main/rowhammer_tester/scripts/playbook/payload_generators">payload_generators directory</a>.</p>
+<h3 id="available-payload-generators">Available payload generators<a class="headerlink" href="#available-payload-generators" title="Link to this heading">¶</a></h3>
+<p>Row mapping and row generator settings are combined into a payload generator class.
+Currently, two payload generators are available.</p>
+<h4 id="rowlistpayloadgenerator">RowListPayloadGenerator<a class="headerlink" href="#rowlistpayloadgenerator" title="Link to this heading">¶</a></h4>
+<p>RowListPayloadGenerator is a simple payload generator that can use a RowGenerator class to generate rows, and then generate a payload that hammers the rows in this list.
+(<code class="docutils literal notranslate"><span class="pre">hammering</span></code> is a term used to describe multiple read operations on the same row).
+RowListPayloadGenerator can also issue refresh commands to the DRAM module.
+The configs that can be used in <em>payload_generator_config</em> for this payload generator are listed below:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">row_mapping</span></code> - the <a class="reference internal" href="#row-mapping">row mapping</a> used</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">row_generator</span></code> - the <a class="reference internal" href="#row-generator-class">row generator class</a> used to generate the rows</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">row_generator_config</span></code> - parameters for the row generator</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbose</span></code> - should verbose output be generated (true or false)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fill_local</span></code> - when enabled, permits shrinking the filled memory area to aggressor and victim rows</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">read_count</span></code> - number of hammers (reads) per row</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">refresh</span></code> - should refresh be enabled (true or false)</p></li>
+</ul>
+<p>Examples of <a class="reference internal" href="#configurations">configurations</a> for this test are provided as <code class="docutils literal notranslate"><span class="pre">configs/example_row_list_*.json</span></code> files.
+Some of them require a significant amount of memory declared as <code class="docutils literal notranslate"><span class="pre">payload</span> <span class="pre">memory</span></code>.
+To execute a minimalistic example from within the rowhammer-tester repo, execute:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+<span class="nb">export</span><span class="w"> </span><span class="nv">TARGET</span><span class="o">=</span>arty<span class="w"> </span><span class="c1"># change accordingly</span>
+<span class="nb">cd</span><span class="w"> </span>rowhammer_tester/scripts/playbook/
+python<span class="w"> </span>playbook.py<span class="w"> </span>configs/example_row_list_minimal.json
+</code></pre></div>
+</div>
+<p>Expected output:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>Progress:<span class="w"> </span><span class="o">[========================================]</span><span class="w"> </span><span class="m">65536</span><span class="w"> </span>/<span class="w"> </span><span class="m">65536</span>
+Row<span class="w"> </span>sequence:
+<span class="o">[</span><span class="m">0</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">4</span>,<span class="w"> </span><span class="m">6</span>,<span class="w"> </span><span class="m">14</span>,<span class="w"> </span><span class="m">12</span>,<span class="w"> </span><span class="m">10</span>,<span class="w"> </span><span class="m">8</span>,<span class="w"> </span><span class="m">16</span>,<span class="w"> </span><span class="m">18</span><span class="o">]</span>
+Generating<span class="w"> </span>payload:
+<span class="w">  </span><span class="nv">tRAS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5</span>
+<span class="w">  </span><span class="nv">tRP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span>
+<span class="w">  </span><span class="nv">tREFI</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">782</span>
+<span class="w">  </span><span class="nv">tRFC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">32</span>
+<span class="w">  </span>Repeatable<span class="w"> </span>unit:<span class="w"> </span><span class="m">930</span>
+<span class="w">  </span>Repetitions:<span class="w"> </span><span class="m">93</span>
+<span class="w">  </span>Payload<span class="w"> </span><span class="nv">size</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="m">0</span>.10KB<span class="w"> </span>/<span class="w">  </span><span class="m">1</span>.00KB
+<span class="w">  </span>Payload<span class="w"> </span>per-row<span class="w"> </span>toggle<span class="w"> </span><span class="nv">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>.010K<span class="w">  </span>x10<span class="w"> </span>rows
+<span class="w">  </span>Payload<span class="w"> </span>refreshes<span class="w"> </span><span class="o">(</span><span class="k">if</span><span class="w"> </span>enabled<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="o">(</span>disabled<span class="o">)</span>
+<span class="w">  </span>Expected<span class="w"> </span>execution<span class="w"> </span><span class="nb">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1903</span><span class="w"> </span><span class="nv">cycles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>.019<span class="w"> </span>ms
+
+Transferring<span class="w"> </span>the<span class="w"> </span>payload<span class="w"> </span>...
+
+Executing<span class="w"> </span>...
+Time<span class="w"> </span>taken:<span class="w"> </span><span class="m">0</span>.738<span class="w"> </span>ms
+
+Progress:<span class="w"> </span><span class="o">[==</span><span class="w">                                      </span><span class="o">]</span><span class="w">  </span><span class="m">3338</span><span class="w"> </span>/<span class="w"> </span><span class="m">65536</span><span class="w"> </span><span class="o">(</span>Errors:<span class="w"> </span><span class="m">1287</span><span class="o">)</span>
+...
+</code></pre></div>
+</div>
+<h4 id="hammertolerancepayloadgenerator">HammerTolerancePayloadGenerator<a class="headerlink" href="#hammertolerancepayloadgenerator" title="Link to this heading">¶</a></h4>
+<p>HammerTolerancePayloadGenerator is a payload generator for measuring and characterizing rowhammer tolerance.
+It can provide information about how many rows and bits are susceptible to the rowhammer attack.
+It can also provide information about the location of susceptible bits.</p>
+<p>A series of double-sided hammers against the available group of victim rows is performed.
+The double-sided hammers increase in intensity based on <code class="docutils literal notranslate"><span class="pre">read_count_step</span></code> parameter.
+Here are the parameters that can be specified in <em>payload_generator_config</em> for this payload generator:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">row_mapping</span></code> - this is the <a class="reference internal" href="#row-mapping">row mapping</a> used</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">row_generator</span></code> - this is the <a class="reference internal" href="#row-generator-class">row generator class</a> used to generate the rows</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">row_generator_config</span></code> - parameters for the row generator</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbose</span></code> - should verbose output be generated (true or false)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fill_local</span></code> - when enabled, permits shrinking the filled memory area to just the aggressors and the victim</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nr_rows</span></code> - number of rows to conduct the experiment over. This is the number of aggressor rows</p>
+<ul>
+<li><p>The number of victim rows will be lower by 2; for example, to perform hammering for 32 victim rows, use 34 as the parameter value</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">read_count_step</span></code> - this is how much to increment the hammer count between multiple tests for the same row</p>
+<ul>
+<li><p>This is the number of hammers on a single side (total number of hammers on both sides is 2x this value)</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">initial_read_count</span></code> - hammer count for the first test for a given row. Defaults to <code class="docutils literal notranslate"><span class="pre">read_count_step</span></code> if unspecified</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">distance</span></code> - distance between aggressors and victim. Defaults to 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">baseline</span></code> - when enabled, a retention effect baseline is collected by hammering distant rows for the same amount of time as the aggressor rows</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">first_dummy_row</span></code> - location of the first of two dummy rows used for baselining</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">iters_per_row</span></code> - number of times the hammer count is incremented for each row</p></li>
+</ul>
+<p>The results are a series of histograms with appropriate labeling.</p>
+<p>Example <a class="reference internal" href="#configurations">configurations</a> for this test are provided as <code class="docutils literal notranslate"><span class="pre">configs/example_hammer_*.json</span></code> files.
+Some of them require a significant amount of memory declared as <code class="docutils literal notranslate"><span class="pre">payload</span> <span class="pre">memory</span></code>.
+To execute a minimalistic example from within the rowhammer-tester repo, execute:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+<span class="nb">export</span><span class="w"> </span><span class="nv">TARGET</span><span class="o">=</span>arty<span class="w"> </span><span class="c1"># change accordingly</span>
+<span class="nb">cd</span><span class="w"> </span>rowhammer_tester/scripts/playbook/
+python<span class="w"> </span>playbook.py<span class="w"> </span>configs/example_hammer_minimal.json
+</code></pre></div>
+</div>
+<p>Expected output:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>Progress:<span class="w"> </span><span class="o">[========================================]</span><span class="w"> </span><span class="m">3072</span><span class="w"> </span>/<span class="w"> </span><span class="m">3072</span>
+Generating<span class="w"> </span>payload:
+<span class="w">  </span><span class="nv">tRAS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5</span>
+<span class="w">  </span><span class="nv">tRP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span>
+<span class="w">  </span><span class="nv">tREFI</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">782</span>
+<span class="w">  </span><span class="nv">tRFC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">32</span>
+<span class="w">  </span>Repeatable<span class="w"> </span>unit:<span class="w"> </span><span class="m">186</span>
+<span class="w">  </span>Repetitions:<span class="w"> </span><span class="m">93</span>
+<span class="w">  </span>Payload<span class="w"> </span><span class="nv">size</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="m">0</span>.04KB<span class="w"> </span>/<span class="w">  </span><span class="m">1</span>.00KB
+<span class="w">  </span>Payload<span class="w"> </span>per-row<span class="w"> </span>toggle<span class="w"> </span><span class="nv">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>.010K<span class="w">  </span>x2<span class="w"> </span>rows
+<span class="w">  </span>Payload<span class="w"> </span>refreshes<span class="w"> </span><span class="o">(</span><span class="k">if</span><span class="w"> </span>enabled<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="o">(</span>disabled<span class="o">)</span>
+<span class="w">  </span>Expected<span class="w"> </span>execution<span class="w"> </span><span class="nb">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1263</span><span class="w"> </span><span class="nv">cycles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>.013<span class="w"> </span>ms
+
+Transferring<span class="w"> </span>the<span class="w"> </span>payload<span class="w"> </span>...
+
+Executing<span class="w"> </span>...
+Time<span class="w"> </span>taken:<span class="w"> </span><span class="m">0</span>.647<span class="w"> </span>ms
+
+Progress:<span class="w"> </span><span class="o">[============</span><span class="w">                            </span><span class="o">]</span><span class="w">  </span><span class="m">323</span><span class="w"> </span>/<span class="w"> </span><span class="m">1024</span><span class="w"> </span><span class="o">(</span>Errors:<span class="w"> </span><span class="m">320</span><span class="o">)</span>
+...
+</code></pre></div>
+</div>
+<h4 id="halfdoubleanalysispayloadgenerator">HalfDoubleAnalysisPayloadGenerator<a class="headerlink" href="#halfdoubleanalysispayloadgenerator" title="Link to this heading">¶</a></h4>
+<p><a class="reference external" href="https://github.com/google/hammer-kit/blob/main/20210525_half_double.pdf">Half-Double</a> is a Rowhammer phenomenon where accesses to both distance-one and distance-two neighbors of a victim row are used to generate bit flips.
+This payload generator allows us to characterize the Half-Double effect on a memory part.</p>
+<p>For each candidate victim row, the analysis starts out with the maximum number of hammers and minimum dilution level.
+Then, we proceed as follows:</p>
+<ol class="arabic simple">
+<li><p>Dilution is increased until pure distance-one attacks stop working.</p></li>
+<li><p>Verify that pure distance-two attack doesn’t work.</p></li>
+<li><p>Increase dilution level and record the number of bit flips in the victim until either the bit flips stop or maximum dilution level is reached.</p></li>
+<li><p>Once maximum dilution level is reached or bit flips stop, reduce hammer count by a step and reset dilution to initial level and retry step 3. Repeat until the lowest hammer count is reached.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The hammer count changes on a linear scale and dilution changes on an exponential scale.</p>
+</div>
+<p>Results are presented as a table of values with columns representing the hammer count and the rows representing dilution levels.
+See Tables 2 and 3 in the <a class="reference external" href="https://github.com/google/hammer-kit/blob/main/20210525_half_double.pdf">Half-Double white paper</a> as examples.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">max_total_read_count</span></code> - maximum number of hammers issued to any given row during an iteration</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">read_count_steps</span></code> - the amount to decrement the number of hammers for each iteration of the outer loop</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">initial_dilution</span></code> - initial value for dilution. Dilution resets to this value at the beginning of the inner loop</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dilution_multiplier</span></code> - dilution is multiplied by this value for each iteration of the inner loop</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbose</span></code> - generates more output</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">row_mapping</span></code> - specifies the style in which the rows are mapped on the chip</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">attack_rows_start</span></code> - starting row number for rows used to attack the victim</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_attack_row_idx</span></code> - index measured from <code class="docutils literal notranslate"><span class="pre">attack_rows_start</span></code> for the last attack row</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">decoy_rows_start</span></code> - the position of the first decoy row. There are three decoy rows. They are used as placebos during pure distance-one portions of the experiment to make the number of hammers and their timing comparable</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_dilution</span></code> - maximum value for dilution</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fill_local</span></code> - only reinitialize affected rows between experiments, as an optimization</p></li>
+</ul>
+<h2 id="configurations">Configurations<a class="headerlink" href="#configurations" title="Link to this heading">¶</a></h2>
+<p>Test configuration files are represented as JSON files. An example:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;inversion_divisor&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;inversion_mask&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0b10&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload_generator&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RowListPayloadGenerator&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload_generator_config&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;row_mapping&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TypeARowMapping&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;row_generator&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EvenRowGenerator&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;read_count&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">27</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;max_iteration&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;verbose&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;refresh&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;fill_local&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;row_generator_config&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;nr_rows&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;max_row&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">64</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
+<p>The following parameters are supported:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">payload_generator</span></code> - name of the <a class="reference internal" href="#payload-generator-class">payload generator class</a> to use</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">row_pattern</span></code> - pattern that will be stored in rows</p></li>
+<li><p>inversion_divisor and inversion_mask - controls which rows get the inverted pattern described in the <a class="reference internal" href="#inversion">inversion section</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">payload_generator_config</span></code> - these parameters are specific for the <a class="reference internal" href="#payload-generator-class">payload generator class</a> used</p></li>
+</ul>
+<h3 id="inversion">Inversion<a class="headerlink" href="#inversion" title="Link to this heading">¶</a></h3>
+<p>If needed, use the <code class="docutils literal notranslate"><span class="pre">bitwise-inverted</span></code> data pattern for selected tested rows.
+Two parameters are used to specify which rows are to be inverted:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">inversion_divisor</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">inversion_mask</span></code></p></li>
+</ul>
+<p>Example:
+<code class="docutils literal notranslate"><span class="pre">inversion_divisor</span> <span class="pre">=</span> <span class="pre">8</span></code>, <code class="docutils literal notranslate"><span class="pre">inversion_mask</span> <span class="pre">=</span> <span class="pre">0b10010010</span></code> (bits 1, 4 and 7 are “on”).
+We iterate through all row numbers 0,1,2,3,4,…,8,9,10,…
+First, a modulo <code class="docutils literal notranslate"><span class="pre">inversion_divisor</span></code> operation is performed on a row number.
+In this case, it’s <code class="docutils literal notranslate"><span class="pre">mod</span> <span class="pre">8</span></code>.
+Next, we check if the bit in <code class="docutils literal notranslate"><span class="pre">inversion_mask</span></code> in the position corresponding to our row number (after modulo) is “on” or “off”.
+If it’s “on”, this whole row will be inverted.
+The results for our example are visible in <a class="reference internal" href="#inversion-example-table"><span class="std std-numref">Table 2</span></a> below.</p>
+<table class="docutils data align-default" id="inversion-example-table">
+<caption><span class="caption-number">Table 2 </span><span class="caption-text">Inversion example table</span><a class="headerlink" href="#inversion-example-table" title="Link to this table">¶</a></caption>
+<colgroup>
+<col style="width: 10.0%" />
+<col style="width: 10.0%" />
+<col style="width: 80.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Row number</p></th>
+<th class="head"><p>Row number modulo divisor (8)</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>pattern</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>inverted pattern</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>pattern</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>3</p></td>
+<td><p>pattern</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>4</p></td>
+<td><p>inverted pattern</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>5</p></td>
+<td><p>pattern</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>6</p></td>
+<td><p>pattern</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>7</p></td>
+<td><p>inverted pattern</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>0</p></td>
+<td><p>pattern</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>1</p></td>
+<td><p>inverted pattern</p></td>
+</tr>
+<tr class="row-even"><td><p>10</p></td>
+<td><p>2</p></td>
+<td><p>pattern</p></td>
+</tr>
+<tr class="row-odd"><td><p>11</p></td>
+<td><p>3</p></td>
+<td><p>pattern</p></td>
+</tr>
+<tr class="row-even"><td><p>12</p></td>
+<td><p>4</p></td>
+<td><p>inverted pattern</p></td>
+</tr>
+</tbody>
+</table>
+
+    <script type="text/javascript">
+        function init() {
+            WaveDrom.ProcessAll();
+        }
+        window.onload = init;
+    </script>
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      2026-01-16
+    
+  </small>
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="visualization.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Result visualization" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Result visualization
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="memory_testing.html" class="md-footer__link md-footer__link--next" aria-label="Next: Memory testing" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Memory testing
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  
+  
+  <div class="md-footer-meta md-typeset">
+    
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-footer-copyright__highlight">
+        Copyright &#169; Antmicro, 2021-2026.
+        
+    </div>
+  
+      <a href="https://github.com/antmicro/rowhammer-tester/tree/1319b0cb765122fd3a647a8fb341a565ada5a4d5">1319b0cb</a>
+        @ <a href="https://github.com/antmicro/rowhammer-tester/tree/main">main</a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+      
+      
+    
+    <a href="https://github.com/antmicro" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/antmicro" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+    
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": ".", "features": ["toc.integrate"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+      
+        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
+        <script src="_static/tabs.js?v=3ee01567"></script>
+        <script src="_static/default.js?v=0004674d"></script>
+        <script src="_static/WaveDrom.js?v=12e62515"></script>
+        <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
+        <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
+        <script defer="defer" src="_static/tippy/playbook.5055b487-0ec2-4d1e-9cc5-4aa8278385b9.js"></script>
+    
+  </body>
+</html>

@@ -1,0 +1,1273 @@
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="">
+    
+    
+      
+        <title>ZCU104 board - Rowhammer tester</title>
+      
+    
+    
+      
+        
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.c5589c0bd87d933a4.min.css?v=eeeb54bc" />
+        <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=4c969af8" />
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="deep-orange">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Rowhammer tester" class="md-header__button md-logo" aria-label="Rowhammer tester" data-md-component="logo">
+      <img src="_static/white.svg" alt="logo">
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Rowhammer tester
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ZCU104 board
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <div class="md-header__button">
+        <a href="rowhammer-tester.pdf" title="PDF - rowhammer-tester.pdf">
+          <div class="md-icon">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64v384c0 35.3 28.7 64 64 64h256c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zm192 0v128h128L256 0zM64 224h24c30.9 0 56 25.1 56 56s-25.1 56-56 56h-8v32c0 8.8-7.2 16-16 16s-16-7.2-16-16V240c0-8.8 7.2-16 16-16zm24 80c13.3 0 24-10.7 24-24s-10.7-24-24-24h-8v48h8zm72-64c0-8.8 7.2-16 16-16h24c26.5 0 48 21.5 48 48v64c0 26.5-21.5 48-48 48h-24c-8.8 0-16-7.2-16-16V240zm32 112h8c8.8 0 16-7.2 16-16v-64c0-8.8-7.2-16-16-16h-8v96zm96-128h48c8.8 0 16 7.2 16 16s-7.2 16-16 16h-32v32h32c8.8 0 16 7.2 16 16s-7.2 16-16 16h-32v48c0 8.8-7.2 16-16 16s-16-7.2-16-16V240c0-8.8 7.2-16 16-16z"/></svg>
+          </div>
+        </a>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/antmicro/rowhammer-tester" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antmicro/rowhammer-tester
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Rowhammer tester" class="md-nav__button md-logo" aria-label="Rowhammer tester" data-md-component="logo">
+      <img src="_static/white.svg" alt="logo">
+    </a>
+    Rowhammer tester
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/antmicro/rowhammer-tester" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antmicro/rowhammer-tester
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="overview.html" class="md-nav__link">
+        <span class="md-ellipsis">Project overview</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="setup.html" class="md-nav__link">
+        <span class="md-ellipsis">Installation and setup</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="building_rowhammer.html" class="md-nav__link">
+        <span class="md-ellipsis">Building Rowhammer designs</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          <span class="md-ellipsis">Supported hardware</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Supported hardware" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Supported hardware</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="so_dimm_ddr5_tester.html" class="md-nav__link">
+        <span class="md-ellipsis">SO-<wbr>DIMM DDR5 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rdimm_ddr5_tester.html" class="md-nav__link">
+        <span class="md-ellipsis">RDIMM DDR5 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rdimm_ddr4_tester.html" class="md-nav__link">
+        <span class="md-ellipsis">RDIMM DDR4 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lpddr4_test_board.html" class="md-nav__link">
+        <span class="md-ellipsis">LPDDR4 Test Board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          <span class="md-ellipsis">ZCU104 board</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
+        <span class="md-ellipsis">ZCU104 board</span>
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#board-configuration" class="md-nav__link">
+    <span title="board configuration (reference label)" class="md-ellipsis">Board configuration</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preparing-sd-card" class="md-nav__link">
+    <span title="preparing sd card (reference label)" class="md-ellipsis">Preparing SD card</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-the-bitstream" class="md-nav__link">
+    <span title="loading the bitstream (reference label)" class="md-ellipsis">Loading the bitstream</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zcu104-microusb" class="md-nav__link">
+    <span title="zcu104 microusb (reference label)" class="md-ellipsis">ZCU104 micro<wbr>USB</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network-setup" class="md-nav__link">
+    <span title="network setup (reference label)" class="md-ellipsis">Network setup</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Network setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modifying-the-network-configuration" class="md-nav__link">
+    <span title="modifying the network configuration (reference label)" class="md-ellipsis">Modifying the network configuration</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ssh-access" class="md-nav__link">
+    <span title="ssh access (reference label)" class="md-ellipsis">SSH access</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controlling-the-board" class="md-nav__link">
+    <span title="controlling the board (reference label)" class="md-ellipsis">Controlling the board</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zcu104-sd-card-image" class="md-nav__link">
+    <span title="zcu104 sd card image (reference label)" class="md-ellipsis">ZCU104 SD card image</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ZCU104 SD card image">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bootloaders-kernel" class="md-nav__link">
+    <span title="bootloaders &amp; kernel (reference label)" class="md-ellipsis">Bootloaders &amp; kernel</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-filesystem" class="md-nav__link">
+    <span title="root filesystem (reference label)" class="md-ellipsis">Root filesystem</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flashing-sd-card" class="md-nav__link">
+    <span title="flashing sd card (reference label)" class="md-ellipsis">Flashing SD card</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Flashing SD card">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#formatting-sd-card-manually" class="md-nav__link">
+    <span title="formatting sd card manually (reference label)" class="md-ellipsis">Formatting SD card manually</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-genimage" class="md-nav__link">
+    <span title="using genimage (reference label)" class="md-ellipsis">Using genimage</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="arty.html" class="md-nav__link">
+        <span class="md-ellipsis">Arty-<wbr>A7 board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lpddr4_test_bed.html" class="md-nav__link">
+        <span class="md-ellipsis">LPDDR4 Test Bed</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ddr5_test_bed.html" class="md-nav__link">
+        <span class="md-ellipsis">DDR5 Test Bed</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lpddr5_test_bed.html" class="md-nav__link">
+        <span class="md-ellipsis">LPDDR5 Test Bed</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="hammering.html" class="md-nav__link">
+        <span class="md-ellipsis">Performing attacks <wbr>(hammering)</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="visualization.html" class="md-nav__link">
+        <span class="md-ellipsis">Result visualization</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="playbook.html" class="md-nav__link">
+        <span class="md-ellipsis">Test-<wbr>writing playbook</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="memory_testing.html" class="md-nav__link">
+        <span class="md-ellipsis">Memory testing</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="building_linux.html" class="md-nav__link">
+        <span class="md-ellipsis">Building Linux target</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pcie_support.html" class="md-nav__link">
+        <span class="md-ellipsis">PCIe support</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11" type="checkbox" id="__nav_11" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11">
+          <span class="md-ellipsis">Digital design</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Digital design" data-md-level="1">
+        <label class="md-nav__title" for="__nav_11">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Digital design</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/arty/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester Arty-<wbr>A7</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/zcu104/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester ZCU104</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/ddr4_datacenter_test_board/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester Data Center DRAM Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/lpddr4_test_board/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester LPDDR4 Test Board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/ddr5_test_board/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester DDR5 Test Board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/ddr5_tester/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester DDR5 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset" role="main">
+                  
+
+
+  <a href="https://github.com/antmicro/rowhammer-tester/blob/main/docs/source/zcu104.md" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+<h1 id="zcu104-board">ZCU104 board<a class="headerlink" href="#zcu104-board" title="Link to this heading">¶</a></h1>
+<figure class="align-default" id="zcu104">
+<img alt="ZCU104 board" src="_images/zcu104.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 12 </span><span class="caption-text"><span class="caption-text">
+ZCU104 board</span><a class="headerlink" href="#zcu104" title="Permalink to this image">¶</a></figcaption>
+</figure>
+<p>The <a class="reference external" href="https://www.xilinx.com/products/boards-and-kits/zcu104.html">ZCU104 board</a> enables testing DDR4 SO-DIMM modules.
+It features a Zynq UltraScale+ MPSoC device consisting of a Processing System (PS) with quad-core ARM Cortex-A53 and programmable logic (PL).</p>
+<p>On the ZCU104 board, the Ethernet PHY is connected to PS instead of PL.
+For this reason, it is necessary to route the Ethernet/EtherBone traffic as follows :PC &lt;-&gt; PS &lt;-&gt; PL.
+A simple EtherBone server is implemented for this purpose (the source code can be found in the <code class="docutils literal notranslate"><span class="pre">firmware/zcu104/etherbone/</span></code> directory).</p>
+<p>The following instructions show how to set up the board for the first time.</p>
+<p>For FPGA design documentation for this board, refer to the <a class="reference internal" href="build/zcu104/documentation/index.html"><span class="std std-doc">Digital design</span></a> chapter.</p>
+<h2 id="board-configuration">Board configuration<a class="headerlink" href="#board-configuration" title="Link to this heading">¶</a></h2>
+<p>To make the ZCU104 boot from an SD card, it is necessary to ensure proper switch configuration.
+The mode switch (SW6) consisting of 4 switches is located near the FMC LPC Connector (J5)
+(the same side of the board as USB, HDMI, Ethernet).
+For details, refer to the <a class="reference external" href="https://docs.amd.com/v/u/en-US/ug1267-zcu104-eval-bd">ZCU104 Evaluation Board User Guide (UG1267)</a>.
+To use an SD card, configure the switches as follows:</p>
+<ol class="arabic simple">
+<li><p>ON</p></li>
+<li><p>OFF</p></li>
+<li><p>OFF</p></li>
+<li><p>OFF</p></li>
+</ol>
+<h2 id="preparing-sd-card">Preparing SD card<a class="headerlink" href="#preparing-sd-card" title="Link to this heading">¶</a></h2>
+<p>For a basic, simple setup, get the pre-built SD card image <code class="docutils literal notranslate"><span class="pre">zcu104.img</span></code> from <a class="reference external" href="https://github.com/antmicro/rowhammer-tester/releases/tag/zcu104-v0.2">github releases</a> and load it to a microSD card.
+To load it to the SD card, insert the card into your PC card slot and find the device name.
+<code class="docutils literal notranslate"><span class="pre">lsblk</span></code> can be used to check for available devices.
+An example output looks as follows:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>$<span class="w"> </span>lsblk
+NAME<span class="w">        </span>MAJ:MIN<span class="w"> </span>RM<span class="w">   </span>SIZE<span class="w"> </span>RO<span class="w"> </span>TYPE<span class="w"> </span>MOUNTPOINT
+sda<span class="w">           </span><span class="m">8</span>:0<span class="w">    </span><span class="m">0</span><span class="w"> </span><span class="m">931</span>.5G<span class="w">  </span><span class="m">0</span><span class="w"> </span>disk
+└─sda1<span class="w">        </span><span class="m">8</span>:1<span class="w">    </span><span class="m">0</span><span class="w"> </span><span class="m">931</span>.5G<span class="w">  </span><span class="m">0</span><span class="w"> </span>part<span class="w"> </span>/data
+sdb<span class="w">           </span><span class="m">8</span>:16<span class="w">   </span><span class="m">1</span><span class="w">  </span><span class="m">14</span>.8G<span class="w">  </span><span class="m">0</span><span class="w"> </span>disk
+├─sdb1<span class="w">        </span><span class="m">8</span>:17<span class="w">   </span><span class="m">1</span><span class="w">   </span>128M<span class="w">  </span><span class="m">0</span><span class="w"> </span>part<span class="w"> </span>/run/media/BOOT
+└─sdb2<span class="w">        </span><span class="m">8</span>:18<span class="w">   </span><span class="m">1</span><span class="w">   </span>128M<span class="w">  </span><span class="m">0</span><span class="w"> </span>part<span class="w"> </span>/run/media/rootfs
+nvme0n1<span class="w">     </span><span class="m">259</span>:0<span class="w">    </span><span class="m">0</span><span class="w"> </span><span class="m">476</span>.9G<span class="w">  </span><span class="m">0</span><span class="w"> </span>disk
+├─nvme0n1p1<span class="w"> </span><span class="m">259</span>:1<span class="w">    </span><span class="m">0</span><span class="w">   </span>512M<span class="w">  </span><span class="m">0</span><span class="w"> </span>part<span class="w"> </span>/boot
+└─nvme0n1p2<span class="w"> </span><span class="m">259</span>:2<span class="w">    </span><span class="m">0</span><span class="w"> </span><span class="m">476</span>.4G<span class="w">  </span><span class="m">0</span><span class="w"> </span>part<span class="w"> </span>/
+</code></pre></div>
+</div>
+<p>In the output above, the SD card is <code class="docutils literal notranslate"><span class="pre">sdb</span></code> with two partitions <code class="docutils literal notranslate"><span class="pre">sdb1</span></code> and <code class="docutils literal notranslate"><span class="pre">sdb2</span></code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Make sure to select the proper device name to avoid damaging the hard drive in your system!
+Assure the device <code class="docutils literal notranslate"><span class="pre">SIZE</span></code> matches the capacity of your microSD card and compare the outputs of the <code class="docutils literal notranslate"><span class="pre">lsblk</span></code> command with and without the SD card inserted.</p>
+</div>
+<p>Make sure to unmount all partitions on the card before loading the image.
+For example, assuming the SD card is <code class="docutils literal notranslate"><span class="pre">/dev/sdb</span></code> (device is without a number), use <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">umount</span> <span class="pre">/dev/sdb1</span> <span class="pre">/dev/sdb2</span></code> to unmount its partitions.</p>
+<p>To load the image, use the following command, replacing <code class="docutils literal notranslate"><span class="pre">&lt;DEVICE&gt;</span></code> according to the output of <code class="docutils literal notranslate"><span class="pre">lsblk</span></code> (in the example above it would be <code class="docutils literal notranslate"><span class="pre">/dev/sdb</span></code>):</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>dd<span class="w"> </span><span class="nv">status</span><span class="o">=</span>progress<span class="w"> </span><span class="nv">oflag</span><span class="o">=</span>sync<span class="w"> </span><span class="nv">bs</span><span class="o">=</span>4M<span class="w"> </span><span class="k">if</span><span class="o">=</span>zcu104.img<span class="w"> </span><span class="nv">of</span><span class="o">=</span>&lt;DEVICE&gt;
+</code></pre></div>
+</div>
+<p>Now, the microSD card should be ready to use. If it is loaded successfully, you will be
+able to mount the two partitions (<code class="docutils literal notranslate"><span class="pre">BOOT</span></code> and <code class="docutils literal notranslate"><span class="pre">rootfs</span></code>) on your PC and browse the files.
+First, check whether your system auto-mounted the partitions.
+If not, you can use:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/mnt/boot<span class="w"> </span>/mnt/rootfs
+sudo<span class="w"> </span>mount<span class="w"> </span>/dev/sdb1<span class="w"> </span>/mnt/boot
+sudo<span class="w"> </span>mount<span class="w"> </span>/dev/sdb2<span class="w"> </span>/mnt/rootfs
+</code></pre></div>
+</div>
+<h2 id="loading-the-bitstream">Loading the bitstream<a class="headerlink" href="#loading-the-bitstream" title="Link to this heading">¶</a></h2>
+<p>Instead of loading the bitstream through the JTAG interface, copy it to the microSD card BOOT partition (FAT32).
+The bitstream will be then loaded by the bootloader during system startup.</p>
+<p>The prebuilt card image comes with a sample bitstream, but in order to use the provided rowhammer Python scripts, you need to create a fresh bitstream.</p>
+<p>Copy it to the BOOT partition (FAT32) of the microSD card. Make sure it is named <code class="docutils literal notranslate"><span class="pre">zcu104.bit</span></code>.</p>
+<p>When the SD card is ready, insert it into the microSD card slot on your ZCU104 board and power on the board.</p>
+<p>Onboard LEDs are the first indication that the bitstream is loaded successfully.
+When the board is powered up, the LED will be red and then turn green if the bitstream is loaded successfully.
+The ZCU104 bitstream will also make the four LEDs near the user buttons turn on and off in a circular pattern.
+The serial console over USB can be used to further check if the board is working correctly.</p>
+<h2 id="zcu104-microusb">ZCU104 microUSB<a class="headerlink" href="#zcu104-microusb" title="Link to this heading">¶</a></h2>
+<p>ZCU104 has a microUSB port connected to the FTDI chip.
+It provides 4 channels connected as follows:</p>
+<ul class="simple">
+<li><p>Channel A is configured to support the JTAG chain.</p></li>
+<li><p>Channel B implements UART0 MIO18/19 connections.</p></li>
+<li><p>Channel C implements UART1 MIO20/21 connections.</p></li>
+<li><p>Channel D implements an UART2 PL-side bank 28 4-wire interface.</p></li>
+</ul>
+<p>The channels should show up as subsequent <code class="docutils literal notranslate"><span class="pre">/dev/ttyUSBx</span></code> devices (0-3 if no others were present).
+Channel B is connected to the console in the PS Linux system.</p>
+<p>To log in to the board, connect the microUSB cable to the PC and find Channel B among the <code class="docutils literal notranslate"><span class="pre">ttyUSB</span></code>
+devices in your system.
+If only <code class="docutils literal notranslate"><span class="pre">ttyUSB0</span></code> through <code class="docutils literal notranslate"><span class="pre">ttyUSB3</span></code> are visible, then Channel B will be <code class="docutils literal notranslate"><span class="pre">ttyUSB1</span></code>.</p>
+<p>Open the serial console using e.g. <code class="docutils literal notranslate"><span class="pre">picocom</span></code> or <code class="docutils literal notranslate"><span class="pre">minicom</span></code> (you may need to install one).
+With <code class="docutils literal notranslate"><span class="pre">picocom</span></code>, use the following command (may require <code class="docutils literal notranslate"><span class="pre">sudo</span></code>):</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>picocom<span class="w"> </span>-b<span class="w"> </span><span class="m">115200</span><span class="w"> </span>/dev/ttyUSB1
+</code></pre></div>
+</div>
+<p>Press enter. When you see the following prompt:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>Welcome<span class="w"> </span>to<span class="w"> </span>Buildroot
+buildroot<span class="w"> </span>login:
+</code></pre></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">root</span></code> as login and leave password empty.
+You can set up a password if needed.</p>
+<h2 id="network-setup">Network setup<a class="headerlink" href="#network-setup" title="Link to this heading">¶</a></h2>
+<p>Connect the ZCU104 board to your local network (or directly to a PC) using an Ethernet cable.</p>
+<p>The board uses a static IP address - <code class="docutils literal notranslate"><span class="pre">192.168.100.50</span></code> by default.
+If it does not conflict with your local network configuration, you can skip this section.
+You can find the default configuration <a class="reference external" href="https://github.com/antmicro/rowhammer-tester/blob/main/firmware/zcu104/buildroot/rootfs_overlay/etc/network/interfaces">here</a>.</p>
+<p>To verify connectivity, use <code class="docutils literal notranslate"><span class="pre">ping</span> <span class="pre">192.168.100.50</span></code>.
+You should see data being transmitted, e.g.:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>$<span class="w"> </span>ping<span class="w"> </span><span class="m">192</span>.168.100.50
+PING<span class="w"> </span><span class="m">192</span>.168.100.50<span class="w"> </span><span class="o">(</span><span class="m">192</span>.168.100.50<span class="o">)</span><span class="w"> </span><span class="m">56</span><span class="o">(</span><span class="m">84</span><span class="o">)</span><span class="w"> </span>bytes<span class="w"> </span>of<span class="w"> </span>data.
+<span class="m">64</span><span class="w"> </span>bytes<span class="w"> </span>from<span class="w"> </span><span class="m">192</span>.168.100.50:<span class="w"> </span><span class="nv">icmp_seq</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">ttl</span><span class="o">=</span><span class="m">64</span><span class="w"> </span><span class="nv">time</span><span class="o">=</span><span class="m">0</span>.332<span class="w"> </span>ms
+<span class="m">64</span><span class="w"> </span>bytes<span class="w"> </span>from<span class="w"> </span><span class="m">192</span>.168.100.50:<span class="w"> </span><span class="nv">icmp_seq</span><span class="o">=</span><span class="m">2</span><span class="w"> </span><span class="nv">ttl</span><span class="o">=</span><span class="m">64</span><span class="w"> </span><span class="nv">time</span><span class="o">=</span><span class="m">0</span>.072<span class="w"> </span>ms
+<span class="m">64</span><span class="w"> </span>bytes<span class="w"> </span>from<span class="w"> </span><span class="m">192</span>.168.100.50:<span class="w"> </span><span class="nv">icmp_seq</span><span class="o">=</span><span class="m">3</span><span class="w"> </span><span class="nv">ttl</span><span class="o">=</span><span class="m">64</span><span class="w"> </span><span class="nv">time</span><span class="o">=</span><span class="m">0</span>.081<span class="w"> </span>ms
+</code></pre></div>
+</div>
+<h3 id="modifying-the-network-configuration">Modifying the network configuration<a class="headerlink" href="#modifying-the-network-configuration" title="Link to this heading">¶</a></h3>
+<p>If you need to modify the configuration, edit the <code class="docutils literal notranslate"><span class="pre">/etc/network/interfaces</span></code> file.
+The Linux rootfs on the SD card is fairly minimal and <code class="docutils literal notranslate"><span class="pre">vi</span></code> is the only editor available.
+You can also mount the card on your PC and edit the file.</p>
+<p>After changing the configuration, reboot the board (type <code class="docutils literal notranslate"><span class="pre">reboot</span></code> in the serial console) and test if you can ping it with <code class="docutils literal notranslate"><span class="pre">ping</span> <span class="pre">&lt;NEW_IP_ADDRESS&gt;</span></code>.</p>
+<h2 id="ssh-access">SSH access<a class="headerlink" href="#ssh-access" title="Link to this heading">¶</a></h2>
+<p>These instructions are optional but can be useful for more convenient updates of the bitstream (no need to remove the SD card from the slot on ZCU104).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>SSH on the board is configured to allow passwordless <code class="docutils literal notranslate"><span class="pre">root</span></code> access for simplicity but if that
+poses a security risk, modify <code class="docutils literal notranslate"><span class="pre">/etc/ssh/sshd_config</span></code> according to your needs
+and add a password for <code class="docutils literal notranslate"><span class="pre">root</span></code>.</p>
+</div>
+<p>You can log in over SSH using (replace the IP address if you modified board network configuration):</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>ssh<span class="w"> </span>root@192.168.100.50
+</code></pre></div>
+</div>
+<p>To access the boot partition, first mount it with:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>mount<span class="w"> </span>/dev/mmcblk0p1<span class="w"> </span>/boot
+</code></pre></div>
+</div>
+<p>This can be automated by adding the following entry in <code class="docutils literal notranslate"><span class="pre">/etc/fstab</span></code>:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>/dev/mmcblk0p1<span class="w"> </span>/boot<span class="w">            </span>vfat<span class="w">    </span>rw<span class="w">              </span><span class="m">0</span><span class="w">       </span><span class="m">2</span>
+</code></pre></div>
+</div>
+<p>When the boot partition is mounted, you can use <code class="docutils literal notranslate"><span class="pre">scp</span></code> to load the new bitstream, e.g.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>scp<span class="w"> </span>build/zcu104/gateware/zcu104.bit<span class="w"> </span>root@192.168.100.50:/boot/zcu104.bit
+</code></pre></div>
+</div>
+<p>Then use the <code class="docutils literal notranslate"><span class="pre">reboot</span></code> command to restart the board.</p>
+<h2 id="controlling-the-board">Controlling the board<a class="headerlink" href="#controlling-the-board" title="Link to this heading">¶</a></h2>
+<p>When the setup has been finished the board can be controlled as any other board.
+Make sure to use <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">TARGET=zcu104</span></code> before using the scripts (and <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">IP_ADDRESS=...</span></code> if you modified the network configuration).</p>
+<h2 id="zcu104-sd-card-image">ZCU104 SD card image<a class="headerlink" href="#zcu104-sd-card-image" title="Link to this heading">¶</a></h2>
+<p>The easiest way is to use the prebuilt SD card image.
+It is also possible to build the image from source if needed.</p>
+<p>The SD card image consists of a boot partition and a rootfs.
+Currently, only rootfs is built using buildroot.
+The boot partition contents have to be built manually.</p>
+<h3 id="bootloaders-kernel">Bootloaders &amp; kernel<a class="headerlink" href="#bootloaders-kernel" title="Link to this heading">¶</a></h3>
+<p>Currently, we are using Xilinx FSBL, but it should be possible to use U-Boot SPL (<a class="reference external" href="https://lucaceresoli.net/zynqmp-uboot-spl-pmufw-cfg-load/">link1</a>, <a class="reference external" href="http://buildroot-busybox.2317881.n4.nabble.com/Zynqmp-ZCU-102-Xilinx-td239716.html">link2</a>).</p>
+<p>FSBL and PMU firmware can be built with following the steps:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842462/Build+PMU+Firmware">https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18842462/Build+PMU+Firmware</a></p></li>
+<li><p><a class="reference external" href="https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18841798/Build+FSBL">https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18841798/Build+FSBL</a></p></li>
+</ul>
+<p>Create a project from the Vivado example project “Base Zynq UltraScale+ MPSoC” for ZCU104 eval board.
+Open the PS IP configurator and add the following:</p>
+<ul class="simple">
+<li><p>PS-PL Interfaces -&gt; AXI HPM0 FPD (32-bit), AXI HPM1 FPD (32-bit)</p></li>
+<li><p>disable Carrier Detect in Memory Interfaces -&gt; SD -&gt; SD 0</p></li>
+</ul>
+<p>The following script can be used to generate FSBL, PMU firmware and Device Tree:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/tclsh</span>
+
+<span class="nb">set</span><span class="w"> </span>hwdsgn<span class="w">  </span><span class="o">[</span>open_hw_design<span class="w"> </span>PATH/TO/Base_Zynq_MPSoC_wrapper.hdf<span class="o">]</span>
+
+generate_app<span class="w"> </span>-hw<span class="w"> </span><span class="nv">$hwdsgn</span><span class="w"> </span>-os<span class="w"> </span>standalone<span class="w"> </span>-proc<span class="w"> </span>psu_cortexa53_0<span class="w"> </span>-app<span class="w"> </span>zynqmp_fsbl<span class="w"> </span>-compile<span class="w"> </span>-sw<span class="w"> </span>fsbl<span class="w"> </span>-dir<span class="w"> </span>./fsbl/
+generate_app<span class="w"> </span>-hw<span class="w"> </span><span class="nv">$hwdsgn</span><span class="w"> </span>-os<span class="w"> </span>standalone<span class="w"> </span>-proc<span class="w"> </span>psu_pmu_0<span class="w"> </span>-app<span class="w"> </span>zynqmp_pmufw<span class="w"> </span>-compile<span class="w"> </span>-sw<span class="w"> </span>pmufw<span class="w"> </span>-dir<span class="w"> </span>./pmufw
+
+set_repo_path<span class="w"> </span>PATH/TO/device-tree-xlnx
+create_sw_design<span class="w"> </span>device-tree<span class="w"> </span>-os<span class="w"> </span>device_tree<span class="w"> </span>-proc<span class="w"> </span>psu_cortexa53_0
+generate_target<span class="w"> </span>-dir<span class="w"> </span>dts
+
+close_hw_design<span class="w"> </span><span class="o">[</span>current_hw_design<span class="o">]</span>
+</code></pre></div>
+</div>
+<p>The Device Tree generated by Vivado is missing the ethernet-phy node. Modify <code class="docutils literal notranslate"><span class="pre">pcw.dtsi</span></code> as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><code><span class="o">&amp;</span><span class="n">gem3</span> <span class="p">{</span>
+    <span class="n">phy</span><span class="o">-</span><span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;rgmii-id&quot;</span><span class="p">;</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
+    <span class="n">xlnx</span><span class="p">,</span><span class="n">ptp</span><span class="o">-</span><span class="n">enet</span><span class="o">-</span><span class="n">clock</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mh">0x0</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="n">phy0</span><span class="p">:</span> <span class="n">phy</span><span class="nd">@c</span> <span class="p">{</span>
+        <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mh">0xc</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="n">ti</span><span class="p">,</span><span class="n">rx</span><span class="o">-</span><span class="n">internal</span><span class="o">-</span><span class="n">delay</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mh">0x8</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="n">ti</span><span class="p">,</span><span class="n">tx</span><span class="o">-</span><span class="n">internal</span><span class="o">-</span><span class="n">delay</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mh">0xa</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="n">ti</span><span class="p">,</span><span class="n">fifo</span><span class="o">-</span><span class="n">depth</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mh">0x1</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="n">ti</span><span class="p">,</span><span class="n">rxctrl</span><span class="o">-</span><span class="n">strap</span><span class="o">-</span><span class="n">worka</span><span class="p">;</span>
+    <span class="p">};</span>
+<span class="p">};</span>
+</code></pre></div>
+</div>
+<p>Then generate the Device Tree Blob in the <code class="docutils literal notranslate"><span class="pre">dts</span></code> directory:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>gcc<span class="w"> </span>-I<span class="w"> </span>include<span class="w"> </span>-I<span class="w"> </span>.<span class="w"> </span>-E<span class="w"> </span>-nostdinc<span class="w"> </span>-undef<span class="w"> </span>-D__DTS__<span class="w"> </span>-x<span class="w"> </span>assembler-with-cpp<span class="w"> </span>-o<span class="w"> </span>system.dts<span class="w"> </span>system-top.dts
+dtc<span class="w"> </span>-I<span class="w"> </span>dts<span class="w"> </span>-O<span class="w"> </span>dtb<span class="w"> </span>-o<span class="w"> </span>system.dtb<span class="w"> </span>system.dts
+</code></pre></div>
+</div>
+<p>Build the rest of the required components:</p>
+<ul class="simple">
+<li><p>ARM trusted firmware: (<a class="reference external" href="https://github.com/Xilinx/arm-trusted-firmware.git">https://github.com/Xilinx/arm-trusted-firmware.git</a>) e6eea88b14aaf456c49f9c7e6747584224648cb9 (tag: xlnx_rebase_v2.2)</p></li>
+<li><p>U-Boot: (<a class="reference external" href="https://github.com/Xilinx/u-boot-xlnx.git">https://github.com/Xilinx/u-boot-xlnx.git</a>) d8fc4b3b70bccf1577dab69f6ddfd4ada9a93bac (tag: xilinx-v2018.3)</p></li>
+<li><p>Linux kernel: (<a class="reference external" href="https://github.com/Xilinx/linux-xlnx.git">https://github.com/Xilinx/linux-xlnx.git</a>) 22b71b41620dac13c69267d2b7898ebfb14c954e (tag: xlnx_rebase_v5.4_2020.1)</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It may be necessary to apply the patches from <code class="docutils literal notranslate"><span class="pre">firmware/zcu104/buildroot/board/zynqmp/patches</span></code> when building U-Boot/Linux.</p>
+</div>
+<p>When building U-Boot, make sure to update its configuration (<code class="docutils literal notranslate"><span class="pre">u-boot-xlnx/.config</span></code>) with the following options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><code><span class="n">CONFIG_USE_BOOTARGS</span><span class="o">=</span><span class="n">y</span>
+<span class="n">CONFIG_BOOTARGS</span><span class="o">=</span><span class="s2">&quot;earlycon clk_ignore_unused console=ttyPS0,115200 root=/dev/mmcblk0p2 rootwait rw earlyprintk rootfstype=ext4&quot;</span>
+<span class="n">CONFIG_USE_BOOTCOMMAND</span><span class="o">=</span><span class="n">y</span>
+<span class="n">CONFIG_BOOTCOMMAND</span><span class="o">=</span><span class="s2">&quot;load mmc 0:1 0x2000000 zcu104.bit; fpga load 0 0x2000000 $filesize; load mmc 0:1 0x2000000 system.dtb; load mmc 0:1 0x3000000 Image; booti 0x3000000 - 0x2000000&quot;</span>
+</code></pre></div>
+</div>
+<p>These configure U-Boot to load the bitstream from the SD card and then start the system.
+When unfolding <code class="docutils literal notranslate"><span class="pre">CONFIG_BOOTCOMMAND</span></code>, we can see:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><code>load mmc 0:1 0x2000000 zcu104.bit
+fpga load 0 0x2000000 $filesize
+load mmc 0:1 0x2000000 system.dtb
+load mmc 0:1 0x3000000 Image
+booti 0x3000000 - 0x2000000
+</code></pre></div>
+</div>
+<p>Example of building ARM Trusted firmware:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>make<span class="w"> </span>distclean
+make<span class="w"> </span>-j<span class="sb">`</span>nproc<span class="sb">`</span><span class="w"> </span><span class="nv">PLAT</span><span class="o">=</span>zynqmp<span class="w"> </span><span class="nv">RESET_TO_BL31</span><span class="o">=</span><span class="m">1</span>
+</code></pre></div>
+</div>
+<p>Example of building U-Boot:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>make<span class="w"> </span>-j<span class="sb">`</span>nproc<span class="sb">`</span><span class="w"> </span>distclean
+make<span class="w"> </span>xilinx_zynqmp_zcu104_revC_defconfig
+<span class="c1"># now modify .config directly or using `make menuconfig` as described earlier</span>
+make<span class="w"> </span>-j<span class="sb">`</span>nproc<span class="sb">`</span>
+</code></pre></div>
+</div>
+<p>Example of building Linux:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>make<span class="w"> </span>-j<span class="sb">`</span>nproc<span class="sb">`</span><span class="w"> </span><span class="nv">ARCH</span><span class="o">=</span>arm64<span class="w"> </span>distclean
+make<span class="w"> </span><span class="nv">ARCH</span><span class="o">=</span>arm64<span class="w"> </span>xilinx_zynqmp_defconfig
+<span class="c1"># optional `make menuconfig`</span>
+make<span class="w"> </span>-j<span class="sb">`</span>nproc<span class="sb">`</span><span class="w"> </span><span class="nv">ARCH</span><span class="o">=</span>arm64<span class="w"> </span>dtbs
+make<span class="w"> </span>-j<span class="sb">`</span>nproc<span class="sb">`</span><span class="w"> </span><span class="nv">ARCH</span><span class="o">=</span>arm64
+</code></pre></div>
+</div>
+<p>Then download <a class="reference external" href="https://github.com/antmicro/zynq-mkbootimage">zynq-mkbootimage</a> and prepare the following <code class="docutils literal notranslate"><span class="pre">boot.bif</span></code> file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><code><span class="n">image</span><span class="p">:</span>
+<span class="p">{</span>
+    <span class="p">[</span><span class="n">fsbl_config</span><span class="p">]</span> <span class="n">a53_x64</span>
+    <span class="p">[</span><span class="n">bootloader</span><span class="p">]</span> <span class="n">fsbl</span><span class="o">.</span><span class="n">elf</span>
+    <span class="p">[</span><span class="n">pmufw_image</span><span class="p">]</span> <span class="n">pmufw</span><span class="o">.</span><span class="n">elf</span>
+    <span class="p">[,</span> <span class="n">destination_cpu</span><span class="o">=</span><span class="n">a53</span><span class="o">-</span><span class="mi">0</span><span class="p">,</span> <span class="n">exception_level</span><span class="o">=</span><span class="n">el</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="n">bl31</span><span class="o">.</span><span class="n">elf</span>
+    <span class="p">[,</span> <span class="n">destination_cpu</span><span class="o">=</span><span class="n">a53</span><span class="o">-</span><span class="mi">0</span><span class="p">,</span> <span class="n">exception_level</span><span class="o">=</span><span class="n">el</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="n">u</span><span class="o">-</span><span class="n">boot</span><span class="o">.</span><span class="n">elf</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
+<p>Open a terminal and make sure that the filepaths specified in boot.bif are correct. Then use``mkbootimage –zynqmp boot.bif boot.bin`` to create the <code class="docutils literal notranslate"><span class="pre">boot.bin</span></code> file.</p>
+<h3 id="root-filesystem">Root filesystem<a class="headerlink" href="#root-filesystem" title="Link to this heading">¶</a></h3>
+<p>Download buildroot:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>git://git.buildroot.net/buildroot
+git<span class="w"> </span>checkout<span class="w"> </span><span class="m">2020</span>.08.2
+</code></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As of time of writing <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">checkout</span> <span class="pre">f45925a951318e9e53bead80b363e004301adc6f</span></code> was required to avoid
+fakeroot errors when building.</p>
+</div>
+<p>Then prepare configuration using external sources and build everything:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>make<span class="w"> </span><span class="nv">BR2_EXTERNAL</span><span class="o">=</span>/PATH/TO/REPO/rowhammer-tester/firmware/zcu104/buildroot<span class="w"> </span>zynqmp_zcu104_defconfig
+make<span class="w"> </span>-j<span class="sb">`</span>nproc<span class="sb">`</span>
+</code></pre></div>
+</div>
+<h3 id="flashing-sd-card">Flashing SD card<a class="headerlink" href="#flashing-sd-card" title="Link to this heading">¶</a></h3>
+<p>You can use <a class="reference external" href="https://wiki.archlinux.org/index.php/Fdisk">fdisk</a> to directly partition the SD card <code class="docutils literal notranslate"><span class="pre">/dev/xxx</span></code> or use the provided <a class="reference external" href="https://github.com/pengutronix/genimage">genimage</a> configuration to create an SD card image that can be then directly copied to the SD card.
+The second method is usually more convenient.</p>
+<h4 id="formatting-sd-card-manually">Formatting SD card manually<a class="headerlink" href="#formatting-sd-card-manually" title="Link to this heading">¶</a></h4>
+<p>Use <a class="reference external" href="https://wiki.archlinux.org/index.php/Fdisk">fdisk</a> or other tool to partition the SD card.
+The recommended partitioning scheme is as follows:</p>
+<ul class="simple">
+<li><p>Partition 1, FAT32, 128M</p></li>
+<li><p>Partition 2, ext4, 128M</p></li>
+</ul>
+<p>Then create the filesystems:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>mkfs.fat<span class="w"> </span>-F<span class="w"> </span><span class="m">32</span><span class="w"> </span>-n<span class="w"> </span>BOOT<span class="w"> </span>/dev/OUR_SD_CARD_PARTITION_1
+sudo<span class="w"> </span>mkfs.ext4<span class="w"> </span>-L<span class="w"> </span>rootfs<span class="w"> </span>/dev/OUR_SD_CARD_PARTITION_2
+</code></pre></div>
+</div>
+<p>Write the rootfs:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>dd<span class="w"> </span><span class="nv">status</span><span class="o">=</span>progress<span class="w"> </span><span class="nv">oflag</span><span class="o">=</span>sync<span class="w"> </span><span class="nv">bs</span><span class="o">=</span>4M<span class="w"> </span><span class="k">if</span><span class="o">=</span>/PATH/TO/BUILDROOT/output/images/rootfs.ext4<span class="w"> </span><span class="nv">of</span><span class="o">=</span>/dev/OUR_SD_CARD_PARTITION_2
+</code></pre></div>
+</div>
+<p>Mount the boot partition and copy the boot files and kernel image created earlier as well as the ZCU104 bitstream:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>cp<span class="w"> </span>boot.bin<span class="w"> </span>/MOUNT/POINT/BOOT/
+cp<span class="w"> </span>/PATH/TO/rowhammer-tester/build/zcu104/gateware/zcu104.bit<span class="w"> </span>/MOUNT/POINT/BOOT/
+cp<span class="w"> </span>/PATH/TO/linux-xlnx/arch/arm64/boot/Image<span class="w"> </span>/MOUNT/POINT/BOOT/
+cp<span class="w"> </span>/PATH/TO/linux-xlnx/arch/arm64/boot/dts/xilinx/zynqmp-zcu104-revA.dtb<span class="w"> </span>/MOUNT/POINT/BOOT/system.dtb
+</code></pre></div>
+</div>
+<p>Note: make sure to name the device tree blob <code class="docutils literal notranslate"><span class="pre">system.dtb</span></code> for the U-Boot to be able to find it (as shown in above commands).</p>
+<h4 id="using-genimage">Using genimage<a class="headerlink" href="#using-genimage" title="Link to this heading">¶</a></h4>
+<p>The ZCU104 buildroot configuration will also build the <a class="reference external" href="https://github.com/pengutronix/genimage">genimage</a> tool for the host system by default.
+The image configuration is described in the <code class="docutils literal notranslate"><span class="pre">firmware/zcu104/image.cfg</span></code> file.
+A script named <code class="docutils literal notranslate"><span class="pre">firmware/zcu104/genimage.sh</span></code> is also provided for convenience.
+Run it without arguments to get help.
+Then run it, providing correct paths to all the required files, to generate the <code class="docutils literal notranslate"><span class="pre">zcu104.img</span></code> file.</p>
+<p>The image can be then copied to the SD card device (not partition! so e.g. <code class="docutils literal notranslate"><span class="pre">/dev/sdb</span></code>, not <code class="docutils literal notranslate"><span class="pre">/dev/sdb1</span></code>) using <code class="docutils literal notranslate"><span class="pre">dd</span></code>:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>dd<span class="w"> </span><span class="nv">status</span><span class="o">=</span>progress<span class="w"> </span><span class="nv">oflag</span><span class="o">=</span>sync<span class="w"> </span><span class="nv">bs</span><span class="o">=</span>4M<span class="w"> </span><span class="k">if</span><span class="o">=</span>/PATH/TO/zcu104.img<span class="w"> </span><span class="nv">of</span><span class="o">=</span>/dev/OUR_SD_CARD
+</code></pre></div>
+</div>
+
+    <script type="text/javascript">
+        function init() {
+            WaveDrom.ProcessAll();
+        }
+        window.onload = init;
+    </script>
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      2026-01-16
+    
+  </small>
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="lpddr4_test_board.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: LPDDR4 Test Board" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              LPDDR4 Test Board
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="arty.html" class="md-footer__link md-footer__link--next" aria-label="Next: Arty-A7 board" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Arty-A7 board
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  
+  
+  <div class="md-footer-meta md-typeset">
+    
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-footer-copyright__highlight">
+        Copyright &#169; Antmicro, 2021-2026.
+        
+    </div>
+  
+      <a href="https://github.com/antmicro/rowhammer-tester/tree/1319b0cb765122fd3a647a8fb341a565ada5a4d5">1319b0cb</a>
+        @ <a href="https://github.com/antmicro/rowhammer-tester/tree/main">main</a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+      
+      
+    
+    <a href="https://github.com/antmicro" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/antmicro" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+    
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": ".", "features": ["toc.integrate"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+      
+        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
+        <script src="_static/tabs.js?v=3ee01567"></script>
+        <script src="_static/default.js?v=0004674d"></script>
+        <script src="_static/WaveDrom.js?v=12e62515"></script>
+        <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
+        <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
+        <script defer="defer" src="_static/tippy/zcu104.b3ed6f6c-e8d0-48a1-9575-f4ec88094178.js"></script>
+    
+  </body>
+</html>

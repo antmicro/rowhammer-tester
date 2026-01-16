@@ -1,0 +1,19 @@
+PHYCRG
+======
+
+S7CRGPHY
+--------
+This module contains 7 series specific clock and reset generation for S7DDR5 PHY.
+It adds:
+
+- BUFMRCE to control multi region PHYs (UDIMMs and/or RDIMMs),
+- BUFMRCE/BUFRs reset sequence,
+- ISERDES reset sequence correct with Xilinx documentation and design advisories,
+- OSERDES reset sequence.
+
+
+DDR5 Tester Clock tree
+----------------------
+.. image:: ddr5_tester_CRG.png
+
+

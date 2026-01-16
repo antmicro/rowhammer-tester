@@ -1,0 +1,1505 @@
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="">
+    
+    
+      
+        <title>Performing attacks (hammering) - Rowhammer tester</title>
+      
+    
+    
+      
+        
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.c5589c0bd87d933a4.min.css?v=eeeb54bc" />
+        <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=4c969af8" />
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="deep-orange">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="Rowhammer tester" class="md-header__button md-logo" aria-label="Rowhammer tester" data-md-component="logo">
+      <img src="_static/white.svg" alt="logo">
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Rowhammer tester
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Performing attacks (hammering)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <div class="md-header__button">
+        <a href="rowhammer-tester.pdf" title="PDF - rowhammer-tester.pdf">
+          <div class="md-icon">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64v384c0 35.3 28.7 64 64 64h256c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zm192 0v128h128L256 0zM64 224h24c30.9 0 56 25.1 56 56s-25.1 56-56 56h-8v32c0 8.8-7.2 16-16 16s-16-7.2-16-16V240c0-8.8 7.2-16 16-16zm24 80c13.3 0 24-10.7 24-24s-10.7-24-24-24h-8v48h8zm72-64c0-8.8 7.2-16 16-16h24c26.5 0 48 21.5 48 48v64c0 26.5-21.5 48-48 48h-24c-8.8 0-16-7.2-16-16V240zm32 112h8c8.8 0 16-7.2 16-16v-64c0-8.8-7.2-16-16-16h-8v96zm96-128h48c8.8 0 16 7.2 16 16s-7.2 16-16 16h-32v32h32c8.8 0 16 7.2 16 16s-7.2 16-16 16h-32v48c0 8.8-7.2 16-16 16s-16-7.2-16-16V240c0-8.8 7.2-16 16-16z"/></svg>
+          </div>
+        </a>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/antmicro/rowhammer-tester" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antmicro/rowhammer-tester
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="Rowhammer tester" class="md-nav__button md-logo" aria-label="Rowhammer tester" data-md-component="logo">
+      <img src="_static/white.svg" alt="logo">
+    </a>
+    Rowhammer tester
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/antmicro/rowhammer-tester" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    antmicro/rowhammer-tester
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="overview.html" class="md-nav__link">
+        <span class="md-ellipsis">Project overview</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="setup.html" class="md-nav__link">
+        <span class="md-ellipsis">Installation and setup</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="building_rowhammer.html" class="md-nav__link">
+        <span class="md-ellipsis">Building Rowhammer designs</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          <span class="md-ellipsis">Supported hardware</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Supported hardware" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Supported hardware</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="so_dimm_ddr5_tester.html" class="md-nav__link">
+        <span class="md-ellipsis">SO-<wbr>DIMM DDR5 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rdimm_ddr5_tester.html" class="md-nav__link">
+        <span class="md-ellipsis">RDIMM DDR5 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rdimm_ddr4_tester.html" class="md-nav__link">
+        <span class="md-ellipsis">RDIMM DDR4 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lpddr4_test_board.html" class="md-nav__link">
+        <span class="md-ellipsis">LPDDR4 Test Board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="zcu104.html" class="md-nav__link">
+        <span class="md-ellipsis">ZCU104 board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="arty.html" class="md-nav__link">
+        <span class="md-ellipsis">Arty-<wbr>A7 board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lpddr4_test_bed.html" class="md-nav__link">
+        <span class="md-ellipsis">LPDDR4 Test Bed</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ddr5_test_bed.html" class="md-nav__link">
+        <span class="md-ellipsis">DDR5 Test Bed</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lpddr5_test_bed.html" class="md-nav__link">
+        <span class="md-ellipsis">LPDDR5 Test Bed</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          <span class="md-ellipsis">Performing attacks <wbr>(hammering)</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
+        <span class="md-ellipsis">Performing attacks <wbr>(hammering)</span>
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#attack-modes" class="md-nav__link">
+    <span title="attack modes (reference label)" class="md-ellipsis">Attack modes</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#patterns" class="md-nav__link">
+    <span title="patterns (reference label)" class="md-ellipsis">Patterns</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-output" class="md-nav__link">
+    <span title="example output (reference label)" class="md-ellipsis">Example output</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#row-selection-examples" class="md-nav__link">
+    <span title="row selection examples (reference label)" class="md-ellipsis">Row selection examples</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cell-retention-measurement" class="md-nav__link">
+    <span title="cell retention measurement (reference label)" class="md-ellipsis">Cell retention measurement</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-count-parameter-optimization" class="md-nav__link">
+    <span title="read count parameter optimization (reference label)" class="md-ellipsis">Read count parameter optimization</span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dram-modules" class="md-nav__link">
+    <span title="dram modules (reference label)" class="md-ellipsis">DRAM modules</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DRAM modules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-new-modules" class="md-nav__link">
+    <span title="adding new modules (reference label)" class="md-ellipsis">Adding new modules</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spd-eeprom" class="md-nav__link">
+    <span title="spd eeprom (reference label)" class="md-ellipsis">SPD EEPROM</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SPD EEPROM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reading-spd-eeprom" class="md-nav__link">
+    <span title="reading spd eeprom (reference label)" class="md-ellipsis">Reading SPD EEPROM</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-spd-data" class="md-nav__link">
+    <span title="using spd data (reference label)" class="md-ellipsis">Using SPD data</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utilities" class="md-nav__link">
+    <span title="utilities (reference label)" class="md-ellipsis">Utilities</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Utilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#run-leds-demo-leds-py" class="md-nav__link">
+    <span title="run leds demo - `leds.py` (reference label)" class="md-ellipsis">Run LEDs demo -<wbr> leds.<wbr>py</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-version-version-py" class="md-nav__link">
+    <span title="check version - `version.py` (reference label)" class="md-ellipsis">Check version -<wbr> version.<wbr>py</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-csrs-dump-regs-py" class="md-nav__link">
+    <span title="check csrs - `dump_regs.py` (reference label)" class="md-ellipsis">Check CSRs -<wbr> dump_<wbr>regs.<wbr>py</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initialize-memory-mem-py" class="md-nav__link">
+    <span title="initialize memory - `mem.py` (reference label)" class="md-ellipsis">Initialize memory -<wbr> mem.<wbr>py</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enter-bios-bios-console-py" class="md-nav__link">
+    <span title="enter bios - `bios_console.py` (reference label)" class="md-ellipsis">Enter BIOS -<wbr> bios_<wbr>console.<wbr>py</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Enter BIOS - bios_console.py">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#perform-memory-tests-from-the-bios" class="md-nav__link">
+    <span title="perform memory tests from the bios (reference label)" class="md-ellipsis">Perform memory tests from the BIOS</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-with-bist-mem-bist-py" class="md-nav__link">
+    <span title="test with bist - `mem_bist.py` (reference label)" class="md-ellipsis">Test with BIST -<wbr> mem_<wbr>bist.<wbr>py</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-benchmarks-benchmark-py" class="md-nav__link">
+    <span title="run benchmarks - `benchmark.py` (reference label)" class="md-ellipsis">Run benchmarks -<wbr> benchmark.<wbr>py</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-logic-analyzer-analyzer-py" class="md-nav__link">
+    <span title="use logic analyzer - `analyzer.py` (reference label)" class="md-ellipsis">Use logic analyzer -<wbr> analyzer.<wbr>py</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="visualization.html" class="md-nav__link">
+        <span class="md-ellipsis">Result visualization</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="playbook.html" class="md-nav__link">
+        <span class="md-ellipsis">Test-<wbr>writing playbook</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="memory_testing.html" class="md-nav__link">
+        <span class="md-ellipsis">Memory testing</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="building_linux.html" class="md-nav__link">
+        <span class="md-ellipsis">Building Linux target</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pcie_support.html" class="md-nav__link">
+        <span class="md-ellipsis">PCIe support</span>
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11" type="checkbox" id="__nav_11" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11">
+          <span class="md-ellipsis">Digital design</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Digital design" data-md-level="1">
+        <label class="md-nav__title" for="__nav_11">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Digital design</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/arty/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester Arty-<wbr>A7</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/zcu104/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester ZCU104</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/ddr4_datacenter_test_board/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester Data Center DRAM Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/lpddr4_test_board/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester LPDDR4 Test Board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/ddr5_test_board/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester DDR5 Test Board</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build/ddr5_tester/documentation/index.html" class="md-nav__link">
+        <span class="md-ellipsis">Documentation for Row Hammer Tester DDR5 Tester</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset" role="main">
+                  
+
+
+  <a href="https://github.com/antmicro/rowhammer-tester/blob/main/docs/source/hammering.md" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+<h1 id="performing-attacks-hammering">Performing attacks (hammering)<a class="headerlink" href="#performing-attacks-hammering" title="Link to this heading">¶</a></h1>
+<p>Rowhammer attacks can be run against a DRAM module.
+The results can be then used for measuring cell retention.
+For the complete list of script modifiers, see <code class="docutils literal notranslate"><span class="pre">--help</span></code>.</p>
+<p>There are two versions of the rowhammer script:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rowhammer.py</span></code> - uses regular memory access via EtherBone to fill/check the memory (slower).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hw_rowhammer.py</span></code> - BIST blocks will be used to fill/check the memory (much faster, but with some limitations regarding fill pattern).</p></li>
+</ul>
+<p>BIST blocks are faster and are the intended way of running Rowhammer tester.</p>
+<p>Hammering of a row is done by reading it.
+There are two ways to specify a number of reads:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--read_count</span> <span class="pre">N</span></code> - one pass of <code class="docutils literal notranslate"><span class="pre">N</span></code> reads</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--read_count_range</span> <span class="pre">K</span> <span class="pre">M</span> <span class="pre">N</span></code> - multiple passes of reads, as generated by <code class="docutils literal notranslate"><span class="pre">range(K,</span> <span class="pre">M,</span> <span class="pre">N)</span></code></p></li>
+</ul>
+<p>Regardless of which one is used, the number of reads in one pass is divided equally between the hammered rows.
+If a user specifies <code class="docutils literal notranslate"><span class="pre">--read_count</span> <span class="pre">1000</span></code>, then each row will be hammered 500 times.</p>
+<p>By default, hammering is performed via DMA, but there is an alternative way with <code class="docutils literal notranslate"><span class="pre">--payload-executor</span></code> which bypasses the DMA and talks directly with the PHY.
+That allows the user to issue specific activation, refresh and precharge commands.</p>
+<h2 id="attack-modes">Attack modes<a class="headerlink" href="#attack-modes" title="Link to this heading">¶</a></h2>
+<p>Several attack and row selection modes are available, but only one mode can be specified at a time.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">--hammer-only</span></code></p>
+<p>Hammers rows without error checks or reports.
+When run with <code class="docutils literal notranslate"><span class="pre">rowhammer.py</span></code>, the attack is limited to one row pair.
+<code class="docutils literal notranslate"><span class="pre">hw_rowhammer.py</span></code> can attack up to 32 rows.
+With <code class="docutils literal notranslate"><span class="pre">--payload-executor</span></code> enabled, the row limit is dictated by the payload memory size.</p>
+<p>For example, the following command will hammer rows 4 and 6 1000 times total (so 500 times each):</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--hammer-only<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">6</span><span class="w"> </span>--read_count<span class="w"> </span><span class="m">1000</span>
+</code></pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--all-rows</span></code></p>
+<p>Row pairs generated from the <code class="docutils literal notranslate"><span class="pre">range(start-row,</span> <span class="pre">nrows</span> <span class="pre">-</span> <span class="pre">row-pair-distance,</span> <span class="pre">row-jump)</span></code> expression will be hammered.</p>
+<p>The generated pairs come in the format of <code class="docutils literal notranslate"><span class="pre">(i,</span> <span class="pre">i</span> <span class="pre">+</span> <span class="pre">row-pair-distance)</span></code>.
+<a class="reference internal" href="#default-all-rows-arguments"><span class="std std-numref">Table 1</span></a> shows default values for arguments:</p>
+</li>
+</ul>
+<table class="docutils data align-default" id="default-all-rows-arguments">
+<caption><span class="caption-number">Table 1 </span><span class="caption-text">Default values for arguments</span><a class="headerlink" href="#default-all-rows-arguments" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>argument</p></th>
+<th class="head"><p>default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--start-row</span></code></p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--row-jump</span></code></p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--row-pair-distance</span></code></p></td>
+<td><p>2</p></td>
+</tr>
+</tbody>
+</table>
+<p>For instance, to hammer rows <code class="docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">2),</span> <span class="pre">(1,</span> <span class="pre">3),</span> <span class="pre">(2,</span> <span class="pre">4)</span></code>, run the following command:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--all-rows<span class="w"> </span>--nrows<span class="w"> </span><span class="m">5</span>
+</code></pre></div>
+</div>
+<p>And to hammer rows <code class="docutils literal notranslate"><span class="pre">(10,</span> <span class="pre">13),</span> <span class="pre">(12,</span> <span class="pre">15)</span></code>, run:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--all-rows<span class="w"> </span>--start-row<span class="w"> </span><span class="m">10</span><span class="w"> </span>--nrows<span class="w"> </span><span class="m">16</span><span class="w"> </span>--row-jump<span class="w"> </span><span class="m">2</span><span class="w"> </span>--row-distance<span class="w"> </span><span class="m">3</span>
+</code></pre></div>
+</div>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">--row-pair-distance</span></code> to 0 lets you check how hammering a single row affects other rows.
+Normally, activations and deactivations are achieved with row reads using the DMA, but in this case this is not possible.
+Since a single row is being read all the time, no deactivation command would be sent by the DMA.
+In this case, the <code class="docutils literal notranslate"><span class="pre">--payload-executor</span></code> argument is required as it bypasses the DMA and sends deactivation commands on its own:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--all-rows<span class="w"> </span>--nrows<span class="w"> </span><span class="m">5</span><span class="w"> </span>--row-pair-distance<span class="w"> </span><span class="m">0</span><span class="w"> </span>--payload-executor
+</code></pre></div>
+</div>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">--row-pairs</span> <span class="pre">sequential</span></code></p>
+<p>Hammers pairs of <code class="docutils literal notranslate"><span class="pre">(start-row,</span> <span class="pre">start-row</span> <span class="pre">+</span> <span class="pre">n)</span></code>, where <code class="docutils literal notranslate"><span class="pre">n</span></code> is a value from <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">nrows</span></code>, e.g.:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--row-pairs<span class="w"> </span>sequential<span class="w"> </span>--start-row<span class="w"> </span><span class="m">4</span><span class="w"> </span>--nrows<span class="w"> </span><span class="m">10</span>
+</code></pre></div>
+</div>
+<p>The command above will hammer the following set of row pairs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><code><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="o">...</span>
+<span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">9</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">10</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--row-pairs</span> <span class="pre">const</span></code></p>
+<p>Two rows specified with the <code class="docutils literal notranslate"><span class="pre">const-rows-pair</span></code> parameter will be hammered:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--row-pairs<span class="w"> </span>const<span class="w"> </span>--const-rows-pair<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">6</span>
+</code></pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--row-pairs</span> <span class="pre">random</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">nrows</span></code> pairs of random rows will be hammered. Row numbers will be between <code class="docutils literal notranslate"><span class="pre">start-row</span></code> and <code class="docutils literal notranslate"><span class="pre">start-row</span> <span class="pre">+</span> <span class="pre">nrows</span></code>.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--row-pairs<span class="w"> </span>random<span class="w"> </span>--start-row<span class="w"> </span><span class="m">4</span><span class="w"> </span>--nrows<span class="w"> </span><span class="m">10</span>
+</code></pre></div>
+</div>
+</li>
+</ul>
+<h2 id="patterns">Patterns<a class="headerlink" href="#patterns" title="Link to this heading">¶</a></h2>
+<p>You can choose a pattern that memory will be initially filled with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">all_0</span></code> - all bits set to 0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">all_1</span></code> - all bits set to 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">01_in_row</span></code> - alternating 0s and 1s in a row (<code class="docutils literal notranslate"><span class="pre">0xaaaaaaaa</span></code> in hex)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">01_per_row</span></code> - all 0s in odd-numbered rows, all 1s in even rows</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rand_per_row</span></code> - random values for all rows</p></li>
+</ul>
+<h2 id="example-output">Example output<a class="headerlink" href="#example-output" title="Link to this heading">¶</a></h2>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--nrows<span class="w"> </span><span class="m">512</span><span class="w"> </span>--read_count<span class="w"> </span>10e6<span class="w"> </span>--pattern<span class="w"> </span>01_in_row<span class="w"> </span>--row-pairs<span class="w"> </span>const<span class="w"> </span>--const-rows-pair<span class="w"> </span><span class="m">54</span><span class="w"> </span><span class="m">133</span><span class="w"> </span>--no-refresh
+Preparing<span class="w"> </span>...
+WARNING:<span class="w"> </span>only<span class="w"> </span>single<span class="w"> </span>word<span class="w"> </span>patterns<span class="w"> </span>supported,<span class="w"> </span>using:<span class="w"> </span>0xaaaaaaaa
+Filling<span class="w"> </span>memory<span class="w"> </span>with<span class="w"> </span>data<span class="w"> </span>...
+Progress:<span class="w"> </span><span class="o">[========================================]</span><span class="w"> </span><span class="m">16777216</span><span class="w"> </span>/<span class="w"> </span><span class="m">16777216</span>
+Verifying<span class="w"> </span>written<span class="w"> </span>memory<span class="w"> </span>...
+Progress:<span class="w"> </span><span class="o">[========================================]</span><span class="w"> </span><span class="m">16777216</span><span class="w"> </span>/<span class="w"> </span><span class="m">16777216</span><span class="w"> </span><span class="o">(</span>Errors:<span class="w"> </span><span class="m">0</span><span class="o">)</span>
+OK
+Disabling<span class="w"> </span>refresh<span class="w"> </span>...
+Running<span class="w"> </span>Rowhammer<span class="w"> </span>attacks<span class="w"> </span>...
+read_count:<span class="w"> </span><span class="m">10000000</span>
+<span class="w">  </span>Iter<span class="w"> </span><span class="m">0</span><span class="w"> </span>/<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="nv">Rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="m">54</span>,<span class="w"> </span><span class="m">133</span><span class="o">)</span>,<span class="w"> </span><span class="nv">Count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span>.00M<span class="w"> </span>/<span class="w"> </span><span class="m">10</span>.00M
+Reenabling<span class="w"> </span>refresh<span class="w"> </span>...
+Verifying<span class="w"> </span>attacked<span class="w"> </span>memory<span class="w"> </span>...
+Progress:<span class="w"> </span><span class="o">[========================================]</span><span class="w"> </span><span class="m">16777216</span><span class="w"> </span>/<span class="w"> </span><span class="m">16777216</span><span class="w"> </span><span class="o">(</span>Errors:<span class="w"> </span><span class="m">30</span><span class="o">)</span>
+Bit-flips<span class="w"> </span><span class="k">for</span><span class="w"> </span>row<span class="w">    </span><span class="m">53</span>:<span class="w"> </span><span class="m">5</span>
+Bit-flips<span class="w"> </span><span class="k">for</span><span class="w"> </span>row<span class="w">    </span><span class="m">55</span>:<span class="w"> </span><span class="m">11</span>
+Bit-flips<span class="w"> </span><span class="k">for</span><span class="w"> </span>row<span class="w">   </span><span class="m">132</span>:<span class="w"> </span><span class="m">12</span>
+Bit-flips<span class="w"> </span><span class="k">for</span><span class="w"> </span>row<span class="w">   </span><span class="m">134</span>:<span class="w"> </span><span class="m">3</span>
+</code></pre></div>
+</div>
+<h2 id="row-selection-examples">Row selection examples<a class="headerlink" href="#row-selection-examples" title="Link to this heading">¶</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Attacks are performed on a single bank - bank 0 by default.
+To change the bank that is being attacked use the <code class="docutils literal notranslate"><span class="pre">--bank</span></code> flag.</p>
+</div>
+<ul>
+<li><p>Select row pairs from row 3 (<code class="docutils literal notranslate"><span class="pre">--start-row</span></code>) to row 59 (<code class="docutils literal notranslate"><span class="pre">--nrows</span></code>) where the next pair is 5 rows over (<code class="docutils literal notranslate"><span class="pre">--row-jump</span></code>) from the previous one:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--pattern<span class="w"> </span>01_in_row<span class="w"> </span>--all-rows<span class="w"> </span>--start-row<span class="w"> </span><span class="m">3</span><span class="w"> </span>--nrows<span class="w"> </span><span class="m">60</span><span class="w"> </span>--row-jump<span class="w"> </span><span class="m">5</span><span class="w"> </span>--no-refresh<span class="w"> </span>--read_count<span class="w"> </span>10e4
+</code></pre></div>
+</div>
+</li>
+<li><p>Select row pairs from row 3 to row 59 without a distance between subsequent pairs (no <code class="docutils literal notranslate"><span class="pre">--row-jump</span></code>), which means that rows pairs are incremented by 1:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--pattern<span class="w"> </span>01_in_row<span class="w"> </span>--all-rows<span class="w"> </span>--start-row<span class="w"> </span><span class="m">3</span><span class="w"> </span>--nrows<span class="w"> </span><span class="m">60</span><span class="w"> </span>--no-refresh<span class="w"> </span>--read_count<span class="w"> </span>10e4
+</code></pre></div>
+</div>
+</li>
+<li><p>Select all row pairs (from <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">nrows</span> <span class="pre">-</span> <span class="pre">1</span></code>):</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--pattern<span class="w"> </span>01_in_row<span class="w"> </span>--all-rows<span class="w"> </span>--nrows<span class="w"> </span><span class="m">512</span><span class="w"> </span>--no-refresh<span class="w"> </span>--read_count<span class="w"> </span>10e4
+</code></pre></div>
+</div>
+</li>
+<li><p>Select all row pairs (from <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">nrows</span> <span class="pre">-</span> <span class="pre">1</span></code>) and save the error summary in JSON format to the <code class="docutils literal notranslate"><span class="pre">test</span></code> directory:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--pattern<span class="w"> </span>01_in_row<span class="w"> </span>--all-rows<span class="w"> </span>--nrows<span class="w"> </span><span class="m">512</span><span class="w"> </span>--no-refresh<span class="w"> </span>--read_count<span class="w"> </span>10e4<span class="w"> </span>--log-dir<span class="w"> </span>./test
+</code></pre></div>
+</div>
+</li>
+<li><p>Select a single row (42 in this case) and save the error summary in JSON format to the <code class="docutils literal notranslate"><span class="pre">test</span></code> directory:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--pattern<span class="w"> </span>all_1<span class="w"> </span>--row-pairs<span class="w"> </span>const<span class="w"> </span>--const-rows-pair<span class="w"> </span><span class="m">42</span><span class="w"> </span><span class="m">42</span><span class="w"> </span>--no-refresh<span class="w"> </span>--read_count<span class="w"> </span>10e4<span class="w"> </span>--log-dir<span class="w"> </span>./test
+</code></pre></div>
+</div>
+</li>
+<li><p>Select all rows (from <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">nrows</span> <span class="pre">-</span> <span class="pre">1</span></code>) and hammer them one by one 1M times each.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--all-rows<span class="w"> </span>--nrows<span class="w"> </span><span class="m">100</span><span class="w"> </span>--row-pair-distance<span class="w"> </span><span class="m">0</span><span class="w"> </span>--payload-executor<span class="w"> </span>--no-refresh<span class="w"> </span>--read_count<span class="w"> </span>1e6
+</code></pre></div>
+</div>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Since for a single ended attack row activation needs to be triggered the <code class="docutils literal notranslate"><span class="pre">--payload-executor</span></code> switch is required.
+The size of the payload memory is set by default to 1024 bytes and can be changed using the <code class="docutils literal notranslate"><span class="pre">--payload-size</span></code> switch.</p>
+</div>
+<h2 id="cell-retention-measurement">Cell retention measurement<a class="headerlink" href="#cell-retention-measurement" title="Link to this heading">¶</a></h2>
+<p>The following parameter is used to conduct DRAM cell retention experiments.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">--no-attack-time</span> <span class="pre">&lt;time&gt;</span></code></p>
+<p>Instead of performing a rowhammer attack, the script will load the RAM with selected pattern and sleep for <code class="docutils literal notranslate"><span class="pre">time</span></code> nanoseconds.
+After this time, it will check for any bitflips that could have happened.
+This option does not imply <code class="docutils literal notranslate"><span class="pre">--no-refresh</span></code>.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--no-attack-time<span class="w"> </span>10e9<span class="w"> </span>--no-refresh
+</code></pre></div>
+</div>
+</li>
+</ul>
+<p>By executing this command with varying sleep intervals, it is possible to characterize the frequency and occurrence of bit flips over time.
+<a class="reference internal" href="#cell-retention-plot"><span class="std std-numref">Fig. 17</span></a> presents the relationship between the detected bit flips and the elapsed time without a memory refresh.
+The results were collected from <code class="docutils literal notranslate"><span class="pre">SK</span> <span class="pre">hynix</span> <span class="pre">HMCG84MEBRA112NBB</span></code> off-the-shelf RDIMM DDR5 module.</p>
+<figure class="align-default" id="cell-retention-plot">
+<img alt="cell-retention-plot" src="_images/rdimm-ddr5-cell-retention-plot.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 17 </span><span class="caption-text"><span class="caption-text">
+Sample plot summarizing DRAM cell retention testing</span><a class="headerlink" href="#cell-retention-plot" title="Permalink to this image">¶</a></figcaption>
+</figure>
+<h2 id="read-count-parameter-optimization">Read count parameter optimization<a class="headerlink" href="#read-count-parameter-optimization" title="Link to this heading">¶</a></h2>
+<p>The following set of commands can be used to analyze the relationship between the number of bit flips and the number of reads. Additionally, they help identify the optimal number of reads required to trigger a bit flip.</p>
+<ul>
+<li><p>Select all row pairs (from 0 to nrows - 1) and perform a set of tests for different read count values, starting from 10e4 and ending at 10e5 with a step of 20e4 (<code class="docutils literal notranslate"><span class="pre">--read_count_range</span> <span class="pre">[start</span> <span class="pre">stop</span> <span class="pre">step]</span></code>):</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--pattern<span class="w"> </span>01_in_row<span class="w"> </span>--all-rows<span class="w"> </span>--nrows<span class="w"> </span><span class="m">512</span><span class="w"> </span>--no-refresh<span class="w"> </span>--read_count_range<span class="w"> </span>10e4<span class="w"> </span>10e5<span class="w"> </span>20e4
+</code></pre></div>
+</div>
+</li>
+<li><p>Perform a set of tests for different read count values in a given range for one row pair (50, 100):</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--pattern<span class="w"> </span>01_in_row<span class="w"> </span>--row-pairs<span class="w"> </span>const<span class="w"> </span>--const-rows-pair<span class="w"> </span><span class="m">50</span><span class="w"> </span><span class="m">100</span><span class="w"> </span>--no-refresh<span class="w"> </span>--read_count_range<span class="w"> </span>10e4<span class="w"> </span>10e5<span class="w"> </span>20e4
+</code></pre></div>
+</div>
+</li>
+<li><p>Perform a set of tests for different read count values in a given range for one row pair (50, 100) and stop the test execution as soon as a bitflip is found:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--pattern<span class="w"> </span>01_in_row<span class="w"> </span>--row-pairs<span class="w"> </span>const<span class="w"> </span>--const-rows-pair<span class="w"> </span><span class="m">50</span><span class="w"> </span><span class="m">100</span><span class="w"> </span>--no-refresh<span class="w"> </span>--read_count_range<span class="w"> </span>10e4<span class="w"> </span>10e5<span class="w"> </span>20e4<span class="w"> </span>--exit-on-bit-flip
+</code></pre></div>
+</div>
+</li>
+<li><p>Perform a set of tests for different read count values in a given range for one row pair (50, 100) and save the error summary in JSON format to the <code class="docutils literal notranslate"><span class="pre">test</span></code> directory:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--pattern<span class="w"> </span>01_in_row<span class="w"> </span>--row-pairs<span class="w"> </span>const<span class="w"> </span>--const-rows-pair<span class="w"> </span><span class="m">50</span><span class="w"> </span><span class="m">100</span><span class="w"> </span>--no-refresh<span class="w"> </span>--read_count_range<span class="w"> </span>10e4<span class="w"> </span>10e5<span class="w"> </span>20e4<span class="w"> </span>--log-dir<span class="w"> </span>./test
+</code></pre></div>
+</div>
+</li>
+<li><p>Perform a set of tests for different read count values in a given range for a sequence of attacks for different pairs, where the first row of a pair is 40 and the second one is a row of a number from range (40, nrows - 1):</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>hw_rowhammer.py<span class="w"> </span>--pattern<span class="w"> </span>01_in_row<span class="w"> </span>--row-pairs<span class="w"> </span>sequential<span class="w"> </span>--start-row<span class="w"> </span><span class="m">40</span><span class="w"> </span>--nrows<span class="w"> </span><span class="m">512</span><span class="w"> </span>--no-refresh<span class="w"> </span>--read_count_range<span class="w"> </span>10e4<span class="w"> </span>10e5<span class="w"> </span>20e4
+</code></pre></div>
+</div>
+</li>
+</ul>
+<h2 id="dram-modules">DRAM modules<a class="headerlink" href="#dram-modules" title="Link to this heading">¶</a></h2>
+<p>When building one of the targets available in <a class="reference external" href="https://github.com/antmicro/rowhammer-tester/tree/main/rowhammer_tester/targets">rowhammer_tester/targets</a>, you can specify a custom DRAM module using the <code class="docutils literal notranslate"><span class="pre">--module</span></code> argument.
+To find the default modules for each target, check the output of <code class="docutils literal notranslate"><span class="pre">--help</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Specifying different DRAM module makes most sense on boards that allow to easily replace the DRAM module,
+such as on ZCU104. On other boards it would be necessary to desolder the DRAM chip and solder a new one.</p>
+</div>
+<h3 id="adding-new-modules">Adding new modules<a class="headerlink" href="#adding-new-modules" title="Link to this heading">¶</a></h3>
+<p>To make development more convenient, modules can be added in the rowhammer-tester repository directly in file <a class="reference external" href="https://github.com/antmicro/rowhammer-tester/blob/main/rowhammer_tester/targets/modules.py">rowhammer_tester/targets/modules.py</a>.
+These definitions will be used before definitions in LiteDRAM.</p>
+<p>To add a new module definition, use the existing ones as a reference.
+A new module class should derive from <code class="docutils literal notranslate"><span class="pre">SDRAMModule</span></code> (or the helper classes, e.g. <code class="docutils literal notranslate"><span class="pre">DDR4Module</span></code>).
+Timing/geometry values for a module have to be obtained from the relevant DRAM module’s datasheet.
+The timings in classes deriving from <code class="docutils literal notranslate"><span class="pre">SDRAMModule</span></code> are specified in nanoseconds.
+The timing value can also be specified as a 2-element tuple <code class="docutils literal notranslate"><span class="pre">(ck,</span> <span class="pre">ns)</span></code>, in which case <code class="docutils literal notranslate"><span class="pre">ck</span></code> is the number of clock cycles and <code class="docutils literal notranslate"><span class="pre">ns</span></code> is the number of nanoseconds (and can be <code class="docutils literal notranslate"><span class="pre">None</span></code>).
+The highest of the resulting timing values will be used.</p>
+<h3 id="spd-eeprom">SPD EEPROM<a class="headerlink" href="#spd-eeprom" title="Link to this heading">¶</a></h3>
+<p>For boards that use DIMM/SO-DIMM modules (e.g. ZCU104), it is possible to read the contents of DRAM module <a class="reference external" href="https://en.wikipedia.org/wiki/Serial_presence_detect">SPD EEPROM memory</a>.
+SPD contains several essential module parameters that the memory controller needs in order to use the DRAM module.
+SPD EEPROM can be read over an I2C bus.</p>
+<h4 id="reading-spd-eeprom">Reading SPD EEPROM<a class="headerlink" href="#reading-spd-eeprom" title="Link to this heading">¶</a></h4>
+<p>To read the SPD memory, use the <code class="docutils literal notranslate"><span class="pre">rowhammer_tester/scripts/spd_eeprom.py</span></code> script.
+First, prepare the environment as described in the <a class="reference internal" href="building_rowhammer.html"><span class="doc">Building Rowhammer designs</span></a> chapter.
+Then, use the following command to read the contents of SPD EEPROM and save it to a file, for example:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>python<span class="w"> </span>rowhammer_tester/scripts/spd_eeprom.py<span class="w"> </span><span class="nb">read</span><span class="w"> </span>MTA4ATF51264HZ-3G2J1.bin
+</code></pre></div>
+</div>
+<p>The contents of the file can then be used to get DRAM module parameters.
+Use the following command to examine the parameters:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>python<span class="w"> </span>rowhammer_tester/scripts/spd_eeprom.py<span class="w"> </span>show<span class="w"> </span>MTA4ATF51264HZ-3G2J1.bin<span class="w"> </span>125e6
+</code></pre></div>
+</div>
+<p>Note that system clock frequency must be passed as an argument to determine timing values in controller clock cycles.</p>
+<h4 id="using-spd-data">Using SPD data<a class="headerlink" href="#using-spd-data" title="Link to this heading">¶</a></h4>
+<p>The memory controller is able to set the timings read from an SPD EEPROM during system boot.
+The only requirement here is that the SoC is built with an I2C controller and the I2C pins are routed to the (R)DIMM module.
+There is no additional action required and the timings will be set automatically.</p>
+<h2 id="utilities">Utilities<a class="headerlink" href="#utilities" title="Link to this heading">¶</a></h2>
+<p>Some scripts are simple and do not take command line arguments, others will provide help via <code class="docutils literal notranslate"><span class="pre">&lt;script_name&gt;.py</span> <span class="pre">--help</span></code> or <code class="docutils literal notranslate"><span class="pre">&lt;script_name&gt;.py</span> <span class="pre">-h</span></code>.</p>
+<p>Few of the scripts accept a <code class="docutils literal notranslate"><span class="pre">--srv</span></code> option.
+With this option enabled, a program will start its own instance of <code class="docutils literal notranslate"><span class="pre">litex_server</span></code> (the user doesn’t need to run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">srv</span></code> to control the board).</p>
+<h3 id="run-leds-demo-leds-py">Run LEDs demo - <code class="docutils literal notranslate"><span class="pre">leds.py</span></code><a class="headerlink" href="#run-leds-demo-leds-py" title="Link to this heading">¶</a></h3>
+<p>Displays a simple “bouncing” animation using the LEDs on Arty-A7 board, with the light moving from side to side.</p>
+<p><code class="docutils literal notranslate"><span class="pre">-t</span> <span class="pre">TIME_MS</span></code> or <code class="docutils literal notranslate"><span class="pre">--time-ms</span> <span class="pre">TIME_MS</span></code> option can be used to adjust LED switching interval.</p>
+<h3 id="check-version-version-py">Check version - <code class="docutils literal notranslate"><span class="pre">version.py</span></code><a class="headerlink" href="#check-version-version-py" title="Link to this heading">¶</a></h3>
+<p>Prints the data stored in the LiteX identification memory:</p>
+<ul class="simple">
+<li><p>hardware platform identifier</p></li>
+<li><p>source code git hash</p></li>
+<li><p>build date</p></li>
+</ul>
+<p>Example output:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>python<span class="w"> </span>version.py
+Rowhammer<span class="w"> </span>tester<span class="w"> </span>SoC<span class="w"> </span>on<span class="w"> </span>xc7k160tffg676-1,<span class="w"> </span>git:<span class="w"> </span>e7854fdd16d5f958e616bbb4976a97962ee9197d<span class="w"> </span><span class="m">2022</span>-07-24<span class="w"> </span><span class="m">15</span>:46:52
+</code></pre></div>
+</div>
+<h3 id="check-csrs-dump-regs-py">Check CSRs - <code class="docutils literal notranslate"><span class="pre">dump_regs.py</span></code><a class="headerlink" href="#check-csrs-dump-regs-py" title="Link to this heading">¶</a></h3>
+<p>Dumps values of all CSRs.
+Example output of <code class="docutils literal notranslate"><span class="pre">dump_regs.py</span></code>:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>0x82000000:<span class="w"> </span>0x00000000<span class="w"> </span>ctrl_reset
+0x82000004:<span class="w"> </span>0x12345678<span class="w"> </span>ctrl_scratch
+0x82000008:<span class="w"> </span>0x00000000<span class="w"> </span>ctrl_bus_errors
+0x82002000:<span class="w"> </span>0x00000000<span class="w"> </span>uart_rxtx
+0x82002004:<span class="w"> </span>0x00000001<span class="w"> </span>uart_txfull
+0x82002008:<span class="w"> </span>0x00000001<span class="w"> </span>uart_rxempty
+0x8200200c:<span class="w"> </span>0x00000003<span class="w"> </span>uart_ev_status
+0x82002010:<span class="w"> </span>0x00000000<span class="w"> </span>uart_ev_pending
+...
+</code></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Note that the <code class="docutils literal notranslate"><span class="pre">ctrl_scratch</span></code> value is <code class="docutils literal notranslate"><span class="pre">0x12345678</span></code>. This is the reset value of this register.
+If you are getting a different value, it may indicate a problem.</p>
+</div>
+<h3 id="initialize-memory-mem-py">Initialize memory - <code class="docutils literal notranslate"><span class="pre">mem.py</span></code><a class="headerlink" href="#initialize-memory-mem-py" title="Link to this heading">¶</a></h3>
+<p>Before the DRAM memory can be used, perform initialization and leveling using the <code class="docutils literal notranslate"><span class="pre">mem.py</span></code> script.</p>
+<p>Expected output:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>mem.py
+<span class="o">(</span>LiteX<span class="w"> </span>output<span class="o">)</span>
+--<span class="o">==========</span><span class="w"> </span><span class="nv">Initialization</span><span class="w"> </span><span class="o">============</span>--
+Initializing<span class="w"> </span>SDRAM<span class="w"> </span>@0x40000000...
+Switching<span class="w"> </span>SDRAM<span class="w"> </span>to<span class="w"> </span>software<span class="w"> </span>control.
+Read<span class="w"> </span>leveling:
+<span class="w">  </span>m0,<span class="w"> </span>b0:<span class="w"> </span><span class="p">|</span><span class="m">11111111111110000000000000000000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span><span class="m">06</span>+-06
+<span class="w">  </span>m0,<span class="w"> </span>b1:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000111111111111111000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span><span class="m">21</span>+-08
+<span class="w">  </span>m0,<span class="w"> </span>b2:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000000000000000000011</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span><span class="m">31</span>+-01
+<span class="w">  </span>m0,<span class="w"> </span>b3:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000000000000000000000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span>-
+<span class="w">  </span>m0,<span class="w"> </span>b4:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000000000000000000000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span>-
+<span class="w">  </span>m0,<span class="w"> </span>b5:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000000000000000000000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span>-
+<span class="w">  </span>m0,<span class="w"> </span>b6:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000000000000000000000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span>-
+<span class="w">  </span>m0,<span class="w"> </span>b7:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000000000000000000000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span>-
+<span class="w">  </span>best:<span class="w"> </span>m0,<span class="w"> </span>b01<span class="w"> </span>delays:<span class="w"> </span><span class="m">21</span>+-07
+<span class="w">  </span>m1,<span class="w"> </span>b0:<span class="w"> </span><span class="p">|</span><span class="m">11111111111111000000000000000000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span><span class="m">07</span>+-07
+<span class="w">  </span>m1,<span class="w"> </span>b1:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000111111111111111000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span><span class="m">22</span>+-08
+<span class="w">  </span>m1,<span class="w"> </span>b2:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000000000000000000001</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span><span class="m">31</span>+-00
+<span class="w">  </span>m1,<span class="w"> </span>b3:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000000000000000000000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span>-
+<span class="w">  </span>m1,<span class="w"> </span>b4:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000000000000000000000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span>-
+<span class="w">  </span>m1,<span class="w"> </span>b5:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000000000000000000000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span>-
+<span class="w">  </span>m1,<span class="w"> </span>b6:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000000000000000000000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span>-
+<span class="w">  </span>m1,<span class="w"> </span>b7:<span class="w"> </span><span class="p">|</span><span class="m">00000000000000000000000000000000</span><span class="p">|</span><span class="w"> </span>delays:<span class="w"> </span>-
+<span class="w">  </span>best:<span class="w"> </span>m1,<span class="w"> </span>b01<span class="w"> </span>delays:<span class="w"> </span><span class="m">22</span>+-08
+Switching<span class="w"> </span>SDRAM<span class="w"> </span>to<span class="w"> </span>hardware<span class="w"> </span>control.
+Memtest<span class="w"> </span>at<span class="w"> </span>0x40000000<span class="w"> </span><span class="o">(</span>2MiB<span class="o">)</span>...
+<span class="w">  </span>Write:<span class="w"> </span>0x40000000-0x40200000<span class="w"> </span>2MiB
+<span class="w">  </span>Read:<span class="w"> </span>0x40000000-0x40200000<span class="w"> </span>2MiB
+Memtest<span class="w"> </span>OK
+Memspeed<span class="w"> </span>at<span class="w"> </span>0x40000000<span class="w"> </span><span class="o">(</span>2MiB<span class="o">)</span>...
+<span class="w">  </span>Write<span class="w"> </span>speed:<span class="w"> </span>12MiB/s
+<span class="w">  </span><span class="o">===</span><span class="w"> </span>Initialization<span class="w"> </span>succeeded.<span class="w"> </span><span class="o">===</span>
+Proceeding<span class="w"> </span>...
+
+Memtest<span class="w"> </span><span class="o">(</span>basic<span class="o">)</span>
+OK
+
+Memtest<span class="w"> </span><span class="o">(</span>random<span class="o">)</span>
+OK
+</code></pre></div>
+</div>
+<h3 id="enter-bios-bios-console-py">Enter BIOS - <code class="docutils literal notranslate"><span class="pre">bios_console.py</span></code><a class="headerlink" href="#enter-bios-bios-console-py" title="Link to this heading">¶</a></h3>
+<p>It may happen that memory initialization fails when running the <code class="docutils literal notranslate"><span class="pre">mem.py</span></code> script.
+This is most likely due to using boards that allow to swap memory modules, such as the ZCU104.</p>
+<p>The memory initialization procedure is performed by the CPU instantiated inside the FPGA fabric.
+The CPU runs the LiteX BIOS.
+In case of memory training failure, it may be helpful to access the LiteX BIOS console.</p>
+<p>If the script cannot find a serial terminal emulator program on the host system, it will fall back to <code class="docutils literal notranslate"><span class="pre">litex_term</span></code> which ships with LiteX.
+It is however advised to install <code class="docutils literal notranslate"><span class="pre">picocom</span></code>/<code class="docutils literal notranslate"><span class="pre">minicom</span></code> as <code class="docutils literal notranslate"><span class="pre">litex_term</span></code> has worse performance.</p>
+<p>In the BIOS console, use the <code class="docutils literal notranslate"><span class="pre">help</span></code> command to get information about other available commands.
+To re-run memory initialization and training, type <code class="docutils literal notranslate"><span class="pre">reboot</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To close picocom/minicom, use the CTRL+A+X key combination.</p>
+</div>
+<p>Example:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w"> </span>python<span class="w"> </span>bios_console.py
+LiteX<span class="w"> </span>Crossover<span class="w"> </span>UART<span class="w"> </span>created:<span class="w"> </span>/dev/pts/4
+Using<span class="w"> </span>serial<span class="w"> </span>backend:<span class="w"> </span>auto
+picocom<span class="w"> </span>v3.1
+
+port<span class="w"> </span>is<span class="w">        </span>:<span class="w"> </span>/dev/pts/4
+flowcontrol<span class="w">    </span>:<span class="w"> </span>none
+baudrate<span class="w"> </span>is<span class="w">    </span>:<span class="w"> </span><span class="m">1000000</span>
+parity<span class="w"> </span>is<span class="w">      </span>:<span class="w"> </span>none
+databits<span class="w"> </span>are<span class="w">   </span>:<span class="w"> </span><span class="m">8</span>
+stopbits<span class="w"> </span>are<span class="w">   </span>:<span class="w"> </span><span class="m">1</span>
+escape<span class="w"> </span>is<span class="w">      </span>:<span class="w"> </span>C-a
+<span class="nb">local</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span>is<span class="w">  </span>:<span class="w"> </span>no
+noinit<span class="w"> </span>is<span class="w">      </span>:<span class="w"> </span>no
+noreset<span class="w"> </span>is<span class="w">     </span>:<span class="w"> </span>no
+hangup<span class="w"> </span>is<span class="w">      </span>:<span class="w"> </span>no
+nolock<span class="w"> </span>is<span class="w">      </span>:<span class="w"> </span>no
+send_cmd<span class="w"> </span>is<span class="w">    </span>:<span class="w"> </span>sz<span class="w"> </span>-vv
+receive_cmd<span class="w"> </span>is<span class="w"> </span>:<span class="w"> </span>rz<span class="w"> </span>-vv<span class="w"> </span>-E
+imap<span class="w"> </span>is<span class="w">        </span>:
+omap<span class="w"> </span>is<span class="w">        </span>:
+emap<span class="w"> </span>is<span class="w">        </span>:<span class="w"> </span>crcrlf,delbs,
+logfile<span class="w"> </span>is<span class="w">     </span>:<span class="w"> </span>none
+initstring<span class="w">     </span>:<span class="w"> </span>none
+exit_after<span class="w"> </span>is<span class="w">  </span>:<span class="w"> </span>not<span class="w"> </span><span class="nb">set</span>
+<span class="nb">exit</span><span class="w"> </span>is<span class="w">        </span>:<span class="w"> </span>no
+
+Type<span class="w"> </span><span class="o">[</span>C-a<span class="o">]</span><span class="w"> </span><span class="o">[</span>C-h<span class="o">]</span><span class="w"> </span>to<span class="w"> </span>see<span class="w"> </span>available<span class="w"> </span>commands
+Terminal<span class="w"> </span>ready
+ad<span class="w"> </span>speed:<span class="w"> </span>9MiB/s
+
+--<span class="o">==============</span><span class="w"> </span><span class="nv">Boot</span><span class="w"> </span><span class="o">==================</span>--
+Booting<span class="w"> </span>from<span class="w"> </span>serial...
+Press<span class="w"> </span>Q<span class="w"> </span>or<span class="w"> </span>ESC<span class="w"> </span>to<span class="w"> </span>abort<span class="w"> </span>boot<span class="w"> </span>completely.
+sL5DdSMmkekro
+<span class="w">            </span>Timeout
+No<span class="w"> </span>boot<span class="w"> </span>medium<span class="w"> </span>found
+
+--<span class="o">=============</span><span class="w"> </span><span class="nv">Console</span><span class="w"> </span><span class="o">================</span>--
+
+litex&gt;
+</code></pre></div>
+</div>
+<h4 id="perform-memory-tests-from-the-bios">Perform memory tests from the BIOS<a class="headerlink" href="#perform-memory-tests-from-the-bios" title="Link to this heading">¶</a></h4>
+<p>After entering the BIOS, you may want to perform a memory test using utilities built into the BIOS.
+There are several ways to do it:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">mem_test</span></code> - performs a series of writes and reads to check if values read back are the same as those previously written.
+It is limited by a 32-bit address bus, so only 4 GiB of address space can be tested.
+You can get the origin of the RAM space using <code class="docutils literal notranslate"><span class="pre">mem_list</span></code> command.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sdram_test</span></code> - essentially <code class="docutils literal notranslate"><span class="pre">mem_test</span></code> but predefined for the first 1/32 of the defined RAM region size.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sdram_hw_test</span></code> - similar to <code class="docutils literal notranslate"><span class="pre">mem_test</span></code>, but accesses the SDRAM directly using DMAs, so it is not limited to 4 GiB.</p>
+<p>It requires passing 2 arguments (<code class="docutils literal notranslate"><span class="pre">origin</span></code> and <code class="docutils literal notranslate"><span class="pre">size</span></code>) with a 3rd optional argument, <code class="docutils literal notranslate"><span class="pre">burst_length</span></code>.
+When using <code class="docutils literal notranslate"><span class="pre">sdram_hw_test</span></code> you don’t have to offset the <code class="docutils literal notranslate"><span class="pre">origin</span></code> like in the case of <code class="docutils literal notranslate"><span class="pre">mem_test</span></code>.
+<code class="docutils literal notranslate"><span class="pre">size</span></code> is a number of bytes to test and <code class="docutils literal notranslate"><span class="pre">burst_length</span></code> is a number of full transfer writes to the SDRAM before reading and checking the written content.
+The default value for <code class="docutils literal notranslate"><span class="pre">burst_length</span></code> is 1, which means that after every write, a check is performed.
+Generally, higher <code class="docutils literal notranslate"><span class="pre">burst_length</span></code> values mean faster operation.</p>
+</li>
+</ul>
+<h3 id="test-with-bist-mem-bist-py">Test with BIST - <code class="docutils literal notranslate"><span class="pre">mem_bist.py</span></code><a class="headerlink" href="#test-with-bist-mem-bist-py" title="Link to this heading">¶</a></h3>
+<p>A script written to test the BIST block functionality.
+Two tests are available:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">test-modules</span></code> - the memory is initialized and then a series of errors is introduced.
+Then BIST is used to check the contents of the memory.
+If the number of errors detected is equal to the number of errors introduced, the test is passed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test-memory</span></code> - a simple test that writes a pattern in the memory, reads it, and checks whether the content is correct.
+Both write and read operations are done via BIST.</p></li>
+</ul>
+<h3 id="run-benchmarks-benchmark-py">Run benchmarks - <code class="docutils literal notranslate"><span class="pre">benchmark.py</span></code><a class="headerlink" href="#run-benchmarks-benchmark-py" title="Link to this heading">¶</a></h3>
+<p>Benchmarks memory access performance. There are two subcommands available:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">etherbone</span></code> - measures performance of the EtherBone bridge.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bist</span></code> - measures performance of DMA DRAM access using the BIST modules.</p></li>
+</ul>
+<p>Example output:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w">  </span>python<span class="w"> </span>benchmark.py<span class="w"> </span>etherbone<span class="w"> </span><span class="nb">read</span><span class="w"> </span>0x10000<span class="w"> </span>--burst<span class="w"> </span><span class="m">255</span>
+Using<span class="w"> </span>generated<span class="w"> </span>target<span class="w"> </span>files<span class="w"> </span><span class="k">in</span>:<span class="w"> </span>build/lpddr4_test_board
+Running<span class="w"> </span>measurement<span class="w"> </span>...
+<span class="nv">Elapsed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">4</span>.189<span class="w"> </span>sec
+<span class="nv">Size</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="m">256</span>.000<span class="w"> </span>KiB
+<span class="nv">Speed</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="m">61</span>.114<span class="w"> </span>KiBps
+
+<span class="o">(</span>venv<span class="o">)</span><span class="w"> </span>$<span class="w">  </span>python<span class="w"> </span>benchmark.py<span class="w"> </span>bist<span class="w"> </span><span class="nb">read</span>
+Using<span class="w"> </span>generated<span class="w"> </span>target<span class="w"> </span>files<span class="w"> </span><span class="k">in</span>:<span class="w"> </span>build/lpddr4_test_board
+Filling<span class="w"> </span>memory<span class="w"> </span>before<span class="w"> </span>reading<span class="w"> </span>measurements<span class="w"> </span>...
+Progress:<span class="w"> </span><span class="o">[========================================]</span><span class="w"> </span><span class="m">16777216</span><span class="w"> </span>/<span class="w"> </span><span class="m">16777216</span>
+Running<span class="w"> </span>measurement<span class="w"> </span>...
+Progress:<span class="w"> </span><span class="o">[========================================]</span><span class="w"> </span><span class="m">16777216</span><span class="w"> </span>/<span class="w"> </span><span class="m">16777216</span><span class="w"> </span><span class="o">(</span>Errors:<span class="w"> </span><span class="m">0</span><span class="o">)</span>
+<span class="nv">Elapsed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>.591<span class="w"> </span>sec
+<span class="nv">Size</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="m">512</span>.000<span class="w"> </span>MiB
+<span class="nv">Speed</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="m">321</span>.797<span class="w"> </span>MiBps
+</code></pre></div>
+</div>
+<h3 id="use-logic-analyzer-analyzer-py">Use logic analyzer - <code class="docutils literal notranslate"><span class="pre">analyzer.py</span></code><a class="headerlink" href="#use-logic-analyzer-analyzer-py" title="Link to this heading">¶</a></h3>
+<p>This script utilizes the Litescope functionality to gather debug information about signals in the LiteX system.
+In-depth Litescope documentation is available on <a class="reference external" href="https://github.com/enjoy-digital/litex/wiki/Use-LiteScope-To-Debug-A-SoC">GitHub</a>.</p>
+<p>Litescope analyzer needs to be instantiated in your design.
+A sample design with the analyzer added is provided as the <code class="docutils literal notranslate"><span class="pre">arty_litescope</span></code> TARGET and can be run using the Arty-A7 board.
+You can use <code class="docutils literal notranslate"><span class="pre">rowhammer_tester/targets/arty_litescope.py</span></code> as a reference for your own Litescope-enabled targets.</p>
+<p>To build the <code class="docutils literal notranslate"><span class="pre">arty_litescope</span></code> sample and upload it to device, follow the instructions below:</p>
+<ol class="arabic">
+<li><p>In the root directory, run:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">TARGET</span><span class="o">=</span>arty_litescope
+make<span class="w"> </span>build
+make<span class="w"> </span>upload
+</code></pre></div>
+</div>
+<p>the <code class="docutils literal notranslate"><span class="pre">analyzer.csv</span></code> file will be created in the root directory.</p>
+</li>
+<li><p>Copy it to the target’s build directory before using <code class="docutils literal notranslate"><span class="pre">analyzer.py</span></code>.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>cp<span class="w"> </span>analyzer.csv<span class="w"> </span>build/arty_litescope/
+</code></pre></div>
+</div>
+</li>
+<li><p>Start <code class="docutils literal notranslate"><span class="pre">litex-server</span></code> with:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>make<span class="w"> </span>srv
+</code></pre></div>
+</div>
+</li>
+<li><p>Execute the analyzer script in a separate shell:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">TARGET</span><span class="o">=</span>arty_litescope
+python<span class="w"> </span>rowhammer_tester/scripts/analyzer.py
+</code></pre></div>
+</div>
+<p>Results will be stored in the <code class="docutils literal notranslate"><span class="pre">dump.vcd</span></code> file and can be viewed using <code class="docutils literal notranslate"><span class="pre">gtkwave</span></code>:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>gtkwave<span class="w"> </span>dump.vcd
+</code></pre></div>
+</div>
+</li>
+</ol>
+
+    <script type="text/javascript">
+        function init() {
+            WaveDrom.ProcessAll();
+        }
+        window.onload = init;
+    </script>
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      2026-01-16
+    
+  </small>
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="lpddr5_test_bed.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: LPDDR5 Test Bed" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              LPDDR5 Test Bed
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="visualization.html" class="md-footer__link md-footer__link--next" aria-label="Next: Result visualization" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Result visualization
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  
+  
+  <div class="md-footer-meta md-typeset">
+    
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-footer-copyright__highlight">
+        Copyright &#169; Antmicro, 2021-2026.
+        
+    </div>
+  
+      <a href="https://github.com/antmicro/rowhammer-tester/tree/1319b0cb765122fd3a647a8fb341a565ada5a4d5">1319b0cb</a>
+        @ <a href="https://github.com/antmicro/rowhammer-tester/tree/main">main</a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+      
+      
+    
+    <a href="https://github.com/antmicro" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/antmicro" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+    
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": ".", "features": ["toc.integrate"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+      
+        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
+        <script src="_static/tabs.js?v=3ee01567"></script>
+        <script src="_static/default.js?v=0004674d"></script>
+        <script src="_static/WaveDrom.js?v=12e62515"></script>
+        <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
+        <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
+        <script defer="defer" src="_static/tippy/hammering.be4b0885-6aba-4a24-bb04-baf73d24640e.js"></script>
+    
+  </body>
+</html>
