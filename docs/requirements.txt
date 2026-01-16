@@ -1,4 +1,5 @@
 -r ../requirements.txt
+myst-parser==4.0.1
 https://github.com/antmicro/antmicro-sphinx-utils/archive/main.zip
 sphinx-inline-tabs
 sphinx-tippy
