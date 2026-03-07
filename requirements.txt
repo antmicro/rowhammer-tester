@@ -12,7 +12,7 @@
 -e third_party/pythondata-cpu-vexriscv_smp
 git+https://github.com/litex-hub/pythondata-cpu-vexriscv.git@a36d99eeea984c261e16b744fc1d287c81099777
 # litex software data
-git+https://github.com/litex-hub/pythondata-software-picolibc.git
+git+https://github.com/litex-hub/pythondata-software-picolibc.git@a5e11229885a87083ec54034f8d693ba52ea2718
 git+https://github.com/litex-hub/pythondata-software-compiler_rt.git
 
 # PyPi packages
