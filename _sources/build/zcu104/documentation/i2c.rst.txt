@@ -1,0 +1,230 @@
+I2C
+===
+
+Register Listing for I2C
+------------------------
+
++----------------------------------------------------------------------------+------------------------------------------------------+
+| Register                                                                   | Address                                              |
++============================================================================+======================================================+
+| :ref:`I2C_W <I2C_W>`                                                       | :ref:`0xf0004800 <I2C_W>`                            |
++----------------------------------------------------------------------------+------------------------------------------------------+
+| :ref:`I2C_R <I2C_R>`                                                       | :ref:`0xf0004804 <I2C_R>`                            |
++----------------------------------------------------------------------------+------------------------------------------------------+
+| :ref:`I2C_WORKER <I2C_WORKER>`                                             | :ref:`0xf0004808 <I2C_WORKER>`                       |
++----------------------------------------------------------------------------+------------------------------------------------------+
+| :ref:`I2C_I2C_WORKER_START <I2C_I2C_WORKER_START>`                         | :ref:`0xf000480c <I2C_I2C_WORKER_START>`             |
++----------------------------------------------------------------------------+------------------------------------------------------+
+| :ref:`I2C_I2C_WORKER_I2C_CTRL <I2C_I2C_WORKER_I2C_CTRL>`                   | :ref:`0xf0004810 <I2C_I2C_WORKER_I2C_CTRL>`          |
++----------------------------------------------------------------------------+------------------------------------------------------+
+| :ref:`I2C_I2C_WORKER_I2C_STATE <I2C_I2C_WORKER_I2C_STATE>`                 | :ref:`0xf0004814 <I2C_I2C_WORKER_I2C_STATE>`         |
++----------------------------------------------------------------------------+------------------------------------------------------+
+| :ref:`I2C_I2C_WORKER_FIFOS_ACCESS_PORT <I2C_I2C_WORKER_FIFOS_ACCESS_PORT>` | :ref:`0xf0004818 <I2C_I2C_WORKER_FIFOS_ACCESS_PORT>` |
++----------------------------------------------------------------------------+------------------------------------------------------+
+| :ref:`I2C_I2C_WORKER_WRITE_FIFO_STATE <I2C_I2C_WORKER_WRITE_FIFO_STATE>`   | :ref:`0xf000481c <I2C_I2C_WORKER_WRITE_FIFO_STATE>`  |
++----------------------------------------------------------------------------+------------------------------------------------------+
+| :ref:`I2C_I2C_WORKER_READ_FIFO_STATE <I2C_I2C_WORKER_READ_FIFO_STATE>`     | :ref:`0xf0004820 <I2C_I2C_WORKER_READ_FIFO_STATE>`   |
++----------------------------------------------------------------------------+------------------------------------------------------+
+
+I2C_W
+^^^^^
+
+`Address: 0xf0004800 + 0x0 = 0xf0004800`
+
+
+    .. wavedrom::
+        :caption: I2C_W
+
+        {
+            "reg": [
+                {"name": "scl",  "attr": '1', "bits": 1},
+                {"name": "oe",  "bits": 1},
+                {"name": "sda",  "attr": '1', "bits": 1},
+                {"bits": 29}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++-------+------+-------------+
+| Field | Name | Description |
++=======+======+=============+
++-------+------+-------------+
++-------+------+-------------+
++-------+------+-------------+
+
+I2C_R
+^^^^^
+
+`Address: 0xf0004800 + 0x4 = 0xf0004804`
+
+
+    .. wavedrom::
+        :caption: I2C_R
+
+        {
+            "reg": [
+                {"name": "sda",  "bits": 1},
+                {"bits": 31}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++-------+------+-------------+
+| Field | Name | Description |
++=======+======+=============+
++-------+------+-------------+
+
+I2C_WORKER
+^^^^^^^^^^
+
+`Address: 0xf0004800 + 0x8 = 0xf0004808`
+
+
+    .. wavedrom::
+        :caption: I2C_WORKER
+
+        {
+            "reg": [
+                {"name": "worker_sel",  "bits": 1},
+                {"bits": 31}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++-------+------------+-------------+
+| Field | Name       | Description |
++=======+============+=============+
++-------+------------+-------------+
+
+I2C_I2C_WORKER_START
+^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0004800 + 0xc = 0xf000480c`
+
+
+    .. wavedrom::
+        :caption: I2C_I2C_WORKER_START
+
+        {
+            "reg": [
+                {"name": "i2c_worker_start", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
+I2C_I2C_WORKER_I2C_CTRL
+^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0004800 + 0x10 = 0xf0004810`
+
+
+    .. wavedrom::
+        :caption: I2C_I2C_WORKER_I2C_CTRL
+
+        {
+            "reg": [
+                {"name": "clr_fifos",  "bits": 1},
+                {"bits": 7},
+                {"name": "reset_fsm",  "bits": 1},
+                {"bits": 23}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++-------+-----------+-------------+
+| Field | Name      | Description |
++=======+===========+=============+
++-------+-----------+-------------+
++-------+-----------+-------------+
+
+I2C_I2C_WORKER_I2C_STATE
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0004800 + 0x14 = 0xf0004814`
+
+
+    .. wavedrom::
+        :caption: I2C_I2C_WORKER_I2C_STATE
+
+        {
+            "reg": [
+                {"name": "ready",  "bits": 1},
+                {"bits": 7},
+                {"name": "fsm_state",  "bits": 8},
+                {"bits": 16}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
++--------+-----------+-------------+
+| Field  | Name      | Description |
++========+===========+=============+
++--------+-----------+-------------+
++--------+-----------+-------------+
+
+I2C_I2C_WORKER_FIFOS_ACCESS_PORT
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0004800 + 0x18 = 0xf0004818`
+
+
+    .. wavedrom::
+        :caption: I2C_I2C_WORKER_FIFOS_ACCESS_PORT
+
+        {
+            "reg": [
+                {"name": "i2c_worker_fifos_access_port[20:0]", "bits": 21},
+                {"bits": 11},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
+I2C_I2C_WORKER_WRITE_FIFO_STATE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0004800 + 0x1c = 0xf000481c`
+
+
+    .. wavedrom::
+        :caption: I2C_I2C_WORKER_WRITE_FIFO_STATE
+
+        {
+            "reg": [
+                {"name": "fifo_depth",  "attr": '192', "bits": 8},
+                {"name": "fifo_entries",  "bits": 8},
+                {"bits": 16}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
++--------+--------------+-------------+
+| Field  | Name         | Description |
++========+==============+=============+
++--------+--------------+-------------+
++--------+--------------+-------------+
+
+I2C_I2C_WORKER_READ_FIFO_STATE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0004800 + 0x20 = 0xf0004820`
+
+
+    .. wavedrom::
+        :caption: I2C_I2C_WORKER_READ_FIFO_STATE
+
+        {
+            "reg": [
+                {"name": "fifo_depth",  "attr": '192', "bits": 8},
+                {"name": "fifo_entries",  "bits": 8},
+                {"bits": 16}
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 1 }, "options": {"hspace": 400, "bits": 32, "lanes": 1}
+        }
+
+
++--------+--------------+-------------+
+| Field  | Name         | Description |
++========+==============+=============+
++--------+--------------+-------------+
++--------+--------------+-------------+
+

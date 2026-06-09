@@ -1,0 +1,34 @@
+CONTROLLER_SETTINGS
+===================
+
+Allows to change LiteDRAMController behaviour at runtime
+--------------------------------------------------------
+
+
+Register Listing for CONTROLLER_SETTINGS
+----------------------------------------
+
++------------------------------------------------------------------+-------------------------------------------------+
+| Register                                                         | Address                                         |
++==================================================================+=================================================+
+| :ref:`CONTROLLER_SETTINGS_REFRESH <CONTROLLER_SETTINGS_REFRESH>` | :ref:`0xf0001000 <CONTROLLER_SETTINGS_REFRESH>` |
++------------------------------------------------------------------+-------------------------------------------------+
+
+CONTROLLER_SETTINGS_REFRESH
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Address: 0xf0001000 + 0x0 = 0xf0001000`
+
+    Enable/disable Refresh commands sending
+
+    .. wavedrom::
+        :caption: CONTROLLER_SETTINGS_REFRESH
+
+        {
+            "reg": [
+                {"name": "refresh", "attr": 'reset: 1', "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+
